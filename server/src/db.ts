@@ -1,5 +1,8 @@
 import 'dotenv/config'
+import dotenv from 'dotenv'
 import { Sequelize } from 'sequelize';
+
+dotenv.config()
 
 if (
     !process.env.DB_NAME || 
@@ -13,26 +16,25 @@ if (
 
 const dbPort = parseInt(process.env.DB_PORT, 10);
 
-// const sequelizeModel = new Sequelize(
-//     process.env.DB_NAME,
-//     process.env.DB_USER,
-//     process.env.DB_PASSWORD,
-//     {
-//         dialect: "postgres",
-//         host: process.env.DB_HOST,
-//         port: dbPort,  
-//     }
-// );
-
-const sequelizeModel = new Sequelize(
-    "medice",
-    "postgres",
-    "1",
+const sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
         dialect: "postgres",
-        host: "localhost",
-        port: 5432,  
+        host: process.env.DB_HOST,
+        port: dbPort,  
+        logging: console.log,
     }
 );
 
-export default sequelizeModel
+sequelize.authenticate()
+    .then(() => {
+        console.log('✅ Подключение к PostgreSQL установлено');
+    })
+    .catch((err: Error) => {
+        console.error('❌ Ошибка подключения к PostgreSQL:', err.message);
+        process.exit(1); // Завершаем процесс при ошибке
+    });
+
+export default sequelize
