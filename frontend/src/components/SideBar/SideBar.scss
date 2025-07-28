@@ -1,0 +1,49 @@
+@use '../../assets/styles/variables.scss' as *;
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: $light-color;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &__logo {
+    width: 100px;
+    height: 100px;
+    margin: 40px auto;
+  }
+
+  &__menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__menu-item {
+    padding: 12px 20px;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: $light-color;
+    }
+  }
+
+  &__link {
+    text-decoration: none;
+    color: #212529;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+
+  &__icon {
+    font-size: 18px;
+  }
+}

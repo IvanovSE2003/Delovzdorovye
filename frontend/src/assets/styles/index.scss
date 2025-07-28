@@ -1,0 +1,20 @@
+// PersonalAccount.scss
+@use './variables.scss' as *;
+
+.account{
+    &-wrapper {
+        display: flex;
+        height: 100vh;
+        overflow-y: hidden;
+    }
+
+    &-main {
+        flex-grow: 1;
+        padding: 20px;
+    }
+}
+
+input {
+    box-sizing: border-box;
+    border: none;
+}
