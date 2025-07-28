@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Slider.css';
+import './Slider.scss';
 
 interface Slide {
   id: number;

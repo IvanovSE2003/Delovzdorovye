@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
-import './FormAuth.css';
+import './FormAuth.scss';
 
 type Gender = 'male' | 'female' | '';
 interface UserDetails {

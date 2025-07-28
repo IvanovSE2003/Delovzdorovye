@@ -1,0 +1,30 @@
+@use '../../assets/styles/variables.scss' as *;
+
+.header {
+    height: 198px;
+    width: 100%;
+    background-color: $light-color;
+    border-bottom: 1px solid $light-color;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    &__logo {
+        width: 91px;
+        height: 91px;
+    }
+
+    &__nav {
+        display: flex;
+        justify-content: space-around;
+        gap: 20px;
+        font-weight: bold;
+    }
+
+    &__profile {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
+}
