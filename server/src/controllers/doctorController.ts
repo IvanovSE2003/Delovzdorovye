@@ -6,7 +6,11 @@ const {Doctor} = models;
 
 class DoctorController {
     static async getAll(req: Request, res: Response) {
-        const doctors = await Doctor.findAll();
+        const limit = parseInt(req.query.limit as string) || 10;
+        const page = parseInt(req.query.page as string) || 1;
+        const offset = (page - 1) * limit;
+
+        const doctors = await Doctor.findAndCountAll({limit, offset});
         return res.status(200).json(doctors)
     }
 

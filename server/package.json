@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx nodemon",
+    "dev": "nodemon --exec node --loader ts-node/esm src/main.ts",
     "build": "rimraf ./build && npx tsc",
     "start": "npm run build && node build/main",
     "lint": "npx eslint ./src",
@@ -23,7 +23,9 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
+    "@types/express-fileupload": "^1.5.1",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
@@ -32,6 +34,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
@@ -40,10 +43,12 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "express-fileupload": "^1.5.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "uuid": "^11.1.0"
   }
 }

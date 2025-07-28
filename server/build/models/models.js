@@ -12,7 +12,8 @@ const User = sequelize.define('user', {
     time_zone: { type: DataType.INTEGER },
     date_birth: { type: DataType.DATEONLY },
     gender: { type: DataType.STRING },
-    role: { type: DataType.STRING, defaultValue: "PACIENT" }
+    img: { type: DataType.STRING, defaultValue: "defaultImg.jpg" },
+    role: { type: DataType.STRING, defaultValue: "PACIENT" },
 });
 const Patient = sequelize.define('patient', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },

@@ -8,13 +8,14 @@ const User = sequelize.define<IUserModel>('user', {
     surname: {type: DataType.STRING}, 
     patronymic: {type: DataType.STRING},
     email: {type: DataType.STRING, unique: true},
-    phone: {type: DataType.STRING, unique: true},
-    pin_code: {type: DataType.INTEGER},
-    password: {type: DataType.STRING},
-    time_zone: {type: DataType.INTEGER},
+    phone: {type: DataType.STRING, unique: true, allowNull: false},
+    pin_code: {type: DataType.INTEGER, allowNull: false},
+    password: {type: DataType.STRING, allowNull: false},
+    time_zone: {type: DataType.INTEGER, allowNull: false},
     date_birth: {type: DataType.DATEONLY},
-    gender: {type: DataType.STRING},
-    role: {type: DataType.STRING, defaultValue: "PACIENT"}
+    gender: {type: DataType.STRING, allowNull: false},    
+    img: {type: DataType.STRING, defaultValue: "defaultImg.jpg"},
+    role: {type: DataType.STRING, defaultValue: "PACIENT"},
 })
 
 const Patient = sequelize.define('patient', {

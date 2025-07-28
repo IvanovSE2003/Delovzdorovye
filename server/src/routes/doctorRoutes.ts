@@ -10,4 +10,3 @@ router.get('/get', DoctorController.getAll);
 router.post('/create', DoctorController.create);
 
 export default router;
-

@@ -1,7 +1,5 @@
-// interfaces/IUser.ts
 import { Model, Optional } from 'sequelize';
 
-// Определяем атрибуты, которые будут в таблице
 interface IUserAttributes {
     id: number;
     name: string | null;
@@ -15,12 +13,10 @@ interface IUserAttributes {
     date_birth: Date | null;
     gender: string | null;
     role: string;
+    img: string,
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-// Указываем, какие поля являются опциональными при создании
 interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}
-
-// Объединяем с Model
 export interface IUserModel extends Model<IUserAttributes, IUserCreationAttributes>, IUserAttributes {}

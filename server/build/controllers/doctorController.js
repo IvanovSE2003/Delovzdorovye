@@ -15,8 +15,8 @@ class DoctorController {
         return res.status(200).json(doctor);
     }
     static async create(req, res) {
-        const { specialization, contacts, experience_years } = req.body;
-        const newDoctor = await Doctor.create({ specialization, contacts, experience_years });
+        const { specialization, contacts, experience_years, userId } = req.body;
+        const newDoctor = await Doctor.create({ specialization, contacts, experience_years, userId });
         return res.json(newDoctor);
     }
 }
