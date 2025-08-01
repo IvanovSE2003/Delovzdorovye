@@ -7,6 +7,7 @@ import type { AxiosError } from "axios";
 export default class Store {
     user = {} as IUser;
     isAuth = false;
+    error = ""
 
     constructor() {
         makeAutoObservable(this);
@@ -20,7 +21,11 @@ export default class Store {
         this.user = user;
     }
 
-    async login(data: LoginData) {
+    setError(error: string) {
+        this.error = error;
+    }
+
+    async login(data: LoginData): Promise<void> {
         try {
             const response = await AuthService.login(data);
             console.log(response.data)
@@ -28,8 +33,9 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            console.log(error.response?.data?.message);
+            const error = e as AxiosError<{ messange: string }>;
+            this.setError(error.response?.data?.messange||"Неизвестная ошибка!");
+            console.log(error.response?.data?.messange);
         }
     }
 

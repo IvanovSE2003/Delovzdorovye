@@ -2,6 +2,7 @@ import { useState, type FormEvent, useContext } from "react";
 import "./FormAuth.scss";
 import { Context } from "../../main";
 import { set } from "mobx";
+import type { AuthResponse } from "../../models/response/AuthResponse";
 
 type Gender = "male" | "female" | "";
 interface UserDetails {
@@ -18,11 +19,9 @@ const FormAuth = () => {
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
   const [phoneOrEmail, setPhoneOrEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [code, setCode] = useState<string>("");
+  const [PinCode, setPinCode] = useState<string>("");
+
   const [error, setError] = useState<string>("");
-  const [isRegisteredUser, setIsRegisteredUser] = useState<boolean | null>(
-    null
-  );
   const [userDetails, setUserDetails] = useState<UserDetails>({
     lastName: "",
     firstName: "",
@@ -76,44 +75,39 @@ const FormAuth = () => {
     }
   };
 
-  const handleSubmitCode = (e: FormEvent): void => {
+  const handleSubmitCode = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
 
-    if (!code.trim()) {
+    if (!PinCode.trim()) {
       setError("Введите пин-код");
       return;
     }
 
-    if (!/^\d{4}$/.test(code)) {
+    if (!/^\d{4}$/.test(PinCode)) {
       setError("Код должен содержать 4 цифр");
       return;
     }
-    let login;
     if (isEmailAuth) {
-      login = store.login({
+      await store.login({
         phone: undefined,
         email: phoneOrEmail,
         password: password,
-        pin_code: Number(code),
-      }) as any;
+        pin_code: Number(PinCode),
+      });
     } else {
-      login = store.login({
+      await store.login({
         phone: phoneOrEmail,
         email: undefined,
         password: password,
-        pin_code: Number(code),
-      }) as any;
+        pin_code: Number(PinCode),
+      });
     }
 
-    if(login.accessToken) {
+    if(store.isAuth) {
       window.location.href = '/personal';
     } else {
-      console.log(login);
+      setError(store.error);
     }
-    
-
-    setError("");
-    // window.location.href = '/personal';
   };
 
   const handleSubmitDetails = (e: FormEvent): void => {
@@ -136,40 +130,28 @@ const FormAuth = () => {
     };
 
     console.log("Регистрируем пользователя:", userData);
-    window.location.href = "/personal";
+    // window.location.href = "/personal";
   };
 
   const handleBack = () => {
     setError("");
     if (step > 1) {
       setStep(1);
-      setIsRegisteredUser(null);
     }
   };
 
-  const handleDetailsChange = (
-    field: keyof UserDetails,
-    value: string | Gender
-  ): void => {
+  const handleDetailsChange = (field: keyof UserDetails, value: string | Gender): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
-  const fun = async (phoneOrEmail: string) => {
-    console.log(phoneOrEmail);
+  const checkUser = async (phoneOrEmail: string) => {
+    if(phoneOrEmail == "") return;
     if (!isEmailAuth) {
       const res = await store.checkUser(phoneOrEmail, null);
-      if (res) {
-        setError("Такой пользователь есть!");
-      } else {
-        setError("Такого пользователя нет!");
-      }
+      res ? setError("Такой пользователь есть!") : setError("Такого пользователя нет!");
     } else {
       const res = await store.checkUser(null, phoneOrEmail);
-      if (res) {
-        setError("Такой пользователь есть!");
-      } else {
-        setError("Такого пользователя нет!");
-      }
+      res ? setError("Такой пользователь есть!") : setError("Такого пользователя нет!");
     }
   };
 
@@ -196,7 +178,7 @@ const FormAuth = () => {
                 : e.target.value.replace(/[^\d+]/g, "");
               setPhoneOrEmail(val);
             }}
-            onBlur={() => fun(phoneOrEmail)}
+            onBlur={() => checkUser(phoneOrEmail)}
             required
           />
           <input
@@ -229,8 +211,8 @@ const FormAuth = () => {
               id="pin-code"
               className="auth__input"
               placeholder="Введите пин-код"
-              onChange={(e) => setCode(e.target.value)}
-              value={code}
+              onChange={(e) => setPinCode(e.target.value)}
+              value={PinCode}
               maxLength={4}
             />
             <button
