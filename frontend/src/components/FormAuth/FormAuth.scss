@@ -8,95 +8,6 @@
         gap: 20px;
     }
 
-    &__window {
-        display: flex;
-        box-sizing: border-box;
-    }
-
-    &__left {
-        width: 50%;
-        height: 100vh;
-        background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__right {
-        width: 50%;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__box {
-        width: 400px;
-        height: 600px;
-        border-radius: 15px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        box-sizing: border-box;
-
-        h3 {
-            font-size: 30px;
-            color: $primary-color;
-        }
-
-        a:hover {
-            color: #3325f5;
-            cursor: pointer;
-        }
-
-        button {
-            width: 100%;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 10px;
-            background-color: $light-color;
-
-            &:hover {
-                box-shadow: 0 0 10px $shadow-color;
-            }
-        }
-
-        select {
-            padding: 20px 15px;
-            width: 100%;
-            border: none;
-            border-radius: 10px;
-            background-color: $light-color;
-        }
-
-        input {
-            width: 100%;
-            padding: 20px 15px;
-            border: none;
-            border-radius: 10px;
-            background-color: $light-color;
-
-            &:focus {
-                outline: none;
-                box-shadow: 0 0 10px $shadow-color;
-            }
-        }
-        
-        .radios {
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-
-            .radio {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-            }
-        }
-    }
-
     &__error {
         color: red;
         margin: 0;
@@ -105,4 +16,67 @@
     &__toggle-button {
         text-align: center;
     }
+
+    &__button {
+        width: 100%;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 10px;
+        background-color: $light-color;
+
+        &:hover {
+            box-shadow: 0 0 10px $shadow-color;
+        }
+    }
+
+    select {
+        padding: 20px 15px;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background-color: $light-color;
+    }
+
+    &__input {
+        width: 100%;
+        padding: 20px 15px;
+        border: none;
+        border-radius: 10px;
+        background-color: $light-color;
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 10px $shadow-color;
+        }
+
+        &:valid:not(:placeholder-shown) {
+            box-shadow: 0 0 10px rgba(0, 128, 0, 0.2);
+        }
+
+        &:invalid:not(:placeholder-shown) {
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+        }
+    }
+
+    .radios {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+
+        .radio {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    }
+}
+
+h3 {
+    font-size: 30px;
+    color: $primary-color;
+}
+
+a:hover {
+    color: #3325f5;
+    cursor: pointer;
 }
