@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent, useContext } from 'react';
 import './FormAuth.scss';
+import { Context } from '../../main';
+import { set } from 'mobx';
 
 type Gender = 'male' | 'female' | '';
 interface UserDetails {
@@ -15,7 +17,10 @@ const FormAuth = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
   const [phoneOrEmail, setPhoneOrEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [code, setCode] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isRegisteredUser, setIsRegisteredUser] = useState<boolean | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails>({
     lastName: '',
     firstName: '',
@@ -24,246 +29,224 @@ const FormAuth = () => {
     birthDate: '',
     timezone: '',
   });
-  const [error, setError] = useState<string>('');
-  const codeInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (step === 2 && codeInputRef.current) {
-      codeInputRef.current.value = "";
-      codeInputRef.current.focus();
-    }
-  }, [step]);
+  const {store} = useContext(Context)
 
   const toggleAuthType = (): void => {
     setIsEmailAuth(prev => !prev);
-    setPhoneOrEmail("")
-    setError("")
+    setPhoneOrEmail('');
+    setError('');
   };
 
-  const handleSubmitContact = (e: FormEvent): void => {
+  const handleSubmitContact = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!phoneOrEmail.trim()) {
-      setError('Поле обязательно для заполнения');
-      return;
+
+    if (isEmailAuth) {
+      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneOrEmail);
+      if (!emailValid) {
+        setError("Введите корректный email");
+        return;
+      }
+    } else {
+      const phoneValid = /^8\d{10}$/.test(phoneOrEmail);
+      if (!phoneValid) {
+        setError("Введите корректный номер телефона (8XXXXXXXXXX)");
+        return;
+      }
     }
 
-    // Отправить код подтверждения на телефон или почту
-    // Записать отправленный код в переменную const sendCode:number
-
     setError('');
-    setStep(2);
+
+    console.log(store.checkUser(phoneOrEmail));
+
+    // Здесь происходит проверка в базе данных, вместо нее статические данные
+    // const mockRegisteredUsers = ['89991234567', 'test@example.com'];
+    // const isRegistered = mockRegisteredUsers.includes(phoneOrEmail);
   };
 
   const handleSubmitCode = (e: FormEvent): void => {
     e.preventDefault();
+
     if (!code.trim()) {
-      setError('Введите код подтверждения');
+      setError('Введите пин-код');
       return;
     }
 
-    if (!/^\d{6}$/.test(code)) {
-      setError('Код должен содержать 6 цифр');
+    if (!/^\d{4}$/.test(code)) {
+      setError('Код должен содержать 4 цифр');
       return;
     }
 
-    // Сравнить введенное значение code с SendCode
-    // то есть if(code === sendCode) {
+    // Здесь будет проверка от сервера на правильность пин-кода
+    store.login({
+      phone: phoneOrEmail,
+      email: phoneOrEmail,
+      password: password,
+      pin_code: Number(code),
+    })
+
     setError('');
-    setStep(3);
-    // }
+    window.location.href = '/personal';
   };
 
   const handleSubmitDetails = (e: FormEvent): void => {
     e.preventDefault();
-    const isEmptyField = Object.values(userDetails).some(
-      (value) => !value || value.trim() === ""
-    );
 
-    if (isEmptyField) {
+    const isEmpty = Object.values(userDetails).some(value => !value || value.trim() === '');
+    if (isEmpty) {
       setError('Все поля должны быть заполнены!');
       return;
     }
 
     setError('');
+
     const userData = {
       contactType: isEmailAuth ? 'email' : 'phone',
       contactValue: phoneOrEmail,
       ...userDetails
     };
-    console.log('Данные для регистрации:', userData);
-    // Отправка userData на сервер 
+
+    console.log('Регистрируем пользователя:', userData);
     window.location.href = '/personal';
   };
 
-  const handleBack = (): void => {
+  const handleBack = () => {
+    setError('');
     if (step > 1) {
-      setStep(prev => (prev - 1) as 1 | 2 | 3);
-      setError('');
+      setStep(1);
+      setIsRegisteredUser(null);
     }
   };
 
   const handleDetailsChange = (field: keyof UserDetails, value: string | Gender): void => {
-    setUserDetails(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setUserDetails(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <>
+    <div className="auth">
       <h3>
         {step === 1 && 'Вход или регистрация'}
-        {step === 2 && 'Подтверждение'}
-        {step === 3 && 'Завершающий этап'}
+        {step === 2 && 'Введите PIN-код'}
+        {step === 3 && 'Регистрация'}
       </h3>
 
       {error && <p className="auth__error">{error}</p>}
 
-      {/* Шаг 1: Ввод телефона/почты */}
       {step === 1 && (
         <form onSubmit={handleSubmitContact} className="auth__form">
-          {isEmailAuth ? (
-            <input
-              type="email"
-              placeholder="Почта"
-              value={phoneOrEmail}
-              onChange={(e) => setPhoneOrEmail(e.target.value)}
-            />
-          ) : (
-            <input
-              type="tel"
-              inputMode="numeric"
-              placeholder="Телефон"
-              value={phoneOrEmail}
-              maxLength={11}
-              onChange={(e) => setPhoneOrEmail(e.target.value.replace(/\D/g, ''))}
-            />
-          )}
-          <button type="submit">Получить код</button>
-          <a
-            onClick={toggleAuthType}
-            className="auth__toggle-button"
-          >
-            {isEmailAuth ? "Войти по телефону" : "Войти по эл. почте"}
+          <input
+            className="auth__input"
+            type={isEmailAuth ? 'email' : 'tel'}
+            placeholder={isEmailAuth ? 'Электронная почта' : 'Телефон'}
+            value={phoneOrEmail}
+            onChange={(e) => {
+              const val = isEmailAuth
+                ? e.target.value
+                : e.target.value.replace(/[^\d+]/g, '');
+              setPhoneOrEmail(val);
+            }}
+            required
+          />
+          <input 
+            type="password" 
+            className='auth__input'
+            placeholder='Пароль'
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+          />
+
+          <button type="submit" className="auth__button">Продолжить</button>
+
+          <a onClick={toggleAuthType} className="auth__toggle-button" role="button">
+            {isEmailAuth ? 'Войти по телефону' : 'Войти по эл. почте'}
           </a>
         </form>
       )}
 
-      {/* Шаг 2: Ввод кода подтверждения */}
-      {step === 2 && (
-        <form onSubmit={handleSubmitCode} className="auth__form">
-          <p style={{ textAlign: 'center' }}>
-            Код отправлен на {isEmailAuth ? ' почту' : ' телефон'}:
-            <strong>{' ' + phoneOrEmail}</strong>
-          </p>
+      {step === 2 && isRegisteredUser && (
+        <>
+          <form className='auth__form'>
+            <input type="text" id='pin-code' className='auth__input' placeholder='Введите пин-код' />
+            <button type='button' onClick={handleSubmitCode} className="auth__button">Продолжить</button>
+            <button type="button" onClick={handleBack} className="auth__button">Назад</button>
+          </form>
+        </>
+      )}
+
+      {step === 3 && !isRegisteredUser && (
+        <form onSubmit={handleSubmitDetails} className="auth__form">
           <input
-            ref={codeInputRef}
             type="text"
-            inputMode="numeric"
-            placeholder="Введите 6-значный код"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            maxLength={6}
+            placeholder="Фамилия"
+            className='auth__input'
+            value={userDetails.lastName}
+            onChange={(e) => handleDetailsChange('lastName', e.target.value)}
             required
           />
-          <button type="submit">Подтвердить</button>
-          <button
-            type="button"
-            onClick={handleBack}
-            className="auth__toggle-button"
-          >
-            Назад
-          </button>
-        </form>
-      )}
 
-      {/* Шаг 3: Завершающий этап */}
-      {step === 3 && (
-        <form onSubmit={handleSubmitDetails} className="auth__form">
-          <div className="form-group">
-            <input
-              type="text"
-              value={userDetails.lastName}
-              onChange={(e) => handleDetailsChange('lastName', e.target.value)}
-              placeholder='Фамилия'
+          <input
+            type="text"
+            placeholder="Имя"
+            className='auth__input'
+            value={userDetails.firstName}
+            onChange={(e) => handleDetailsChange('firstName', e.target.value)}
+            required
+          />
 
-            />
-          </div>
-
-          <div className="form-group">
-            <input
-              type="text"
-              value={userDetails.firstName}
-              onChange={(e) => handleDetailsChange('firstName', e.target.value)}
-              placeholder='Имя'
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <input
-              type="text"
-              value={userDetails.middleName}
-              onChange={(e) => handleDetailsChange('middleName', e.target.value)}
-              placeholder='Отчество'
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Отчество"
+            className='auth__input'
+            value={userDetails.middleName}
+            onChange={(e) => handleDetailsChange('middleName', e.target.value)}
+          />
 
           <div className="form-group radios">
-            <label>Пол</label>
-            <div className='radio'>
+            <label>Пол:</label>
+            <div className="radio">
               <input
                 type="radio"
+                name="gender"
                 value="male"
-                name="gender"
+                checked={userDetails.gender === 'male'}
                 onChange={(e) => handleDetailsChange('gender', e.target.value)}
-              />
-              Мужской
+              /> Мужской
             </div>
-            <div className='radio'>
+            <div className="radio">
               <input
                 type="radio"
-                value="female"
                 name="gender"
+                value="female"
+                checked={userDetails.gender === 'female'}
                 onChange={(e) => handleDetailsChange('gender', e.target.value)}
-              />
-              Женский
+              /> Женский
             </div>
           </div>
 
-          <div className="form-group">
-            <input
-              type="date"
-              value={userDetails.birthDate}
-              onChange={(e) => handleDetailsChange('birthDate', e.target.value)}
-              placeholder='Дата рождения'
-              required
-            />
-          </div>
+          <input
+            type="date"
+            className='auth__input'
+            value={userDetails.birthDate}
+            onChange={(e) => handleDetailsChange('birthDate', e.target.value)}
+            required
+          />
 
-          <div className="form-group">
-            <select
-              value={userDetails.timezone}
-              onChange={(e) => handleDetailsChange('timezone', e.target.value)}
-            >
-              <option value="">Часовой пояс</option>
-              <option value="Europe/Moscow">Москва (UTC+3)</option>
-              <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
-              <option value="Asia/Novosibirsk">Новосибирск (UTC+7)</option>
-            </select>
-          </div>
-
-          <button type="submit">Завершить регистрацию</button>
-          <button
-            type="button"
-            onClick={handleBack}
-            className="auth__toggle-button"
+          <select
+            value={userDetails.timezone}
+            onChange={(e) => handleDetailsChange('timezone', e.target.value)}
+            required
           >
-            Назад
-          </button>
+            <option value="">Выберите часовой пояс</option>
+            <option value="Europe/Moscow">Москва (UTC+3)</option>
+            <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
+            <option value="Asia/Novosibirsk">Новосибирск (UTC+7)</option>
+          </select>
+
+          <button type="submit" className="auth__button">Завершить регистрацию</button>
+          <button type="button" onClick={handleBack} className="auth__button">Назад</button>
         </form>
       )}
-    </>
+    </div>
   );
 };
 

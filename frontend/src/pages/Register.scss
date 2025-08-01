@@ -1,0 +1,37 @@
+@use '../assets/styles/variables.scss' as *;
+
+.auth {
+    &__window {
+        display: flex;
+        box-sizing: border-box;
+    }
+
+    &__left {
+        width: 50%;
+        height: 100vh;
+        background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__right {
+        width: 50%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__box {
+        width: 400px;
+        height: 600px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        box-sizing: border-box;
+    }
+}
