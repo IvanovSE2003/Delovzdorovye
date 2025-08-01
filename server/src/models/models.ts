@@ -1,21 +1,30 @@
 import sequelize from '../db.js'
 import { DataType } from 'sequelize-typescript'
 import { IUserModel } from "../interfeces/IUser.js";
+import { ITokenModel } from "../interfeces/IToken.js"
 
 const User = sequelize.define<IUserModel>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: DataType.STRING},
-    surname: {type: DataType.STRING}, 
-    patronymic: {type: DataType.STRING},
-    email: {type: DataType.STRING, unique: true},
-    phone: {type: DataType.STRING, unique: true, allowNull: false},
+    name: {type: DataType.STRING, allowNull: false},
+    surname: {type: DataType.STRING, allowNull: false}, 
+    patronymic: {type: DataType.STRING, allowNull: false},
+    email: {type: DataType.STRING, unique: true, allowNull: true},
+    phone: {type: DataType.STRING, unique: true, allowNull: true},
     pin_code: {type: DataType.INTEGER, allowNull: false},
     password: {type: DataType.STRING, allowNull: false},
     time_zone: {type: DataType.INTEGER, allowNull: false},
     date_birth: {type: DataType.DATEONLY},
-    gender: {type: DataType.STRING, allowNull: false},    
+    gender: {type: DataType.STRING, allowNull: false},   
+    isActivated: {type: DataType.BOOLEAN, defaultValue: false},
+    activationLink: {type: DataType.STRING, allowNull: true},
     img: {type: DataType.STRING, defaultValue: "defaultImg.jpg"},
     role: {type: DataType.STRING, defaultValue: "PACIENT"},
+})
+
+const Token = sequelize.define<ITokenModel>('token', {
+    id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
+    userId: {type: DataType.INTEGER},
+    refreshToken: {type: DataType.STRING, allowNull: false}
 })
 
 const Patient = sequelize.define('patient', {
@@ -77,11 +86,15 @@ Consultation.belongsTo(Doctor)
 Doctor.hasOne(DoctorsSchedule)
 DoctorsSchedule.belongsTo(Doctor)
 
+User.hasOne(Token)
+Token.belongsTo(User)
+
 export default {
     User,
     Doctor,
     Patient,
     Transaction,
     Consultation,
-    DoctorsSchedule
+    DoctorsSchedule,
+    Token
 }

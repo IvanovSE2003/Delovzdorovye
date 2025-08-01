@@ -1,0 +1,76 @@
+@use '../../assets/styles/variables.scss' as *;
+
+.auth {
+    &__form {
+        width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    &__error {
+        color: red;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    &__toggle-button {
+        text-align: center;
+    }
+
+    &__button {
+        width: 100%;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 10px;
+        background-color: $light-color;
+
+        &:hover {
+            box-shadow: 0 0 10px $shadow-color;
+        }
+    }
+
+    select {
+        padding: 20px 15px;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background-color: $light-color;
+    }
+
+    &__input {
+        width: 100%;
+        padding: 20px 15px;
+        border: none;
+        border-radius: 10px;
+        background-color: $light-color;
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 8px $shadow-color;
+        }
+    }
+
+    .radios {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+
+        .radio {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    }
+}
+
+h3 {
+    font-size: 30px;
+    color: $primary-color;
+    text-align: center;
+}
+
+a:hover {
+    color: #3325f5;
+    cursor: pointer;
+}
