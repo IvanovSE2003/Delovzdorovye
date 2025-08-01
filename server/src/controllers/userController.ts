@@ -66,8 +66,8 @@ class UserController {
                 isActivated: false
             })
 
-            let patient;
-            let doctor;
+            let patient = {};
+            let doctor = {};
             if(user.role === 'PATIENT') {
                 const {general_info, analyses_examinations, additionally} = req.body;
                 if(!general_info || !analyses_examinations || !additionally) {
@@ -90,7 +90,7 @@ class UserController {
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
             
             res.cookie('refreshtoken', tokens.refreshToken, {maxAge: 30 * 24 * 60 *60 * 1000, httpOnly: true, secure: true})
-            return res.json({...tokens, user: userDto});
+            return res.json({...tokens, user: userDto, patient, doctor});
         } catch(e) {
             if (e instanceof Error) {
                 next(ApiError.badRequest(e.message));
@@ -190,6 +190,25 @@ class UserController {
             return res.json({user})
         } catch (e) {
             next(ApiError.badRequest('Ошибка при получении пользователя с ролью доктор'));
+        }
+    }
+
+    static async checkUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {email, phone} = req.body
+            let user;
+            if(!email && phone) {
+                user = await User.findOne({where: {phone}})
+            } else if(email && !phone) {  
+                user = await User.findOne({where: {email}})
+            }
+
+            if(!user) {
+                next(ApiError.badRequest('Пользователя не существует'));
+            }
+            res.status(200).json(user);
+        } catch (e) {
+            next(ApiError.badRequest('Ошибка при проверке пользователя'));
         }
     }
 }
