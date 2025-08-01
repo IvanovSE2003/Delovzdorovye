@@ -8,8 +8,7 @@ import errorHandler from './midlewares/ErrorHandlingMidleware.js';
 import fileUpload from 'express-fileupload'
 import path from 'path'
 import { fileURLToPath } from 'url';
-
-const User = models.User;
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
@@ -19,6 +18,7 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'static')))
 app.use(fileUpload({}))
+app.use(cookieParser())
 app.use('/api', router)
 
 app.use(errorHandler)

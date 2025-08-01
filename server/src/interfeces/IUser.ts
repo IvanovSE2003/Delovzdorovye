@@ -16,6 +16,8 @@ interface IUserAttributes {
     img: string,
     createdAt?: Date;
     updatedAt?: Date;
+    isActivated: Boolean;
+    activationLink: string;
 }
 
 interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}
