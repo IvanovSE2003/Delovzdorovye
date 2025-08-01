@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent, useContext } from 'react';
 import './FormAuth.scss';
+import { Context } from '../../main';
+import { set } from 'mobx';
 
 type Gender = 'male' | 'female' | '';
 interface UserDetails {
@@ -15,6 +17,7 @@ const FormAuth = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
   const [phoneOrEmail, setPhoneOrEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isRegisteredUser, setIsRegisteredUser] = useState<boolean | null>(null);
@@ -27,13 +30,15 @@ const FormAuth = () => {
     timezone: '',
   });
 
+  const {store} = useContext(Context)
+
   const toggleAuthType = (): void => {
     setIsEmailAuth(prev => !prev);
     setPhoneOrEmail('');
     setError('');
   };
 
-  const handleSubmitContact = (e: FormEvent): void => {
+  const handleSubmitContact = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
 
     if (isEmailAuth) {
@@ -52,14 +57,11 @@ const FormAuth = () => {
 
     setError('');
 
+    console.log(store.checkUser(phoneOrEmail));
+
     // Здесь происходит проверка в базе данных, вместо нее статические данные
-    const mockRegisteredUsers = ['89991234567', 'test@example.com'];
-    const isRegistered = mockRegisteredUsers.includes(phoneOrEmail);
-
-
-    setIsRegisteredUser(isRegistered);
-    setCode('')
-    setStep(isRegistered ? 2 : 3);
+    // const mockRegisteredUsers = ['89991234567', 'test@example.com'];
+    // const isRegistered = mockRegisteredUsers.includes(phoneOrEmail);
   };
 
   const handleSubmitCode = (e: FormEvent): void => {
@@ -76,6 +78,13 @@ const FormAuth = () => {
     }
 
     // Здесь будет проверка от сервера на правильность пин-кода
+    store.login({
+      phone: phoneOrEmail,
+      email: phoneOrEmail,
+      password: password,
+      pin_code: Number(code),
+    })
+
     setError('');
     window.location.href = '/personal';
   };
@@ -137,6 +146,13 @@ const FormAuth = () => {
               setPhoneOrEmail(val);
             }}
             required
+          />
+          <input 
+            type="password" 
+            className='auth__input'
+            placeholder='Пароль'
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
           />
 
           <button type="submit" className="auth__button">Продолжить</button>
