@@ -18,9 +18,6 @@ const FormAuth = () => {
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isRegisteredUser, setIsRegisteredUser] = useState<boolean | null>(null);
-
-  const codeInputRef = useRef<HTMLInputElement>(null);
-
   const [userDetails, setUserDetails] = useState<UserDetails>({
     lastName: '',
     firstName: '',
@@ -29,13 +26,6 @@ const FormAuth = () => {
     birthDate: '',
     timezone: '',
   });
-
-  useEffect(() => {
-    if (step === 2 && codeInputRef.current) {
-      codeInputRef.current.value = "";
-      codeInputRef.current.focus();
-    }
-  }, [step]);
 
   const toggleAuthType = (): void => {
     setIsEmailAuth(prev => !prev);
@@ -53,18 +43,20 @@ const FormAuth = () => {
         return;
       }
     } else {
-      const phoneValid = /^(\+7|8)\d{10}$/.test(phoneOrEmail);
+      const phoneValid = /^8\d{10}$/.test(phoneOrEmail);
       if (!phoneValid) {
-        setError("Введите корректный номер телефона (8XXXXXXXXXX или +7XXXXXXXXXX)");
+        setError("Введите корректный номер телефона (8XXXXXXXXXX)");
         return;
       }
     }
 
     setError('');
 
-    // Имитируем проверку в базе
-    const mockRegisteredUsers = ['+79991234567', 'test@example.com'];
+    // Здесь происходит проверка в базе данных, вместо нее статические данные
+    const mockRegisteredUsers = ['89991234567', 'test@example.com'];
     const isRegistered = mockRegisteredUsers.includes(phoneOrEmail);
+
+
     setIsRegisteredUser(isRegistered);
     setCode('')
     setStep(isRegistered ? 2 : 3);
@@ -74,18 +66,18 @@ const FormAuth = () => {
     e.preventDefault();
 
     if (!code.trim()) {
-      setError('Введите код подтверждения');
+      setError('Введите пин-код');
       return;
     }
 
-    if (!/^\d{6}$/.test(code)) {
-      setError('Код должен содержать 6 цифр');
+    if (!/^\d{4}$/.test(code)) {
+      setError('Код должен содержать 4 цифр');
       return;
     }
 
-    // Здесь могла бы быть проверка кода от сервера
+    // Здесь будет проверка от сервера на правильность пин-кода
     setError('');
-    window.location.href = '/personal'; // Или setStep(3), если есть профиль
+    window.location.href = '/personal';
   };
 
   const handleSubmitDetails = (e: FormEvent): void => {
@@ -157,8 +149,11 @@ const FormAuth = () => {
 
       {step === 2 && isRegisteredUser && (
         <>
-          <input type="text" placeholder='Введите пин-код' />
-          <button type="button" onClick={handleBack} className="auth__button">Назад</button>
+          <form className='auth__form'>
+            <input type="text" id='pin-code' className='auth__input' placeholder='Введите пин-код' />
+            <button type='button' onClick={handleSubmitCode} className="auth__button">Продолжить</button>
+            <button type="button" onClick={handleBack} className="auth__button">Назад</button>
+          </form>
         </>
       )}
 
@@ -167,6 +162,7 @@ const FormAuth = () => {
           <input
             type="text"
             placeholder="Фамилия"
+            className='auth__input'
             value={userDetails.lastName}
             onChange={(e) => handleDetailsChange('lastName', e.target.value)}
             required
@@ -175,6 +171,7 @@ const FormAuth = () => {
           <input
             type="text"
             placeholder="Имя"
+            className='auth__input'
             value={userDetails.firstName}
             onChange={(e) => handleDetailsChange('firstName', e.target.value)}
             required
@@ -183,6 +180,7 @@ const FormAuth = () => {
           <input
             type="text"
             placeholder="Отчество"
+            className='auth__input'
             value={userDetails.middleName}
             onChange={(e) => handleDetailsChange('middleName', e.target.value)}
           />
@@ -211,6 +209,7 @@ const FormAuth = () => {
 
           <input
             type="date"
+            className='auth__input'
             value={userDetails.birthDate}
             onChange={(e) => handleDetailsChange('birthDate', e.target.value)}
             required
@@ -228,7 +227,7 @@ const FormAuth = () => {
           </select>
 
           <button type="submit" className="auth__button">Завершить регистрацию</button>
-          <button type="button" onClick={handleBack} className="auth__toggle-button">Назад</button>
+          <button type="button" onClick={handleBack} className="auth__button">Назад</button>
         </form>
       )}
     </div>

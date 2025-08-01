@@ -10,7 +10,8 @@
 
     &__error {
         color: red;
-        margin: 0;
+        margin-bottom: 20px;
+        text-align: center;
     }
 
     &__toggle-button {
@@ -46,15 +47,7 @@
 
         &:focus {
             outline: none;
-            box-shadow: 0 0 10px $shadow-color;
-        }
-
-        &:valid:not(:placeholder-shown) {
-            box-shadow: 0 0 10px rgba(0, 128, 0, 0.2);
-        }
-
-        &:invalid:not(:placeholder-shown) {
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 8px $shadow-color;
         }
     }
 
@@ -74,6 +67,7 @@
 h3 {
     font-size: 30px;
     color: $primary-color;
+    text-align: center;
 }
 
 a:hover {
