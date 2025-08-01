@@ -201,12 +201,15 @@ class UserController {
                 user = await User.findOne({where: {phone}})
             } else if(email && !phone) {  
                 user = await User.findOne({where: {email}})
+            } else {
+                res.status(200).json({check: false});
             }
 
             if(!user) {
-                next(ApiError.badRequest('Пользователя не существует'));
+                res.status(200).json({check: false});
             }
-            res.status(200).json(user);
+
+            res.status(200).json({check: true});
         } catch (e) {
             next(ApiError.badRequest('Ошибка при проверке пользователя'));
         }
