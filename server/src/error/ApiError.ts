@@ -1,10 +1,10 @@
 class ApiError extends Error {
     public status: number;  
     public message: string;
-    public errors: object;
+    public errors: any[];
     public originalError?: Error;
 
-    constructor(status: number, messange: string, errors = []) {
+    constructor(status: number, messange: string, errors: any[] = []) {
         super()
         this.status = status;
         this.message = messange;    
@@ -36,7 +36,7 @@ class ApiError extends Error {
         return new ApiError(505, message);
     }
 
-    static errorValidation(message: string, errors = []) {
+    static errorValidation(message: string, errors = [] as any) {
         return new ApiError(400, message, errors);
     }
 }

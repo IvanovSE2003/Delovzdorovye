@@ -202,17 +202,28 @@ class UserController {
             } else if(email && !phone) {  
                 user = await User.findOne({where: {email}})
             } else {
-                res.status(200).json({check: false});
+                res.status(403).json({check: false});
             }
 
             if(!user) {
-                res.status(200).json({check: false});
+                res.status(403).json({check: false});
+            } else {
+                res.status(200).json({check: true});
+            }
+        } catch (e) {
+            let errorMessage = 'Ошибка при проверке пользователя';
+            let errors: any[] = [];
+
+            if (e instanceof Error) {
+                errorMessage = e.message;
+                errors = [{ msg: e.message }]; 
+            } else if (typeof e === 'object' && e !== null && 'errors' in e) {
+                errors = (e as { errors: any[] }).errors;
             }
 
-            res.status(200).json({check: true});
-        } catch (e) {
-            next(ApiError.badRequest('Ошибка при проверке пользователя'));
+            next(ApiError.errorValidation('Ошибка при проверке пользователя', errors));
         }
+
     }
 }
 

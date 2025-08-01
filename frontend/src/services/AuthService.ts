@@ -6,7 +6,7 @@ type RegistrationData = {
     name: string,
     surname: string,
     patronymic: string,
-    getnder: 'male' | 'famale',
+    getnder: 'женщина' | 'мужчина',
     date_birth: Date,
     time_zone: string,
     phone: string,
@@ -22,14 +22,14 @@ type LoginData = {
 
 export default class AuthService {
     static async login(Data: LoginData): Promise<AxiosResponse<AuthResponse>> {
-        return $api.post<AuthResponse>('/login', Data);
+        return $api.post<AuthResponse>('user/login', Data);
     }
 
     static async registration(Data: RegistrationData): Promise<AxiosResponse<AuthResponse>> {
-        return $api.post<AuthResponse>('/registration', Data);
+        return $api.post<AuthResponse>('user/registration', Data);
     }
 
     static async logout(): Promise<void> {
-        return $api.post('/logout');
+        return $api.post('user/logout');
     }
 }

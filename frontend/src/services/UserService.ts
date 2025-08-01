@@ -7,7 +7,7 @@ export default class UserService {
         return $api.get<IUser>(`/user/:${id}`);
     }
 
-    static CheckUser(phoneOrEmail: string): Promise<AxiosResponse<boolean>> {
-        return $api.post<boolean>('check/', phoneOrEmail)
+    static CheckUser(phone: string|null, email: string|null) {
+        return $api.post<boolean>('/user/check/', {phone, email})
     }
 }
