@@ -1,18 +1,17 @@
 import { Request, Response, NextFunction} from "express";
 import ApiError from "../error/ApiError.js";
 import models from "../models/models.js"; 
-import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { v4 } from 'uuid';
-import path from 'path'
-import fileUpload from 'express-fileupload'
-import { fileURLToPath } from 'url';
-import mailService from '../service/mailService.js'
 import TokenService from "../service/tokenService.js";
 import UserDto from "../dtos/userDto.js";
-import { validationResult } from "express-validator";
+import path from 'path';
+import fileUpload from "express-fileupload";
+import { fileURLToPath } from "url";
+import {v4} from 'uuid';
+import bcrypt from 'bcrypt';
+import mailService from "../service/mailService.js";
 
-const {User, Doctor, Patient} = models;
+const {User, Patient, Doctor} = models;
 
 const generateJwt = (id: number, email: string, role: string) => {
     return jwt.sign({id, email, role}, process.env.SECRET_KEY as string, {expiresIn: '24h'})
@@ -21,17 +20,12 @@ const generateJwt = (id: number, email: string, role: string) => {
 class UserController {
     static async registrations(req: Request, res: Response, next: NextFunction) {
         try {
-            const errors = validationResult(req);
-            if(!errors.isEmpty()) {
-                return next(ApiError.badRequest('Ошибка валидации'))
-            }
-
             const {email, password, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone} = req.body
-
+            
             if (!req.files || !req.files.img) {
                 return next(ApiError.internal('Файл изображения не загружен'));
             }
-            
+
             const img = req.files.img as fileUpload.UploadedFile; 
             const fileName = v4() + '.jpg';
             const filePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..','static', fileName);
@@ -69,11 +63,7 @@ class UserController {
             let patient = {};
             let doctor = {};
             if(user.role === 'PATIENT') {
-                const {general_info, analyses_examinations, additionally} = req.body;
-                if(!general_info || !analyses_examinations || !additionally) {
-                    next(ApiError.badRequest('Данные для пациента не пришли'))
-                }
-                patient = await Patient.create({general_info, analyses_examinations, additionally})
+                patient = await Patient.create({general_info: null, analyses_examinations: null, additionally: null, userId: user.id})
             } else if(user.role === 'DOCTOR') {
                 const {specialization, contacts, experience_years} = req.body;
                 if(!specialization || !contacts || !experience_years) {
@@ -90,7 +80,7 @@ class UserController {
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
             
             res.cookie('refreshtoken', tokens.refreshToken, {maxAge: 30 * 24 * 60 *60 * 1000, httpOnly: true, secure: true})
-            return res.json({...tokens, user: userDto, patient, doctor});
+            return res.json({...tokens, user: userDto, patient: patient, doctor: doctor});
         } catch(e) {
             if (e instanceof Error) {
                 next(ApiError.badRequest(e.message));
@@ -101,22 +91,29 @@ class UserController {
     }
 
     static async login(req: Request, res: Response, next: NextFunction) {
-        const {email, phone, password, pin_code} = req.body;
+        const {email, phone, password} = req.body;
+        
         let user;
         if(email && !phone) {
-            user = await User.findOne({where: {email, pin_code}})
+            user = await User.findOne({where: {email}});
         } else if(!email && phone) {
-            user = await User.findOne({where: {phone, pin_code}})
+            user = await User.findOne({where: {phone}});
+        } else {
+            return next(ApiError.internal('Укажите email или телефон'));
         }
 
         if (!user) {
-            return next(ApiError.internal('Пользователь не найден'))
+            return next(ApiError.internal('Пользователь не найден'));
         }
 
         let comparePassword = bcrypt.compareSync(password, user.password)
         
         if(!comparePassword) {
             return next(ApiError.internal('Не верный пароль'));
+        }
+
+        if(!user) {
+            return next(ApiError.internal('Ошибка при авторизации'));
         }
 
         const userDto = new UserDto(user);
@@ -136,7 +133,6 @@ class UserController {
             if (error instanceof ApiError) {
                 return next(error);
             }
-            
             if (error instanceof Error) {
                 return next(ApiError.internal('Ошибка при выходе из системы').withOriginalError(error));
             }
@@ -172,7 +168,6 @@ class UserController {
             if(!userData || !tokenFromDb) {
                 throw ApiError.notAuthorized('Пользователь не авторезирован')
             }
-            const user = await User.findByPk(userData.id)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true})
             return res.json(userData)
         } catch(e) {
@@ -224,6 +219,25 @@ class UserController {
             next(ApiError.errorValidation('Ошибка при проверке пользователя', errors));
         }
 
+    }
+
+    static async verifyPinCode(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {userId, pin_code} = req.body;
+            const user = await User.findOne({where: {id: userId, pin_code}});
+
+            if(!user) {
+                next(ApiError.internal('Пользователь не найден'));
+            } 
+
+            if(user?.pin_code !== pin_code) {
+                res.status(404).json({pin_code: false});
+            } else {
+                res.status(200).json({pin_code: true});
+            }
+        } catch(e) {
+            next(ApiError.internal('Ошибка проверки пик-кода для пользователя'))
+        }
     }
 }
 

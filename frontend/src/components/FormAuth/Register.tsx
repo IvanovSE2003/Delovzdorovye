@@ -20,11 +20,10 @@ interface UserDetails {
 }
 
 type RegisterProps = {
-    setError: Dispatch<SetStateAction<string>>;
     setState: Dispatch<SetStateAction<AuthState>>;
 };
 
-const Register: React.FC<RegisterProps> = ({ setError, setState }) => {
+const Register: React.FC<RegisterProps> = ({ setState }) => {
     const [userDetails, setUserDetails] = useState<UserDetails>({
         name: "",
         surname: "",
@@ -38,14 +37,15 @@ const Register: React.FC<RegisterProps> = ({ setError, setState }) => {
         gender: "",
         role: ""
     });
+    const [error, setError] = useState<string>("");
     const [replyPass, setReplyPass] = useState<string>("");
-    const [step, setStep] = useState<number>(1);
+    const [step, setStep] = useState<number>(2);
     const { store } = useContext(Context);
 
     const handleSubmitDetails = (e: FormEvent): void => {
         e.preventDefault();
 
-        if(replyPass !== userDetails.password) {
+        if (replyPass !== userDetails.password) {
             setError("Пароли не совпадают!");
             return;
         }
@@ -79,6 +79,8 @@ const Register: React.FC<RegisterProps> = ({ setError, setState }) => {
             {step === 1 && (
                 <div className="auth__form">
                     <h3 className="role-selection__title">Заполните данные</h3>
+
+                    {error && <p className="auth__error">{error}</p>}
 
                     <div className="input-group">
                         <input
@@ -217,6 +219,9 @@ const Register: React.FC<RegisterProps> = ({ setError, setState }) => {
             {step === 2 && (
                 <div className="role-selection auth__form">
                     <h3 className="role-selection__title">Выберите вашу роль</h3>
+
+                    {error && <p className="auth__error">{error}</p>}
+
                     <div className="role-selection__cards">
                         <div className="role-card role-card_doctor">
                             <div className="role-card__icon">👨‍⚕️</div>
@@ -264,6 +269,9 @@ const Register: React.FC<RegisterProps> = ({ setError, setState }) => {
             {step === 3 && (
                 <form onSubmit={handleSubmitDetails} className="auth__form">
                     <h3 className="role-selection__title">Придумайте пин-код</h3>
+
+                    {error && <p className="auth__error">{error}</p>}
+
                     <div className="input-group">
                         <input
                             type="text"
