@@ -1,6 +1,6 @@
 import './Header.scss'
-import logo from '../../assets/images/logo.png'
-import avatar from '../../assets/images/avatar.png'
+import logo from '../../../assets/images/logo.png'
+import avatar from '../../../assets/images/avatar.png'
 import React from 'react'
 import { Link } from 'react-router'
 
