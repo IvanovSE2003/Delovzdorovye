@@ -1,5 +1,5 @@
-import Slider from '../components/Slider/Slider'
-import Header from '../components/Header/Header'
+import Slider from '../components/UI/Slider/Slider'
+import Header from '../components/UI/Header/Header'
 
 const Homepage = () => {
     const slides = [
