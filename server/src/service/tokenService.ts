@@ -5,13 +5,20 @@ const {Token} = models;
 
 class TokenService {
     static generateTokens(payload: object) {
-        const accessToken = jwt.sign(payload, process.env.SECRET_KEY as string, {expiresIn: '10m'})
-        const refreshToken = jwt.sign(payload, process.env.REFRESH_KEY as string, {expiresIn: '24h'})
-        return {
-            accessToken,
-            refreshToken
-        }
+        const accessToken = jwt.sign(
+            payload,
+            process.env.SECRET_KEY as string,
+            { expiresIn: '10m' }
+        );
+        const refreshToken = jwt.sign(
+            payload,
+            process.env.REFRESH_KEY as string,
+            { expiresIn: '24h' }
+        );
+        return { accessToken, refreshToken };
     }
+
+    
 
     static async saveToken(userId: number, refreshToken: string) {
         const tokenData = await Token.findOne({where: {userId} as any})

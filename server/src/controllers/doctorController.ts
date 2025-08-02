@@ -14,6 +14,15 @@ class DoctorController {
         return res.status(200).json(doctors)
     }
 
+    static async getDoctorByUser(req: Request, res: Response, next: NextFunction) {
+        const {userId} = req.params;
+        const doctor = await Doctor.findOne({where: {userId}})
+        if(!doctor) {
+            return next(ApiError.badRequest('Пользователь не является доктором'))
+        }
+        return res.status(200).json(doctor)
+    }
+
     static async getOne(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params;
         const doctor = await Doctor.findOne({where: {id}});

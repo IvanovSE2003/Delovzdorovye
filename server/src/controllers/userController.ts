@@ -1,18 +1,12 @@
 import { Request, Response, NextFunction} from "express";
 import ApiError from "../error/ApiError.js";
 import models from "../models/models.js"; 
-import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { v4 } from 'uuid';
-import path from 'path'
-import fileUpload from 'express-fileupload'
-import { fileURLToPath } from 'url';
-import mailService from '../service/mailService.js'
 import TokenService from "../service/tokenService.js";
 import UserDto from "../dtos/userDto.js";
-import { validationResult } from "express-validator";
+import userService from "../service/userService.js";
 
-const {User, Doctor, Patient} = models;
+const {User} = models;
 
 const generateJwt = (id: number, email: string, role: string) => {
     return jwt.sign({id, email, role}, process.env.SECRET_KEY as string, {expiresIn: '24h'})
@@ -21,76 +15,18 @@ const generateJwt = (id: number, email: string, role: string) => {
 class UserController {
     static async registrations(req: Request, res: Response, next: NextFunction) {
         try {
-            const errors = validationResult(req);
-            if(!errors.isEmpty()) {
-                return next(ApiError.badRequest('Ошибка валидации'))
-            }
+            const data = await userService.registrationUser(req, next);
 
-            const {email, password, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone} = req.body
-
-            if (!req.files || !req.files.img) {
-                return next(ApiError.internal('Файл изображения не загружен'));
+            if (!data) {
+                return next(ApiError.internal('Ошибка при регистрации'));
             }
             
-            const img = req.files.img as fileUpload.UploadedFile; 
-            const fileName = v4() + '.jpg';
-            const filePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..','static', fileName);
-
-            if(!email || !password) {
-                return next(ApiError.badRequest('Некорректный email или пароль'))
-            }
-
-            const candidate = await User.findOne({where: {email}})
-            if(candidate) {
-                return next(ApiError.badRequest('Пользователь с таким email уже есть в системе'))
-            }
-
-            const hashPassoword = await bcrypt.hash(password, 5)
-            const activationLink = v4();
-            await mailService.sendActivationEmail(email, activationLink);
-
-            const user = await User.create({
-                email, 
-                role, 
-                password: hashPassoword, 
-                name, 
-                surname, 
-                patronymic, 
-                phone, 
-                pin_code, 
-                gender, 
-                date_birth, 
-                time_zone, 
-                img: fileName,
-                activationLink,
-                isActivated: false
-            })
-
-            let patient = {};
-            let doctor = {};
-            if(user.role === 'PATIENT') {
-                const {general_info, analyses_examinations, additionally} = req.body;
-                if(!general_info || !analyses_examinations || !additionally) {
-                    next(ApiError.badRequest('Данные для пациента не пришли'))
-                }
-                patient = await Patient.create({general_info, analyses_examinations, additionally})
-            } else if(user.role === 'DOCTOR') {
-                const {specialization, contacts, experience_years} = req.body;
-                if(!specialization || !contacts || !experience_years) {
-                    next(ApiError.badRequest('Данные для доктора не пришли'))
-                }
-                doctor = await Doctor.create({specialization, contacts, experience_years});
-            } else {
-                next(ApiError.badRequest('Неизвестная роль'))
-            }
-
-            await img.mv(filePath);
-            const userDto = new UserDto(user);
+            const userDto = new UserDto(data.user);
             const tokens = TokenService.generateTokens({...userDto})
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
             
             res.cookie('refreshtoken', tokens.refreshToken, {maxAge: 30 * 24 * 60 *60 * 1000, httpOnly: true, secure: true})
-            return res.json({...tokens, user: userDto, patient, doctor});
+            return res.json({...tokens, user: userDto, patient: data.patient, doctor: data.doctor});
         } catch(e) {
             if (e instanceof Error) {
                 next(ApiError.badRequest(e.message));
@@ -101,22 +37,10 @@ class UserController {
     }
 
     static async login(req: Request, res: Response, next: NextFunction) {
-        const {email, phone, password, pin_code} = req.body;
-        let user;
-        if(email && !phone) {
-            user = await User.findOne({where: {email, pin_code}})
-        } else if(!email && phone) {
-            user = await User.findOne({where: {phone, pin_code}})
-        }
+        const user = await userService.login(req, next);
 
-        if (!user) {
-            return next(ApiError.internal('Пользователь не найден'))
-        }
-
-        let comparePassword = bcrypt.compareSync(password, user.password)
-        
-        if(!comparePassword) {
-            return next(ApiError.internal('Не верный пароль'));
+        if(!user) {
+            return next(ApiError.internal('Ошибка при авторизации'));
         }
 
         const userDto = new UserDto(user);
@@ -136,7 +60,6 @@ class UserController {
             if (error instanceof ApiError) {
                 return next(error);
             }
-            
             if (error instanceof Error) {
                 return next(ApiError.internal('Ошибка при выходе из системы').withOriginalError(error));
             }
@@ -172,7 +95,6 @@ class UserController {
             if(!userData || !tokenFromDb) {
                 throw ApiError.notAuthorized('Пользователь не авторезирован')
             }
-            const user = await User.findByPk(userData.id)
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true})
             return res.json(userData)
         } catch(e) {
