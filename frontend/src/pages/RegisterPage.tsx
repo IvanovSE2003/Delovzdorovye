@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import logo from '../assets/images/logo.png';
 import './Register.scss'
 
-const Register = () => {
+const RegisterPage = () => {
     return (
         <div>
             <div className='auth__window'>
@@ -22,4 +22,4 @@ const Register = () => {
     )
 }
 
-export default Register;
+export default RegisterPage;

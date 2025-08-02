@@ -1,76 +1,233 @@
 @use '../../assets/styles/variables.scss' as *;
 
 .auth {
-    &__form {
-        width: 400px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+  &__form {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__error {
+    color: red;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  &__toggle-button {
+    text-align: center;
+  }
+
+  &__button {
+    width: 100%;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    background-color: $light-color;
+
+    &:hover {
+      box-shadow: 0 0 10px $shadow-color;
+      cursor: pointer;
     }
 
-    &__error {
-        color: red;
-        margin-bottom: 20px;
-        text-align: center;
+    &__final {
+      padding: 15px 20px;
+      border-radius: 10px;
+      background-color: #2980b9;
+      margin-top: 25px;
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 0 10px $shadow-color;
+        background-color: $secondary-color;
+        cursor: pointer;
+      }
     }
+  }
 
-    &__toggle-button {
-        text-align: center;
+  select {
+    padding: 20px 15px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background-color: $light-color;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 20px 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: $light-color;
+
+    &:focus {
+      outline: none;
     }
+  }
+}
 
-    &__button {
-        width: 100%;
-        border: none;
-        padding: 15px 20px;
-        border-radius: 10px;
-        background-color: $light-color;
+.radios {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 
-        &:hover {
-            box-shadow: 0 0 10px $shadow-color;
-        }
-    }
+  .radio {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
 
-    select {
-        padding: 20px 15px;
-        width: 100%;
-        border: none;
-        border-radius: 10px;
-        background-color: $light-color;
-    }
+.input-group {
+  position: relative;
+}
 
-    &__input {
-        width: 100%;
-        padding: 20px 15px;
-        border: none;
-        border-radius: 10px;
-        background-color: $light-color;
+.input-group label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+  transition: all 0.3s;
+  pointer-events: none;
+}
 
-        &:focus {
-            outline: none;
-            box-shadow: 0 0 8px $shadow-color;
-        }
-    }
+.input-group input:focus+label,
+.input-group select:focus+label,
+.input-group input:not(:placeholder-shown)+label,
+.input-group select:not(:placeholder-shown)+label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #4285f4;
+}
 
-    .radios {
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-
-        .radio {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-    }
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #4285f4;
+  outline: none;
 }
 
 h3 {
-    font-size: 30px;
-    color: $primary-color;
-    text-align: center;
+  font-size: 30px;
+  color: $primary-color;
+  text-align: center;
+  margin: 0 0 10px 0;
 }
 
 a:hover {
-    color: #3325f5;
+  color: #3325f5;
+  cursor: pointer;
+}
+
+// Variables
+$primary-color: #2c3e50;
+$secondary-color: #7f8c8d;
+$doctor-color: #1abc9c;
+$doctor-hover: #16a085;
+$patient-color: #9b59b6;
+$patient-hover: #8e44ad;
+$button-color: #3498db;
+$button-hover: #2980b9;
+$card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+$card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+$transition: all 0.3s ease;
+
+.role-selection {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+
+  &__title {
+    font-size: 1.8rem;
+    color: $primary-color;
+    // margin-bottom: 2rem;
+  }
+
+  &__cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+}
+
+.role-card {
+  width: 280px;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: $card-shadow;
+  transition: $transition;
+  cursor: pointer;
+  background: white;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $card-shadow-hover;
+  }
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.4rem;
+    color: $primary-color;
+    margin-bottom: 1rem;
+  }
+
+  &__description {
+    color: $secondary-color;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  &__button {
+    background: $button-color;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
     cursor: pointer;
+    transition: $transition;
+
+    &:hover {
+      background: $button-hover;
+    }
+  }
+
+  // Модификаторы
+  &_doctor {
+    .role-card__button {
+      background: $doctor-color;
+
+      &:hover {
+        background: $doctor-hover;
+      }
+    }
+
+    &:hover {
+      border-color: $doctor-color;
+    }
+  }
+
+  &_patient {
+    .role-card__button {
+      background: $patient-color;
+
+      &:hover {
+        background: $patient-hover;
+      }
+    }
+
+    &:hover {
+      border-color: $patient-color;
+    }
+  }
 }
