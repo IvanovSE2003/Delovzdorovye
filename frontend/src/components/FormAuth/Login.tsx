@@ -3,13 +3,13 @@ import { Context } from '../../main';
 import type { AuthState } from './FormAuth';
 
 type LoginProps = {
-    setError: Dispatch<SetStateAction<string>>;
     setState: Dispatch<SetStateAction<AuthState>>;
 };
 
-const Login:React.FC<LoginProps>= ({setError, setState}) => {
+const Login:React.FC<LoginProps>= ({ setState }) => {
     const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
     const [phoneOrEmail, setPhoneOrEmail] = useState<string>("");
+    const [error, setError] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const { store } = useContext(Context);
 
