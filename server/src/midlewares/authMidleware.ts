@@ -1,7 +1,5 @@
 import ApiError from "../error/ApiError.js";
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import UserJwtPayload from "../types/UserJwtPayload.js";
 import TokenService from "../service/tokenService.js";
 
 export default function authMiddleware(req: Request, res: Response, next: NextFunction) {
