@@ -69,11 +69,7 @@ class UserController {
             let patient = {};
             let doctor = {};
             if(user.role === 'PATIENT') {
-                const {general_info, analyses_examinations, additionally} = req.body;
-                if(!general_info || !analyses_examinations || !additionally) {
-                    next(ApiError.badRequest('Данные для пациента не пришли'))
-                }
-                patient = await Patient.create({general_info, analyses_examinations, additionally})
+                patient = await Patient.create({general_info: null, analyses_examinations: null, additionally: null, userId: user.id})
             } else if(user.role === 'DOCTOR') {
                 const {specialization, contacts, experience_years} = req.body;
                 if(!specialization || !contacts || !experience_years) {
@@ -224,6 +220,25 @@ class UserController {
             next(ApiError.errorValidation('Ошибка при проверке пользователя', errors));
         }
 
+    }
+
+    static async verifyPinCode(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {userId, pin_code} = req.body;
+            const user = await User.findOne({where: {id: userId, pin_code}});
+
+            if(!user) {
+                next(ApiError.internal('Пользователь не найден'));
+            } 
+
+            if(user?.pin_code !== pin_code) {
+                res.status(404).json({pin_code: false});
+            } else {
+                res.status(200).json({pin_code: true});
+            }
+        } catch(e) {
+            next(ApiError.internal('Ошибка проверки пик-кода для пользователя'))
+        }
     }
 }
 

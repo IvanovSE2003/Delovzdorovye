@@ -16,5 +16,7 @@ router.get('/activate/:link', UserController.activate);
 router.get('/refresh', UserController.refresh);
 router.get('/:id', UserController.getUser);
 router.post('/check', UserController.checkUser);
+router.post('/checkPinCode', UserController.verifyPinCode);
+
 export default router;
 
