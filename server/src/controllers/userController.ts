@@ -22,13 +22,6 @@ class UserController {
         try {
             const {email, password, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone} = req.body
 
-            // let img, filePath, fileName;
-            // if(req.files) {
-            //     img = req.files?.img as fileUpload.UploadedFile; 
-            //     fileName = v4() + '.jpg';
-            //     filePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..','static', fileName);
-            // }
-
             if(!email || !password) {
                 return next(ApiError.badRequest('Некорректный email или пароль'))
             }
@@ -74,7 +67,6 @@ class UserController {
                 return next(ApiError.badRequest('Неизвестная роль'))
             }
 
-            // await img?.mv(filePath);
             const userDto = new UserDto(user);
             const tokens = TokenService.generateTokens({...userDto})
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
@@ -83,9 +75,9 @@ class UserController {
             return res.json({...tokens, user: userDto, patient: patient, doctor: doctor});
         } catch(e) {
             if (e instanceof Error) {
-                next(ApiError.badRequest(e.message));
+                return next(ApiError.badRequest(e.message));
             } else {
-                next(ApiError.badRequest('Неизвестная ошибка'));
+                return next(ApiError.badRequest('Неизвестная ошибка'));
             }
         }
     }
@@ -185,6 +177,39 @@ class UserController {
             return res.json({user})
         } catch (e) {
             next(ApiError.badRequest('Ошибка при получении пользователя с ролью доктор'));
+        }
+    }
+
+    static async updateUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+            const {email, role, name, surname, patronymic, phone, gender, date_birth, time_zone} = req.body || null;
+
+            const userLast = await User.findByPk(id);
+            const imgLast = userLast?.img;
+
+            let img, filePath, fileName;
+            if(req.files) {
+                img = req.files?.img as fileUpload.UploadedFile; 
+                fileName = v4() + '.jpg';
+                filePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..','static', fileName);
+            }
+
+            if(filePath) {
+                await img?.mv(filePath);
+            }
+            
+            const user = await User.update({email, role, name, surname, patronymic, phone, gender, date_birth, time_zone}, {where: {id}});
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь не найден для обновления'))
+            }
+            return res.status(200).json(user);
+        } catch(e) {
+            if (e instanceof Error) {
+                return next(ApiError.badRequest(e.message));
+            } else {
+                return next(ApiError.badRequest('Неизвестная ошибка'));
+            }
         }
     }
 
