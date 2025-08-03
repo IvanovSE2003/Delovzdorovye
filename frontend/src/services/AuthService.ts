@@ -1,4 +1,5 @@
 import type { Axios, AxiosResponse } from 'axios';
+import type { LoginData } from '../models/IUser'
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
 
@@ -16,21 +17,12 @@ export type RegistrationData = {
     role: "PACIENT" | "DOCTOR" | "ADMIN"| "";
 };
 
-export type LoginData = {
-    pin_code: number,
-    password: string,
-    phone?: string,
-    email?: string
-}
-
-
 export default class AuthService {
     static async login(Data: LoginData): Promise<AxiosResponse<AuthResponse>> {
         return $api.post<AuthResponse>('user/login', Data);
     }
 
     static async registration(Data: RegistrationData): Promise<AxiosResponse<AuthResponse>> {
-        console.log(Data);
         return $api.post<AuthResponse>('user/registration', Data);
     }
 

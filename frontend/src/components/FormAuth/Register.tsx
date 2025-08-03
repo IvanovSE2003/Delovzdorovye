@@ -39,7 +39,7 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
     });
     const [error, setError] = useState<string>("");
     const [replyPass, setReplyPass] = useState<string>("");
-    const [step, setStep] = useState<number>(2);
+    const [step, setStep] = useState<number>(1);
     const { store } = useContext(Context);
 
     const handleSubmitDetails = (e: FormEvent): void => {
@@ -60,6 +60,11 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
         setError("");
         store.registration(userDetails);
+
+        if(localStorage.getItem('token')) {
+            window.location.href = '/personal';
+        }
+
         console.log("Регистрируем пользователя:", userDetails);
     };
 
