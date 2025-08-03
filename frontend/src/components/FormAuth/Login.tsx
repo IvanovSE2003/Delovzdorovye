@@ -16,7 +16,10 @@ type LoginProps = {
 const Login: React.FC<LoginProps> = ({ setState }) => {
   const navigate = useNavigate();
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
+
   const [phone, setPhone] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+
   const [error, setError] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const { store } = useContext(Context);
@@ -46,7 +49,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
 
     setError("");
     await store.login({ phone, password });
-    if(localStorage.getItem('token')) {
+    if (store.isAuth) {
       navigate('/personal')
     }
 
@@ -75,43 +78,60 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
 
   return (
     <div>
+      {error && <p className="auth__error">{error}</p>}
+
       <form onSubmit={handleSubmitContact} className="auth__form">
-        <div className="input-group">
-          <input
-            className="auth__input"
-            type="tel"
-            placeholder=" "
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            // onBlur={() => checkUser(phoneOrEmail)}
-            required
-          />
-          <label htmlFor="repeat-password">
-            Телефон
-          </label>
-        </div>
+        {!isEmailAuth ? (
+          <div className="input-group">
+            <input
+              className="auth__input"
+              type="tel"
+              placeholder=" "
+              id="phone"
+              value={phone}
+              maxLength={11}
+              onChange={(e) => setPhone(e.target.value)}
+              // onBlur={() => checkUser(phone)}
+              required
+            />
+            <label htmlFor="phone"> Телефон </label>
+          </div>
+        ) : (
+          <div className="input-group">
+            <input
+              className="auth__input"
+              type="email"
+              placeholder=" "
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              // onBlur={() => checkUser(email)}
+              required
+            />
+            <label htmlFor="email"> Электронная почта </label>
+          </div>
+        )}
 
         <div className="input-group">
           <input
             type="password"
             className="auth__input"
             placeholder=" "
+            id="password"
             onChange={(e) => setPassword(e.target.value)}
             value={password}
           />
-          <label htmlFor="repeat-password">Пароль</label>
+          <label htmlFor="password">Пароль</label>
         </div>
 
-        <button type="submit" className="auth__button">
-          Продолжить
-        </button>
+        <button type="submit" className="auth__button"> Продолжить </button>
 
         <a
           onClick={toggleAuthType}
           className="auth__toggle-button"
           role="button"
         >
-          {isEmailAuth ? "Войти по телефону" : "Войти по эл. почте"}
+          {isEmailAuth ? "Войти по телефону" : "Войти по почте"}
         </a>
         <a onClick={() => setState("register")} className="auth__toggle-button">
           Зарегистрироваться
