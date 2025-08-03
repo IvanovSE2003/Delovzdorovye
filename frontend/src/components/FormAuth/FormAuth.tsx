@@ -6,7 +6,7 @@ import "../FormAuth/FormAuth.scss"
 export type AuthState= "login" | "register";
 
 const FormAuth = () => {
-    const [state, setState] = useState<AuthState>("register");
+    const [state, setState] = useState<AuthState>("login");
 
     return (
         <div>

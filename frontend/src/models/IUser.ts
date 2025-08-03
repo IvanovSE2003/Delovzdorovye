@@ -19,7 +19,7 @@ export interface IUser {
 }
 
 export type LoginData = {
-    pin_code: number,
+    // pin_code: number,
     password: string,
     phone?: string,
     email?: string
