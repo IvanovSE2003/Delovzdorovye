@@ -1,9 +1,15 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, LoginData } from "../models/IUser";
+import type { LoginData } from "../models/IUser";
 import type { RegistrationData } from "../services/AuthService"
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
+
+interface IUser {
+    id: number,
+    email: string,
+    isActivated: boolean
+}
 
 export default class Store {
     user = {} as IUser;
@@ -29,7 +35,6 @@ export default class Store {
     async login(data: LoginData): Promise<void> {
         try {
             const response = await AuthService.login(data);
-            console.log(response.data)
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
@@ -74,6 +79,17 @@ export default class Store {
         } catch (e) {
             console.error((e as AxiosError<{ message: string }>).response?.data?.message);
             return false;
+        }
+    }
+
+    async getUserData(id: number) {
+        try {
+            const response = UserService.fetchUserData(id);
+            return (await response).data;
+        } catch(e) {
+            const error = e as AxiosError<{ messange: string }>;
+            this.setError(error.response?.data?.messange||"Ошибка при получении данных пользователя!");
+            console.log(error.response?.data?.messange);
         }
     }
 }
