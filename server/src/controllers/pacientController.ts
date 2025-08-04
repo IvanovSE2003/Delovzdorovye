@@ -27,15 +27,25 @@ class PatientController {
         const {id} = req.params;
         const patient = await Patient.findOne({where: {id}});
         if(!patient) {
-            return next(ApiError.badRequest('Пациентас таким id не существует'))
+            return next(ApiError.badRequest('Пациента с таким id не существует'))
         }
         return res.status(200).json(patient)
     }
 
-    static async create(req: Request, res: Response) {
-        const {general_info, analyses_examinations, additionally, userId} = req.body;
-        const newPatient = await Patient.create({general_info, analyses_examinations, additionally, userId})
-        return res.json(newPatient)
+    static async updatePatient(req: Request, res: Response, next: NextFunction) {
+        const { userId } = req.params;
+        const {general_info, analyses_examinations, additionally} = req.body;
+
+        if (!general_info && !analyses_examinations && !additionally) {
+            return next(ApiError.badRequest('Нет данных для обновления'));
+        }
+
+        try {
+            const patient = await Patient.update({general_info, analyses_examinations, additionally}, { where: { userId } });
+            return res.status(200).json(patient);
+        } catch (error) {
+            return next(ApiError.internal('Ошибка при обновлении данных пациента'));
+        }
     }
 }
 

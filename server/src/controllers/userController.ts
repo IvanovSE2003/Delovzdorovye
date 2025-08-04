@@ -11,6 +11,7 @@ import {v4} from 'uuid';
 import bcrypt from 'bcrypt';
 import mailService from "../service/mailService.js";
 import { Op } from 'sequelize';
+import { IUserModel } from "../interfeces/IUser.js";
 
 const {User, Patient, Doctor} = models;
 
@@ -178,19 +179,63 @@ class UserController {
 
     static async refresh(req: Request, res: Response, next: NextFunction) {
         try {
-            const {refreshToken} = req.cookies;
-            if(!refreshToken) { 
-                throw ApiError.notAuthorized('Пользователь не авторезирован');
+            const { refreshtoken } = req.cookies;
+            
+            if (!refreshtoken) {
+                return next(ApiError.notAuthorized('Пользователь не авторизован'));
             }
-            const userData = TokenService.validateRefreshToken(refreshToken) as any;
-            const tokenFromDb = await TokenService.findToken(refreshToken);
-            if(!userData || !tokenFromDb) {
-                throw ApiError.notAuthorized('Пользователь не авторезирован')
+            
+            // 1. Валидируем токен
+            const tokenPayload = await TokenService.validateRefreshToken(refreshtoken);
+            
+            // 2. Проверяем, что payload содержит нужные данные
+            if (!tokenPayload || typeof tokenPayload === 'string') {
+                return next(ApiError.notAuthorized('Невалидный токен'));
             }
-            res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true})
-            return res.json(userData)
+            
+            // 3. Приводим тип и проверяем обязательные поля
+            const userPayload = tokenPayload as unknown as IUserModel;
+            
+            if (!userPayload.id || !userPayload.email) {
+                return next(ApiError.notAuthorized('Токен не содержит необходимых данных'));
+            }
+            
+            // 4. Проверяем токен в базе данных
+            const tokenFromDb = await TokenService.findToken(refreshtoken);
+            if (!tokenFromDb) {
+                return next(ApiError.notAuthorized('Токен не найден в базе'));
+            }
+            
+            // 5. Получаем полные данные пользователя из БД
+            const user = await User.findByPk(userPayload.id);
+            if (!user) {
+                return next(ApiError.notAuthorized('Пользователь не найден'));
+            }
+            
+            // 6. Генерируем новые токены
+            const userDto = new UserDto(user);
+            const tokens = TokenService.generateTokens({...userDto});
+            
+            // 7. Обновляем токен в базе
+            await TokenService.saveToken(userDto.id, tokens.refreshToken);
+            
+            // 8. Устанавливаем новую куку
+            res.cookie('refreshtoken', tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true
+            });
+            
+            return res.json({
+                accessToken: tokens.accessToken,
+                user: userDto
+            });
+            
         } catch(e) {
-            next(ApiError.badRequest('Ошибка при обновлении токена'))
+            if (e instanceof jwt.JsonWebTokenError) {
+                return next(ApiError.notAuthorized('Невалидный токен'));
+            }
+            return next(ApiError.badRequest(`Ошибка при обновлении токена: ${e instanceof Error ? e.message : String(e)}`));
         }
     }
 

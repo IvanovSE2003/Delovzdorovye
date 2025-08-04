@@ -32,10 +32,16 @@ class DoctorController {
         return res.status(200).json(doctor)
     }
 
-    static async create(req: Request, res: Response) {
-        const {specialization, contacts, experience_years, userId} = req.body;
-        const newDoctor = await Doctor.create({specialization, contacts, experience_years, userId})
-        return res.json(newDoctor)
+    static async updateDoctor(req: Request, res: Response, next: NextFunction) {
+        const { userId } = req.params;
+        const { specialization, contacts, experience_years } = req.body;
+
+        if(!specialization && !contacts && !experience_years) {
+            next(ApiError.badRequest('Данные для обновления доктора не получены'))
+        }
+
+        const doctor = Doctor.update({specialization, contacts, experience_years}, {where: {userId}});
+        return res.status(200).json(doctor)
     }
 }
 

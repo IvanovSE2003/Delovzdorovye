@@ -2,7 +2,6 @@ import { Router } from "express";
 import UserController from "../controllers/userController.js";
 import authMiddleware from "../midlewares/authMidleware.js";
 import {body} from 'express-validator'
-import MailService from "../service/mailService.js";
 
 const router: Router = Router(); 
 
