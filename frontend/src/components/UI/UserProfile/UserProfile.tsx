@@ -14,9 +14,11 @@ const UserProfile: React.FC = () => {
   const [dataUser, setDataUser] = useState<IUser>({} as IUser);
   const { store } = useContext(Context);
 
-  useEffect(() => {
-    console.log(store.user.email);
-  }, []);
+  const logout = () => {
+    store.logout();
+    window.location.href = "/";
+  }
+
 
   return (
     <div className="user-profile">
@@ -66,6 +68,7 @@ const UserProfile: React.FC = () => {
         </div>
 
         <button className="user-profile__edit-button">Редактировать</button>
+        <button className="user-profile__edit-button" onClick={logout}>Выйти из аккаунта</button>
       </div>
     </div>
   );

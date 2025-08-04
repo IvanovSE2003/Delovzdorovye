@@ -6,12 +6,12 @@ type ProtectedRouteProps = {
     children: ReactNode;
 }
 
-function ProtectedRoute({ isAuth, children }: ProtectedRouteProps) {
-    if (!isAuth) {
+function AuthProtectedRoute({ isAuth, children }: ProtectedRouteProps) {
+    if (isAuth) {
         return <Navigate to="/" replace />;
     }
     
     return children;
 }
 
-export default ProtectedRoute;
+export default AuthProtectedRoute;

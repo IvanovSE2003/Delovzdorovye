@@ -6,7 +6,7 @@ import { Link } from "react-router";
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
 
-const Header: React.FC = observer(() => {
+const Header: React.FC = () => {
   const { store } = useContext(Context);
   return (
     <>
@@ -23,19 +23,26 @@ const Header: React.FC = observer(() => {
         </nav>
         <div className="header__profile">
           {store.isAuth ? (
-            <button onClick={async () => await store.logout()}>Выйти</button>
+            <>
+              <button onClick={async () => await store.logout()}>Выйти</button>
+              <Link to="/personal">
+                <img src={avatar} alt="avatar" />
+              </Link>
+            </>
           ) : (
-            <Link to="/register">
-              <button>Войти</button>
-            </Link>
+            <>
+              <Link to="/register">
+                <button>Войти</button>
+              </Link>
+              <Link to="/register">
+                <img src={avatar} alt="avatar" />
+              </Link>
+            </>
           )}
-          <Link to="/register">
-            <img src={avatar} alt="avatar" />
-          </Link>
         </div>
       </div>
     </>
   );
-});
+};
 
-export default Header;
+export default observer(Header);

@@ -24,7 +24,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
   const [password, setPassword] = useState<string>("");
   const [pinCode, setPinCode] = useState<string>("");
 
-  const [step, setStep] = useState<number>(2);
+  const [step, setStep] = useState<number>(1);
 
 
   const [error, setError] = useState<string>("");
@@ -139,7 +139,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
       )}
 
       {step === 2 && (
-        <form onSubmit={login} className="auth__form">
+        <form className="auth__form">
           <MyInput
             id="pin-code"
             label="Пин-код"
@@ -149,7 +149,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
             required
           />
 
-          <button type="submit" className="auth__button">
+          <button onClick={login}>
             Войти
           </button>
 

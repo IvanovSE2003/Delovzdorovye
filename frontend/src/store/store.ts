@@ -4,6 +4,9 @@ import type { RegistrationData } from "../services/AuthService"
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
+import axios from "axios";
+import type { AuthResponse } from "../models/response/AuthResponse";
+import { API_URL } from "../http";
 
 interface IUser {
     id: number,
@@ -20,6 +23,7 @@ export default class Store {
     user = {} as IUser;
     isAuth = false;
     error = ""
+    isLoding = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -40,6 +44,7 @@ export default class Store {
     async login(data: LoginData): Promise<void> {
         try {
             const response = await AuthService.login(data);
+            console.log(response)
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
@@ -52,21 +57,22 @@ export default class Store {
 
     async checkAuth() {
         try {
-            const response = await AuthService.checkAuth();
+            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {withCredentials: true});
+            console.log(response);
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
-        } catch (e) {
-            localStorage.removeItem('token');
-            this.setAuth(false);
-            this.setUser({} as IUser);
+        } catch (e: any) {
+            console.log(e.response?.data?.message)
+        } finally {
+            this.isLoding = false;
         }
     }
 
     async registration(data: RegistrationData): Promise<void> {
         try {
             const response = await AuthService.registration(data);
-            console.log(response.data)
+            console.log(response)
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);

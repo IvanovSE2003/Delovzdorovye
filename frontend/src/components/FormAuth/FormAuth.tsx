@@ -3,6 +3,7 @@ import Register from './Register';
 import Login from './Login';
 import Recover from './Recover';
 import "../FormAuth/FormAuth.scss"
+import { observer } from 'mobx-react-lite';
 
 export type AuthState= "login" | "register"| "recover";
 
@@ -31,4 +32,4 @@ const FormAuth = () => {
     )
 }
 
-export default FormAuth;
+export default observer(FormAuth);
