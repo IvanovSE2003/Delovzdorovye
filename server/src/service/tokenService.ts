@@ -18,8 +18,6 @@ class TokenService {
         return { accessToken, refreshToken };
     }
 
-    
-
     static async saveToken(userId: number, refreshToken: string) {
         const tokenData = await Token.findOne({where: {userId} as any})
         if(tokenData) {

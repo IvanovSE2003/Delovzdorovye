@@ -67,7 +67,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
   };
 
   return (
-    <div>
+    <>
       {error && <p className="auth__error">{error}</p>}
 
       <form onSubmit={handleSubmitContact} className="auth__form">
@@ -116,7 +116,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
         </a>
         
       </form>
-    </div>
+    </>
   );
 };
 

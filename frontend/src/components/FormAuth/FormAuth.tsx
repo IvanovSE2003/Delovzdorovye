@@ -10,8 +10,8 @@ const FormAuth = () => {
     const [state, setState] = useState<AuthState>("login");
 
     return (
-        <div>
-            <h3>
+        <>
+            <h3 className="auth__title">
                 {state === "login" && "Вход в систему"}
                 {state === "register" && "Регистрация"}
             </h3>
@@ -27,7 +27,7 @@ const FormAuth = () => {
             {state === "recover" && (
                 <Recover setState={setState}/>
             )}
-        </div>
+        </>
     )
 }
 

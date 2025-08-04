@@ -112,24 +112,30 @@ class UserController {
         const tokens = TokenService.generateTokens({...userDto})
         await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
+        res.cookie('refreshtoken', tokens.refreshToken, { 
+            maxAge: 30 * 24 * 60 * 60 * 1000, 
+            httpOnly: true, 
+            secure: true 
+        })
+
         return res.json({...tokens, user: userDto});
     }
 
     static async logout(req: Request, res: Response, next: NextFunction) {
         try {
-            const {refreshToken} = req.cookies;
-            const token = await TokenService.removeToken(refreshToken)
-            res.clearCookie('refreshToken')
-            return res.json(token)
+            const {refreshtoken} = req.cookies;
+            if (!refreshtoken) {
+                return next(ApiError.badRequest('Токен не передан'));
+            }
+            
+            await TokenService.removeToken(refreshtoken);
+            res.clearCookie('refreshtoken');
+            return res.json({ 
+                success: true, 
+                message: 'Выход выполнен успешно' 
+            });
         } catch (error) {
-            if (error instanceof ApiError) {
-                return next(error);
-            }
-            if (error instanceof Error) {
-                return next(ApiError.internal('Ошибка при выходе из системы').withOriginalError(error));
-            }
-
-            return next(ApiError.internal('Неизвестная ошибка при выходе из системы'));
+            return next(ApiError.errorValidation('Ошибка при выходе из системы', error));
         }
     }
 
