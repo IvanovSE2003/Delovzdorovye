@@ -18,6 +18,8 @@ interface IUserAttributes {
     updatedAt?: Date;
     isActivated: Boolean;
     activationLink: string;
+    resetPasswordToken: string | null;
+    resetPasswordExpires: Date | null;
 }
 
 interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

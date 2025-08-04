@@ -2,6 +2,7 @@ import { Router } from "express";
 import UserController from "../controllers/userController.js";
 import authMiddleware from "../midlewares/authMidleware.js";
 import {body} from 'express-validator'
+import MailService from "../service/mailService.js";
 
 const router: Router = Router(); 
 
@@ -18,6 +19,9 @@ router.get('/:id', UserController.getUser);
 router.put('/:id', UserController.updateUser);
 router.post('/check', UserController.checkUser);
 router.post('/checkPinCode', UserController.verifyPinCode);
+
+router.post('/request-password-reset', UserController.requestPasswordReset);
+router.post('/reset-password/:token', UserController.resetPassword);
 
 export default router;
 

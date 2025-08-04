@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import {v4} from 'uuid';
 import bcrypt from 'bcrypt';
 import mailService from "../service/mailService.js";
+import { Op } from 'sequelize';
 
 const {User, Patient, Doctor} = models;
 
@@ -47,7 +48,7 @@ class UserController {
                 gender, 
                 date_birth, 
                 time_zone, 
-                img: "",
+                img: "defaultImg.jpg",
                 activationLink,
                 isActivated: false
             })
@@ -149,9 +150,27 @@ class UserController {
 
     static async activate(req: Request, res: Response, next: NextFunction) {
         try {
+            const activationLink = req.params.link;
             
-        } catch(e) {
+            if (!activationLink) {
+                return next(ApiError.badRequest('Некорректная ссылка активации'));
+            }
 
+            const user = await User.findOne({ where: { activationLink } });
+            
+            if (!user) {
+                return next(ApiError.badRequest('Некорректная ссылка активации'));
+            }
+
+            if (user.isActivated) {
+                return next(ApiError.badRequest('Аккаунт уже активирован'));
+            }
+
+            user.isActivated = true;
+            await user.save();
+            return res.json({ success: true, message: 'Аккаунт успешно активирован' });
+        } catch (e) {
+            return next(ApiError.internal('Ошибка при активации аккаунта'));
         }
     }
 
@@ -182,7 +201,11 @@ class UserController {
             }
             return res.json({user})
         } catch (e) {
-            next(ApiError.badRequest('Ошибка при получении пользователя с ролью доктор'));
+            if (e instanceof Error) {
+                return next(ApiError.badRequest(e.message));
+            } else {
+                return next(ApiError.badRequest('Неизвестная ошибка'));
+            }
         }
     }
 
@@ -268,6 +291,82 @@ class UserController {
             }
         } catch(e) {
             next(ApiError.internal('Ошибка проверки пик-кода для пользователя'))
+        }
+    }
+
+    static async requestPasswordReset(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email } = req.body;
+            
+            if (!email) {
+                return next(ApiError.badRequest('Email не указан'));
+            }
+
+            const user = await User.findOne({ where: { email } });
+            
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь с таким email не найден'));
+            }
+
+            const resetToken = v4();
+            const resetTokenExpires = new Date(Date.now() + 3600000); 
+            
+            user.resetPasswordToken = resetToken;
+            user.resetPasswordExpires = resetTokenExpires;
+            await user.save();
+
+            await mailService.sendPasswordResetEmail(email, resetToken);
+
+            return res.json({ 
+                success: true, 
+                message: 'Письмо для сброса пароля отправлено на ваш email' 
+            });
+        } catch (e) {
+            if (e instanceof Error) {
+                return next(ApiError.badRequest(e.message));
+            } else {
+                return next(ApiError.badRequest('Неизвестная ошибка'));
+            }
+        }
+    }
+
+    static async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token } = req.params;
+            const { newPassword } = req.body;
+
+            if (!token || !newPassword) {
+                return next(ApiError.badRequest('Токен или новый пароль не указаны'));
+            }
+
+            const user = await User.findOne({ 
+                where: { 
+                    resetPasswordToken: token,
+                    resetPasswordExpires: { [Op.gt]: new Date() } 
+                } 
+            });
+
+            if (!user) {
+                return next(ApiError.badRequest('Неверный или просроченный токен сброса пароля'));
+            }
+
+            const hashPassword = await bcrypt.hash(newPassword, 5);
+            
+            user.password = hashPassword;
+            user.resetPasswordToken = null;
+            user.resetPasswordExpires = null;
+            await user.save();
+
+            return res.json({ 
+                success: true, 
+                message: 'Пароль успешно изменен' 
+            });
+        } catch (e) {
+            if (e instanceof Error) {
+                return next(ApiError.badRequest(e.message));
+            } else {
+                return next(ApiError.badRequest('Неизвестная ошибка'));
+            }
         }
     }
 }
