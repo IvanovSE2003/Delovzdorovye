@@ -1,5 +1,5 @@
-import { useParams } from 'react-router';
-import React, { useContext, useEffect } from 'react';
+import { Link, useParams } from 'react-router';
+import React, { useContext } from 'react';
 import MyInput from '../components/UI/MyInput/MyInput';
 import { useState } from 'react';
 import { Context } from '../main';
@@ -14,11 +14,9 @@ const RecoverPass: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [replyPassword, setReplyPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
+    const [message, setMessage] = useState<string>("");
+    const [step, setStep] = useState<number>(1);
     const { store } = useContext(Context);
-
-    // useEffect(() => {
-    //     console.log(token);
-    // }, [])
 
     const RecoverPass = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,12 +27,17 @@ const RecoverPass: React.FC = () => {
         }
         
         const data = await store.resetPassword(token, password);
-        console.log(token)
-        console.log(data);
+        if(data.success) {
+            setMessage(data.message);
+            setStep(2);
+        } else {
+            setError(data.message);
+        }
     }
 
     return (
-        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+        step === 1 ? (
+            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
             <div className='auth__box'>
                 <h3>Восстановление пароля</h3>
                 <form onSubmit={RecoverPass} className='auth__form'>
@@ -62,6 +65,16 @@ const RecoverPass: React.FC = () => {
                 </form>
             </div>
         </div>
+        ) : (
+            <>
+                <p>{message}</p>
+                <Link to="/">
+                    <button className='auth__button'>
+                        Вернуться на главную страницу
+                    </button>
+                </Link>
+            </>
+        )
     )
 }
 

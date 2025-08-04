@@ -35,6 +35,6 @@ export default class AuthService {
     }
 
     static async resetPassword(token: string, password: string) {
-        return $api.post(`user/reset-password/:${token}`, {newPassword: password})
+        return $api.post(`user/reset-password/${token}`, {newPassword: password})
     }
 }
