@@ -11,6 +11,11 @@ interface IUser {
     isActivated: boolean
 }
 
+type ResetPassword = {
+    message: string;
+    success: boolean;
+}
+
 export default class Store {
     user = {} as IUser;
     isAuth = false;
@@ -84,8 +89,8 @@ export default class Store {
 
     async getUserData(id: number) {
         try {
-            const response = UserService.fetchUserData(id);
-            return (await response).data;
+            const response = await UserService.fetchUserData(id);
+            return response.data;
         } catch(e) {
             const error = e as AxiosError<{ messange: string }>;
             this.setError(error.response?.data?.messange||"Ошибка при получении данных пользователя!");
@@ -93,14 +98,27 @@ export default class Store {
         }
     }
 
-    async resetPassword(email: string) {
+    async sendEmailResetPassword(email: string): Promise<ResetPassword> {
         try {
-            const response = AuthService.resetPassword(email);
-            return (await response);
+            const response = await AuthService.sendEmailResetPassword(email);
+            return response.data;
         } catch(e) {
-            const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange||"Ошибка при сбрасывании пароля!");
-            console.log(error.response?.data?.messange);
+            const error = e as AxiosError<{ message: string }>;
+            this.setError(error.response?.data?.message||"Ошибка при отправки сообщения для сбрасывания пароля!");
+            console.log(error.response?.data?.message);
+            return { success: false, message: this.error}
+        }
+    }
+    
+    async resetPassword(token: string, password: string): Promise<ResetPassword> {
+        try {
+            const response = await AuthService.resetPassword(token, password);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<{ message: string }>;
+            this.setError(error.response?.data?.message||"Ошибка при сбрасывании пароля!");
+            console.log(error.response?.data?.message);
+            return { success: false, message: this.error}
         }
     }
 }

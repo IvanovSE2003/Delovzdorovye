@@ -1,4 +1,4 @@
-import type { Axios, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import type { LoginData } from '../models/IUser'
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
@@ -30,7 +30,11 @@ export default class AuthService {
         return $api.post('user/logout');
     }
 
-    static async resetPassword(email: string): Promise<void> {
-        return $api.post('user/request-password-reset', email);
+    static async sendEmailResetPassword(email: string) {
+        return $api.post('user/request-password-reset', { email });
+    }
+
+    static async resetPassword(token: string, password: string) {
+        return $api.post(`user/reset-password/:${token}`, {newPassword: password})
     }
 }

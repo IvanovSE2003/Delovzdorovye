@@ -2,63 +2,80 @@ import { useState, type Dispatch, type SetStateAction, useContext } from "react"
 import "./FormAuth.scss";
 import type { AuthState } from "./FormAuth";
 import { Context } from "../../main";
+import MyInput from "../UI/MyInput/MyInput";
 
-type LoginProps = {
+type RecoverProps = {
     setState: Dispatch<SetStateAction<AuthState>>;
 };
 
-const Recover: React.FC<LoginProps> = ({ setState }) => {
-    const [email, setEmail] = useState<string>("");
-    const [error, setError] = useState<string>("");
-    const [step, setStep] = useState<number>(1);
-    const { store } = useContext(Context)
+const Recover: React.FC<RecoverProps> = ({ setState }) => {
+    const [email, setEmail] = useState("");
+    const [error, setError] = useState("");
+    const [step, setStep] = useState(1);
+    const [message, setMessage] = useState("");
+    const { store } = useContext(Context);
 
-    const recoverPassword = () => {
+    const validateEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         setError("");
-        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        if (!emailValid) {
+
+        if (!validateEmail(email)) {
             setError("Введите корректный email");
             return;
         }
 
-        console.log(store.resetPassword(email));
-        setStep(2);
-    }
+        try {
+            const data = await store.sendEmailResetPassword(email);
+            setMessage(data.message);
+
+            if (data.success) {
+                setStep(2);
+            } else {
+                setError(data.message || "Произошла ошибка при восстановлении пароля");
+            }
+        } catch (err) {
+            setError("Произошла непредвиденная ошибка");
+            console.error("Password recovery error:", err);
+        }
+    };
 
     return (
-        <div className="auth__form">
-            {step === 1 && (
-                <>
+        <>
+            {step === 1 ? (
+                <form onSubmit={handleSubmit} className="auth__form">
                     <h3>Восстановление пароля</h3>
-                    <div className="input-group">
-                        <input
-                            className="auth__input"
-                            type="email"
-                            placeholder=" "
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                        <label htmlFor="email"> Электронная почта </label>
-                    </div>
-                    {error && <p className="auth__error">{error}</p>}
-                    <button
-                        onClick={recoverPassword}
-                        className="auth__button"
-                    >
+
+                    <MyInput
+                        type="email"
+                        id="recover-email"
+                        label="Электронная почта"
+                        value={email}
+                        onChange={(value: string) => setEmail(value.trim())}
+                        required
+                    />
+
+                    <button type="submit" className="auth__button">
                         Продолжить
                     </button>
+
+                    {error && <p className="auth__error">{error}</p>}
+
                     <p className="auth__toggle-button">
                         Вспомнили пароль?{" "}
-                        <a onClick={() => setState("login")}>Войти</a>
+                        <a onClick={() => setState("login")} className="auth__toggle-button">
+                            Войти
+                        </a>
                     </p>
-                </>
-            )}
-            {step === 2 && (
+                </form>
+            ) : (
                 <div className="recover-success">
                     <h3>Проверьте вашу почту</h3>
-                    <p>Мы отправили инструкции по восстановлению пароля на <strong>{email}</strong></p>
+                    <p>{message}</p>
                     <button
                         onClick={() => setState("login")}
                         className="auth__button"
@@ -67,8 +84,8 @@ const Recover: React.FC<LoginProps> = ({ setState }) => {
                     </button>
                 </div>
             )}
-        </div>
+        </>
     );
-}
+};
 
 export default Recover;

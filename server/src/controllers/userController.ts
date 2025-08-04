@@ -84,7 +84,7 @@ class UserController {
     }
 
     static async login(req: Request, res: Response, next: NextFunction) {
-        const {email, phone, password} = req.body;
+        const {email, phone, password, pin_code} = req.body;
         
         let user;
         if(email && !phone) {
@@ -99,15 +99,17 @@ class UserController {
             return next(ApiError.internal('Пользователь не найден'));
         }
 
+        if(user.pin_code !== pin_code) {
+            return next(ApiError.internal('Не верный пин-код'));
+        } 
+        
+
         let comparePassword = bcrypt.compareSync(password, user.password)
         
         if(!comparePassword) {
             return next(ApiError.internal('Не верный пароль'));
         }
 
-        if(!user) {
-            return next(ApiError.internal('Ошибка при авторизации'));
-        }
 
         const userDto = new UserDto(user);
         const tokens = TokenService.generateTokens({...userDto})
@@ -299,13 +301,19 @@ class UserController {
             const { email } = req.body;
             
             if (!email) {
-                return next(ApiError.badRequest('Email не указан'));
+                return res.json({ 
+                    success: false, 
+                    message: `Почта не указана` 
+                });
             }
 
             const user = await User.findOne({ where: { email } });
             
             if (!user) {
-                return next(ApiError.badRequest('Пользователь с таким email не найден'));
+                return res.json({ 
+                    success: false, 
+                    message: `Пользователь с почтой ${email} не найден` 
+                });
             }
 
             const resetToken = v4();
@@ -319,7 +327,7 @@ class UserController {
 
             return res.json({ 
                 success: true, 
-                message: 'Письмо для сброса пароля отправлено на ваш email' 
+                message: `Мы отправили инструкции по восстановлению пароля на ${email}` 
             });
         } catch (e) {
             if (e instanceof Error) {
@@ -336,7 +344,10 @@ class UserController {
             const { newPassword } = req.body;
 
             if (!token || !newPassword) {
-                return next(ApiError.badRequest('Токен или новый пароль не указаны'));
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Токен или новый пароль не указаны' 
+                });
             }
 
             const user = await User.findOne({ 
@@ -347,7 +358,10 @@ class UserController {
             });
 
             if (!user) {
-                return next(ApiError.badRequest('Неверный или просроченный токен сброса пароля'));
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Не верный или просроченный токен для сброса пароля' 
+                });
             }
 
             const hashPassword = await bcrypt.hash(newPassword, 5);
@@ -357,7 +371,7 @@ class UserController {
             user.resetPasswordExpires = null;
             await user.save();
 
-            return res.json({ 
+            return res.status(200).json({ 
                 success: true, 
                 message: 'Пароль успешно изменен' 
             });
