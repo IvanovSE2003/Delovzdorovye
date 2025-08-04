@@ -1,21 +1,7 @@
 import type { AxiosResponse } from 'axios';
-import type { LoginData } from '../models/IUser'
+import type { LoginData, RegistrationData } from '../models/IUser'
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
-
-export type RegistrationData = {
-    name: string;
-    surname: string;
-    patronymic: string;
-    email: string;
-    phone: string;
-    pin_code: string;
-    password: string;
-    time_zone: string;
-    date_birth: string;
-    gender: "мужчина"|"женщина"| "";
-    role: "PACIENT" | "DOCTOR" | "ADMIN"| "";
-};
 
 export default class AuthService {
     static async login(Data: LoginData): Promise<AxiosResponse<AuthResponse>> {

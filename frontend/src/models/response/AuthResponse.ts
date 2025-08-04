@@ -1,10 +1,4 @@
-// import type { IUser } from '../IUser';
-
-interface IUser {
-  id: number;
-  email: string;
-  isActivated: boolean;
-}
+import type { IUser } from '../IUser';
 
 export interface AuthResponse {
     accessToken: string;

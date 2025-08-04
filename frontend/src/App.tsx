@@ -22,8 +22,6 @@ function App() {
 
   return (
     <>
-      <h2>{store.isAuth ? "Пользователь авторизован" : "Пользователь не авторизован"}</h2>
-
       <Routes>
         <Route path='/' element={<Homepage />} />
 

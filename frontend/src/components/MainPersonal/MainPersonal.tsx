@@ -1,74 +1,93 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import './MainPersonal.scss';
+import { Context } from "../../main";
+import { observer } from "mobx-react-lite";
+
+interface PatientData {
+  id: number;
+  general_info: {
+    clinical_diseases: string;
+    postponed_operations: string;
+  };
+  analyses_examinations: {
+    recent_analyses_for_the_last_year: string;
+  };
+  additionally: {
+    [key: string]: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+}
 
 const MainPersonal: React.FC = () => {
+  const { store } = useContext(Context);
+  const [patientData, setPatientData] = useState<PatientData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPatientData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        if (!store.user?.id) {
+          throw new Error("Пользователь не авторизован");
+        }
+        
+        const data = await store.getPatientData(store.user.id);
+        console.log(data)
+        // setPatientData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Не удалось загрузить данные пациента');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadPatientData();
+  }, [store, store.user?.id]);
+
+  if (loading) {
+    return <div className="loading">Загрузка данных...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
+  if (!patientData) {
+    return <div>Данные пациента отсутствуют</div>;
+  }
+
   return (
     <div className="content">
       <div className="content__form-client">
-        <h1 className="form-title">Анкета клиента</h1>
-        
-        <div className="form-section">
-          <h2 className="section-title">Общая информация</h2>
-          
-          <div className="form-field">
-            <label>Хронические заболевания:</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
-          
-          <div className="form-field">
-            <label>Перенесенные операции (год и что именно):</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
-          
-          <div className="form-field">
-            <label>Госпитализации за последние 2 года (причина):</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
-          
-          <div className="form-field">
-            <label>Аллергии (лекарства, продукты, другие):</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
-          
-          <div className="form-field">
-            <label>Регулярные лекарства (название, доза):</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
+        <h2>Общая информация</h2>
+        <div className="info-section">
+          <p><strong>Клинические заболевания:</strong> {patientData.general_info.clinical_diseases}</p>
+          <p><strong>Отложенные операции:</strong> {patientData.general_info.postponed_operations}</p>
         </div>
-        
-        <div className="form-section">
-          <h2 className="section-title">Анализы и обследования</h2>
-          
-          <div className="form-field">
-            <label>Какие анализы сдавали за последний год? (можно прикрепить файлы)</label>
-            <div className="file-upload">
-              <input type="file" id="analyses" className="file-input" />
-              <label htmlFor="analyses" className="file-label">Выберите файл</label>
-            </div>
-          </div>
-          
-          <div className="form-field">
-            <label>Какие исследования делали за последний год? (можно прикрепить файлы)</label>
-            <div className="file-upload">
-              <input type="file" id="research" className="file-input" />
-              <label htmlFor="research" className="file-label">Выберите файл</label>
-            </div>
-          </div>
+
+        <h2>Анализы и обследования</h2>
+        <div className="info-section">
+          <p><strong>Последние анализы за год:</strong> {patientData.analyses_examinations.recent_analyses_for_the_last_year}</p>
         </div>
-        
-        <div className="form-section">
-          <h2 className="section-title">Дополнительно</h2>
-          
-          <div className="form-field">
-            <label>Наследственные заболевания:</label>
-            <input type="text" className="form-input" placeholder="Введите информацию" />
-          </div>
+
+        <h2>Дополнительно</h2>
+        <div className="info-section">
+          {Object.entries(patientData.additionally).map(([key, value]) => (
+            <p key={key}>
+              <strong>{key}:</strong> {value}
+            </p>
+          ))}
         </div>
-        
+
         <button className="submit-button">Сохранить</button>
       </div>
     </div>
   );
 };
 
-export default MainPersonal;
+export default observer(MainPersonal);

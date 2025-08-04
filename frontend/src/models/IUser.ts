@@ -14,8 +14,11 @@ export interface IUser {
     activationLink: string;
     img: string;
     role: "PACIENT" | "DOCTOR" | "ADMIN";
-    createdAt: string;
-    updatedAt: string;
+}
+
+export type ResetPassword = {
+    message: string;
+    success: boolean;
 }
 
 export type LoginData = {
@@ -24,3 +27,17 @@ export type LoginData = {
     phone?: string,
     email?: string
 }
+
+export type RegistrationData = {
+    name: string;
+    surname: string;
+    patronymic: string;
+    email: string;
+    phone: string;
+    pin_code: string;
+    password: string;
+    time_zone: string;
+    date_birth: string;
+    gender: "мужчина"|"женщина"| "";
+    role: "PACIENT" | "DOCTOR" | "ADMIN"| "";
+};
