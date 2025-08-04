@@ -1,6 +1,10 @@
-@use '../../assets/styles/variables.scss' as *;
+@use "../../assets/styles/variables.scss" as *;
 
 .auth {
+  &__title {
+    margin-bottom: 20px;
+  }
+
   &__form {
     width: 400px;
     display: flex;
@@ -65,49 +69,49 @@
       outline: none;
     }
   }
-}
 
-.radios {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+  &__input-group {
+    position: relative;
+  }
 
-  .radio {
+  &__input-group label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 16px;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  &__input-group input:focus + label,
+  &__input-group select:focus + label,
+  &__input-group input:not(:placeholder-shown) + label,
+  &__input-group select:not(:placeholder-shown) + label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #4285f4;
+  }
+
+  &__input-group input:focus,
+  &__input-group select:focus {
+    border-color: #4285f4;
+    outline: none;
+  }
+
+  &__radios-group {
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: space-around;
+
+    .radio {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
   }
-}
-
-.input-group {
-  position: relative;
-}
-
-.input-group label {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
-  transition: all 0.3s;
-  pointer-events: none;
-}
-
-.input-group input:focus+label,
-.input-group select:focus+label,
-.input-group input:not(:placeholder-shown)+label,
-.input-group select:not(:placeholder-shown)+label {
-  top: 0;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #4285f4;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-  border-color: #4285f4;
-  outline: none;
 }
 
 h3 {
@@ -123,8 +127,8 @@ a:hover {
 }
 
 // Variables
-$primary-color: #2c3e50;
-$secondary-color: #7f8c8d;
+// $primary-color: #2c3e50;
+// $secondary-color: #7f8c8d;
 $doctor-color: #1abc9c;
 $doctor-hover: #16a085;
 $patient-color: #9b59b6;
@@ -136,15 +140,11 @@ $card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
 $transition: all 0.3s ease;
 
 .role-selection {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 
   &__title {
     font-size: 1.8rem;
-    color: $primary-color;
-    // margin-bottom: 2rem;
+    color: rgb(79, 76, 76);
   }
 
   &__cards {
@@ -166,7 +166,7 @@ $transition: all 0.3s ease;
   border: 2px solid transparent;
 
   &:hover {
-    transform: translateY(-5px);
+    // transform: translateY(-5px);
     box-shadow: $card-shadow-hover;
   }
 
@@ -230,4 +230,38 @@ $transition: all 0.3s ease;
       border-color: $patient-color;
     }
   }
+}
+
+.form_radio_btn {
+  display: inline-block;
+  margin-right: 10px;
+}
+.form_radio_btn input[type="radio"] {
+  display: none;
+}
+.form_radio_btn label {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0px 60px;
+  line-height: 34px;
+  border: 1px solid #999;
+  border-radius: 6px;
+  user-select: none;
+}
+
+/* Checked */
+.form_radio_btn input[type="radio"]:checked + label {
+  background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+  color: white;
+}
+
+/* Hover */
+.form_radio_btn label:hover {
+  color: $primary-color;
+}
+
+/* Disabled */
+.form_radio_btn input[type="radio"]:disabled + label {
+  background: #efefef;
+  color: #666;
 }

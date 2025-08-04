@@ -2,16 +2,16 @@ import { Model, Optional } from 'sequelize';
 
 interface IUserAttributes {
     id: number;
-    name: string | null;
-    surname: string | null;
-    patronymic: string | null;
+    name: string;
+    surname: string;
+    patronymic: string;
     email: string;
-    phone: string | null;
+    phone: string;
     pin_code: number | null;
     password: string;
-    time_zone: number | null;
-    date_birth: Date | null;
-    gender: string | null;
+    time_zone: number;
+    date_birth: Date;
+    gender: string;
     role: string;
     img: string,
     createdAt?: Date;

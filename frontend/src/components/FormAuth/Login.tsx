@@ -77,12 +77,12 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
   };
 
   return (
-    <div>
+    <>
       {error && <p className="auth__error">{error}</p>}
 
       <form onSubmit={handleSubmitContact} className="auth__form">
         {!isEmailAuth ? (
-          <div className="input-group">
+          <div className="auth__input-group">
             <input
               className="auth__input"
               type="tel"
@@ -97,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
             <label htmlFor="phone"> Телефон </label>
           </div>
         ) : (
-          <div className="input-group">
+          <div className="auth__input-group">
             <input
               className="auth__input"
               type="email"
@@ -112,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
           </div>
         )}
 
-        <div className="input-group">
+        <div className="auth__input-group">
           <input
             type="password"
             className="auth__input"
@@ -137,7 +137,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
           Зарегистрироваться
         </a>
       </form>
-    </div>
+    </>
   );
 };
 
