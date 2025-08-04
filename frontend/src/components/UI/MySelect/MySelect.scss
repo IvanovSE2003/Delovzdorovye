@@ -1,0 +1,39 @@
+@use '../../../assets/styles/variables.scss' as *;
+
+.auth {
+    &__select {
+        padding: 20px 15px;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background-color: $light-color;
+    }
+
+    &__input-group {
+        position: relative;
+    }
+
+    &__input-group label {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 16px;
+        transition: all 0.3s;
+        pointer-events: none;
+    }
+
+    &__input-group select:focus+label,
+    &__input-group select:not(:placeholder-shown)+label {
+        top: 0;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #4285f4;
+    }
+
+    &__input-group select:focus {
+        border-color: #4285f4;
+        outline: none;
+    }
+}

@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import Register from './Register';
 import Login from './Login';
+import Recover from './Recover';
 import "../FormAuth/FormAuth.scss"
 
-export type AuthState= "login" | "register";
+export type AuthState= "login" | "register"| "recover";
 
 const FormAuth = () => {
     const [state, setState] = useState<AuthState>("login");
 
     return (
-        <div>
-            <h3>
+        <>
+            <h3 className="auth__title">
                 {state === "login" && "Вход в систему"}
                 {state === "register" && "Регистрация"}
             </h3>
@@ -22,7 +23,11 @@ const FormAuth = () => {
             {state === "register" && (
                 <Register setState={setState}/>
             )}
-        </div>
+
+            {state === "recover" && (
+                <Recover setState={setState}/>
+            )}
+        </>
     )
 }
 

@@ -1,6 +1,10 @@
-@use '../../assets/styles/variables.scss' as *;
+@use "../../assets/styles/variables.scss" as *;
 
 .auth {
+  &__title {
+    margin-bottom: 20px;
+  }
+
   &__form {
     width: 400px;
     display: flex;
@@ -45,26 +49,6 @@
       }
     }
   }
-
-  select {
-    padding: 20px 15px;
-    width: 100%;
-    border: none;
-    border-radius: 10px;
-    background-color: $light-color;
-  }
-
-  &__input {
-    width: 100%;
-    padding: 20px 15px;
-    border: none;
-    border-radius: 10px;
-    background-color: $light-color;
-
-    &:focus {
-      outline: none;
-    }
-  }
 }
 
 .radios {
@@ -79,42 +63,11 @@
   }
 }
 
-.input-group {
-  position: relative;
-}
-
-.input-group label {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
-  transition: all 0.3s;
-  pointer-events: none;
-}
-
-.input-group input:focus+label,
-.input-group select:focus+label,
-.input-group input:not(:placeholder-shown)+label,
-.input-group select:not(:placeholder-shown)+label {
-  top: 0;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #4285f4;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-  border-color: #4285f4;
-  outline: none;
-}
-
 h3 {
-  font-size: 30px;
+  font-size: 35px;
   color: $primary-color;
   text-align: center;
-  margin: 0 0 10px 0;
+  margin: 0 0 25px 0;
 }
 
 a:hover {
@@ -123,8 +76,6 @@ a:hover {
 }
 
 // Variables
-$primary-color: #2c3e50;
-$secondary-color: #7f8c8d;
 $doctor-color: #1abc9c;
 $doctor-hover: #16a085;
 $patient-color: #9b59b6;
@@ -138,13 +89,11 @@ $transition: all 0.3s ease;
 .role-selection {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 
   &__title {
     font-size: 1.8rem;
     color: $primary-color;
-    // margin-bottom: 2rem;
   }
 
   &__cards {
@@ -166,7 +115,7 @@ $transition: all 0.3s ease;
   border: 2px solid transparent;
 
   &:hover {
-    transform: translateY(-5px);
+    // transform: translateY(-5px);
     box-shadow: $card-shadow-hover;
   }
 
@@ -230,4 +179,65 @@ $transition: all 0.3s ease;
       border-color: $patient-color;
     }
   }
+}
+
+.recover-success {
+  text-align: center;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  animation: fadeIn 0.3s ease-out;
+
+  p {
+    color: $gray-color;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    font-size: 20px;
+
+    strong {
+      color: $secondary-color;
+      font-weight: 500;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+
+.form_radio_btn {
+	display: inline-block;
+	margin-right: 10px;
+}
+.form_radio_btn input[type=radio] {
+	display: none;
+}
+.form_radio_btn label {
+	display: inline-block;
+	cursor: pointer;
+	padding: 0px 62px;
+	line-height: 34px;
+  background-color: $light-color;
+  color: #999;
+	border-radius: 6px;
+	user-select: none;
+}
+ 
+/* Checked */
+.form_radio_btn input[type=radio]:checked + label {
+	background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+  color: white;
+}
+ 
+.form_radio_btn label:hover {
+	color: #525252;
 }

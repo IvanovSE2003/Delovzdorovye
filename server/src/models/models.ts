@@ -24,7 +24,7 @@ const User = sequelize.define<IUserModel>('user', {
 const Token = sequelize.define<ITokenModel>('token', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     userId: {type: DataType.INTEGER},
-    refreshToken: {type: DataType.STRING, allowNull: false}
+    refreshToken: {type: DataType.TEXT, allowNull: false}
 })
 
 const Patient = sequelize.define('patient', {
