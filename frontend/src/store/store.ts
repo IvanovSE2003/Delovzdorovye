@@ -1,23 +1,11 @@
 import { makeAutoObservable } from "mobx";
-import type { LoginData } from "../models/IUser";
-import type { RegistrationData } from "../services/AuthService"
+import type { IUser, LoginData, RegistrationData, ResetPassword } from "../models/IUser";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import type { AuthResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
-
-interface IUser {
-    id: number,
-    email: string,
-    isActivated: boolean
-}
-
-type ResetPassword = {
-    message: string;
-    success: boolean;
-}
 
 export default class Store {
     user = {} as IUser;
@@ -106,13 +94,13 @@ export default class Store {
         }
     }
 
-    async getUserData(id: number) {
+    async getPatientData(id: number) {
         try {
-            const response = await UserService.fetchUserData(id);
+            const response = await UserService.fetchPatientData(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange || "Ошибка при получении данных пользователя!");
+            this.setError(error.response?.data?.messange || "Ошибка при получении данных пациента!");
             console.log(error.response?.data?.messange);
         }
     }

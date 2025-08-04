@@ -10,6 +10,7 @@ import { Context } from "../../main";
 import type { AuthState } from "./FormAuth";
 import MyInput from "../UI/MyInput/MyInput";
 import MySelect from "../UI/MySelect/MySelect";
+import { observer } from "mobx-react-lite";
 
 type Gender = "мужчина" | "женщина" | "";
 type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
@@ -25,6 +26,9 @@ interface UserDetails {
   date_birth: string;
   gender: Gender;
   role: Role;
+  specialization: string;
+  contacts: string;
+  experience_years: string;
 }
 
 type RegisterProps = {
@@ -44,6 +48,9 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
     date_birth: "",
     gender: "",
     role: "",
+    specialization: "",
+    contacts: "",
+    experience_years: "",
   });
   const [error, setError] = useState<string>("");
   const [replyPass, setReplyPass] = useState<string>("");
@@ -67,13 +74,11 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
     }
 
     setError("");
-    // store.registration(userDetails);
-
-    // if (localStorage.getItem('token')) {
-    //     window.location.href = '/personal';
-    // }
-
-    console.log("Регистрируем пользователя:", userDetails);
+    store.registration(userDetails);
+    if (store.isAuth) {
+        window.location.href = '/personal';
+    }
+    console.log(userDetails);
   };
 
   const handleBack = () => {
@@ -233,7 +238,7 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
                 className="role-card__button"
                 onClick={() => {
                   handleDetailsChange("role", "PACIENT");
-                  setStep(3);
+                  setStep(4);
                 }}
               >
                 Выбрать
@@ -247,6 +252,44 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
       )}
 
       {step === 3 && (
+        <div className="auth__form">
+          {error && <p className="auth__error">{error}</p>}
+
+          <MyInput
+            id="specialization"
+            label="Специализация"
+            value={userDetails.specialization}
+            onChange={(value) => handleDetailsChange("specialization", value)}
+            required
+          />
+
+          <MyInput
+            id="contacts"
+            label="Место работы"
+            value={userDetails.contacts}
+            onChange={(value) => handleDetailsChange("contacts", value)}
+            required
+          />
+
+          <MyInput
+            type="number"
+            id="experience_years"
+            label="Опыт работы"
+            value={userDetails.experience_years}
+            onChange={(value) => handleDetailsChange("experience_years", value)}
+            required
+          />
+
+          <button className="auth__button" onClick={() => setStep(4)}>
+            Продолжить
+          </button>
+          <button type="button" onClick={handleBack} className="auth__button">
+            Назад
+          </button>
+        </div>
+      )}
+
+      {step === 4 && (
         <form onSubmit={handleSubmitDetails} className="auth__form">
           {error && <p className="auth__error">{error}</p>}
 
@@ -290,4 +333,4 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
   );
 };
 
-export default Register;
+export default observer(Register);
