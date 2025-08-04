@@ -58,13 +58,13 @@ class UserController {
             let doctor = {};
             console.log(user.role)
             if(user.role == 'PACIENT') {
-                patient = await Patient.create({general_info: null, analyses_examinations: null, additionally: null, userId: user.id})
+                patient = await Patient.create({general_info: {}, analyses_examinations: {}, additionally: {}, userId: user.id})
             } else if(user.role == 'DOCTOR') {
                 const {specialization, contacts, experience_years} = req.body;
                 if(!specialization || !contacts || !experience_years) {
                     return next(ApiError.badRequest('Данные для доктора не пришли'))
                 }
-                doctor = await Doctor.create({specialization, contacts, experience_years});
+                doctor = await Doctor.create({specialization, contacts, experience_years, userId: user.id});
             } else {
                 return next(ApiError.badRequest('Неизвестная роль'))
             }
@@ -74,7 +74,7 @@ class UserController {
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
             
             res.cookie('refreshtoken', tokens.refreshToken, {maxAge: 30 * 24 * 60 *60 * 1000, httpOnly: true, secure: true})
-            return res.json({...tokens, user: userDto, patient: patient, doctor: doctor});
+            return res.json({...tokens, user: userDto});
         } catch(e) {
             if (e instanceof Error) {
                 return next(ApiError.badRequest(e.message));
@@ -185,41 +185,33 @@ class UserController {
                 return next(ApiError.notAuthorized('Пользователь не авторизован'));
             }
             
-            // 1. Валидируем токен
             const tokenPayload = await TokenService.validateRefreshToken(refreshtoken);
             
-            // 2. Проверяем, что payload содержит нужные данные
             if (!tokenPayload || typeof tokenPayload === 'string') {
                 return next(ApiError.notAuthorized('Невалидный токен'));
             }
             
-            // 3. Приводим тип и проверяем обязательные поля
             const userPayload = tokenPayload as unknown as IUserModel;
             
             if (!userPayload.id || !userPayload.email) {
                 return next(ApiError.notAuthorized('Токен не содержит необходимых данных'));
             }
             
-            // 4. Проверяем токен в базе данных
             const tokenFromDb = await TokenService.findToken(refreshtoken);
             if (!tokenFromDb) {
                 return next(ApiError.notAuthorized('Токен не найден в базе'));
             }
             
-            // 5. Получаем полные данные пользователя из БД
             const user = await User.findByPk(userPayload.id);
             if (!user) {
                 return next(ApiError.notAuthorized('Пользователь не найден'));
             }
             
-            // 6. Генерируем новые токены
             const userDto = new UserDto(user);
             const tokens = TokenService.generateTokens({...userDto});
             
-            // 7. Обновляем токен в базе
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
             
-            // 8. Устанавливаем новую куку
             res.cookie('refreshtoken', tokens.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
@@ -230,7 +222,6 @@ class UserController {
                 accessToken: tokens.accessToken,
                 user: userDto
             });
-            
         } catch(e) {
             if (e instanceof jwt.JsonWebTokenError) {
                 return next(ApiError.notAuthorized('Невалидный токен'));

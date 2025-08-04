@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction} from "express";
 import ApiError from "../error/ApiError.js";
 import models from "../models/models.js"; 
+import { REPLCommand } from "repl";
 
 const {Doctor} = models;
 
@@ -42,6 +43,20 @@ class DoctorController {
 
         const doctor = Doctor.update({specialization, contacts, experience_years}, {where: {userId}});
         return res.status(200).json(doctor)
+    }
+
+    static async activateDoctor(req: Request, res: Response, next: NextFunction ) {
+        const {id} = req.params;
+        try {
+            const doctor = Doctor.findOne({where: {id}});
+            if(!doctor) {
+                return res.status(404).json({success: false, message: 'Доктор не найден'})
+            }
+            await Doctor.update({activate: true}, {where: {id}})
+            return res.status(200).json({success: true, message: 'Доктор активирован'})
+        } catch(e: any) {
+            return res.status(500).json({success: false, message: e.message})
+        }        
     }
 }
 

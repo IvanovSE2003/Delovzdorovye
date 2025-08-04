@@ -40,7 +40,8 @@ const Doctor = sequelize.define('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     specialization: {type: DataType.STRING},
     contacts: {type: DataType.STRING, allowNull: true},
-    experience_years: {type: DataType.INTEGER}
+    experience_years: {type: DataType.INTEGER},
+    activate: {type: DataType.BOOLEAN, defaultValue: false}
 });
 
 const Consultation = sequelize.define('consultation', {
