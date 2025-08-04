@@ -37,4 +37,8 @@ export default class AuthService {
     static async resetPassword(token: string, password: string) {
         return $api.post(`user/reset-password/${token}`, {newPassword: password})
     }
+
+    static async checkAuth(): Promise<AxiosResponse<AuthResponse>> {
+        return $api.get<AuthResponse>('user/refresh');
+    }
 }

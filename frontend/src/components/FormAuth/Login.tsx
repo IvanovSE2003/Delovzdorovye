@@ -16,11 +16,15 @@ type LoginProps = {
 
 const Login: React.FC<LoginProps> = ({ setState }) => {
   const navigate = useNavigate();
+
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
 
   const [phone, setPhone] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [pinCode, setPinCode] = useState<string>("");
+
+  const [step, setStep] = useState<number>(2);
 
 
   const [error, setError] = useState<string>("");
@@ -44,11 +48,7 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
     }
 
     setError("");
-    await store.login({ phone, password });
-    if (store.isAuth) {
-      navigate('/personal')
-    }
-
+    setStep(2);
   };
 
   const checkUser = async (phone: string, email: string) => {
@@ -66,56 +66,99 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
     setError("");
   };
 
+  const handleBack = () => {
+    setError("");
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const login = (e: FormEvent) => {
+    e.preventDefault();
+    // const pinCodeValid = /^d{4}$/.test(pinCode);
+    // if (!pinCodeValid) {
+    //   setError("Введите корректный пин-код");
+    //   return;
+    // }
+    setError("");
+    store.login({phone, email, password, pin_code: Number(pinCode)});
+    if(store.isAuth) navigate('/personal');
+  }
+
   return (
     <>
       {error && <p className="auth__error">{error}</p>}
 
-      <form onSubmit={handleSubmitContact} className="auth__form">
-        {!isEmailAuth ? (
+      {step === 1 && (
+        <form onSubmit={handleSubmitContact} className="auth__form">
+          {!isEmailAuth ? (
+            <MyInput
+              type="tel"
+              id="phone"
+              label="Телефон"
+              value={phone}
+              onChange={setPhone}
+              onBlur={() => checkUser(phone, email)}
+              maxLength={11}
+              required
+            />
+          ) : (
+            <MyInput
+              type="email"
+              id="emial"
+              label="Электронная почта"
+              value={email}
+              onChange={setEmail}
+              onBlur={() => checkUser(phone, email)}
+              required
+            />
+          )}
+
           <MyInput
-            type="tel"
-            id="phone"
-            label="Телефон"
-            value={phone}
-            onChange={setPhone}
-            onBlur={() => checkUser(phone, email)}
-            maxLength={11}
+            type="password"
+            id="password"
+            label="Пароль"
+            value={password}
+            onChange={setPassword}
             required
           />
-        ) : (
+
+          <button type="submit" className="auth__button"> Продолжить </button>
+
+          <a onClick={toggleAuthType} className="auth__toggle-button">
+            {isEmailAuth ? "Войти по телефону" : "Войти по почте"}
+          </a>
+          <a onClick={() => setState("register")} className="auth__toggle-button">
+            Зарегистрироваться
+          </a>
+          <a onClick={() => setState("recover")} className="auth__toggle-button">
+            Забыл пароль
+          </a>
+
+        </form>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={login} className="auth__form">
           <MyInput
-            type="email"
-            id="emial"
-            label="Электронная почта"
-            value={email}
-            onChange={setEmail}
-            onBlur={() => checkUser(phone, email)}
+            id="pin-code"
+            label="Пин-код"
+            value={pinCode}
+            onChange={(value) => setPinCode(value)}
+            maxLength={4}
             required
           />
-        )}
 
-        <MyInput
-          type="password"
-          id="password"
-          label="Пароль"
-          value={password}
-          onChange={setPassword}
-          required
-        />
+          <button type="submit" className="auth__button">
+            Войти
+          </button>
 
-        <button type="submit" className="auth__button"> Продолжить </button>
+          <button className="auth__button" onClick={handleBack}>
+            Назад
+          </button>
+        </form>
+      )}
 
-        <a onClick={toggleAuthType} className="auth__toggle-button">
-          {isEmailAuth ? "Войти по телефону" : "Войти по почте"}
-        </a>
-        <a onClick={() => setState("register")} className="auth__toggle-button">
-          Зарегистрироваться
-        </a>
-        <a onClick={() => setState("recover")} className="auth__toggle-button">
-          Забыл пароль
-        </a>
-        
-      </form>
     </>
   );
 };

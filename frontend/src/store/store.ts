@@ -45,8 +45,21 @@ export default class Store {
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange||"Ошибка при входе!");
+            this.setError(error.response?.data?.messange || "Ошибка при входе!");
             console.log(error.response?.data?.messange);
+        }
+    }
+
+    async checkAuth() {
+        try {
+            const response = await AuthService.checkAuth();
+            localStorage.setItem('token', response.data.accessToken);
+            this.setAuth(true);
+            this.setUser(response.data.user);
+        } catch (e) {
+            localStorage.removeItem('token');
+            this.setAuth(false);
+            this.setUser({} as IUser);
         }
     }
 
@@ -57,9 +70,9 @@ export default class Store {
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange||"Ошибка при регистрации!");
+            this.setError(error.response?.data?.messange || "Ошибка при регистрации!");
             console.log(error.response?.data?.messange);
         }
     }
@@ -91,9 +104,9 @@ export default class Store {
         try {
             const response = await UserService.fetchUserData(id);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange||"Ошибка при получении данных пользователя!");
+            this.setError(error.response?.data?.messange || "Ошибка при получении данных пользователя!");
             console.log(error.response?.data?.messange);
         }
     }
@@ -102,23 +115,23 @@ export default class Store {
         try {
             const response = await AuthService.sendEmailResetPassword(email);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message||"Ошибка при отправки сообщения для сбрасывания пароля!");
+            this.setError(error.response?.data?.message || "Ошибка при отправки сообщения для сбрасывания пароля!");
             console.log(error.response?.data?.message);
-            return { success: false, message: this.error}
+            return { success: false, message: this.error }
         }
     }
-    
+
     async resetPassword(token: string, password: string): Promise<ResetPassword> {
         try {
             const response = await AuthService.resetPassword(token, password);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message||"Ошибка при сбрасывании пароля!");
+            this.setError(error.response?.data?.message || "Ошибка при сбрасывании пароля!");
             console.log(error.response?.data?.message);
-            return { success: false, message: this.error}
+            return { success: false, message: this.error }
         }
     }
 }
