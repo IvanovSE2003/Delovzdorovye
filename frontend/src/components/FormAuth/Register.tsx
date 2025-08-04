@@ -2,6 +2,7 @@ import React, { useContext, useState, type Dispatch, type FormEvent, type SetSta
 import "../FormAuth/FormAuth.scss"
 import { Context } from "../../main";
 import type { AuthState } from "./FormAuth";
+import MyInput from "../UI/MyInput/MyInput";
 
 type Gender = "мужчина" | "женщина" | "";
 type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
@@ -59,11 +60,11 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
         }
 
         setError("");
-        store.registration(userDetails);
+        // store.registration(userDetails);
 
-        if(localStorage.getItem('token')) {
-            window.location.href = '/personal';
-        }
+        // if (localStorage.getItem('token')) {
+        //     window.location.href = '/personal';
+        // }
 
         console.log("Регистрируем пользователя:", userDetails);
     };
@@ -83,105 +84,83 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
         <div>
             {step === 1 && (
                 <div className="auth__form">
-                    <h3 className="role-selection__title">Заполните данные</h3>
-
                     {error && <p className="auth__error">{error}</p>}
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            value={userDetails.surname}
-                            onChange={(e) => handleDetailsChange("surname", e.target.value)}
-                            required
-                        />
-                        <label htmlFor="repeat-password">Фамилия</label>
-                    </div>
+                    <MyInput
+                        id="surname"
+                        label="Фамилия"
+                        value={userDetails.surname}
+                        onChange={(value) => handleDetailsChange("surname", value)}
+                        required
+                    />
 
+                    <MyInput
+                        id="name"
+                        label="Имя"
+                        value={userDetails.name}
+                        onChange={(value) => handleDetailsChange("name", value)}
+                        required
+                    />
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            value={userDetails.name}
-                            onChange={(e) => handleDetailsChange("name", e.target.value)}
-                            required
-                        />
-                        <label htmlFor="repeat-password">Имя</label>
-                    </div>
+                    <MyInput
+                        id="patronymic"
+                        label="Отчество"
+                        value={userDetails.patronymic}
+                        onChange={(value) => handleDetailsChange("patronymic", value)}
+                        required
+                    />
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            value={userDetails.patronymic}
-                            onChange={(e) => handleDetailsChange("patronymic", e.target.value)}
-                        />
-                        <label htmlFor="repeat-password">Отчество</label>
-                    </div>
+                    <MyInput
+                        id="email"
+                        label="Электронная почта"
+                        value={userDetails.email}
+                        onChange={(value) => handleDetailsChange("email", value)}
+                        required
+                    />
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            value={userDetails.email}
-                            onChange={(e) => handleDetailsChange("email", e.target.value)}
-                            required
-                        />
-                        <label htmlFor="repeat-password">Электронная почта</label>
-                    </div>
+                    <MyInput
+                        id="phone"
+                        label="Телефон"
+                        value={userDetails.phone}
+                        maxLength={11}
+                        onChange={(value) => handleDetailsChange("phone", value)}
+                        required
+                    />
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            value={userDetails.phone}
-                            maxLength={11}
-                            onChange={(e) => handleDetailsChange("phone", e.target.value.replace(/[^\d+]/g, ""))}
-                            required
-                        />
-                        <label htmlFor="repeat-password">Телефон</label>
-                    </div>
-
-                    <div className="form-group radios">
-                        <label>Пол:</label>
-                        <div className="radio">
+                    <div className="radios">
+                        <div className="form_radio_btn">
                             <input
+                                id="male"
                                 type="radio"
-                                name="gender"
+                                name="male"
                                 value="мужчина"
                                 checked={userDetails.gender === "мужчина"}
                                 onChange={(e) => handleDetailsChange("gender", e.target.value)}
-                            />{" "}
-                            Мужской
+                            />
+                            <label htmlFor="male">Мужчина</label>
                         </div>
-                        <div className="radio">
+
+                        <div className="form_radio_btn">
                             <input
+                                id="female"
                                 type="radio"
-                                name="gender"
+                                name="female"
                                 value="женщина"
                                 checked={userDetails.gender === "женщина"}
                                 onChange={(e) => handleDetailsChange("gender", e.target.value)}
-                            />{" "}
-                            Женский
+                            />
+                            <label htmlFor="female">Женщина</label>
                         </div>
                     </div>
 
-                    <div className="input-group">
-                        <input
-                            type="date"
-                            className="auth__input"
-                            value={userDetails.date_birth}
-                            onChange={(e) => handleDetailsChange("date_birth", e.target.value)}
-                            required
-                        />
-                        <label>Дата рождения</label>
-                    </div>
+                    <MyInput
+                        type="date"
+                        id="date_birth"
+                        label="Дата рождения"
+                        value={userDetails.date_birth}
+                        onChange={(value) => handleDetailsChange("date_birth", value)}
+                        required
+                    />
 
                     <div className="input-group">
                         <select
@@ -206,16 +185,10 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
                         <label>Часовой пояс</label>
                     </div>
 
-                    <button
-                        className="auth__button"
-                        onClick={() => setStep(2)}
-                    >
+                    <button className="auth__button" onClick={() => setStep(2)}>
                         Продолжить
                     </button>
-                    <a
-                        onClick={() => setState("login")}
-                        className="auth__toggle-button"
-                    >
+                    <a onClick={() => setState("login")} className="auth__toggle-button">
                         Войти в аккаунт
                     </a>
                 </div>
@@ -223,8 +196,6 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
             {step === 2 && (
                 <div className="role-selection auth__form">
-                    <h3 className="role-selection__title">Выберите вашу роль</h3>
-
                     {error && <p className="auth__error">{error}</p>}
 
                     <div className="role-selection__cards">
@@ -273,46 +244,34 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
             {step === 3 && (
                 <form onSubmit={handleSubmitDetails} className="auth__form">
-                    <h3 className="role-selection__title">Придумайте пин-код</h3>
-
                     {error && <p className="auth__error">{error}</p>}
 
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            placeholder=" "
-                            className="auth__input"
-                            maxLength={4}
-                            onChange={(e) => handleDetailsChange("pin_code", e.target.value.replace(/[^\d+]/g, ""))}
-                            value={userDetails.pin_code}
-                        />
-                        <label htmlFor="repeat-password">Пин-код</label>
-                    </div>
+                    <MyInput
+                        id="pin_code"
+                        label="Пин-код"
+                        value={userDetails.pin_code}
+                        maxLength={4}
+                        onChange={(value) => handleDetailsChange("pin_code", value)}
+                        required
+                    />
 
-                    <h3 className="role-selection__title">Придумайте пароль</h3>
+                    <MyInput
+                        type="password"
+                        id="password"
+                        label="Пароль"
+                        value={userDetails.password}
+                        onChange={(value) => handleDetailsChange("password", value)}
+                        required
+                    />
 
-                    <div className="input-group">
-                        <input
-                            type="password"
-                            placeholder=" "
-                            className="auth__input"
-                            onChange={(e) => handleDetailsChange("password", e.target.value)}
-                            value={userDetails.password}
-                        />
-                        <label htmlFor="repeat-password">Пароль</label>
-                    </div>
-
-                    <div className="input-group">
-                        <input
-                            type="password"
-                            id="repeat-password"
-                            placeholder=" "
-                            className="auth__input"
-                            onChange={(e) => setReplyPass(e.target.value)}
-                            value={replyPass}
-                        />
-                        <label htmlFor="repeat-password">Повторить пароль</label>
-                    </div>
+                    <MyInput
+                        type="password"
+                        id="repeat-password"
+                        label="Повторите пароль"
+                        value={replyPass}
+                        onChange={(value) => setReplyPass(value)}
+                        required
+                    />
 
                     <button type="submit"
                         className="auth__button__final"

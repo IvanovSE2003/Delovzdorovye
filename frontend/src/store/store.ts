@@ -92,4 +92,15 @@ export default class Store {
             console.log(error.response?.data?.messange);
         }
     }
+
+    async resetPassword(email: string) {
+        try {
+            const response = AuthService.resetPassword(email);
+            return (await response);
+        } catch(e) {
+            const error = e as AxiosError<{ messange: string }>;
+            this.setError(error.response?.data?.messange||"Ошибка при сбрасывании пароля!");
+            console.log(error.response?.data?.messange);
+        }
+    }
 }
