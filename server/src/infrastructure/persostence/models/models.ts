@@ -1,9 +1,9 @@
-import sequelize from '../db.js'
+import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
-import { IUserModel } from "../interfeces/IUser.js";
-import { ITokenModel } from "../interfeces/IToken.js"
+import { ITokenModel } from "../../../core/domain/types/IToken.js"
+import {UserModelInterface} from "../models/interfaces/user.model.js"
 
-const User = sequelize.define<IUserModel>('user', {
+const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: DataType.STRING, allowNull: false},
     surname: {type: DataType.STRING, allowNull: false}, 
@@ -23,20 +23,20 @@ const User = sequelize.define<IUserModel>('user', {
     resetPasswordExpires:{type: DataType.DATE, allowNull: true}
 })
 
-const Token = sequelize.define<ITokenModel>('token', {
+const TokenModel = sequelize.define<ITokenModel>('token', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     userId: {type: DataType.INTEGER},
     refreshToken: {type: DataType.TEXT, allowNull: false}
 })
 
-const Patient = sequelize.define('patient', {
+const PatientModel = sequelize.define('patient', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     general_info: {type: DataType.JSONB},
     analyses_examinations: {type: DataType.JSONB},
     additionally: {type: DataType.JSONB}
 })
 
-const Doctor = sequelize.define('doctor', {
+const DoctorModel = sequelize.define('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     specialization: {type: DataType.STRING},
     contacts: {type: DataType.STRING, allowNull: true},
@@ -68,36 +68,36 @@ const Transaction = sequelize.define('transaction', {
     date: {type: DataType.DATE}
 })
 
-User.hasOne(Doctor)
-Doctor.belongsTo(User)
+UserModel.hasOne(DoctorModel)
+DoctorModel.belongsTo(UserModel)
 
-User.hasOne(Patient)
-Patient.belongsTo(User)
+UserModel.hasOne(PatientModel)
+PatientModel.belongsTo(UserModel)
 
-User.hasOne(Transaction)
-Transaction.belongsTo(User)
+UserModel.hasOne(Transaction)
+Transaction.belongsTo(UserModel)
 
 Consultation.hasOne(Transaction)
 Transaction.belongsTo(Consultation)
 
-Patient.hasOne(Consultation)
-Consultation.belongsTo(Patient)
+PatientModel.hasOne(Consultation)
+Consultation.belongsTo(PatientModel)
 
-Doctor.hasOne(Consultation)
-Consultation.belongsTo(Doctor)
+DoctorModel.hasOne(Consultation)
+Consultation.belongsTo(DoctorModel)
 
-Doctor.hasOne(DoctorsSchedule)
-DoctorsSchedule.belongsTo(Doctor)
+DoctorModel.hasOne(DoctorsSchedule)
+DoctorsSchedule.belongsTo(DoctorModel)
 
-User.hasOne(Token)
-Token.belongsTo(User)
+UserModel.hasOne(TokenModel)
+TokenModel.belongsTo(UserModel)
 
 export default {
-    User,
-    Doctor,
-    Patient,
+    UserModel,
+    DoctorModel,
+    PatientModel,
     Transaction,
     Consultation,
     DoctorsSchedule,
-    Token
+    TokenModel
 }

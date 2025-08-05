@@ -1,0 +1,15 @@
+// infrastructure/web/controllers/userControllerInstance.js
+import { AuthServiceImpl } from "../../../../core/application/services/auth.service.impl.js";
+import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
+import TokenServiceImpl from "../../../../core/application/services/token.service.impl.js";
+import MailServiceImpl from "../../../../core/application/services/mail.service.impl.js";
+import UserController from "./user.controller.js";
+
+const userRepository = new UserRepositoryImpl();
+const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
+const mailService = new MailServiceImpl();
+
+const authService = new AuthServiceImpl(userRepository, tokenService, mailService);
+const userController = new UserController(authService, userRepository, tokenService);
+
+export default userController;

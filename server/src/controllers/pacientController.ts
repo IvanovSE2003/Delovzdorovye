@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction} from "express";
-import ApiError from "../error/ApiError.js";
-import models from "../models/models.js"; 
+import ApiError from "../infrastructure/web/error/ApiError.js";
+import models from "../infrastructure/persostence/models/models.js"; 
 
 const {Patient} = models;
 

@@ -1,8 +1,8 @@
-import ApiError from "../error/ApiError.js";
+import ApiError from "../web/error/ApiError.js";
 import path from 'path';
 import mailService from "./mailService.js";
 import {v4} from 'uuid';
-import models from '../models/models.js';
+import models from '../persostence/models/models.js'
 import { NextFunction, Request } from "express";
 import fileUpload from 'express-fileupload'
 import { fileURLToPath } from 'url';

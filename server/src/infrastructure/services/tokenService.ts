@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import models from '../models/models.js'
+import models from '../persostence/models/models.js'
 
 const {Token} = models;
 

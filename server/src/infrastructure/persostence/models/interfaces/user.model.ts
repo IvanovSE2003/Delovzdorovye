@@ -7,20 +7,20 @@ interface IUserAttributes {
     patronymic: string;
     email: string;
     phone: string;
-    pin_code: number | null;
+    pin_code: number;
     password: string;
     time_zone: number;
     date_birth: Date;
     gender: string;
-    role: string;
-    img: string,
-    createdAt?: Date;
-    updatedAt?: Date;
-    isActivated: Boolean;
+    isActivated: boolean;
     activationLink: string;
+    img: string;
+    role: 'PACIENT' | 'DOCTOR' | 'ADMIN';
     resetPasswordToken: string | null;
     resetPasswordExpires: Date | null;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
-interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}
-export interface IUserModel extends Model<IUserAttributes, IUserCreationAttributes>, IUserAttributes {}
+export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}
+export interface UserModelInterface extends Model<IUserAttributes, IUserCreationAttributes>, IUserAttributes {}

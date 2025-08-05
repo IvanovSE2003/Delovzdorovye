@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 import { Request, Response, NextFunction } from "express"
-import UserJwtPayload from "../types/UserJwtPayload.js";
+import UserJwtPayload from "../../../core/domain/types/UserJwtPayload.js"
 
 export default function roleMiddleware(role: string) {
     return function authMiddleware(req: Request, res: Response, next: NextFunction) {

@@ -1,10 +1,9 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import sequelize from './db.js'
-import models from './models/models.js';
+import sequelize from './infrastructure/persostence/db/db.js'
 import cors from 'cors'
-import router from './routes/index.js'
-import errorHandler from './midlewares/ErrorHandlingMidleware.js';
+import router from './infrastructure/web/routes/index.js'
+import errorHandler from './infrastructure/web/middleware/ErrorHandlingMidleware.js';
 import fileUpload from 'express-fileupload'
 import path from 'path'
 import { fileURLToPath } from 'url';

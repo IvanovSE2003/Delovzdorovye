@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import models from "../models/models.js";
+import models from "../infrastructure/persostence/models/models.js";
 
 const { DoctorsSchedule } = models;
 
