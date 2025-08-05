@@ -1,16 +1,15 @@
 import React, {
   useContext,
   useState,
-  type Dispatch,
   type FormEvent,
-  type SetStateAction,
 } from "react";
 import "../FormAuth/FormAuth.scss";
 import { Context } from "../../main";
-import type { AuthState } from "./FormAuth";
 import MyInput from "../UI/MyInput/MyInput";
 import MySelect from "../UI/MySelect/MySelect";
 import { observer } from "mobx-react-lite";
+import type { FormAuthProps } from "../../models/FormAuth";
+import PinCodeInput from "./PinCodeInput/PinCodeInput";
 
 type Gender = "мужчина" | "женщина" | "";
 type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
@@ -31,11 +30,7 @@ interface UserDetails {
   experience_years: string;
 }
 
-type RegisterProps = {
-  setState: Dispatch<SetStateAction<AuthState>>;
-};
-
-const Register: React.FC<RegisterProps> = ({ setState }) => {
+const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [userDetails, setUserDetails] = useState<UserDetails>({
     name: "",
     surname: "",
@@ -52,7 +47,6 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
     contacts: "",
     experience_years: "",
   });
-  const [error, setError] = useState<string>("");
   const [replyPass, setReplyPass] = useState<string>("");
   const [step, setStep] = useState<number>(1);
   const { store } = useContext(Context);
@@ -65,26 +59,30 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
       return;
     }
 
-    const isEmpty = Object.values(userDetails).some(
-      (value) => !value || value.trim() === ""
-    );
-    if (isEmpty) {
-      setError("Все поля должны быть заполнены!");
-      return;
-    }
+    // const isEmpty = Object.values(userDetails).some(
+    //   (value) => !value || value.trim() === ""
+    // );
+    // if (isEmpty) {
+    //   setError("Все поля должны быть заполнены!");
+    //   return;
+    // }
 
     setError("");
     store.registration(userDetails);
     if (store.isAuth) {
-        window.location.href = '/personal';
+      window.location.href = '/personal';
     }
-    console.log(userDetails);
+    // console.log(userDetails);
   };
 
   const handleBack = () => {
     setError("");
     if (step > 1) {
-      setStep(step - 1);
+      if(userDetails.role === 'DOCTOR')
+          setStep(step - 1);
+      else
+        if(step - 1 == 3) setStep(step - 2)
+        else setStep(step - 1)
     }
   };
 
@@ -95,12 +93,14 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
+  const registered = (pin: string) => {
+    handleDetailsChange('pin_code', pin);
+  }
+
   return (
     <>
       {step === 1 && (
         <div className="auth__form">
-          {error && <p className="auth__error">{error}</p>}
-
           <MyInput
             id="surname"
             label="Фамилия"
@@ -208,8 +208,6 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
       {step === 2 && (
         <div className="role-selection auth__form">
-          {error && <p className="auth__error">{error}</p>}
-
           <div className="role-selection__cards">
             <div className="role-card role-card_doctor">
               <div className="role-card__icon">👨‍⚕️</div>
@@ -253,8 +251,6 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
       {step === 3 && (
         <div className="auth__form">
-          {error && <p className="auth__error">{error}</p>}
-
           <MyInput
             id="specialization"
             label="Специализация"
@@ -291,15 +287,8 @@ const Register: React.FC<RegisterProps> = ({ setState }) => {
 
       {step === 4 && (
         <form onSubmit={handleSubmitDetails} className="auth__form">
-          {error && <p className="auth__error">{error}</p>}
-
-          <MyInput
-            id="pin_code"
-            label="Пин-код"
-            value={userDetails.pin_code}
-            maxLength={4}
-            onChange={(value) => handleDetailsChange("pin_code", value)}
-            required
+          <PinCodeInput
+            onLogin={registered}
           />
 
           <MyInput

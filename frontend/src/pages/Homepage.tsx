@@ -1,7 +1,7 @@
 import Slider from '../components/UI/Slider/Slider'
 import Header from '../components/UI/Header/Header'
 
-const Homepage = () => {
+const HomePage = () => {
     const slides = [
     {
       id: 1,
@@ -34,4 +34,4 @@ const Homepage = () => {
     )
 }
 
-export default Homepage;
+export default HomePage;

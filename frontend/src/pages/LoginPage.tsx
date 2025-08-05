@@ -1,11 +1,11 @@
 import FormAuth from "../components/FormAuth/FormAuth";
 import { Link } from 'react-router';
 import logo from '../assets/images/logo.png';
-import './Register.scss'
+import '../assets/styles/LoginPage.scss'
 
 const RegisterPage = () => {
     return (
-        <div>
+        <>
             <div className='auth__window'>
                 <div className='auth__left'>
                     <Link to="/">
@@ -18,7 +18,7 @@ const RegisterPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

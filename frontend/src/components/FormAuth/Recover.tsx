@@ -3,14 +3,10 @@ import "./FormAuth.scss";
 import type { AuthState } from "./FormAuth";
 import { Context } from "../../main";
 import MyInput from "../UI/MyInput/MyInput";
+import type { FormAuthProps } from "../../models/FormAuth";
 
-type RecoverProps = {
-    setState: Dispatch<SetStateAction<AuthState>>;
-};
-
-const Recover: React.FC<RecoverProps> = ({ setState }) => {
+const Recover: React.FC<FormAuthProps> = ({ setState, setError}) => {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
     const [step, setStep] = useState(1);
     const [message, setMessage] = useState("");
     const { store } = useContext(Context);
@@ -46,7 +42,8 @@ const Recover: React.FC<RecoverProps> = ({ setState }) => {
 
     return (
         <>
-            {step === 1 ? (
+            {step === 1 ? 
+            (
                 <form onSubmit={handleSubmit} className="auth__form">
                     <h3>Восстановление пароля</h3>
 
@@ -62,8 +59,6 @@ const Recover: React.FC<RecoverProps> = ({ setState }) => {
                     <button type="submit" className="auth__button">
                         Продолжить
                     </button>
-
-                    {error && <p className="auth__error">{error}</p>}
 
                     <p className="auth__toggle-button">
                         Вспомнили пароль?{" "}

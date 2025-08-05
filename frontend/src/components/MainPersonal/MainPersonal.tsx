@@ -36,9 +36,18 @@ const MainPersonal: React.FC = () => {
           throw new Error("Пользователь не авторизован");
         }
         
-        const data = await store.getPatientData(store.user.id);
-        console.log(data)
-        // setPatientData(data);
+        // Явно указываем тип возвращаемого значения
+        const data = await store.getPatientData(store.user.id) as unknown as PatientData;
+        
+        // Проверяем, что данные соответствуют ожидаемой структуре
+        if (data && 
+            data.general_info && 
+            data.analyses_examinations && 
+            data.additionally) {
+          setPatientData(data);
+        } else {
+          throw new Error("Полученные данные не соответствуют ожидаемому формату");
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось загрузить данные пациента');
       } finally {
@@ -49,6 +58,7 @@ const MainPersonal: React.FC = () => {
     loadPatientData();
   }, [store, store.user?.id]);
 
+  // Остальной код компонента остается без изменений
   if (loading) {
     return <div className="loading">Загрузка данных...</div>;
   }

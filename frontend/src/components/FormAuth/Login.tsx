@@ -2,33 +2,29 @@ import {
   useState,
   useContext,
   type FormEvent,
-  type Dispatch,
-  type SetStateAction,
+  useEffect,
 } from "react";
 import { useNavigate } from 'react-router';
 import { Context } from "../../main";
-import type { AuthState } from "./FormAuth";
 import MyInput from "../UI/MyInput/MyInput";
+import type { FormAuthProps } from "../../models/FormAuth";
+import { observer } from "mobx-react-lite";
+import PinCodeInput from "./PinCodeInput/PinCodeInput";
+import { RouteNames } from "../../routes";
 
-type LoginProps = {
-  setState: Dispatch<SetStateAction<AuthState>>;
-};
-
-const Login: React.FC<LoginProps> = ({ setState }) => {
+const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
-
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
-
   const [phone, setPhone] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [pinCode, setPinCode] = useState<string>("");
-
   const [step, setStep] = useState<number>(1);
-
-
-  const [error, setError] = useState<string>("");
   const { store } = useContext(Context);
+
+  useEffect(() => {
+    setStep(1);
+    setError(store.error);
+  }, [store.error])
 
   const handleSubmitContact = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -51,14 +47,6 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
     setStep(2);
   };
 
-  const checkUser = async (phone: string, email: string) => {
-    if (phone == "" || email == "") return;
-    const res = await store.checkUser(phone, email);
-    res
-      ? setError("Такой пользователь есть!")
-      : setError("Такого пользователя нет!");
-  };
-
   const toggleAuthType = (): void => {
     setIsEmailAuth((prev) => !prev);
     setPhone("");
@@ -73,22 +61,15 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
     }
   };
 
-  const login = (e: FormEvent) => {
-    e.preventDefault();
-    // const pinCodeValid = /^d{4}$/.test(pinCode);
-    // if (!pinCodeValid) {
-    //   setError("Введите корректный пин-код");
-    //   return;
-    // }
+  const login = async (pin: string) => {
     setError("");
-    store.login({phone, email, password, pin_code: Number(pinCode)});
-    if(store.isAuth) navigate('/personal');
+    console.log({ phone, email, password, pin_code: Number(pin) })
+    await store.login({ phone, email, password, pin_code: Number(pin) });
+    if (store.isAuth) navigate(RouteNames.PERSONAL);
   }
 
   return (
     <>
-      {error && <p className="auth__error">{error}</p>}
-
       {step === 1 && (
         <form onSubmit={handleSubmitContact} className="auth__form">
           {!isEmailAuth ? (
@@ -98,7 +79,6 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
               label="Телефон"
               value={phone}
               onChange={setPhone}
-              onBlur={() => checkUser(phone, email)}
               maxLength={11}
               required
             />
@@ -109,7 +89,6 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
               label="Электронная почта"
               value={email}
               onChange={setEmail}
-              onBlur={() => checkUser(phone, email)}
               required
             />
           )}
@@ -140,19 +119,9 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
 
       {step === 2 && (
         <form className="auth__form">
-          <MyInput
-            id="pin-code"
-            label="Пин-код"
-            value={pinCode}
-            onChange={(value) => setPinCode(value)}
-            maxLength={4}
-            required
+          <PinCodeInput
+            onLogin={login}
           />
-
-          <button onClick={login}>
-            Войти
-          </button>
-
           <button className="auth__button" onClick={handleBack}>
             Назад
           </button>
@@ -163,4 +132,4 @@ const Login: React.FC<LoginProps> = ({ setState }) => {
   );
 };
 
-export default Login;
+export default observer(Login);

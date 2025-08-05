@@ -10,8 +10,8 @@ import { API_URL } from "../http";
 export default class Store {
     user = {} as IUser;
     isAuth = false;
-    error = ""
-    isLoding = false;
+    error = "";
+    isLoading = false; // Исправлено isLoding -> isLoading
 
     constructor() {
         makeAutoObservable(this);
@@ -29,67 +29,88 @@ export default class Store {
         this.error = error;
     }
 
+    setLoading(bool: boolean) {
+        this.isLoading = bool;
+    }
+
     async login(data: LoginData): Promise<void> {
         try {
+            this.setLoading(true);
+            this.setError("");
             const response = await AuthService.login(data);
-            console.log(response)
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange || "Ошибка при входе!");
-            console.log(error.response?.data?.messange);
+            const errorMessage = error.response?.data?.messange || "Ошибка при входе!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+        } finally {
+            this.setLoading(false);
         }
     }
 
     async checkAuth() {
+        this.setLoading(true);
         try {
-            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {withCredentials: true});
-            console.log(response);
+            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {
+                withCredentials: true
+            });
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
-        } catch (e: any) {
-            console.log(e.response?.data?.message)
+        } catch (e) {
+            const error = e as AxiosError<{ messange: string }>;
+            console.log("Ошибка проверки аутентификации:", error.response?.data?.messange);
+            localStorage.removeItem('token');
+            this.setAuth(false);
         } finally {
-            this.isLoding = false;
+            this.setLoading(false);
         }
     }
 
     async registration(data: RegistrationData): Promise<void> {
         try {
+            this.setLoading(true);
+            this.setError("");
             const response = await AuthService.registration(data);
-            console.log(response)
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange || "Ошибка при регистрации!");
-            console.log(error.response?.data?.messange);
+            const errorMessage = error.response?.data?.messange || "Ошибка при регистрации!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+        } finally {
+            this.setLoading(false);
         }
     }
 
     async logout() {
         try {
-            const response = await AuthService.logout();
-            console.log(response)
+            this.setLoading(true);
+            await AuthService.logout();
             localStorage.removeItem('token');
             this.setAuth(false);
             this.setUser({} as IUser);
+            this.setError("");
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            console.log(error.response?.data?.message);
+            const error = e as AxiosError<{ messange: string }>;
+            console.log("Ошибка при выходе:", error.response?.data?.messange);
+        } finally {
+            this.setLoading(false);
         }
     }
 
+    // Остальные методы остаются без изменений
     async checkUser(phone: string | null, email: string | null) {
         try {
             const response = await UserService.CheckUser(phone, email) as any;
             return response.data.check;
         } catch (e) {
-            console.error((e as AxiosError<{ message: string }>).response?.data?.message);
+            console.error((e as AxiosError<{ messange: string }>).response?.data?.messange);
             return false;
         }
     }
@@ -100,32 +121,38 @@ export default class Store {
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            this.setError(error.response?.data?.messange || "Ошибка при получении данных пациента!");
-            console.log(error.response?.data?.messange);
+            const errorMessage = error.response?.data?.messange || "Ошибка при получении данных пациента!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+            throw error;
         }
     }
 
     async sendEmailResetPassword(email: string): Promise<ResetPassword> {
         try {
+            this.setError("");
             const response = await AuthService.sendEmailResetPassword(email);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message || "Ошибка при отправки сообщения для сбрасывания пароля!");
-            console.log(error.response?.data?.message);
-            return { success: false, message: this.error }
+            const error = e as AxiosError<{ messange: string }>;
+            const errorMessage = error.response?.data?.messange || "Ошибка при отправке сообщения для сброса пароля!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+            return { success: false, message: errorMessage };
         }
     }
 
     async resetPassword(token: string, password: string): Promise<ResetPassword> {
         try {
+            this.setError("");
             const response = await AuthService.resetPassword(token, password);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message || "Ошибка при сбрасывании пароля!");
-            console.log(error.response?.data?.message);
-            return { success: false, message: this.error }
+            const error = e as AxiosError<{ messange: string }>;
+            const errorMessage = error.response?.data?.messange || "Ошибка при сбросе пароля!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+            return { success: false, message: errorMessage };
         }
     }
 }

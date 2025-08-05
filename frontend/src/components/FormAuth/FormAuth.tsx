@@ -9,6 +9,7 @@ export type AuthState= "login" | "register"| "recover";
 
 const FormAuth = () => {
     const [state, setState] = useState<AuthState>("login");
+    const [error, setError] = useState<string>("");
 
     return (
         <>
@@ -17,16 +18,18 @@ const FormAuth = () => {
                 {state === "register" && "Регистрация"}
             </h3>
 
+            {error && <p className="auth__error">{error}</p>}
+
             {state === "login" && (
-                <Login setState={setState}/>
+                <Login setState={setState} setError={setError}/>
             )}
 
             {state === "register" && (
-                <Register setState={setState}/>
+                <Register setState={setState} setError={setError}/>
             )}
 
             {state === "recover" && (
-                <Recover setState={setState}/>
+                <Recover setState={setState} setError={setError}/>
             )}
         </>
     )

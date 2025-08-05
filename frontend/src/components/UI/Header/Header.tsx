@@ -5,13 +5,14 @@ import React, { useContext, useEffect } from "react";
 import { Link } from "react-router";
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
+import { RouteNames } from "../../../routes";
 
 const Header: React.FC = () => {
   const { store } = useContext(Context);
   return (
     <>
       <div className="header">
-        <Link to="/">
+        <Link to={RouteNames.MAIN}>
           <img className="header__logo" src={logo} alt="logo_medonline" />
         </Link>
         <nav className="header__nav">
@@ -25,16 +26,16 @@ const Header: React.FC = () => {
           {store.isAuth ? (
             <>
               <button onClick={async () => await store.logout()}>Выйти</button>
-              <Link to="/personal">
+              <Link to={RouteNames.PERSONAL}>
                 <img src={avatar} alt="avatar" />
               </Link>
             </>
           ) : (
             <>
-              <Link to="/register">
+              <Link to={RouteNames.LOGIN}>
                 <button>Войти</button>
               </Link>
-              <Link to="/register">
+              <Link to={RouteNames.LOGIN}>
                 <img src={avatar} alt="avatar" />
               </Link>
             </>
