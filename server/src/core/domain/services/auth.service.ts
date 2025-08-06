@@ -26,5 +26,7 @@ export default interface AuthService {
 
     logout(refreshToken: string): Promise<void>;
     refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;
-    activate(activationLink: string): Promise<void>;
+    activate(activationLink: string, userId: number): Promise<boolean>;
+    requestPasswordReset(user: User): Promise<object>;
+    resetPassword(token: string, password: string): Promise<boolean>;
 }

@@ -2,6 +2,7 @@ import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
 import { ITokenModel } from "../../../core/domain/types/IToken.js"
 import {UserModelInterface} from "../models/interfaces/user.model.js"
+import { PatientModelInterface } from './interfaces/patient.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -29,11 +30,12 @@ const TokenModel = sequelize.define<ITokenModel>('token', {
     refreshToken: {type: DataType.TEXT, allowNull: false}
 })
 
-const PatientModel = sequelize.define('patient', {
+const PatientModel = sequelize.define<PatientModelInterface>('patient', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     general_info: {type: DataType.JSONB},
     analyses_examinations: {type: DataType.JSONB},
-    additionally: {type: DataType.JSONB}
+    additionally: {type: DataType.JSONB},
+    activate: {type: DataType.BOOLEAN}
 })
 
 const DoctorModel = sequelize.define('doctor', {

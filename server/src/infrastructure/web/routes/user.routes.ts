@@ -11,16 +11,18 @@ router.post('/registration',
     (req: Request, res: Response, next: NextFunction) => userController.registration(req, res, next));
 router.post('/login', (req: Request, res: Response, next: NextFunction) => userController.login(req, res, next));
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
-// router.get('/auth', authMiddleware, UserController.check);
-// router.get('/activate/:link', UserController.activate);
-// router.get('/refresh', UserController.refresh);
+router.get('/auth', authMiddleware, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
+
+router.get('/activate/:link', (req: Request, res: Response, next: NextFunction) => userController.activate(req, res, next));
+router.get('/refresh', (req: Request, res: Response, next: NextFunction) => userController.refresh(req, res, next));
+
 router.get('/:id', (req: Request, res: Response, next: NextFunction) => userController.getOne(req, res, next));
 // router.put('/:id', UserController.updateUser);
 router.post('/check', (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
 router.post('/checkPinCode', (req: Request, res: Response, next: NextFunction) => userController.checkPinCode(req, res, next));
 
 router.post('/request-password-reset', (req: Request, res: Response, next: NextFunction) => userController.requestPasswordReset(req, res, next));
-// router.post('/reset-password/:token', UserController.resetPassword);
+router.post('/reset-password/:token', (req: Request, res: Response, next: NextFunction) => userController.resetPassword(req, res, next));
 
 export default router;
 

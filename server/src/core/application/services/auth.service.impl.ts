@@ -7,6 +7,10 @@ import Patient from "../../domain/entities/patient.entity.js";
 import Doctor from "../../domain/entities/doctor.entity.js";
 import bcrypt from "bcrypt";
 import { v4 } from "uuid";
+import { UserModelInterface } from "../../domain/types/IUser.js";
+import models from "../../../infrastructure/persostence/models/models.js";
+
+const {UserModel} = models;
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -125,9 +129,53 @@ export class AuthServiceImpl implements AuthService {
         };
     }
 
-    activate(activationLink: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    async activate(activationLink: string, userId: number): Promise<boolean> {
+        const user = await this.userRepository.findByActivationLink(activationLink);
+        if (!user) {
+            return false;
+        }
+        
+        if (user.id !== userId) {
+            return false;
+        }
+
+        if (user.isActivated) {
+            return true; 
+        }
+
+        user.isActivated = true;
+        await this.userRepository.save(user);
+        return true;
     }
 
-    // async requestPasswordReset(user: User, )
+    async requestPasswordReset(user: User) {
+        const resetToken = v4();
+        const resetTokenExpires = new Date(Date.now() + 3600000); 
+
+        const userData = await UserModel.findByPk(user.id);
+        if(!userData) {
+            return {success: false, message:`Не найден пользователь с email: ${user.email}`}
+        }
+                
+        userData.resetPasswordToken = resetToken;
+        userData.resetPasswordExpires = resetTokenExpires;
+        await userData.save();
+        await this.mailService.sendPasswordResetEmail(userData.email, resetToken);
+        return {success: true, message:`Письмо успешно отправлено на почту ${userData.email}`}
+    }
+
+    async resetPassword(token: string, password: string): Promise<boolean> {
+        const user = await this.userRepository.findByResetToken(token);
+        if (!user) {
+            return false;
+        }
+
+        const hashPassword = await bcrypt.hash(password, 5);
+        user.setPassword(hashPassword);
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        
+        await this.userRepository.save(user);
+        return true;
+    }
 }

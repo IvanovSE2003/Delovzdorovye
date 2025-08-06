@@ -114,7 +114,7 @@ export default class UserController {
         try {
             const { email } = req.body;
             if (!email) {
-                return res.json({ 
+                return res.status(404).json({ 
                     success: false, 
                     message: `Почта не указана` 
                 });
@@ -123,14 +123,119 @@ export default class UserController {
             const user = await this.userRepository.findByEmail(email);
             
             if (!user) {
-                return res.json({ 
+                return res.status(404).json({ 
                     success: false, 
                     message: `Пользователь с почтой ${email} не найден` 
                 });
             }
 
+            return res.json(await this.authService.requestPasswordReset(user));
         } catch(e: any) {
             return next(ApiError.badRequest(e.message))
         }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token } = req.params;
+            const { newPassword } = req.body;
+
+            if (!token || !newPassword) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Не найдены токен и новый пароль' 
+                });
+            }
+
+            await this.authService.resetPassword(token, newPassword);
+            
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Пароль успешно изменен' 
+            });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async activate(req: Request, res: Response, next: NextFunction) {
+        try {
+            const activationLink = req.params.link;
+            
+            if (!activationLink) {
+                return next(ApiError.badRequest('Некорректная ссылка активации'));
+            }
+
+            const user = await this.userRepository.findByActivationLink(activationLink);
+            if (!user) {
+                return res.status(200).json({ 
+                    success: false, 
+                    message: 'Пользователь не найден' 
+                });
+            }
+
+            if (user.isActivated) {
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Аккаунт уже был активирован ранее' 
+                });
+            }
+
+            const isActivated = await this.authService.activate(activationLink, user.id);
+            if (!isActivated) {
+                return res.status(200).json({ 
+                    success: false, 
+                    message: 'Ошибка при активации аккаунта' 
+                });
+            }
+
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Аккаунт успешно активирован' 
+            });
+            
+        } catch(e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        const { refreshToken } = req.cookies;
+        if (!refreshToken) {
+            return next(ApiError.notAuthorized('Пользователь не авторизован'));
+        }
+        const userPayload = await this.tokenService.validateRefreshToken(refreshToken);
+
+        if (!userPayload || typeof userPayload === 'string') {
+            return next(ApiError.notAuthorized('Невалидный токен'));
+        }
+        if (!userPayload.id || !userPayload.email) {
+            return next(ApiError.notAuthorized('Токен не содержит необходимых данных'));
+        }
+        
+        const tokenFromDb = await this.tokenService.findToken(refreshToken);
+
+        if (!tokenFromDb) {
+            return next(ApiError.notAuthorized('Токен не найден в базе'));
+        }
+
+        const user = await this.userRepository.findById(userPayload.id);
+        if (!user) {
+            return next(ApiError.notAuthorized('Пользователь не найден'));
+        }
+
+        const tokens = await this.tokenService.generateTokens({...user});
+        await this.tokenService.saveToken(user.id, tokens.refreshToken);
+
+        res.cookie('refreshtoken', tokens.refreshToken, {
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: true
+        });
+
+        return res.json({
+            accessToken: tokens.accessToken,
+            user: user
+        });
     }
 }

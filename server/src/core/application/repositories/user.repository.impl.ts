@@ -1,4 +1,3 @@
-// infrastructure/persistence/repositories/user.repository.impl.ts
 import { Op } from 'sequelize';
 import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';

@@ -1,11 +1,15 @@
-import { Model } from 'sequelize';
+import { Model, Optional } from 'sequelize';
 
-export default interface PatientModelInterface extends Model {
+interface IPatientAttributes {
     id: number;
     general_info: Record<string, any> | null;
     analyses_examinations: Record<string, any> | null;
     additionally: Record<string, any> | null;
-    userId: number;
-    createdAt: Date;
-    updatedAt: Date;
+    userId?: number;
+    activate: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
+
+export interface IPatientCreationAttributes extends Optional<IPatientAttributes, 'id'> {}
+export interface PatientModelInterface extends Model<IPatientAttributes, IPatientCreationAttributes>, IPatientAttributes {}

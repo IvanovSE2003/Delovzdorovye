@@ -1,23 +1,31 @@
 export default class User {
     constructor(
-        public readonly id: number,
-        public readonly name: string,
-        public readonly surname: string,
-        public readonly patronymic: string,
-        public readonly email: string,
-        public readonly phone: string,
-        public readonly pinCode: number,
-        public readonly password: string,
-        public readonly timeZone: number,
-        public readonly dateBirth: Date,
-        public readonly gender: string,
-        public readonly isActivated: boolean,
-        public readonly activationLink: string,
-        public readonly img: string,
-        public readonly role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
-        public readonly resetPasswordToken: string | null,
-        public readonly resetPasswordExpires: Date | null
+        public id: number,
+        public name: string,
+        public surname: string,
+        public patronymic: string,
+        public email: string,
+        public phone: string,
+        public pinCode: number,
+        private _password: string,
+        public timeZone: number,
+        public dateBirth: Date,
+        public gender: string,
+        public isActivated: boolean,
+        public activationLink: string,
+        public img: string,
+        public role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
+        public resetPasswordToken: string | null,
+        public resetPasswordExpires: Date | null
     ) {}
+
+    get password(): string {
+        return this._password;
+    }
+
+    setPassword(newPassword: string): void {
+        this._password = newPassword;
+    }
 
     activate(): User {
         return new User(
@@ -60,6 +68,6 @@ export default class User {
             this.role,
             token,
             expires
-            );
+        );
     }
 }
