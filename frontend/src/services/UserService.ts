@@ -1,6 +1,6 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUser } from "../models/IUser";
+import type { IUser } from "../models/Auth";
 
 export default class UserService {
     static fetchPatientData(id: number): Promise<AxiosResponse<IUser>> {

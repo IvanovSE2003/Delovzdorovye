@@ -1,3 +1,6 @@
+import type { Dispatch, SetStateAction } from "react";
+import type { AuthState } from "../components/FormAuth/FormAuth";
+
 export interface IUser {
     id: number;
     name: string;
@@ -28,6 +31,8 @@ export type LoginData = {
     email?: string
 }
 
+export type Gender = "мужчина" | "женщина" | "";
+export type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
 export type RegistrationData = {
     name: string;
     surname: string;
@@ -35,9 +40,13 @@ export type RegistrationData = {
     email: string;
     phone: string;
     pin_code: string;
-    password: string;
     time_zone: string;
     date_birth: string;
-    gender: "мужчина"|"женщина"| "";
-    role: "PACIENT" | "DOCTOR" | "ADMIN"| "";
+    gender: Gender;
+    role: Role;
+};
+
+export type FormAuthProps = {
+  setState: Dispatch<SetStateAction<AuthState>>;
+  setError: Dispatch<SetStateAction<string>>;
 };

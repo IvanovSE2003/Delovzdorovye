@@ -3,7 +3,7 @@ import avatar from "../../../assets/images/avatar.png";
 // import type { IUser } from '../../../models/IUser.js';
 import { Context } from "../../../main.js";
 import "./UserProfile.scss";
-import type { IUser } from "../../../models/IUser.js";
+import type { IUser } from "../../../models/Auth.js";
 
 const UserProfile: React.FC = () => {
   const [dataUser, setDataUser] = useState<IUser>({} as IUser);

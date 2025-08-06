@@ -11,6 +11,7 @@ interface MyInputProps {
   maxLength?: number;
   required?: boolean;
   placeholder?: string;
+  className?: string;
 }
 
 const MyInput: React.FC<MyInputProps> = ({
@@ -22,14 +23,15 @@ const MyInput: React.FC<MyInputProps> = ({
   onBlur,
   maxLength,
   required = false,
+  className = "",
   placeholder = " ",
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <div className={`input-group ${isFocused ? "focused" : ""}`}>
+    <div className={`auth__input-group ${isFocused ? "focused" : ""}`}>
       <input
-        className="auth__input"
+        className={`auth__input ${className}`}
         type={type}
         id={id}
         value={value}

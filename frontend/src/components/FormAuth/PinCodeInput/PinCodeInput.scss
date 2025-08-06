@@ -17,9 +17,10 @@ h2 {
     height: 80px;
     text-align: center;
     font-size: 24px;
+    font-weight: 800;
     border-radius: 15px;
     background-color: $light-color;
-    color: black;
+    color: $primary-color;
 
     &:focus {
         outline: none;

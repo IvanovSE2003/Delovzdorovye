@@ -4,40 +4,42 @@
   &__input {
     width: 100%;
     padding: 20px 15px;
-    border: none;
     border-radius: 10px;
     background-color: $light-color;
 
     &:focus {
       outline: none;
     }
+
+    &.valid {
+      color: green;
+    }
+
+    &.invalid {
+      color: red;
+    }
   }
-}
 
-.input-group {
-  position: relative;
-}
+  &__input-group {
+    position: relative;
+  }
 
-.input-group label {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
-  transition: all 0.3s;
-  pointer-events: none;
-}
+  &__input-group label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 16px;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
 
-.input-group input:focus+label,
-.input-group input:not(:placeholder-shown)+label {
-  top: 0;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #4285f4;
-}
-
-.input-group input:focus{
-  border-color: #4285f4;
-  outline: none;
+  &__input-group input:focus+label,
+  &__input-group input:not(:placeholder-shown)+label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #4285f4;
+  }
 }

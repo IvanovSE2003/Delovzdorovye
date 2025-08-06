@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, LoginData, RegistrationData, ResetPassword } from "../models/IUser";
+import type { IUser, LoginData, RegistrationData, ResetPassword } from "../models/Auth";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
@@ -128,24 +128,24 @@ export default class Store {
         }
     }
 
-    async sendEmailResetPassword(email: string): Promise<ResetPassword> {
+    async sendEmailResetPinCode(pin: string): Promise<ResetPassword> {
         try {
             this.setError("");
-            const response = await AuthService.sendEmailResetPassword(email);
+            const response = await AuthService.sendEmailResetPinCode(pin);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при отправке сообщения для сброса пароля!";
+            const errorMessage = error.response?.data?.messange || "Ошибка при отправке сообщения для сброса пин-кода!";
             this.setError(errorMessage);
             console.log(errorMessage);
             return { success: false, message: errorMessage };
         }
     }
 
-    async resetPassword(token: string, password: string): Promise<ResetPassword> {
+    async resetPinCode(token: string, pinCode: string): Promise<ResetPassword> {
         try {
             this.setError("");
-            const response = await AuthService.resetPassword(token, password);
+            const response = await AuthService.resetPinCode(token, pinCode);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ messange: string }>;

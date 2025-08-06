@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, type Container } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import './assets/styles/index.scss'
 import './assets/styles/normalize.scss'
@@ -15,10 +15,18 @@ export const Context = createContext<IStore>({
   store,
 })
 
-createRoot(document.getElementById('root')!).render(
-  <Context.Provider value={{ store }}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </Context.Provider>,
-)
+let container: Container | null = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (!container) {
+    container = document.getElementById('root') as HTMLElement;
+    const root = createRoot(container)
+    root.render(
+      <Context.Provider value={{ store }}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Context.Provider>,
+    );
+  }
+});

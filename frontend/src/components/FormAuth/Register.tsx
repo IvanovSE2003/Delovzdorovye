@@ -1,101 +1,67 @@
-import React, {
-  useContext,
-  useState,
-  type FormEvent,
-} from "react";
+import React, { useContext, useState } from "react";
 import "../FormAuth/FormAuth.scss";
 import { Context } from "../../main";
+
+import doctor from "../../assets/images/doctor.png"
+import patient from "../../assets/images/patient.png"
+
 import MyInput from "../UI/MyInput/MyInput";
 import MySelect from "../UI/MySelect/MySelect";
-import { observer } from "mobx-react-lite";
-import type { FormAuthProps } from "../../models/FormAuth";
 import PinCodeInput from "./PinCodeInput/PinCodeInput";
+import { observer } from "mobx-react-lite";
 
-type Gender = "мужчина" | "женщина" | "";
-type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
-interface UserDetails {
-  name: string;
-  surname: string;
-  patronymic: string;
-  email: string;
-  phone: string;
-  pin_code: string;
-  password: string;
-  time_zone: string;
-  date_birth: string;
-  gender: Gender;
-  role: Role;
-  specialization: string;
-  contacts: string;
-  experience_years: string;
-}
+import type { FormAuthProps } from "../../models/Auth";
+import { useNavigate } from "react-router";
+import type { RegistrationData, Role, Gender } from "../../models/Auth";
+import { RouteNames } from "../../routes";
 
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
-  const [userDetails, setUserDetails] = useState<UserDetails>({
+  const navigate = useNavigate();
+
+  const [userDetails, setUserDetails] = useState<RegistrationData>({
     name: "",
     surname: "",
     patronymic: "",
     email: "",
     phone: "",
     pin_code: "",
-    password: "",
     time_zone: "",
     date_birth: "",
     gender: "",
-    role: "",
-    specialization: "",
-    contacts: "",
-    experience_years: "",
+    role: ""
   });
-  const [replyPass, setReplyPass] = useState<string>("");
   const [step, setStep] = useState<number>(1);
   const { store } = useContext(Context);
 
-  const handleSubmitDetails = (e: FormEvent): void => {
-    e.preventDefault();
-
-    if (replyPass !== userDetails.password) {
-      setError("Пароли не совпадают!");
+  // Завершение всех трех этапов
+  const registration = (): void => {
+    // Если пустое хоть одно поле объекта UserDetails
+    if (Object.values(userDetails).some((value) => !value || value.trim() === "")) {
+      setError("Все поля должны быть заполнены!");
       return;
     }
 
-    // const isEmpty = Object.values(userDetails).some(
-    //   (value) => !value || value.trim() === ""
-    // );
-    // if (isEmpty) {
-    //   setError("Все поля должны быть заполнены!");
-    //   return;
-    // }
-
     setError("");
     store.registration(userDetails);
-    if (store.isAuth) {
-      window.location.href = '/personal';
-    }
-    // console.log(userDetails);
+    if (store.isAuth) navigate(RouteNames.PERSONAL)
   };
 
+  // Вернуться на предыдущий шаг
   const handleBack = () => {
     setError("");
-    if (step > 1) {
-      if(userDetails.role === 'DOCTOR')
-          setStep(step - 1);
-      else
-        if(step - 1 == 3) setStep(step - 2)
-        else setStep(step - 1)
-    }
+    if (step > 1) setStep(step - 1);
   };
 
+  // Изменить элемент 
   const handleDetailsChange = (
-    field: keyof UserDetails,
+    field: keyof RegistrationData,
     value: string | Gender | Role
   ): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
-  const registered = (pin: string) => {
-    handleDetailsChange('pin_code', pin);
-  }
+  // Измененить состояние пин-кода
+  const SetPinCode = (pin: string) => handleDetailsChange('pin_code', pin);
 
   return (
     <>
@@ -142,8 +108,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             required
           />
 
-          <div className="radios">
-            <div className="form_radio_btn">
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="auth__radio-btn">
               <input
                 id="male"
                 type="radio"
@@ -155,7 +121,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               <label htmlFor="male">Мужчина</label>
             </div>
 
-            <div className="form_radio_btn">
+            <div className="auth__radio-btn">
               <input
                 id="female"
                 type="radio"
@@ -209,40 +175,35 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       {step === 2 && (
         <div className="role-selection auth__form">
           <div className="role-selection__cards">
-            <div className="role-card role-card_doctor">
-              <div className="role-card__icon">👨‍⚕️</div>
+            <div
+              className="role-card role-card_doctor"
+              onClick={() => {
+                handleDetailsChange("role", "DOCTOR");
+                setStep(3);
+              }}
+            >
+              <img className="role-card__icon" src={doctor} alt="doctor" />
               <h3 className="role-card__title">Доктор</h3>
               <p className="role-card__description">
                 Я медицинский специалист и хочу помогать пациентам
               </p>
-              <button
-                className="role-card__button"
-                onClick={() => {
-                  handleDetailsChange("role", "DOCTOR");
-                  setStep(3);
-                }}
-              >
-                Выбрать
-              </button>
             </div>
 
-            <div className="role-card role-card_patient">
-              <div className="role-card__icon">👤</div>
+            <div
+              className="role-card role-card_patient"
+              onClick={() => {
+                handleDetailsChange("role", "PACIENT");
+                setStep(3);
+              }}
+            >
+              <img className="role-card__icon" src={patient} alt="patient" />
               <h3 className="role-card__title">Пациент</h3>
               <p className="role-card__description">
                 Я ищу медицинскую помощь или консультацию
               </p>
-              <button
-                className="role-card__button"
-                onClick={() => {
-                  handleDetailsChange("role", "PACIENT");
-                  setStep(4);
-                }}
-              >
-                Выбрать
-              </button>
             </div>
           </div>
+
           <button onClick={handleBack} className="auth__button">
             Назад
           </button>
@@ -251,72 +212,21 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
       {step === 3 && (
         <div className="auth__form">
-          <MyInput
-            id="specialization"
-            label="Специализация"
-            value={userDetails.specialization}
-            onChange={(value) => handleDetailsChange("specialization", value)}
-            required
-          />
+          <h2>Придумайте пин-код</h2>
 
-          <MyInput
-            id="contacts"
-            label="Место работы"
-            value={userDetails.contacts}
-            onChange={(value) => handleDetailsChange("contacts", value)}
-            required
-          />
-
-          <MyInput
-            type="number"
-            id="experience_years"
-            label="Опыт работы"
-            value={userDetails.experience_years}
-            onChange={(value) => handleDetailsChange("experience_years", value)}
-            required
-          />
-
-          <button className="auth__button" onClick={() => setStep(4)}>
-            Продолжить
-          </button>
-          <button type="button" onClick={handleBack} className="auth__button">
-            Назад
-          </button>
-        </div>
-      )}
-
-      {step === 4 && (
-        <form onSubmit={handleSubmitDetails} className="auth__form">
           <PinCodeInput
-            onLogin={registered}
+            onLogin={SetPinCode}
+            countNumber={4}
           />
 
-          <MyInput
-            type="password"
-            id="password"
-            label="Пароль"
-            value={userDetails.password}
-            onChange={(value) => handleDetailsChange("password", value)}
-            required
-          />
-
-          <MyInput
-            type="password"
-            id="repeat-password"
-            label="Повторите пароль"
-            value={replyPass}
-            onChange={(value) => setReplyPass(value)}
-            required
-          />
-
-          <button type="submit" className="auth__button__final">
+          <button onClick={registration} className="auth__button__final">
             Завершить регистрацию
           </button>
 
           <button type="button" onClick={handleBack} className="auth__button">
             Назад
           </button>
-        </form>
+        </div>
       )}
     </>
   );

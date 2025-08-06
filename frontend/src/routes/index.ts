@@ -1,7 +1,7 @@
 import type React from "react";
 import LoginPage from '../pages/LoginPage'
 import HomePage from "../pages/HomePage";
-import RecoverPassPage from "../pages/RecoverPassPage"
+import RecoverPassPage from "../pages/RecoverPinPage"
 import PersonalAccountPage from "../pages/PersonalAccountPage";
 
 export interface IRoute {

@@ -1,14 +1,14 @@
-import { useState, type Dispatch, type SetStateAction, useContext } from "react";
+import { useState, useContext } from "react";
 import "./FormAuth.scss";
-import type { AuthState } from "./FormAuth";
 import { Context } from "../../main";
 import MyInput from "../UI/MyInput/MyInput";
-import type { FormAuthProps } from "../../models/FormAuth";
+import type { FormAuthProps } from "../../models/Auth";
 
-const Recover: React.FC<FormAuthProps> = ({ setState, setError}) => {
+const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
     const [email, setEmail] = useState("");
-    const [step, setStep] = useState(1);
     const [message, setMessage] = useState("");
+
+    const [step, setStep] = useState(1);
     const { store } = useContext(Context);
 
     const validateEmail = (email: string): boolean => {
@@ -16,7 +16,7 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError}) => {
         return emailRegex.test(email);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const resetPinCode = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
@@ -26,26 +26,21 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError}) => {
         }
 
         try {
-            const data = await store.sendEmailResetPassword(email);
+            const data = await store.sendEmailResetPinCode(email);
             setMessage(data.message);
 
-            if (data.success) {
-                setStep(2);
-            } else {
-                setError(data.message || "Произошла ошибка при восстановлении пароля");
-            }
+            data.success ? setStep(2) : setError(data.message || "Произошла ошибка при восстановлении пароля");
         } catch (err) {
             setError("Произошла непредвиденная ошибка");
-            console.error("Password recovery error:", err);
+            console.error("Ошибка:", err);
         }
     };
 
     return (
         <>
-            {step === 1 ? 
-            (
-                <form onSubmit={handleSubmit} className="auth__form">
-                    <h3>Восстановление пароля</h3>
+            {step === 1 ? (
+                <div className="auth__form">
+                    <h3>Восстановление пин-кода</h3>
 
                     <MyInput
                         type="email"
@@ -56,17 +51,14 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError}) => {
                         required
                     />
 
-                    <button type="submit" className="auth__button">
+                    <button onClick={resetPinCode} className="auth__button">
                         Продолжить
                     </button>
 
-                    <p className="auth__toggle-button">
-                        Вспомнили пароль?{" "}
-                        <a onClick={() => setState("login")} className="auth__toggle-button">
-                            Войти
-                        </a>
-                    </p>
-                </form>
+                    <a onClick={() => setState("login")} className="auth__toggle-button">
+                        Войти в систему
+                    </a>
+                </div>
             ) : (
                 <div className="recover-success">
                     <h3>Проверьте вашу почту</h3>

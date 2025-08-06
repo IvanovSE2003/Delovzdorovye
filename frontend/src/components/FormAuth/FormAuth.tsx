@@ -2,12 +2,12 @@ import { useState } from 'react';
 import Register from './Register';
 import Login from './Login';
 import Recover from './Recover';
-import "../FormAuth/FormAuth.scss"
+import "./FormAuth.scss"
 import { observer } from 'mobx-react-lite';
 
 export type AuthState= "login" | "register"| "recover";
 
-const FormAuth = () => {
+const FormAuth: React.FC = () => {
     const [state, setState] = useState<AuthState>("login");
     const [error, setError] = useState<string>("");
 

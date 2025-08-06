@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios';
-import type { LoginData, RegistrationData } from '../models/IUser'
+import type { LoginData, RegistrationData } from '../models/Auth'
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
 
@@ -16,12 +16,12 @@ export default class AuthService {
         return $api.post('user/logout');
     }
 
-    static async sendEmailResetPassword(email: string) {
-        return $api.post('user/request-password-reset', { email });
+    static async sendEmailResetPinCode(pin: string) {
+        return $api.post('user/request-password-reset', { pin });
     }
 
-    static async resetPassword(token: string, password: string) {
-        return $api.post(`user/reset-password/${token}`, {newPassword: password})
+    static async resetPinCode(token: string, pinCode: string) {
+        return $api.post(`user/reset-password/${token}`, {newPassword: pinCode})
     }
 
     static async checkAuth(): Promise<AxiosResponse<AuthResponse>> {
