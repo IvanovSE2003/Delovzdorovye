@@ -1,8 +1,8 @@
 import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
 import { ITokenModel } from "../../../core/domain/types/IToken.js"
-import {UserModelInterface} from "../models/interfaces/user.model.js"
-import { PatientModelInterface } from './interfaces/patient.model.js'
+import { UserModelInterface } from "../models/interfaces/user.model.js"
+import PatientModelInterface from './interfaces/patient.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -12,7 +12,6 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     email: {type: DataType.STRING, unique: true, allowNull: true},
     phone: {type: DataType.STRING, unique: true, allowNull: true},
     pin_code: {type: DataType.INTEGER, allowNull: false},
-    password: {type: DataType.STRING, allowNull: false},
     time_zone: {type: DataType.INTEGER, allowNull: false},
     date_birth: {type: DataType.DATEONLY},
     gender: {type: DataType.STRING, allowNull: false},   
@@ -21,7 +20,9 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     img: {type: DataType.STRING, defaultValue: "defaultImg.jpg"},
     role: {type: DataType.STRING, defaultValue: "PACIENT"},
     resetPasswordToken:{type: DataType.STRING, allowNull: true},
-    resetPasswordExpires:{type: DataType.DATE, allowNull: true}
+    resetPasswordExpires:{type: DataType.DATE, allowNull: true},
+    twoFactorCode: {type: DataType.STRING, allowNull: true},
+    twoFactorCodeExpires: {type: DataType.DATE, allowNull: true}
 })
 
 const TokenModel = sequelize.define<ITokenModel>('token', {

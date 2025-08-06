@@ -7,7 +7,6 @@ export default class User {
         public email: string,
         public phone: string,
         public pinCode: number,
-        private _password: string,
         public timeZone: number,
         public dateBirth: Date,
         public gender: string,
@@ -16,16 +15,10 @@ export default class User {
         public img: string,
         public role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
         public resetPasswordToken: string | null,
-        public resetPasswordExpires: Date | null
+        public resetPasswordExpires: Date | null,
+        public twoFactorCode: string | null,
+        public twoFactorCodeExpires: Date | null
     ) {}
-
-    get password(): string {
-        return this._password;
-    }
-
-    setPassword(newPassword: string): void {
-        this._password = newPassword;
-    }
 
     activate(): User {
         return new User(
@@ -36,16 +29,17 @@ export default class User {
             this.email,
             this.phone,
             this.pinCode,
-            this.password,
             this.timeZone,
             this.dateBirth,
             this.gender,
-            this.isActivated,
+            true,
             this.activationLink,
             this.img,
             this.role,
             this.resetPasswordToken,
-            this.resetPasswordExpires
+            this.resetPasswordExpires,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires
         );
     }
 
@@ -58,7 +52,6 @@ export default class User {
             this.email,
             this.phone,
             this.pinCode,
-            this.password,
             this.timeZone,
             this.dateBirth,
             this.gender,
@@ -67,7 +60,33 @@ export default class User {
             this.img,
             this.role,
             token,
+            expires,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires
+        );
+    }
+
+    setTwoFactorCode(code: string, expires: Date): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.resetPasswordToken,
+            this.resetPasswordExpires,
+            code,
             expires
         );
     }
+
 }

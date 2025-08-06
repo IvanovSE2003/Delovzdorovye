@@ -4,12 +4,16 @@ import UserRepositoryImpl from "../../../../core/application/repositories/user.r
 import TokenServiceImpl from "../../../../core/application/services/token.service.impl.js";
 import MailServiceImpl from "../../../../core/application/services/mail.service.impl.js";
 import UserController from "./user.controller.js";
+import TwoFactorServiceImpl from "../../../../core/application/services/twoFactor.service.impl.js";
+import SmsServiceImpl from "../../../../core/application/services/sms.service.impl.js";
 
 const userRepository = new UserRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
 const mailService = new MailServiceImpl();
+const SmsService = new SmsServiceImpl();
+const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 
-const authService = new AuthServiceImpl(userRepository, tokenService, mailService);
+const authService = new AuthServiceImpl(userRepository, tokenService, mailService, twoFactorService);
 const userController = new UserController(authService, userRepository, tokenService);
 
 export default userController;

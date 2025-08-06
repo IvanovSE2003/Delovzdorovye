@@ -91,4 +91,53 @@ export default class MailServiceImpl implements MailService {
             </div>
         `;
     }
+
+    async sendTwoFactorEmail(to: string, code: string): Promise<void> {
+        try {
+            await this.transporter.sendMail({
+                from: `"Медицинский сервис medOnline" <${process.env.SMTP_USER}>`,
+                to,
+                subject: 'Код двухэтапной аутентификации',
+                text: `Ваш код подтверждения: ${code}`,
+                html: this.getTwoFactorEmailHtml(code)
+            });
+        } catch (error) {
+            console.error('Ошибка отправки кода 2FA:', error);
+            throw new Error('Ошибка отправки кода подтверждения');
+        }
+    }
+
+    async sendTwoFactorCode(to: string, code: string): Promise<void> {
+        try {
+            await this.transporter.sendMail({
+                from: `"Медицинский сервис medOnline" <${process.env.SMTP_USER}>`,
+                to,
+                subject: 'Код двухэтапной аутентификации',
+                text: `Ваш код подтверждения: ${code}`,
+                html: this.getTwoFactorEmailHtml(code)
+            });
+        } catch (error) {
+            console.error('Ошибка отправки кода 2FA:', error);
+            throw new Error('Ошибка отправки кода подтверждения');
+        }
+    }
+
+    private getTwoFactorEmailHtml(code: string): string {
+        return `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #2563eb;">Код подтверждения</h1>
+                <p>Для входа в аккаунт используйте следующий код:</p>
+                <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; 
+                    margin: 20px 0; padding: 10px; background: #f3f4f6; 
+                    display: inline-block; border-radius: 4px;">
+                    ${code}
+                </div>
+                <p>Код действителен в течение 5 минут.</p>
+                <p><b>Если вы не запрашивали вход, проигнорируйте это письмо.</b></p>
+                <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                    С уважением,<br>Команда medOnline
+                </p>
+            </div>
+        `;
+    }
 }

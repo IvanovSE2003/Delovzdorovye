@@ -8,7 +8,6 @@ interface IUserAttributes {
     email: string;
     phone: string;
     pin_code: number;
-    password: string;
     time_zone: number;
     date_birth: Date;
     gender: string;
@@ -20,6 +19,8 @@ interface IUserAttributes {
     resetPasswordExpires: Date | null;
     createdAt?: Date;
     updatedAt?: Date;
+    twoFactorCode: string | null;
+    twoFactorCodeExpires: Date | null
 }
 
 export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

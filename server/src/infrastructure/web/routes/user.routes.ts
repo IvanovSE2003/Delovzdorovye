@@ -17,12 +17,12 @@ router.get('/activate/:link', (req: Request, res: Response, next: NextFunction) 
 router.get('/refresh', (req: Request, res: Response, next: NextFunction) => userController.refresh(req, res, next));
 
 router.get('/:id', (req: Request, res: Response, next: NextFunction) => userController.getOne(req, res, next));
-// router.put('/:id', UserController.updateUser);
+
 router.post('/check', (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
 router.post('/checkPinCode', (req: Request, res: Response, next: NextFunction) => userController.checkPinCode(req, res, next));
 
-router.post('/request-password-reset', (req: Request, res: Response, next: NextFunction) => userController.requestPasswordReset(req, res, next));
-router.post('/reset-password/:token', (req: Request, res: Response, next: NextFunction) => userController.resetPassword(req, res, next));
+router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) => userController.sendTwoFactor(req, res, next));
+router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next))
 
 export default router;
 

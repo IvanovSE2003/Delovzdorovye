@@ -5,7 +5,6 @@ import Patient from '../../domain/entities/patient.entity.js';
 import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
 import PatientModelInterface from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
-import DoctorModelInterface from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
 
 const {UserModel, PatientModel, DoctorModel} = models;
@@ -57,26 +56,27 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async createPatient(userId: number, patientData: Partial<Patient>): Promise<Patient> {
-        const patient = await PatientModel.create({ ...patientData, userId }) as unknown as PatientModelInterface;
+        const patient = await PatientModel.create({ ...patientData as any, userId }) as unknown as PatientModelInterface;
         return new Patient(
             patient.id,
             patient.general_info,
             patient.analyses_examinations,
             patient.additionally,
-            patient.userId
+            patient.activate
         );
     }
 
     async createDoctor(userId: number, doctorData: Partial<Doctor>): Promise<Doctor> {
-        const doctor = await DoctorModel.create({ ...doctorData, userId }) as unknown as DoctorModelInterface;
-        return new Doctor(
-            doctor.id,
-            doctor.specialization,
-            doctor.contacts,
-            doctor.experienceYears,
-            doctor.activate,
-            doctor.userId
-        );
+        // const doctor = await DoctorModel.create({ ...doctorData, userId }) as unknown as DoctorModelInterface;
+        // return new Doctor(
+        //     doctor.id,
+        //     doctor.specialization,
+        //     doctor.contacts,
+        //     doctor.experienceYears,
+        //     doctor.activate,
+        //     doctor.userId
+        // );
+        throw ""
     }
 
     async findByActivationLink(link: string): Promise<User | null> {
@@ -119,7 +119,6 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.email,
             userModel.phone,
             userModel.pin_code,
-            userModel.password,
             userModel.time_zone,
             userModel.date_birth,
             userModel.gender,
@@ -128,7 +127,9 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.img,
             userModel.role,
             userModel.resetPasswordToken,
-            userModel.resetPasswordExpires
+            userModel.resetPasswordExpires,
+            userModel.twoFactorCode,
+            userModel.twoFactorCodeExpires,
         );
     }
 
@@ -140,7 +141,6 @@ export default class UserRepositoryImpl implements UserRepository {
             email: user.email,
             phone: user.phone,
             pin_code: user.pinCode,
-            password: user.password,
             time_zone: user.timeZone,
             date_birth: user.dateBirth,
             gender: user.gender,
@@ -149,7 +149,9 @@ export default class UserRepositoryImpl implements UserRepository {
             img: user.img,
             role: user.role,
             resetPasswordToken: user.resetPasswordToken,
-            resetPasswordExpires: user.resetPasswordExpires
+            resetPasswordExpires: user.resetPasswordExpires,
+            twoFactorCode: user.twoFactorCode,
+            twoFactorCodeExpires: user.twoFactorCodeExpires
         };
     }
 }

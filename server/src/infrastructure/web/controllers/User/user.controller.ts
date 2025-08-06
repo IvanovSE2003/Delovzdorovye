@@ -4,6 +4,8 @@ import UserRepository from "../../../../core/domain/repositories/user.repository
 import ApiError from "../../error/ApiError.js"
 import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
+import Api from "twilio/lib/rest/Api.js";
+import User from "../../../../core/domain/entities/user.entity.js";
 
 export default class UserController {
     constructor(
@@ -14,8 +16,8 @@ export default class UserController {
 
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
-            const {email, password, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, contacts, experienceYears} = req.body;
-            const result = await this.authService.register(email, password, role, name, surname, patronymic, phone, pin_code, gender, new Date(date_birth), time_zone, specialization, contacts, experienceYears);
+            const {email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, contacts, experienceYears} = req.body;
+            const result = await this.authService.register(email, role, name, surname, patronymic, phone, pin_code, gender, new Date(date_birth), time_zone, specialization, contacts, experienceYears);
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -34,16 +36,11 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const {email, phone, password, pin_code} = req.body;
+            const {email, phone, pin_code} = req.body;
             
-            let credential;
-            if(!phone) {
-                credential = email;
-            } else if (!email) {
-                credential = phone;
-            }
+            let credential = email ? email : phone
 
-            const result = await this.authService.login(credential, password, pin_code);
+            const result = await this.authService.login(credential, pin_code);
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -110,54 +107,6 @@ export default class UserController {
         }
     }
     
-    async requestPasswordReset(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { email } = req.body;
-            if (!email) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: `Почта не указана` 
-                });
-            }
-
-            const user = await this.userRepository.findByEmail(email);
-            
-            if (!user) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: `Пользователь с почтой ${email} не найден` 
-                });
-            }
-
-            return res.json(await this.authService.requestPasswordReset(user));
-        } catch(e: any) {
-            return next(ApiError.badRequest(e.message))
-        }
-    }
-
-    async resetPassword(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { token } = req.params;
-            const { newPassword } = req.body;
-
-            if (!token || !newPassword) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Не найдены токен и новый пароль' 
-                });
-            }
-
-            await this.authService.resetPassword(token, newPassword);
-            
-            return res.status(200).json({ 
-                success: true, 
-                message: 'Пароль успешно изменен' 
-            });
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
-        }
-    }
-
     async activate(req: Request, res: Response, next: NextFunction) {
         try {
             const activationLink = req.params.link;
@@ -237,5 +186,68 @@ export default class UserController {
             accessToken: tokens.accessToken,
             user: user
         });
+    }
+
+    async verifyTwoFactor(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { tempToken, code } = req.body;
+            
+            if (!tempToken || !code) {
+                return next(ApiError.badRequest('Необходимы временный токен и код подтверждения'));
+            }
+
+            const tokens = await this.authService.completeTwoFactorAuth(tempToken, code);
+            
+            res.cookie("refreshToken", tokens.refreshToken, {
+                maxAge: 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+            });
+
+            return res.json({
+                accessToken: tokens.accessToken
+            });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async sendTwoFactor(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {method, email, phone} = req.body;
+            if(!method && !email && !phone) {
+                return next(ApiError.badRequest('Данные не получены'));
+            }
+            const creditial = email ? email : phone;
+            await this.authService.sendTwoFactorCode(creditial, method);
+            return res.status(200).json({message: 'Код успешно отправлен'});
+        } catch(e: any) {
+            next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async checkVarifyCode(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {code, email, phone} = req.body;
+
+            if(!code && !email && !phone) {
+                return res.status(404).json({code: false, message: 'Данные не получены'});
+            }
+            const credential = email ? email : phone;
+            const user = await this.userRepository.findByEmailOrPhone(credential) as User;
+
+            if(!user) {
+                return res.status(404).json({code: false, message: 'Пользователь не найден'});
+            }
+
+            const isCodeValid = await this.authService.verifyTwoFactorCode(user.id, code);
+            if(!isCodeValid) {
+                return res.status(404).json({code: false, message: 'Не верный код'});
+            }
+
+            return res.status(200).json({code: true, message: 'Верный код'});
+        } catch(e: any) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 }

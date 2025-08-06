@@ -3,7 +3,6 @@ import User from "../entities/user.entity.js";
 export default interface AuthService {
     register(
         email: string,
-        password: string,
         role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
         name: string,
         surname: string,
@@ -20,13 +19,14 @@ export default interface AuthService {
 
     login(
         credential: string,
-        password: string,
         pinCode: number
     ): Promise<{ user: User; accessToken: string; refreshToken: string }>;
 
     logout(refreshToken: string): Promise<void>;
     refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;
     activate(activationLink: string, userId: number): Promise<boolean>;
-    requestPasswordReset(user: User): Promise<object>;
-    resetPassword(token: string, password: string): Promise<boolean>;
+
+    sendTwoFactorCode(creditial: string, method: string): Promise<void>;
+    verifyTwoFactorCode(userId: number, code: string): Promise<boolean>;
+    completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string }>;    
 }
