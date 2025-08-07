@@ -95,7 +95,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setError("Не корректно введен код!");
     } else {
       setError("");
-      const data = await store.checkVarifyCode(Number(code), email);
+      const data = await store.checkVarifyCode(code, email);
       console.log(data);
       // setStep(3);
     }

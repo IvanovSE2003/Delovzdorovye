@@ -172,7 +172,7 @@ export default class Store {
         }
     }
 
-    async checkVarifyCode(code: number, contact: string) {
+    async checkVarifyCode(code: string, contact: string) {
         try {
             this.setError("");
             const response = await AuthService.checkVarifyCode(code, contact);
