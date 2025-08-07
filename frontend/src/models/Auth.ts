@@ -10,8 +10,8 @@ export interface IUser {
     phone: string;
     pin_code: number;
     password: string;
-    time_zone: number;
-    date_birth: string | null;
+    timeZone: number;
+    dateBirth: string | null;
     gender: string;
     isActivated: boolean;
     activationLink: string;
