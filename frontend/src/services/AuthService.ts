@@ -35,7 +35,7 @@ export default class AuthService {
         else return $api.post('user/twoFactorSend', { method, phone: contact })
     }
 
-    static async checkVarifyCode(code: number, contact: string) {
+    static async checkVarifyCode(code: string, contact: string) {
         return $api.post('user/checkVarifyCode', { code, email: contact });
     }
 }
