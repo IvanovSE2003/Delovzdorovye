@@ -4,6 +4,7 @@ import avatar from "../../../assets/images/avatar.png";
 import { Context } from "../../../main.js";
 import "./UserProfile.scss";
 import type { IUser } from "../../../models/Auth.js";
+import { getTimeZoneLabel } from "../../../models/TimeZones.js";
 
 const UserProfile: React.FC = () => {
   const [dataUser, setDataUser] = useState<IUser>({} as IUser);
@@ -52,7 +53,7 @@ const UserProfile: React.FC = () => {
 
         <div className="info-row">
           <span className="info-label">Часовой пояс:</span>
-          <span className="info-value">{dataUser.timeZone}</span>
+          <span className="info-value">{getTimeZoneLabel(dataUser.timeZone)}</span>
         </div>
 
         <div className="info-row">

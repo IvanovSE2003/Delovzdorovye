@@ -10,12 +10,11 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [code, setPinCode] = useState<string[]>(Array(countNumber).fill(''));
 
-    // Инициализируем массив refs
     useEffect(() => {
         inputRefs.current = inputRefs.current.slice(0, countNumber);
     }, [countNumber]);
 
-    // Фокусируем первый инпут при монтировании
+    // Фокусируем первый инпут
     useEffect(() => {
         if (inputRefs.current[0]) {
             inputRefs.current[0].focus();
@@ -29,12 +28,10 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         newPin[index] = value;
         setPinCode(newPin);
 
-        // Переход к следующему полю
         if (value && index < countNumber - 1) {
             setTimeout(() => inputRefs.current[index + 1]?.focus(), 0);
         }
 
-        // Проверка заполненности
         if (newPin.every(d => d !== '') && index === countNumber - 1) {
             onLogin(newPin.join(''));
         }

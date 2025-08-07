@@ -30,12 +30,15 @@ export default class AuthService {
     }
 
     // Двухфакторка
-    static async twoFactorSend(method: "EMAIL"|"PHONE", contact: string) {
-        if(method === "EMAIL") return $api.post('user/twoFactorSend', { method, email: contact });
-        else return $api.post('user/twoFactorSend', { method, phone: contact })
+    static async twoFactorSend(method: "EMAIL"|"SMS", phone: string, email: string) {
+        return $api.post('user/twoFactorSend', { method, phone, email });
     }
 
-    static async checkVarifyCode(code: string, contact: string) {
-        return $api.post('user/checkVarifyCode', { code, email: contact });
+    static async checkVarifyCode(code: string, email: string) {
+        return $api.post('user/checkVarifyCode', { code, email });
+    }
+
+    static async checkVarifyCodeSMS(code: string, phone: string) {
+        return $api.post('user/checkVarifyCodeSMS', {code, phone});
     }
 }

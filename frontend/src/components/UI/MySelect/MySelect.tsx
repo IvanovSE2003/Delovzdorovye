@@ -7,6 +7,7 @@ interface MySelectProps {
   label: string;
   required?: boolean;
   children: React.ReactNode;
+  defaultValue?: string;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ const MySelect: React.FC<MySelectProps> = ({
   onChange,
   label,
   required = false,
+  defaultValue,
   children
 }) => {
   return (
@@ -24,6 +26,7 @@ const MySelect: React.FC<MySelectProps> = ({
         id="select"
         onChange={(e) => onChange(e.target.value)}
         className="auth__select"
+        defaultValue={defaultValue}
         required={required}
       >
         {children}

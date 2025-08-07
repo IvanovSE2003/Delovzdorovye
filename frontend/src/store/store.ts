@@ -33,6 +33,7 @@ export default class Store {
         this.isLoading = bool;
     }
 
+    // Вход в учетную запись
     async login(data: LoginData): Promise<void> {
         try {
             this.setLoading(true);
@@ -51,6 +52,43 @@ export default class Store {
         }
     }
 
+    // Регистрация
+    async registration(data: RegistrationData): Promise<void> {
+        try {
+            this.setLoading(true);
+            this.setError("");
+            const response = await AuthService.registration(data);
+            localStorage.setItem('token', response.data.accessToken);
+            this.setAuth(true);
+            this.setUser(response.data.user);
+        } catch (e) {
+            const error = e as AxiosError<{ messange: string }>;
+            const errorMessage = error.response?.data?.messange || "Ошибка при регистрации!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    // Выход из учетной записи
+    async logout(): Promise<void> {
+        try {
+            this.setLoading(true);
+            await AuthService.logout();
+            localStorage.removeItem('token');
+            this.setAuth(false);
+            this.setUser({} as IUser);
+            this.setError("");
+        } catch (e) {
+            const error = e as AxiosError<{ messange: string }>;
+            console.log("Ошибка при выходе:", error.response?.data?.messange);
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    // Проверка авторизации пользователя
     async checkAuth() {
         this.setLoading(true);
         try {
@@ -70,40 +108,7 @@ export default class Store {
         }
     }
 
-    async registration(data: RegistrationData): Promise<void> {
-        try {
-            this.setLoading(true);
-            this.setError("");
-            const response = await AuthService.registration(data);
-            localStorage.setItem('token', response.data.accessToken);
-            this.setAuth(true);
-            this.setUser(response.data.user);
-        } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при регистрации!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
-        } finally {
-            this.setLoading(false);
-        }
-    }
-
-    async logout(): Promise<void> {
-        try {
-            this.setLoading(true);
-            await AuthService.logout();
-            localStorage.removeItem('token');
-            this.setAuth(false);
-            this.setUser({} as IUser);
-            this.setError("");
-        } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            console.log("Ошибка при выходе:", error.response?.data?.messange);
-        } finally {
-            this.setLoading(false);
-        }
-    }
-
+    // Проверка существания пользователя по телефону или почте
     async checkUser(phone: string | null, email: string | null) {
         try {
             this.setError("");
@@ -116,6 +121,7 @@ export default class Store {
         }
     }
 
+    // Получение данные пациента
     async getPatientData(id: number) {
         try {
             const response = await UserService.fetchPatientData(id);
@@ -129,6 +135,9 @@ export default class Store {
         }
     }
 
+
+    
+    // Отправка сообщения на почту о сбросе пин-кода
     async sendEmailResetPinCode(pin: string): Promise<ResetPassword> {
         try {
             this.setError("");
@@ -143,6 +152,7 @@ export default class Store {
         }
     }
 
+    // Сборос пин-кода
     async resetPinCode(token: string, pinCode: string): Promise<ResetPassword> {
         try {
             this.setError("");
@@ -157,10 +167,13 @@ export default class Store {
         }
     }
 
-    async twoFactorSend(method: "EMAIL" | "PHONE", contact: string) {
+
+
+    // Отравка кода на телефон\почту
+    async twoFactorSend(method: "EMAIL" | "SMS", phone: string, email: string) {
         try {
             this.setError("");
-            const response = await AuthService.twoFactorSend(method, contact);
+            const response = await AuthService.twoFactorSend(method, phone, email);
             console.log("Код на указанный контакт отправился!")
             return response.data;
         } catch (e) {
@@ -172,18 +185,35 @@ export default class Store {
         }
     }
 
-    async checkVarifyCode(code: string, contact: string) {
+    // Проверка кода почты для входа 
+    async checkVarifyCode(code: string, email: string) {
         try {
             this.setError("");
-            const response = await AuthService.checkVarifyCode(code, contact);
-            console.log("Введенный код - правильный!");
+            const response = await AuthService.checkVarifyCode(code, email);
+            console.log("Введенный почтовый код - правильный!");
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при проверке кода!";
+            const errorMessage = error.response?.data?.message || "Ошибка при проверке почтового кода!";
             this.setError(errorMessage);
-            console.log(errorMessage);
-            return { code: false, message: errorMessage };
+            console.error(errorMessage);
+            return { success: false, message: errorMessage };
+        }
+    }
+
+    // Проверка кода телефона для входа
+    async checkVarifyCodeSMS(code: string, phone: string) {
+        try {
+            this.setError("");
+            const response = await AuthService.checkVarifyCodeSMS(code, phone);
+            console.log("Введенный телефонный код - правильный!");
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<{ message: string}>;
+            const errorMessage = error.response?.data?.message || "Ошибка при проверка телефонного кода!";
+            this.setError(errorMessage);
+            console.error(errorMessage);
+            return { success: false, message: errorMessage }
         }
     }
 }

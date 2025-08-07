@@ -20,14 +20,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [email, setEmail] = useState<string>("");
 
   const { store } = useContext(Context);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isResending, setIsResending] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(60);
+  const [isResending, setIsResending] = useState<boolean>(false);
 
   // Анимации
   const stepVariants = {
-    enter: { opacity: 0 },
-    center: { opacity: 1 },
-    exit: { opacity: 0 }
+    enter: { opacity: 0, x: 30 },
+    center: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -30 }
   };
 
   useEffect(() => {
@@ -44,8 +44,17 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [phone]);
 
   useEffect(() => {
-    setError("");
-  }, [step])
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (emailRegex.test(email)) {
+      const checkAuth = async () => {
+        const isAuth = await store.checkUser(phone, email);
+        setStyleInput(isAuth.check ? 'valid' : 'invalid');
+      };
+      checkAuth();
+    } else {
+      setStyleInput('');
+    }
+  }, [email]);
 
   useEffect(() => {
     setStep(1);
@@ -73,14 +82,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
         setError("Введите корректный email");
         return;
       }
-      data = await store.twoFactorSend("EMAIL", email);
+      data = await store.twoFactorSend("EMAIL", phone, email);
     } else {
       const phoneValid = /^8\d{10}$/.test(phone);
       if (!phoneValid) {
         setError("Введите корректный номер телефона (8XXXXXXXXXX)");
         return;
       }
-      data = await store.twoFactorSend("PHONE", phone);
+      data = await store.twoFactorSend("SMS", phone, email);
     }
 
     console.log(data);
@@ -94,16 +103,19 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (!isValidCode) {
       setError("Не корректно введен код!");
     } else {
-      setError("");
-      const data = await store.checkVarifyCode(code, email);
-      data.code ? setStep(3) : setError("Неправильный код!");
+      let data;
+      isEmailAuth
+        ? data = await store.checkVarifyCode(code, email)
+        : data = await store.checkVarifyCodeSMS(code, phone);
+
+      // console.log(data);
+      data.success ? setStep(3) : setError("Неправильный код!");
     }
   }
 
   // Завершение 3 этапа
   const login = async (pin: string) => {
     setError("");
-    console.log({ phone, email, pin_code: Number(pin) })
     await store.login({ phone, email, pin_code: Number(pin) });
     if (store.isAuth) navigate(RouteNames.PERSONAL);
   }
@@ -129,7 +141,9 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setIsResending(true);
     try {
       // Здесь ваш запрос на повторную отправку кода
-      // await store.resendCode(isEmailAuth ? email : phone);
+      isEmailAuth 
+        ? await store.twoFactorSend("EMAIL", phone, email)
+        : await store.twoFactorSend("SMS", phone, email);
       setTimeLeft(60);
     } catch (error) {
       console.error('Ошибка при повторной отправке:', error);
@@ -177,6 +191,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 label="Электронная почта"
                 value={email}
                 onChange={setEmail}
+                className={styleInput}
                 required
               />
             )}

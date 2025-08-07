@@ -5,8 +5,8 @@ import MyInput from "../UI/MyInput/MyInput";
 import type { FormAuthProps } from "../../models/Auth";
 
 const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
-    const [email, setEmail] = useState("");
-    const [message, setMessage] = useState("");
+    const [email, setEmail] = useState<string>("");
+    const [message, setMessage] = useState<string>("");
 
     const [step, setStep] = useState(1);
     const { store } = useContext(Context);
