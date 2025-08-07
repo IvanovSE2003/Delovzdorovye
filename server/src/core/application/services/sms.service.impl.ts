@@ -1,84 +1,45 @@
-// sms.service.impl.ts
-import twilio from 'twilio';
+import TelegramBot from 'node-telegram-bot-api';
 import SmsService from "../../domain/services/sms.service.js";
-import ApiError from '../../../infrastructure/web/error/ApiError.js';
+import TelegramService from '../../domain/services/telegram.service.js';
+import models from '../../../infrastructure/persostence/models/models.js';
+import { ITelegramCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/telegram.model.js';
+const { UserTelegramModel, UserModel } = models;
 
 export default class SmsServiceImpl implements SmsService {
-    private client: twilio.Twilio | null;
-    private readonly serviceSid: string;
-    private readonly fromNumber: string;
-    private readonly isProduction: boolean;
-
-    constructor() {
-        this.isProduction = process.env.NODE_ENV === 'production';
-        
-        if (this.isProduction) {
-            if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-                throw new Error('Учетные данные Twilio не настроены');
-            }
-
-            if (!process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
-                throw new Error('TWILIO_ACCOUNT_SID должен начинаться с "AC"');
-            }
-
-            this.client = twilio(
-                process.env.TWILIO_ACCOUNT_SID,
-                process.env.TWILIO_AUTH_TOKEN
-            );
-        } else {
-            this.client = null;
-            console.log('[SMS Service] Режим разработки - SMS не отправляются реально');
-        }
-
-        this.serviceSid = process.env.TWILIO_SERVICE_SID || '';
-        this.fromNumber = process.env.TWILIO_PHONE_NUMBER || '';
-    }
+    constructor(
+        private readonly telegramService: TelegramService
+    ) {}
 
     async sendVerificationCode(phone: string, code: string): Promise<void> {
-        try {
-            if (!this.isProduction) {
-                console.log(`[DEV SMS] Код подтверждения для ${phone}: ${code}`);
-                return;
-            }
+        const user = await UserModel.findOne({ where: { phone } });
+            
+        if (!user) {
+            throw new Error('Пользователь не найден');
+        }
 
-            if (this.serviceSid && this.client) {
-                await this.client.verify.v2.services(this.serviceSid)
-                    .verifications
-                    .create({ to: phone, channel: 'sms' });
-            } 
-            else if (this.fromNumber && this.client) {
-                await this.client.messages.create({
-                    body: `Ваш код подтверждения для medOnline: ${code}`,
-                    from: this.fromNumber,
-                    to: phone
-                });
-            } else {
-                throw new Error('SMS service not properly configured');
-            }
-        } catch (error) {
-            console.error('SMS sending error:', error);
-            throw ApiError.internal('Ошибка отправки SMS');
+        const userTelegram = await UserTelegramModel.findOne({where: { userId: user.id }}) as unknown as ITelegramCreationAttributes;
+
+        if (userTelegram) {
+            await this.telegramService.sendMessage(
+                userTelegram.telegram_chat_id.toString(), 
+                `🔐 Ваш код подтверждения для medOnline: **${code}**\nНе сообщайте его никому!`
+            )
         }
     }
 
-    async sendLoginNotification(phone: string): Promise<void> {
-        try {
-            if (!this.isProduction) {
-                console.log(`[DEV SMS] Уведомление о входе для ${phone}`);
-                return;
-            }
+    async sendLoginNotification(userId: number): Promise<void> {
+        const user = await UserModel.findByPk(userId);
+        if (!user) {
+            throw new Error('Пользователь не найден');
+        }
 
-            if (!this.fromNumber || !this.client) {
-                throw new Error('Twilio phone number not configured');
-            }
+        const userTelegram = await UserTelegramModel.findOne({where: { userId }}) as unknown as ITelegramCreationAttributes;
 
-            await this.client.messages.create({
-                body: 'Был выполнен вход в ваш аккаунт medOnline. Если это были не вы, срочно смените пароль.',
-                from: this.fromNumber,
-                to: phone
-            });
-        } catch (error) {
-            console.error('Login notification SMS error:', error);
+        if (userTelegram) {
+            await this.telegramService.sendMessage(
+                userTelegram.telegram_chat_id.toString(),  
+                '🔔 В ваш аккаунт medOnline был выполнен вход. Если это не вы, смените пароль!'
+            )
         }
     }
 }

@@ -34,6 +34,7 @@ router.post('/checkPinCode', (req: Request, res: Response, next: NextFunction) =
 
 router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) => userController.sendTwoFactor(req, res, next));
 router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next))
+router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next))
 
 export default router;
 

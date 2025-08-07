@@ -3,12 +3,17 @@ import UserRepository from "../../domain/repositories/user.repository.js";
 import TokenService from "../../domain/services/token.service.js";
 import PatientRepository from "../../domain/repositories/patient.repository.js";
 import MailService from "../../domain/services/mail.service.js";
+import SmsService from "../../domain/services/sms.service.js";
 import User from "../../domain/entities/user.entity.js";
 import Patient from "../../domain/entities/patient.entity.js";
 import Doctor from "../../domain/entities/doctor.entity.js";
 import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
+import { UserModelInterface } from "../../domain/types/IUser.js";
+import models from "../../../infrastructure/persostence/models/models.js";
+
+const {UserModel} = models;
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -17,6 +22,7 @@ export class AuthServiceImpl implements AuthService {
         private readonly doctorRepository: any,
         private readonly tokenService: TokenService,
         private readonly mailService: MailService,
+        private readonly smsService: SmsService,
         private readonly twoFactorService: TwoFactorService
     ) {}
 
@@ -129,17 +135,6 @@ export class AuthServiceImpl implements AuthService {
                 throw new Error("Неверный пин-код");
             }
 
-            // const tempToken = jwt.sign(
-            //     { id: user.id, email: user.email, role: user.role, twoFactorRequired: true },
-            //     this.twoFactorService.getTempSecret(),
-            //     { expiresIn: '5m' }
-            // );
-                
-            // const code = this.twoFactorService.generateCode();
-            // const expires = new Date(Date.now() + 5 * 60 * 1000);
-            // await this.userRepository.save(user.setTwoFactorCode(code, expires));
-            // await this.twoFactorService.sendCode(user, code);
-
             const tokens = await this.tokenService.generateTokens({
                 id: user.id,
                 email: user.email,
@@ -205,5 +200,17 @@ export class AuthServiceImpl implements AuthService {
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
         return tokens;
+    }
+
+    async sendLoginNotification(phone: string, code: string): Promise<void> {
+        const user = await this.userRepository.findByPhone(phone) as unknown as User;
+        if(!user) {
+            throw new Error('Пользователь не найден');
+        }
+
+        if(user.twoFactorCode !== code) {
+            throw new Error('Код не верный')
+        }
+        await this.smsService.sendLoginNotification(user.id)
     }
 }

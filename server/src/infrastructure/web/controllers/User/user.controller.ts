@@ -4,7 +4,6 @@ import UserRepository from "../../../../core/domain/repositories/user.repository
 import ApiError from "../../error/ApiError.js"
 import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
-import Api from "twilio/lib/rest/Api.js";
 import User from "../../../../core/domain/entities/user.entity.js";
 
 export default class UserController {
@@ -262,6 +261,21 @@ export default class UserController {
             return res.status(200).json({code: true, message: 'Верный код'});
         } catch(e: any) {
             next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async sendLoginNotification(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {phone, code} = req.body;
+            
+            if (!phone) {
+                return next(ApiError.badRequest('Телефон не указан'));
+            }
+
+            await this.authService.sendLoginNotification(phone, code);
+            return res.json({ success: true, message: 'Уведомление отправлено' });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 }

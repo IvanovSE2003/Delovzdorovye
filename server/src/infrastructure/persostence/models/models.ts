@@ -2,7 +2,9 @@ import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
 import { ITokenModel } from "../../../core/domain/types/IToken.js"
 import { UserModelInterface } from "../models/interfaces/user.model.js"
-import PatientModelInterface from './interfaces/patient.model.js'
+import {PatientModelInterface} from './interfaces/patient.model.js'
+import User from '../../../core/domain/entities/user.entity.js'
+import { TelegramModelInterface } from './interfaces/telegram.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -22,6 +24,11 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     twoFactorCode: {type: DataType.STRING, allowNull: true},
     twoFactorCodeExpires: {type: DataType.DATE, allowNull: true}
 })
+
+const UserTelegramModel = sequelize.define<TelegramModelInterface>('use_telegram', {
+    id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
+    telegram_chat_id : {type: DataType.BIGINT, allowNull: false, unique: true}
+}) 
 
 const TokenModel = sequelize.define<ITokenModel>('token', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -78,6 +85,9 @@ PatientModel.belongsTo(UserModel)
 UserModel.hasOne(Transaction)
 Transaction.belongsTo(UserModel)
 
+UserModel.hasOne(UserTelegramModel)
+UserTelegramModel.belongsTo(UserModel)
+
 Consultation.hasOne(Transaction)
 Transaction.belongsTo(Consultation)
 
@@ -100,5 +110,6 @@ export default {
     Transaction,
     Consultation,
     DoctorsSchedule,
-    TokenModel
+    TokenModel,
+    UserTelegramModel
 }
