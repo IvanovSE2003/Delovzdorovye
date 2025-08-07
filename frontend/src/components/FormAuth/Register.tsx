@@ -31,10 +31,16 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     role: ""
   });
   const [step, setStep] = useState<number>(1);
+  const [replyPinCode, setReplyPinCode] = useState("");
   const { store } = useContext(Context);
 
   // Завершение всех трех этапов
   const registration = (): void => {
+    if (replyPinCode !== userDetails.pin_code) {
+      setError("Пин-коды не совпадают!");
+      return;
+    }
+
     // Если пустое хоть одно поле объекта UserDetails
     if (Object.values(userDetails).some((value) => !value || value.trim() === "")) {
       setError("Все поля должны быть заполнены!");
@@ -62,6 +68,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Измененить состояние пин-кода
   const SetPinCode = (pin: string) => handleDetailsChange('pin_code', pin);
+
 
   return (
     <>
@@ -108,7 +115,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             required
           />
 
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             <div className="auth__radio-btn">
               <input
                 id="male"
@@ -150,17 +157,17 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             required
           >
             <option value="">Выбрать</option>
-            <option value="0">-1 МСК</option>
-            <option value="1">МСК</option>
-            <option value="2">+1 МСК</option>
-            <option value="3">+2 МСК</option>
-            <option value="4">+3 МСК</option>
-            <option value="5">+4 МСК</option>
-            <option value="6">+5 МСК</option>
-            <option value="7">+6 МСК</option>
-            <option value="8">+7 МСК</option>
-            <option value="9">+8 МСК</option>
-            <option value="10">+9 МСК</option>
+            <option value="0">Калининград (-1 МСК)</option>
+            <option value="1">Москва</option>
+            <option value="2">Самара (+1 МСК)</option>
+            <option value="3">Екатеринбург (+2 МСК)</option>
+            <option value="4">Омск (+3 МСК)</option>
+            <option value="5">Красноярск (+4 МСК)</option>
+            <option value="6">Иркутск (+5 МСК)</option>
+            <option value="7">Якутск (+6 МСК)</option>
+            <option value="8">Владивосток (+7 МСК)</option>
+            <option value="9"> Магадан (+8 МСК)</option>
+            <option value="10">Камчатский край (+9 МСК)</option>
           </MySelect>
 
           <button className="auth__button" onClick={() => setStep(2)}>
@@ -212,10 +219,16 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
       {step === 3 && (
         <div className="auth__form">
-          <h2>Придумайте пин-код</h2>
 
+          <h2>Придумайте пин-код</h2>
           <PinCodeInput
             onLogin={SetPinCode}
+            countNumber={4}
+          />
+
+          <h2>Повторите пин-код</h2>
+          <PinCodeInput
+            onLogin={setReplyPinCode}
             countNumber={4}
           />
 

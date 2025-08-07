@@ -18,7 +18,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   const [phone, setPhone] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [code, setCode] = useState<string>("");
 
   const { store } = useContext(Context);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -35,14 +34,18 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (phone.length === 11) {
       const checkAuth = async () => {
         const isAuth = await store.checkUser(phone, email);
-        if (isAuth) setError("");
-        setStyleInput(isAuth ? 'valid' : 'invalid');
+        if (isAuth.check) setError("");
+        setStyleInput(isAuth.check ? 'valid' : 'invalid');
       };
       checkAuth();
     } else {
       setStyleInput('');
     }
   }, [phone]);
+
+  useEffect(() => {
+    setError("");
+  }, [step])
 
   useEffect(() => {
     setStep(1);
@@ -56,48 +59,57 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [timeLeft]);
 
-  const checkContact = () => {
+  // Завершение 1 этапа
+  const checkContact = async () => {
     if (styleInput === 'invalid') {
       setError("Пользователь не найден");
       return;
     }
 
+    let data;
     if (isEmailAuth) {
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       if (!emailValid) {
         setError("Введите корректный email");
         return;
       }
+      data = await store.twoFactorSend("EMAIL", email);
     } else {
       const phoneValid = /^8\d{10}$/.test(phone);
       if (!phoneValid) {
         setError("Введите корректный номер телефона (8XXXXXXXXXX)");
         return;
       }
+      data = await store.twoFactorSend("PHONE", phone);
     }
 
+    console.log(data);
     setError("");
     setStep(2);
   };
 
-  const checkCode = (code: string) => {
+  // Завершение 2 этапа
+  const checkCode = async (code: string) => {
     const isValidCode = /^\d{6}$/.test(code)
     if (!isValidCode) {
       setError("Не корректно введен код!");
     } else {
       setError("");
-      setCode(code);
-      setStep(3);
+      const data = await store.checkVarifyCode(Number(code), email);
+      console.log(data);
+      // setStep(3);
     }
   }
 
+  // Завершение 3 этапа
   const login = async (pin: string) => {
     setError("");
-    console.log({ phone, email, code: Number(code), pin_code: Number(pin) })
+    console.log({ phone, email, pin_code: Number(pin) })
     // await store.login({ phone, email, password, pin_code: Number(pin) });
     // if (store.isAuth) navigate(RouteNames.PERSONAL);
   }
 
+  // Переключение почта/телефон
   const toggleAuthType = (): void => {
     setIsEmailAuth((prev) => !prev);
     setPhone("");
@@ -105,6 +117,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setError("");
   };
 
+  // Вернуться на прошлый шаг
   const handleBack = () => {
     setError("");
     if (step > 1) {
@@ -112,6 +125,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   };
 
+  // Отправить код заново
   const handleResendCode = async () => {
     setIsResending(true);
     try {

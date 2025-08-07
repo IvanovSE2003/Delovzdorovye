@@ -16,6 +16,11 @@ export default class AuthService {
         return $api.post('user/logout');
     }
 
+    static async checkAuth(): Promise<AxiosResponse<AuthResponse>> {
+        return $api.get<AuthResponse>('user/refresh');
+    }
+
+    // Сбросить пин-код (пароль)
     static async sendEmailResetPinCode(pin: string) {
         return $api.post('user/request-password-reset', { pin });
     }
@@ -24,7 +29,13 @@ export default class AuthService {
         return $api.post(`user/reset-password/${token}`, {newPassword: pinCode})
     }
 
-    static async checkAuth(): Promise<AxiosResponse<AuthResponse>> {
-        return $api.get<AuthResponse>('user/refresh');
+    // Двухфакторка
+    static async twoFactorSend(method: "EMAIL"|"PHONE", contact: string) {
+        if(method === "EMAIL") return $api.post('user/twoFactorSend', { method, email: contact });
+        else return $api.post('user/twoFactorSend', { method, phone: contact })
+    }
+
+    static async checkVarifyCode(code: number, contact: string) {
+        return $api.post('user/checkVarifyCode', { code, email: contact });
     }
 }

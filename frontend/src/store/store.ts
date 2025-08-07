@@ -11,7 +11,7 @@ export default class Store {
     user = {} as IUser;
     isAuth = false;
     error = "";
-    isLoading = false; // Исправлено isLoding -> isLoading
+    isLoading = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -88,7 +88,7 @@ export default class Store {
         }
     }
 
-    async logout() {
+    async logout(): Promise<void> {
         try {
             this.setLoading(true);
             await AuthService.logout();
@@ -104,14 +104,15 @@ export default class Store {
         }
     }
 
-    // Остальные методы остаются без изменений
     async checkUser(phone: string | null, email: string | null) {
         try {
+            this.setError("");
             const response = await UserService.CheckUser(phone, email) as any;
-            return response.data.check;
+            return response.data;
         } catch (e) {
-            console.error((e as AxiosError<{ messange: string }>).response?.data?.messange);
-            return false;
+            const error = e as AxiosError<{ message: string }>;
+            console.log("Ошибка при проверке пользователя:", error.response?.data?.message);
+            return { check: false, message: error.response?.data?.message };
         }
     }
 
@@ -153,6 +154,36 @@ export default class Store {
             this.setError(errorMessage);
             console.log(errorMessage);
             return { success: false, message: errorMessage };
+        }
+    }
+
+    async twoFactorSend(method: "EMAIL" | "PHONE", contact: string) {
+        try {
+            this.setError("");
+            const response = await AuthService.twoFactorSend(method, contact);
+            console.log("Код на указанный контакт отправился!")
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при отправке кода!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+            return { message: errorMessage };
+        }
+    }
+
+    async checkVarifyCode(code: number, contact: string) {
+        try {
+            this.setError("");
+            const response = await AuthService.checkVarifyCode(code, contact);
+            console.log("Введенный код - правильный!");
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при проверке кода!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
+            return { code: false, message: errorMessage };
         }
     }
 }
