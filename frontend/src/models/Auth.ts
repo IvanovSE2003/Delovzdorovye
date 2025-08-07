@@ -26,7 +26,6 @@ export type ResetPassword = {
 
 export type LoginData = {
     pin_code: number,
-    password: string,
     phone?: string,
     email?: string
 }

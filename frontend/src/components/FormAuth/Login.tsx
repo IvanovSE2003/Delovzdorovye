@@ -96,8 +96,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     } else {
       setError("");
       const data = await store.checkVarifyCode(code, email);
-      console.log(data);
-      // setStep(3);
+      data.code ? setStep(3) : setError("Неправильный код!");
     }
   }
 
@@ -105,8 +104,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const login = async (pin: string) => {
     setError("");
     console.log({ phone, email, pin_code: Number(pin) })
-    // await store.login({ phone, email, password, pin_code: Number(pin) });
-    // if (store.isAuth) navigate(RouteNames.PERSONAL);
+    await store.login({ phone, email, pin_code: Number(pin) });
+    if (store.isAuth) navigate(RouteNames.PERSONAL);
   }
 
   // Переключение почта/телефон
