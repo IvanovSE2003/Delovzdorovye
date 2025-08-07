@@ -4,7 +4,7 @@ import User from '../../domain/entities/user.entity.js';
 import Patient from '../../domain/entities/patient.entity.js';
 import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
-import PatientModelInterface from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
+import {PatientModelInterface} from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
 
 const {UserModel, PatientModel, DoctorModel} = models;
@@ -84,16 +84,6 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
-    async findByResetToken(token: string): Promise<User | null> {
-        const user = await UserModel.findOne({ 
-            where: { 
-                resetPasswordToken: token,
-                resetPasswordExpires: { [Op.gt]: new Date() }
-            }
-        });
-        return user ? this.mapToDomainUser(user) : null;
-    }
-
     async checkUserExists(email?: string, phone?: string): Promise<boolean> {
         const where: any = {};
         if (email) where.email = email;
@@ -126,8 +116,6 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.activationLink,
             userModel.img,
             userModel.role,
-            userModel.resetPasswordToken,
-            userModel.resetPasswordExpires,
             userModel.twoFactorCode,
             userModel.twoFactorCodeExpires,
         );
@@ -148,8 +136,6 @@ export default class UserRepositoryImpl implements UserRepository {
             activationLink: user.activationLink,
             img: user.img,
             role: user.role,
-            resetPasswordToken: user.resetPasswordToken,
-            resetPasswordExpires: user.resetPasswordExpires,
             twoFactorCode: user.twoFactorCode,
             twoFactorCodeExpires: user.twoFactorCodeExpires
         };

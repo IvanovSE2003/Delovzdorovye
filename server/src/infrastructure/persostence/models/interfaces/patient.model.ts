@@ -12,4 +12,4 @@ interface IPatientAttributes {
 }
 
 export interface IPatientCreationAttributes extends Optional<IPatientAttributes, 'id'> {}
-export default interface PatientModelInterface extends Model<IPatientAttributes, IPatientCreationAttributes>, IPatientAttributes {}
+export interface PatientModelInterface extends Model<IPatientAttributes, IPatientCreationAttributes>, IPatientAttributes {}

@@ -14,8 +14,6 @@ export default class User {
         public activationLink: string,
         public img: string,
         public role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
-        public resetPasswordToken: string | null,
-        public resetPasswordExpires: Date | null,
         public twoFactorCode: string | null,
         public twoFactorCodeExpires: Date | null
     ) {}
@@ -36,31 +34,6 @@ export default class User {
             this.activationLink,
             this.img,
             this.role,
-            this.resetPasswordToken,
-            this.resetPasswordExpires,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires
-        );
-    }
-
-    setResetPasswordToken(token: string, expires: Date): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.activationLink,
-            this.img,
-            this.role,
-            token,
-            expires,
             this.twoFactorCode,
             this.twoFactorCodeExpires
         );
@@ -82,8 +55,6 @@ export default class User {
             this.activationLink,
             this.img,
             this.role,
-            this.resetPasswordToken,
-            this.resetPasswordExpires,
             code,
             expires
         );

@@ -86,10 +86,24 @@ export default class UserController {
             if (!req.user) {
                 return next(ApiError.internal('Пользователь не авторизован'));
             }
-            const tokens = this.tokenService.generateTokens({...req.user})
+            const tokens = await this.tokenService.generateTokens({...req.user})
             return res.status(200).json({tokens})
         } catch(e: any) {
             return next(ApiError.badRequest(e.message))
+        }
+    }
+    
+    async checkUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {phone, email} = req.body;
+            const creditial = email ? email : phone;
+            const user = await this.userRepository.findByEmailOrPhone(creditial) as any;
+            if(!user) {
+                return res.status(404).json({check: false, message: 'Такого пользователя не существует'});
+            }
+            return res.status(200).json({check: true, message: 'Пользователь существует'});
+        } catch(e: any) {
+            return next(ApiError.internal(e.message))
         }
     }
 

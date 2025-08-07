@@ -19,8 +19,6 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     activationLink: {type: DataType.STRING, allowNull: true},
     img: {type: DataType.STRING, defaultValue: "defaultImg.jpg"},
     role: {type: DataType.STRING, defaultValue: "PACIENT"},
-    resetPasswordToken:{type: DataType.STRING, allowNull: true},
-    resetPasswordExpires:{type: DataType.DATE, allowNull: true},
     twoFactorCode: {type: DataType.STRING, allowNull: true},
     twoFactorCodeExpires: {type: DataType.DATE, allowNull: true}
 })

@@ -1,22 +1,20 @@
 import AuthService from "../../domain/services/auth.service.js";
 import UserRepository from "../../domain/repositories/user.repository.js";
 import TokenService from "../../domain/services/token.service.js";
+import PatientRepository from "../../domain/repositories/patient.repository.js";
 import MailService from "../../domain/services/mail.service.js";
 import User from "../../domain/entities/user.entity.js";
 import Patient from "../../domain/entities/patient.entity.js";
 import Doctor from "../../domain/entities/doctor.entity.js";
-import bcrypt from "bcrypt";
 import { v4 } from "uuid";
-import { UserModelInterface } from "../../domain/types/IUser.js";
-import models from "../../../infrastructure/persostence/models/models.js";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
-
-const {UserModel} = models;
 
 export class AuthServiceImpl implements AuthService {
     constructor(
         private readonly userRepository: UserRepository,
+        private readonly patientRepository: PatientRepository,
+        private readonly doctorRepository: any,
         private readonly tokenService: TokenService,
         private readonly mailService: MailService,
         private readonly twoFactorService: TwoFactorService
@@ -29,13 +27,13 @@ export class AuthServiceImpl implements AuthService {
         }
 
         const activationLink = v4();
-        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.jpg", role, null, null, true, null, null, null);
+        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.jpg", role, null, null);
         
         if(role === 'PACIENT') {
             const patient = new Patient(0, null, null, null, false);
-            // const savedPatient = await this.
+            const savedPatient = await this.patientRepository.create(patient);
         } else if(role === 'DOCTOR') {
-            const doctor = new Doctor(0, specialization, contacts, experienceYears, false ,user.id);
+            const doctor = new Doctor(0, specialization, contacts, experienceYears, false);
         }
         const savedUser = await this.userRepository.save(user);
         await this.mailService.sendActivationEmail(email, activationLink);
@@ -117,22 +115,6 @@ export class AuthServiceImpl implements AuthService {
         user.isActivated = true;
         await this.userRepository.save(user);
         return true;
-    }
-
-    async requestPasswordReset(user: User) {
-        const resetToken = v4();
-        const resetTokenExpires = new Date(Date.now() + 3600000); 
-
-        const userData = await UserModel.findByPk(user.id);
-        if(!userData) {
-            return {success: false, message:`Не найден пользователь с email: ${user.email}`}
-        }
-                
-        userData.resetPasswordToken = resetToken;
-        userData.resetPasswordExpires = resetTokenExpires;
-        await userData.save();
-        await this.mailService.sendPasswordResetEmail(userData.email, resetToken);
-        return {success: true, message:`Письмо успешно отправлено на почту ${userData.email}`}
     }
 
     async login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {

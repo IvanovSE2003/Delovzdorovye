@@ -15,7 +15,6 @@ export default interface UserRepository {
     createDoctor(userId: number, doctorData: Partial<Doctor>): Promise<Doctor>;
     
     findByActivationLink(link: string): Promise<User | null>;
-    findByResetToken(token: string): Promise<User | null>;
     
     checkUserExists(email?: string, phone?: string): Promise<boolean>;
     verifyPinCode(userId: number, pinCode: number): Promise<boolean>;

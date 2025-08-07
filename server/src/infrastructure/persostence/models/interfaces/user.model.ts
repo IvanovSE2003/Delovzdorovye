@@ -15,8 +15,6 @@ interface IUserAttributes {
     activationLink: string;
     img: string;
     role: 'PACIENT' | 'DOCTOR' | 'ADMIN';
-    resetPasswordToken: string | null;
-    resetPasswordExpires: Date | null;
     createdAt?: Date;
     updatedAt?: Date;
     twoFactorCode: string | null;

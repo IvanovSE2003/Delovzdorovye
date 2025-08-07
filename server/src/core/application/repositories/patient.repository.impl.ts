@@ -1,7 +1,4 @@
-import { Op } from 'sequelize';
-import User from '../../domain/entities/user.entity.js';
 import Patient from '../../domain/entities/patient.entity.js';
-import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
 import PatientRepository from '../../domain/repositories/patient.repository.js';
 import { IPatientCreationAttributes, PatientModelInterface } from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
@@ -23,7 +20,7 @@ export default class PatientRepositoryImpl implements PatientRepository {
 
     async update(patient: Patient): Promise<Patient> {
         if (!patient.id) {
-            throw new Error("Patient ID is required for update");
+            throw new Error("ID пациента не найдено для обновления");
         }
 
         const [affectedCount, updatedPatients] = await PatientModel.update(
@@ -35,11 +32,16 @@ export default class PatientRepositoryImpl implements PatientRepository {
         );
 
         if (affectedCount === 0 || !updatedPatients || updatedPatients.length === 0) {
-            throw new Error(`Patient with id ${patient.id} not found or not updated`);
+            throw new Error(`Пациент с id ${patient.id} не найден`);
         }
 
         const updatedPatient = updatedPatients[0] as PatientModelInterface;
         return this.mapToDomainPatient(updatedPatient);
+    }
+
+    async create(patient: Patient): Promise<Patient> {
+        const createdPatient = await PatientModel.create(this.mapToPersistence(patient));
+        return this.mapToDomainPatient(createdPatient);
     }
 
 
@@ -58,7 +60,7 @@ export default class PatientRepositoryImpl implements PatientRepository {
             general_info: patient.generalInfo,
             analyses_examinations: patient.analysesExaminations,
             additionally: patient.additionally,
-            activate: patient.activate 
+            activate: patient.isActivated 
         };
     }
 }
