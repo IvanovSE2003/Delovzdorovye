@@ -47,12 +47,12 @@ const UserProfile: React.FC = () => {
 
         <div className="info-row">
           <span className="info-label">Дата рождения:</span>
-          <span className="info-value">{dataUser.date_birth}</span>
+          <span className="info-value">{dataUser.dateBirth}</span>
         </div>
 
         <div className="info-row">
           <span className="info-label">Часовой пояс:</span>
-          <span className="info-value">{dataUser.time_zone}</span>
+          <span className="info-value">{dataUser.timeZone}</span>
         </div>
 
         <div className="info-row">
