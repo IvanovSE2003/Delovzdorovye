@@ -1,20 +1,24 @@
-// telegram.bot.ts
-import TelegramBot from 'node-telegram-bot-api';
+import { Bot } from 'grammy';
 import models from '../infrastructure/persostence/models/models.js';
-const {UserTelegramModel} = models;
+const { UserTelegramModel } = models;
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN as string, { 
-  polling: true, 
-});
+const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
 
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from?.id;
+bot.command('start', async (ctx) => {
+  const chatId = ctx.chat.id;
+  const userId = ctx.from?.id;
 
   try {
-    const tlcode = await UserTelegramModel.create({telegram_chat_id: chatId.toString(), userId})
-    bot.sendMessage(chatId, '✅ Ваш аккаунт привязан к medOnline!');
+    await UserTelegramModel.create({
+      telegram_chat_id: chatId.toString(),
+      userId
+    });
+    await ctx.reply('✅ Ваш аккаунт привязан к medOnline!');
   } catch (error) {
-    bot.sendMessage(chatId, '❌ Ошибка привязки аккаунта. Попробуйте позже.');
+    console.error('Ошибка привязки аккаунта:', error);
+    await ctx.reply('❌ Ошибка привязки аккаунта. Попробуйте позже.');
   }
 });
+
+bot.start();
+console.log('Telegram bot started in polling mode');

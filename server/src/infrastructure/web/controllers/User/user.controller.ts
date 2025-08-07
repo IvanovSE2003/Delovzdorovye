@@ -5,6 +5,7 @@ import ApiError from "../../error/ApiError.js"
 import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
 import User from "../../../../core/domain/entities/user.entity.js";
+import { Api } from "grammy";
 
 export default class UserController {
     constructor(
@@ -276,6 +277,25 @@ export default class UserController {
             return res.json({ success: true, message: 'Уведомление отправлено' });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
+        }
+    }
+
+    async linkTelegram(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.params; 
+            if (!userId) {
+                return next(ApiError.badRequest('Пользователь не авторизован'));
+            }
+
+            const token = await this.authService.generateTelegramLinkToken(Number(userId));
+            
+            return res.json({
+                success: true,
+                token,
+                instructions: 'Введите этот код в Telegram боте командой /link [код]'
+            });
+        } catch(e: any) {
+            return next(ApiError.badRequest(e.message));
         }
     }
 }

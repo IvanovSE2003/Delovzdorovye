@@ -6,6 +6,7 @@ import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
 import {PatientModelInterface} from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
+import TelegramService from '../../domain/services/telegram.service.js';
 
 const {UserModel, PatientModel, DoctorModel} = models;
 

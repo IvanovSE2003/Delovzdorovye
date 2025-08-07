@@ -4,16 +4,13 @@ import TokenService from "../../domain/services/token.service.js";
 import PatientRepository from "../../domain/repositories/patient.repository.js";
 import MailService from "../../domain/services/mail.service.js";
 import SmsService from "../../domain/services/sms.service.js";
+import TelegramService from "../../domain/services/telegram.service.js";
 import User from "../../domain/entities/user.entity.js";
 import Patient from "../../domain/entities/patient.entity.js";
 import Doctor from "../../domain/entities/doctor.entity.js";
 import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
-import { UserModelInterface } from "../../domain/types/IUser.js";
-import models from "../../../infrastructure/persostence/models/models.js";
-
-const {UserModel} = models;
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -23,7 +20,8 @@ export class AuthServiceImpl implements AuthService {
         private readonly tokenService: TokenService,
         private readonly mailService: MailService,
         private readonly smsService: SmsService,
-        private readonly twoFactorService: TwoFactorService
+        private readonly twoFactorService: TwoFactorService,
+        private readonly telegramService: TelegramService
     ) {}
 
     async register(email: string, role: 'PACIENT' | 'DOCTOR' | 'ADMIN', name: string, surname: string, patronymic: string, phone: string, pinCode: number, gender: string, dateBirth: Date, timeZone: number, specialization: string, contacts: string, experienceYears: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
@@ -121,6 +119,10 @@ export class AuthServiceImpl implements AuthService {
         user.isActivated = true;
         await this.userRepository.save(user);
         return true;
+    }
+
+    async generateTelegramLinkToken(userId: number): Promise<string> {
+        return this.telegramService.generateLinkToken(userId);
     }
 
     async login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {

@@ -17,7 +17,7 @@ const mailService = new MailServiceImpl();
 const SmsService = new SmsServiceImpl(TelegramService);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 
-const authService = new AuthServiceImpl(userRepository, patientRepository, null, tokenService, mailService, SmsService, twoFactorService);
+const authService = new AuthServiceImpl(userRepository, patientRepository, null, tokenService, mailService, SmsService, twoFactorService, TelegramService);
 const userController = new UserController(authService, userRepository, tokenService);
 
 export default userController;

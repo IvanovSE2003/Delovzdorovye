@@ -33,8 +33,10 @@ router.post('/check', (req: Request, res: Response, next: NextFunction) => userC
 router.post('/checkPinCode', (req: Request, res: Response, next: NextFunction) => userController.checkPinCode(req, res, next));
 
 router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) => userController.sendTwoFactor(req, res, next));
-router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next))
-router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next))
+router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next));
+router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next));
+
+router.post('/activateLinkTg/:userId', (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
 export default router;
 

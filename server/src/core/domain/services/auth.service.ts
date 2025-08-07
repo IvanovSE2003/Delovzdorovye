@@ -30,4 +30,6 @@ export default interface AuthService {
     verifyTwoFactorCode(userId: number, code: string): Promise<boolean>;
     completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string }>;  
     sendLoginNotification(phone: string, code: string): Promise<void>;  
+
+    generateTelegramLinkToken(userId: number): Promise<string>;
 }
