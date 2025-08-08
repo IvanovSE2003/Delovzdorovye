@@ -25,18 +25,18 @@ export class AuthServiceImpl implements AuthService {
         private readonly telegramService: TelegramService
     ) {}
 
-    async register(email: string, role: 'PACIENT' | 'DOCTOR' | 'ADMIN', name: string, surname: string, patronymic: string, phone: string, pinCode: number, gender: string, dateBirth: Date, timeZone: number, specialization: string, contacts: string, experienceYears: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+    async register(email: string, role: 'PATIENT' | 'DOCTOR' | 'ADMIN', name: string, surname: string, patronymic: string, phone: string, pinCode: number, gender: string, dateBirth: Date, timeZone: number, specialization: string, contacts: string, experienceYears: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
         const exists = await this.userRepository.checkUserExists(email, phone);
         if (exists) {
             throw new Error("Пользователь с таким email или телефоном уже существует");
         }
-        
+
         const activationLink = v4();
-        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.jpg", role, null, null);
+        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.png", role, null, null, null, null);
         const savedUser = await this.userRepository.save(user);
 
-        if(role === 'PACIENT') {
-            const patient = new Patient(0, null, null, null, false, savedUser.id);
+        if(role === 'PATIENT') {
+            const patient = new Patient(0, {}, {}, {}, false, savedUser.id);
             await this.patientRepository.create(patient);
         } else if(role === 'DOCTOR') {
             const doctor = new Doctor(0, specialization, contacts, experienceYears, false, savedUser.id);
@@ -49,6 +49,8 @@ export class AuthServiceImpl implements AuthService {
             email: savedUser.email,
             role: savedUser.role,
         });
+
+        await this.tokenService.saveToken(savedUser.id, tokens.refreshToken);
 
         return {
             user: savedUser,
@@ -216,5 +218,26 @@ export class AuthServiceImpl implements AuthService {
             throw new Error('Код не верный')
         }
         await this.smsService.sendLoginNotification(user.id)
+    }
+
+    async requestPinReset(emailOrPhone: string): Promise<void> {
+        const user = await this.userRepository.findByEmailOrPhone(emailOrPhone) as User;
+        if (!user) {
+            throw new Error("Пользователь не найден");
+        }
+
+        const resetToken = v4();
+        const resetTokenExpires = new Date(Date.now() + 3600000); 
+        
+        await this.userRepository.save(user.setResetToken(resetToken, resetTokenExpires, user.pinCode));
+        await this.mailService.sendPinCodeResetEmail(user.email, resetToken);
+    }
+
+    async resetPin(resetToken: string, newPin: number): Promise<void> {
+        const user = await this.userRepository.findByResetToken(resetToken) as User;
+        if (!user || !user.resetTokenExpires || new Date() > user.resetTokenExpires) {
+            throw new Error("Недействительный или просроченный токен");
+        }
+        await this.userRepository.save(user.setResetToken(null, null, newPin));
     }
 }

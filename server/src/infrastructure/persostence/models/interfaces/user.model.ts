@@ -14,11 +14,13 @@ interface IUserAttributes {
     isActivated: boolean;
     activationLink: string;
     img: string;
-    role: 'PACIENT' | 'DOCTOR' | 'ADMIN';
+    role: 'PATIENT' | 'DOCTOR' | 'ADMIN';
     createdAt?: Date;
     updatedAt?: Date;
     twoFactorCode: string | null;
-    twoFactorCodeExpires: Date | null
+    twoFactorCodeExpires: Date | null;
+    resetToken: string | null;
+    resetTokenExpires: Date | null;
 }
 
 export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

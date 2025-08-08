@@ -14,7 +14,7 @@ export default class PatientRepositoryImpl implements PatientRepository {
 
     async findByUserId(userId: number) {
         const user = await UserModel.findByPk(userId);
-        const patient = await PatientModel.findByPk(user?.id);
+        const patient = await PatientModel.findOne({where: {userId: user?.id}})
         return patient ? this.mapToDomainPatient(patient) : null;
     }
 

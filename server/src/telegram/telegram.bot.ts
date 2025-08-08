@@ -1,24 +1,45 @@
+// src/telegram.bot.ts
 import { Bot } from 'grammy';
-import models from '../infrastructure/persostence/models/models.js';
-const { UserTelegramModel } = models;
 
-const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
+const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!);
 
+// Обработчики команд
 bot.command('start', async (ctx) => {
-  const chatId = ctx.chat.id;
-  const userId = ctx.from?.id;
-
-  try {
-    await UserTelegramModel.create({
-      telegram_chat_id: chatId.toString(),
-      userId
-    });
-    await ctx.reply('✅ Ваш аккаунт привязан к medOnline!');
-  } catch (error) {
-    console.error('Ошибка привязки аккаунта:', error);
-    await ctx.reply('❌ Ошибка привязки аккаунта. Попробуйте позже.');
-  }
+  await ctx.reply('Бот работает!');
 });
 
-bot.start();
-console.log('Telegram bot started in polling mode');
+// Graceful shutdown
+let isShuttingDown = false;
+
+async function shutdown() {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  
+  console.log('Остановка бота...');
+  await bot.stop();
+  process.exit(0);
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+// Запуск с проверкой
+let isRunning = false;
+
+async function startBot() {
+  if (isRunning) {
+    console.log('Бот уже запущен');
+    return;
+  }
+
+  try {
+    isRunning = true;
+    await bot.start();
+    console.log('Бот успешно запущен');
+  } catch (err) {
+    console.error('Ошибка запуска:', err);
+    process.exit(1);
+  }
+}
+
+startBot();

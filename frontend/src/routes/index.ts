@@ -18,7 +18,8 @@ export const RouteNames = {
 
 export const publicRoutes = [
     {path: RouteNames.LOGIN, element: LoginPage},
-    {path: RouteNames.MAIN, element: HomePage}
+    {path: RouteNames.MAIN, element: HomePage},
+    {path: RouteNames.PERSONAL, element: PersonalPage},
 ]
 
 export const privateRoutes = [

@@ -74,7 +74,17 @@ export default class UserController {
             if(!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             } 
-            return res.status(200).json(user);
+            return res.status(200).json({
+                avatar: user.img,
+                surname: user.surname,
+                name: user.name,
+                patronymic: user.patronymic,
+                gender: user.gender,
+                dateBirth: user.dateBirth,
+                timeZone: user.timeZone,
+                phone: user.phone,
+                email: user.email
+            });
         } catch(e: any) {
             return next(ApiError.badRequest(e.message))
         }
@@ -167,6 +177,7 @@ export default class UserController {
             return next(ApiError.notAuthorized('Пользователь не авторизован'));
         }
         const userPayload = await this.tokenService.validateRefreshToken(refreshToken);
+        console.log(userPayload);
 
         if (!userPayload || typeof userPayload === 'string') {
             return next(ApiError.notAuthorized('Невалидный токен'));
@@ -176,6 +187,7 @@ export default class UserController {
         }
         
         const tokenFromDb = await this.tokenService.findToken(refreshToken);
+        console.log(tokenFromDb);
 
         if (!tokenFromDb) {
             return next(ApiError.notAuthorized('Токен не найден в базе'));
@@ -189,7 +201,7 @@ export default class UserController {
         const tokens = await this.tokenService.generateTokens({...user});
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
-        res.cookie('refreshtoken', tokens.refreshToken, {
+        res.cookie('refreshToken', tokens.refreshToken, {
             maxAge: 30 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: true
@@ -294,6 +306,26 @@ export default class UserController {
                 instructions: 'Введите этот код в Telegram боте командой /link [код]'
             });
         } catch(e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async requestPinReset(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { emailOrPhone } = req.body;
+            await this.authService.requestPinReset(emailOrPhone);
+            return res.json({ success: true, message: 'Ссылка для сброса пин-кода отправлена на email' });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async resetPin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token, newPin } = req.body;
+            await this.authService.resetPin(token, newPin);
+            return res.json({ success: true, message: 'Пин-код успешно изменен' });
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }

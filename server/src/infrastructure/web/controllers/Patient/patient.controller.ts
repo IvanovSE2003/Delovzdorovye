@@ -9,10 +9,10 @@ export default class PatientController {
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params;
-        const patient = await this.patientRepository.findById(Number(id));
+        const patient = await this.patientRepository.findByUserId(Number(id));
         if(!patient) {
             return next(ApiError.badRequest('Пользователь не является пациентом'));
         }
-        return res.status(200).json({patient})
+        return res.status(200).json(patient)
     }
 }

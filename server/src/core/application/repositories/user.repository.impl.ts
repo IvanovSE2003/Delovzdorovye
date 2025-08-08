@@ -77,6 +77,16 @@ export default class UserRepositoryImpl implements UserRepository {
         return !!user;
     }
 
+    async findByResetToken(resetToken: string): Promise<User | null> {
+        const user = await UserModel.findOne({ 
+            where: { 
+                resetToken,
+                resetTokenExpires: { [Op.gt]: new Date() }
+            }
+        });
+        return user ? this.mapToDomainUser(user) : null;
+    }
+
     private mapToDomainUser(userModel: UserModelInterface): User {
         return new User(
             userModel.id,
@@ -95,6 +105,8 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.role,
             userModel.twoFactorCode,
             userModel.twoFactorCodeExpires,
+            userModel.resetToken,
+            userModel.resetTokenExpires
         );
     }
 
@@ -114,7 +126,9 @@ export default class UserRepositoryImpl implements UserRepository {
             img: user.img,
             role: user.role,
             twoFactorCode: user.twoFactorCode,
-            twoFactorCodeExpires: user.twoFactorCodeExpires
+            twoFactorCodeExpires: user.twoFactorCodeExpires,
+            resetToken: user.resetToken,
+            resetTokenExpires: user.resetTokenExpires
         };
     }
 }

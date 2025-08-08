@@ -21,9 +21,11 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     isActivated: {type: DataType.BOOLEAN, defaultValue: false},
     activationLink: {type: DataType.STRING, allowNull: true},
     img: {type: DataType.STRING, defaultValue: "defaultImg.jpg"},
-    role: {type: DataType.STRING, defaultValue: "PACIENT"},
+    role: {type: DataType.STRING, defaultValue: "PATIENT"},
     twoFactorCode: {type: DataType.STRING, allowNull: true},
-    twoFactorCodeExpires: {type: DataType.DATE, allowNull: true}
+    twoFactorCodeExpires: {type: DataType.DATE, allowNull: true},
+    resetToken: {type: DataType.STRING, allowNull: true},
+    resetTokenExpires: {type: DataType.DATE, allowNull: true}
 })
 
 const UserTelegramModel = sequelize.define<TelegramModelInterface>('use_telegram', {

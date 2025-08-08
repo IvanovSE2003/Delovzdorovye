@@ -39,5 +39,14 @@ router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFuncti
 
 router.post('/activateLinkTg/:userId', (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
+router.post('/request-pin-reset', 
+    body('emailOrPhone').notEmpty(),
+    (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
+
+router.post('/reset-pin', 
+    body('token').notEmpty(),
+    body('newPin').isInt().isLength({ min: 4, max: 6 }),
+    (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
+
 export default router;
 

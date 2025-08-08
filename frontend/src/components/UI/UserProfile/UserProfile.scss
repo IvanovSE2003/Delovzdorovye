@@ -1,76 +1,116 @@
-@use '../../../assets/styles/variables.scss' as *;
+@use "../../../assets/styles/variables.scss" as *;
 
 .user-profile {
-    width: max-content;
-    margin: 20px auto;
-    padding: 60px 170px;
-    box-shadow: 0 0 10px $shadow-color;
+  width: max-content;
+  margin: 20px auto;
+  padding: 60px 130px;
+  box-shadow: 0 0 10px $shadow-color;
+
+  &__title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  &__content {
     display: flex;
     gap: 100px;
     justify-content: center;
     align-items: center;
+  }
 
-    &__avatar {
-        img {
-            width: 170px;
-            height: 170px;  
-            box-shadow: 0 0 13px $shadow-color;
-            border-radius: 50%;
-        }
+  &__avatar {
+    img {
+      width: 220px;
+      height: 220px;
+      box-shadow: 0 0 13px $shadow-color;
+      border-radius: 50%;
     }
+  }
 
-    &__name {
-        font-size: 20px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: $primary-color;
-        margin-bottom: 30px;
-        text-align: center;
-        letter-spacing: 0.5px;
-        line-height: 1.3;
-    }
+  &__name {
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $primary-color;
+    margin-bottom: 30px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+  }
 
-    &__info {
-        margin-bottom: 25px;
+  &__info {
+    margin-bottom: 25px;
+  }
+
+  &__exit-button {
+    background-color: #dd7973;
+    color: white;
+  }
+
+  &__edit-button {
+    background-color: #5dbea3;
+    color: white;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  &__save-button {
+    background-color: #4caf50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+      background-color: #45a049;
     }
+  }
+
+  &__cancel-button {
+    background-color: #f44336;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+      background-color: #d32f2f;
+    }
+  }
+
+  .info-input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+  }
 }
 
 .info-row {
-    display: flex;
-    font-size: 15px;
-    line-height: 1.5;
-    gap: 20px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 5px;
+  gap: 20px;
 
-    &:last-child {
-        margin-bottom: 0;
-    }
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .info-label {
-    color: $primary-color;
-    min-width: 150px;
-    font-weight: bold;
+  color: $primary-color;
+  min-width: 150px;
+  font-weight: bold;
 }
 
 .info-value {
-    color: #000;
-    font-weight: 400;
-    flex-grow: 1;
-}
-
-.user-profile__edit-button {
-    width: 100%;
-    padding: 12px;
-    background-color: $primary-color;
-    color: white;
-    border: none;
-    border-radius: 0;
-    text-transform: uppercase;
-    cursor: pointer;
-    margin-top: 15px;
-    border-radius: 10px;
-
-    &:hover {
-        background-color: $secondary-color;
-    }
+  color: #000;
+  font-weight: 400;
+  flex-grow: 1;
 }

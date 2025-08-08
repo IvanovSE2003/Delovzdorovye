@@ -5,11 +5,11 @@ import { observer } from "mobx-react-lite";
 
 interface PatientData {
   id: number;
-  general_info: {
+  generalInfo: {
     clinical_diseases: string;
     postponed_operations: string;
   };
-  analyses_examinations: {
+  analysesExaminations: {
     recent_analyses_for_the_last_year: string;
   };
   additionally: {
@@ -35,19 +35,8 @@ const MainPersonal: React.FC = () => {
         if (!store.user?.id) {
           throw new Error("Пользователь не авторизован");
         }
-        
-        // Явно указываем тип возвращаемого значения
         const data = await store.getPatientData(store.user.id) as unknown as PatientData;
-        
-        // Проверяем, что данные соответствуют ожидаемой структуре
-        if (data && 
-            data.general_info && 
-            data.analyses_examinations && 
-            data.additionally) {
-          setPatientData(data);
-        } else {
-          throw new Error("Полученные данные не соответствуют ожидаемому формату");
-        }
+        setPatientData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось загрузить данные пациента');
       } finally {
@@ -58,7 +47,6 @@ const MainPersonal: React.FC = () => {
     loadPatientData();
   }, [store, store.user?.id]);
 
-  // Остальной код компонента остается без изменений
   if (loading) {
     return <div className="loading">Загрузка данных...</div>;
   }
@@ -76,13 +64,13 @@ const MainPersonal: React.FC = () => {
       <div className="content__form-client">
         <h2>Общая информация</h2>
         <div className="info-section">
-          <p><strong>Клинические заболевания:</strong> {patientData.general_info.clinical_diseases}</p>
-          <p><strong>Отложенные операции:</strong> {patientData.general_info.postponed_operations}</p>
+          <p><strong>Клинические заболевания:</strong> {patientData.generalInfo.clinical_diseases}</p>
+          <p><strong>Отложенные операции:</strong> {patientData.generalInfo.postponed_operations}</p>
         </div>
 
         <h2>Анализы и обследования</h2>
         <div className="info-section">
-          <p><strong>Последние анализы за год:</strong> {patientData.analyses_examinations.recent_analyses_for_the_last_year}</p>
+          <p><strong>Последние анализы за год:</strong> {patientData.analysesExaminations.recent_analyses_for_the_last_year}</p>
         </div>
 
         <h2>Дополнительно</h2>

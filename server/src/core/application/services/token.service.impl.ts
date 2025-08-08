@@ -10,7 +10,7 @@ class TokenServiceImpl implements TokenService {
     constructor(
         private readonly secretKey: string,
         private readonly refreshKey: string,
-        private readonly accessExpiresIn: string = '15m',
+        private readonly accessExpiresIn: string = '5m',
         private readonly refreshExpiresIn: string = '24h'
     ) {
         if (!secretKey || !refreshKey) {
@@ -82,7 +82,16 @@ class TokenServiceImpl implements TokenService {
     }
 
     async saveToken(userId: number, refreshToken: string): Promise<void> {
-        await TokenModel.create({refreshToken, userId});
+        const existingToken = await TokenModel.findOne({ where: { userId } });
+        
+        if (existingToken) {
+            await TokenModel.update(
+                { refreshToken },
+                { where: { userId } }
+            );
+        } else {
+            await TokenModel.create({ refreshToken, userId });
+        }
     }
 
     async removeToken(refreshToken: string): Promise<void> {
@@ -90,6 +99,7 @@ class TokenServiceImpl implements TokenService {
     }
 
     async findToken(refreshToken: string): Promise<Token> {
+        console.log(refreshToken);
         const tokenData = await TokenModel.findOne({where: {refreshToken}});
         if(!tokenData) {
             throw new Error("Токен не найден");
