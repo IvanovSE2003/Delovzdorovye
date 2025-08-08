@@ -38,16 +38,6 @@ const MainPersonal: React.FC = () => {
         
         // Явно указываем тип возвращаемого значения
         const data = await store.getPatientData(store.user.id) as unknown as PatientData;
-        
-        // Проверяем, что данные соответствуют ожидаемой структуре
-        if (data && 
-            data.general_info && 
-            data.analyses_examinations && 
-            data.additionally) {
-          setPatientData(data);
-        } else {
-          throw new Error("Полученные данные не соответствуют ожидаемому формату");
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось загрузить данные пациента');
       } finally {

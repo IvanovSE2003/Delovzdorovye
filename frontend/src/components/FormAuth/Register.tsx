@@ -269,7 +269,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 <div
                   className="role-card role-card_patient"
                   onClick={() => {
-                    handleDetailsChange("role", "PACIENT");
+                    handleDetailsChange("role", "PATIENT");
                     setStep(3);
                   }}
                 >

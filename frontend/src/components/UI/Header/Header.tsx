@@ -1,6 +1,6 @@
 import "./Header.scss";
 import logo from "../../../assets/images/logo.png";
-import avatar from "../../../assets/images/avatar.png";
+import avatar from "../../../assets/images/defaultImage.png";
 import React, { useContext, useEffect } from "react";
 import { Link } from "react-router";
 import { Context } from "../../../main";
@@ -13,33 +13,33 @@ const Header: React.FC = () => {
     <>
       <div className="header">
         <Link to={RouteNames.MAIN}>
-          <img className="header__logo" src={logo} alt="logo_medonline" />
+          <picture>
+            <source />
+            <img className="header__logo" src={logo} alt="logo_medonline" />
+          </picture>
         </Link>
         <nav className="header__nav">
-          <a href="#">Решаемые проблемы</a>
-          <a href="#">Запись на консультацию</a>
+          <a href="#">Какие проблемы решаем?</a>
+          <a href="#">Стоимость</a>
           <a href="#">Полезная информация</a>
           <a href="#">Контакты</a>
-          <a href="#">Цены</a>
         </nav>
         <div className="header__profile">
-          {store.isAuth ? (
-            <>
-              <button onClick={async () => await store.logout()}>Выйти</button>
-              <Link to={RouteNames.PERSONAL}>
-                <img src={avatar} alt="avatar" />
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link to={RouteNames.LOGIN}>
-                <button>Войти</button>
-              </Link>
-              <Link to={RouteNames.LOGIN}>
-                <img src={avatar} alt="avatar" />
-              </Link>
-            </>
-          )}
+          {store.isAuth
+            ? 
+            <div className="header__phone">
+              {store.user.phone}
+            </div>
+            : 
+            <Link to={RouteNames.LOGIN}>
+              <button>Войти</button>
+            </Link>
+          }
+          <div className="header__avatar">
+            <Link to={RouteNames.PERSONAL}>
+              <img src={avatar} alt="avatar" />
+            </Link>
+          </div>
         </div>
       </div>
     </>

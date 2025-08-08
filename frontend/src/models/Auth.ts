@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { AuthState } from "../components/FormAuth/FormAuth";
 
+export type Gender = "мужчина" | "женщина" | "";
+export type Role = "PATIETN" | "DOCTOR" | "ADMIN" | "";
 export interface IUser {
     id: number;
     name: string;
@@ -12,11 +14,11 @@ export interface IUser {
     password: string;
     timeZone: number;
     dateBirth: string | null;
-    gender: string;
+    gender: Gender;
     isActivated: boolean;
     activationLink: string;
     img: string;
-    role: "PACIENT" | "DOCTOR" | "ADMIN";
+    role: Role;
 }
 
 export type ResetPassword = {
@@ -30,8 +32,6 @@ export type LoginData = {
     email?: string
 }
 
-export type Gender = "мужчина" | "женщина" | "";
-export type Role = "PACIENT" | "DOCTOR" | "ADMIN" | "";
 export type RegistrationData = {
     name: string;
     surname: string;

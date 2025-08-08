@@ -1,5 +1,7 @@
 import Slider from '../components/UI/Slider/Slider'
 import Header from '../components/UI/Header/Header'
+import Line from '../components/UI/Line/Line';
+import Solutions from '../components/Solutions/Solutions';
 
 const HomePage = () => {
     const slides = [
@@ -26,10 +28,10 @@ const HomePage = () => {
     return (
         <div>
             <Header />
-            <Slider slides={slides} interval={10000}/>
-            <div>
-                Еще контент
-            </div>
+            <Slider />
+            <Line/>
+            <Solutions/>
+            <Line/>
         </div>
     )
 }

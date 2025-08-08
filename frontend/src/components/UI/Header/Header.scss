@@ -1,24 +1,38 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .header {
-    height: 198px;
-    width: 100%;
-    background-color: $light-color;
     border-bottom: 1px solid $light-color;
-    display: flex;
     justify-content: space-around;
+    background-color: white;
     align-items: center;
+    position: relative;
+    height: 130px;
+    display: flex;
 
     &__logo {
-        width: 91px;
-        height: 91px;
+        height: 60px;
     }
 
     &__nav {
-        display: flex;
+        background-color: $nav-color;
         justify-content: space-around;
+        align-items: center;
+        padding: 10px 20px;
+        border-radius: 10px;
+        position: absolute;
+        border: none;
+        display: flex;
+        z-index: 1000;
+        top: 110px;
         gap: 20px;
-        font-weight: bold;
+
+        a {
+            font-size: 18px;
+
+            &:hover {
+                color: $primary-color;
+            }
+        }
     }
 
     &__profile {
@@ -26,5 +40,34 @@
         justify-content: center;
         align-items: center;
         gap: 20px;
+
+        button {
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+
+            &:hover {
+                background-color: $primary-color;
+                color: white;
+            }
+        }
+    }
+
+    &__avatar {
+        img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid black;
+
+            &:hover {
+                border-color: $primary-color;
+                box-shadow: 0 0 10px $shadow-color;
+            }
+        }
+    }
+
+    &__phone {
+        font-weight: bolder;
     }
 }
