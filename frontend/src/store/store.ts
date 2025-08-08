@@ -43,8 +43,8 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при входе!";
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при входе!";
             this.setError(errorMessage);
             console.log(errorMessage);
         } finally {
@@ -62,8 +62,8 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при регистрации!";
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при регистрации!";
             this.setError(errorMessage);
             console.log(errorMessage);
         } finally {
@@ -81,8 +81,8 @@ export default class Store {
             this.setUser({} as IUser);
             this.setError("");
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            console.log("Ошибка при выходе:", error.response?.data?.messange);
+            const error = e as AxiosError<{ message: string }>;
+            console.log("Ошибка при выходе:", error.response?.data?.message);
         } finally {
             this.setLoading(false);
         }
@@ -99,8 +99,8 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            console.log("Ошибка проверки аутентификации:", error.response?.data?.messange);
+            const error = e as AxiosError<{ message: string }>;
+            console.log("Ошибка проверки аутентификации:", error.response?.data?.message);
             localStorage.removeItem('token');
             this.setAuth(false);
         } finally {
@@ -126,11 +126,23 @@ export default class Store {
             const response = await UserService.fetchPatientData(id);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при получении данных пациента!";
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при получении данных пациента!";
             this.setError(errorMessage);
             console.log(errorMessage);
-            throw error;
+        }
+    }
+
+    // Получение данные пользователя
+    async getUserData(id: number) {
+        try {
+            const response = await UserService.fetchUserData(id);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<{ message: string; }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при получении данных пользователя!";
+            this.setError(errorMessage);
+            console.log(errorMessage);
         }
     }
 
@@ -143,8 +155,8 @@ export default class Store {
             const response = await AuthService.sendEmailResetPinCode(pin);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при отправке сообщения для сброса пин-кода!";
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при отправке сообщения для сброса пин-кода!";
             this.setError(errorMessage);
             console.log(errorMessage);
             return { success: false, message: errorMessage };
@@ -158,8 +170,8 @@ export default class Store {
             const response = await AuthService.resetPinCode(token, pinCode);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ messange: string }>;
-            const errorMessage = error.response?.data?.messange || "Ошибка при сбросе пароля!";
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при сбросе пароля!";
             this.setError(errorMessage);
             console.log(errorMessage);
             return { success: false, message: errorMessage };

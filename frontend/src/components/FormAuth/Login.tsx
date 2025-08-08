@@ -105,7 +105,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
         ? data = await store.checkVarifyCode(code, email)
         : data = await store.checkVarifyCodeSMS(code, phone);
 
-      console.log(data);
       if (data.success) setStep(3);
     }
   }

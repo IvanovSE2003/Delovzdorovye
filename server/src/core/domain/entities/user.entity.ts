@@ -13,9 +13,11 @@ export default class User {
         public isActivated: boolean,
         public activationLink: string,
         public img: string,
-        public role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
+        public role: 'PATIENT' | 'DOCTOR' | 'ADMIN',
         public twoFactorCode: string | null,
-        public twoFactorCodeExpires: Date | null
+        public twoFactorCodeExpires: Date | null,
+        public resetToken: string | null,
+        public resetTokenExpires: Date | null
     ) {}
 
     activate(): User {
@@ -35,7 +37,9 @@ export default class User {
             this.img,
             this.role,
             this.twoFactorCode,
-            this.twoFactorCodeExpires
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires
         );
     }
 
@@ -56,8 +60,32 @@ export default class User {
             this.img,
             this.role,
             code,
-            expires
+            expires,
+            this.resetToken,
+            this.resetTokenExpires
         );
     }
 
+    setResetToken(resetToken: string | null, resetTokenExpires: Date | null, pin_code: number) {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            pin_code,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            resetToken,
+            resetTokenExpires
+        );
+    }
 }

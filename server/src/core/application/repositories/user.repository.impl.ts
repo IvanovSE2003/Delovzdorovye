@@ -52,6 +52,13 @@ export default class UserRepositoryImpl implements UserRepository {
         return this.mapToDomainUser(updatedUser);
     }
 
+    async delete(id: number): Promise<void> {
+        const deletedCount = await UserModel.destroy({ where: { id } });
+        if (deletedCount === 0) {
+            throw new Error('Пользователь не найден или не был удален');
+        }
+    }
+
     async save(user: User): Promise<User> {
         return user.id ? this.update(user) : this.create(user);
     }
@@ -77,6 +84,16 @@ export default class UserRepositoryImpl implements UserRepository {
         return !!user;
     }
 
+    async findByResetToken(resetToken: string): Promise<User | null> {
+        const user = await UserModel.findOne({ 
+            where: { 
+                resetToken,
+                resetTokenExpires: { [Op.gt]: new Date() }
+            }
+        });
+        return user ? this.mapToDomainUser(user) : null;
+    }
+
     private mapToDomainUser(userModel: UserModelInterface): User {
         return new User(
             userModel.id,
@@ -95,6 +112,8 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.role,
             userModel.twoFactorCode,
             userModel.twoFactorCodeExpires,
+            userModel.resetToken,
+            userModel.resetTokenExpires
         );
     }
 
@@ -114,7 +133,9 @@ export default class UserRepositoryImpl implements UserRepository {
             img: user.img,
             role: user.role,
             twoFactorCode: user.twoFactorCode,
-            twoFactorCodeExpires: user.twoFactorCodeExpires
+            twoFactorCodeExpires: user.twoFactorCodeExpires,
+            resetToken: user.resetToken,
+            resetTokenExpires: user.resetTokenExpires
         };
     }
 }

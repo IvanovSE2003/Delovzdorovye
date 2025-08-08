@@ -33,8 +33,8 @@ export default class MailServiceImpl implements MailService {
         }
     }
 
-    async sendPasswordResetEmail(to: string, resetToken: string): Promise<void> {
-        const resetUrl = `${process.env.CLIENT_URL}/password-reset/${resetToken}`;
+    async sendPinCodeResetEmail(to: string, resetToken: string): Promise<void> {
+        const resetUrl = `${process.env.CLIENT_URL}/pinCode-reset/${resetToken}`;
         
         try {
             await this.transporter.sendMail({

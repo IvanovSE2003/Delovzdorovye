@@ -3,7 +3,7 @@ import User from "../entities/user.entity.js";
 export default interface AuthService {
     register(
         email: string,
-        role: 'PACIENT' | 'DOCTOR' | 'ADMIN',
+        role: 'PATIENT' | 'DOCTOR' | 'ADMIN',
         name: string,
         surname: string,
         patronymic: string,
@@ -32,4 +32,7 @@ export default interface AuthService {
     sendLoginNotification(phone: string, code: string): Promise<void>;  
 
     generateTelegramLinkToken(userId: number): Promise<string>;
+
+    requestPinReset(emailOrPhone: string): Promise<void>;
+    resetPin(resetToken: string, newPin: number): Promise<void>;
 }

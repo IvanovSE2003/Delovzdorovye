@@ -21,6 +21,18 @@ export interface IUser {
     role: Role;
 }
 
+export interface IUserDataProfile {
+    avatar: string;
+    surname: string;
+    name: string;
+    patronymic: string;
+    gender: Gender;
+    dateBirth: string;
+    timeZone: number;
+    phone: string;
+    email: string;
+}
+
 export type ResetPassword = {
     message: string;
     success: boolean;

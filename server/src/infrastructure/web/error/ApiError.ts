@@ -4,10 +4,10 @@ class ApiError extends Error {
     public errors: any[];
     public originalError?: Error;
 
-    constructor(status: number, messange: string, errors: any[] = []) {
+    constructor(status: number, message: string, errors: any[] = []) {
         super()
         this.status = status;
-        this.message = messange;    
+        this.message = message;    
         this.errors = errors;
     }
 

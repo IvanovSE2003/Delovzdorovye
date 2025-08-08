@@ -74,7 +74,17 @@ export default class UserController {
             if(!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             } 
-            return res.status(200).json(user);
+            return res.status(200).json({
+                avatar: user.img,
+                surname: user.surname,
+                name: user.name,
+                patronymic: user.patronymic,
+                gender: user.gender,
+                dateBirth: user.dateBirth,
+                timeZone: user.timeZone,
+                phone: user.phone,
+                email: user.email
+            });
         } catch(e: any) {
             return next(ApiError.badRequest(e.message))
         }
@@ -167,6 +177,7 @@ export default class UserController {
             return next(ApiError.notAuthorized('Пользователь не авторизован'));
         }
         const userPayload = await this.tokenService.validateRefreshToken(refreshToken);
+        console.log(userPayload);
 
         if (!userPayload || typeof userPayload === 'string') {
             return next(ApiError.notAuthorized('Невалидный токен'));
@@ -176,6 +187,7 @@ export default class UserController {
         }
         
         const tokenFromDb = await this.tokenService.findToken(refreshToken);
+        console.log(tokenFromDb);
 
         if (!tokenFromDb) {
             return next(ApiError.notAuthorized('Токен не найден в базе'));
@@ -189,7 +201,7 @@ export default class UserController {
         const tokens = await this.tokenService.generateTokens({...user});
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
-        res.cookie('refreshtoken', tokens.refreshToken, {
+        res.cookie('refreshToken', tokens.refreshToken, {
             maxAge: 30 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: true
@@ -295,6 +307,81 @@ export default class UserController {
             });
         } catch(e: any) {
             return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async requestPinReset(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { emailOrPhone } = req.body;
+            await this.authService.requestPinReset(emailOrPhone);
+            return res.json({ success: true, message: 'Ссылка для сброса пин-кода отправлена на email' });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async resetPin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token, newPin } = req.body;
+            await this.authService.resetPin(token, newPin);
+            return res.json({ success: true, message: 'Пин-код успешно изменен' });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+            const {img, name, surname, patronymic, gender, dateBirth, timeZone, phone, email} = req.body;
+
+            const user = await this.userRepository.findById(Number(id));
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const updatedUser = new User(
+                user.id,
+                name || user.name,
+                surname || user.surname,
+                patronymic || user.patronymic,
+                email || user.email,
+                phone || user.phone,
+                user.pinCode,
+                timeZone || user.timeZone,
+                dateBirth || user.dateBirth,
+                gender || user.gender,
+                user.isActivated,
+                user.activationLink,
+                img || user.img,
+                user.role,
+                user.twoFactorCode,
+                user.twoFactorCodeExpires,
+                user.resetToken,
+                user.resetTokenExpires
+            );
+
+            const result = await this.userRepository.update(updatedUser);
+            res.status(200).json(result);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
+        }
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+
+            const user = await this.userRepository.findById(Number(id));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            await this.userRepository.delete(Number(id));
+
+            res.status(204).send();
+        } catch (error) {
+            next(ApiError.internal('Ошибка при удалении пользователя'));
         }
     }
 }

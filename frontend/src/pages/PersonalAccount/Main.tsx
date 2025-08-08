@@ -13,7 +13,6 @@ const PersonalPage = () => {
     useEffect(() => {
         console.log(store)
         setRole(store.user.role);
-        console.log(store.user.role);
     }, [store.user])
 
     return (
@@ -22,6 +21,12 @@ const PersonalPage = () => {
             <div className='account-main'>
                 {role === "PATIENT" && <PatientPage/>}
                 {role === "DOCTOR" && <DoctorPage/>}
+                {role === undefined && (
+                    <>
+                        Вы не вошли в аккаунт!
+                        <PatientPage/>
+                    </>
+                )}
             </div>
             <Timer />
         </div>

@@ -3,6 +3,7 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
+import { Op } from 'sequelize';
 
 const {UserModel, DoctorModel} = models;
 
@@ -17,6 +18,77 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         const user = await UserModel.findByPk(userId);
         const doctor = await DoctorModel.findByPk(user?.id);
         return doctor ? this.mapToDomainDoctor(doctor) : null;
+    }
+
+    async findAll(
+        page: number = 1,
+        limit: number = 10,
+        filters?: {
+            specialization?: string;
+            isActive?: boolean;
+            gender?: string;
+            experienceMin?: number;
+            experienceMax?: number;
+        }
+    ): Promise<{
+        doctors: Doctor[];
+        totalCount: number;
+        totalPages: number;
+    }> {
+        const where: any = {};
+        const userWhere: any = {};
+        
+        if (filters?.specialization) {
+            where.specialization = filters.specialization;
+        }
+        
+        if (filters?.isActive !== undefined) {
+            where.activate = filters.isActive;
+        }
+        
+        if (filters?.experienceMin !== undefined || filters?.experienceMax !== undefined) {
+            where.experience_years = {};
+            if (filters?.experienceMin !== undefined) {
+                where.experience_years[Op.gte] = filters.experienceMin;
+            }
+            if (filters?.experienceMax !== undefined) {
+                where.experience_years[Op.lte] = filters.experienceMax;
+            }
+        }
+        
+        if (filters?.gender) {
+            userWhere.gender = filters.gender;
+        }
+        
+        const totalCount = await DoctorModel.count({
+            where,
+            include: [{
+                model: UserModel,
+                where: userWhere,
+                required: true
+            }]
+        });
+        
+        const totalPages = Math.ceil(totalCount / limit);
+        
+        const doctors = await DoctorModel.findAll({
+            where,
+            include: [{
+                model: UserModel,
+                where: userWhere,
+                required: true,
+                attributes: { exclude: ['pin_code', 'activationLink'] } 
+            }],
+            limit,
+            offset: (page - 1) * limit,
+            order: [['experience_years', 'DESC'], ['id', 'ASC']] 
+        });
+        
+        return {
+            doctors: doctors.map(doctor => this.mapToDomainDoctor(doctor)),
+            totalCount,
+            totalPages
+        };
     }
 
     async update(doctor: Doctor): Promise<Doctor> {

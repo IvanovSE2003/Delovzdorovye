@@ -1,36 +1,41 @@
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
-import type { IUser } from "../../../models/Auth.js";
-import { getTimeZoneLabel, TimeZoneLabels } from "../../../models/TimeZones.js";
 import { useNavigate } from "react-router";
 import { RouteNames } from "../../../routes/index.js";
 import { observer } from "mobx-react-lite";
+import { URL } from "../../../http";
 
-import avatar from "../../../assets/images/avatar.png";
+import type { IUserDataProfile } from "../../../models/Auth.js";
+import { getTimeZoneLabel, TimeZoneLabels } from "../../../models/TimeZones.js";
 import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
-  const [dataUser, setDataUser] = useState<IUser>({} as IUser);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [dataUser, setDataUser] = useState<IUserDataProfile>(
+    {} as IUserDataProfile
+  );
+  const [editForm, setEditForm] = useState<IUserDataProfile>(
+    {} as IUserDataProfile
+  );
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<IUser>({} as IUser);
+
   const { store } = useContext(Context);
 
-  useEffect(() => {
+  const getUserData = async () => {
     if (store.isAuth) {
-      console.log(store.user);
-      setDataUser(store.user);
-      setEditForm(store.user);
+      const user = await store.getUserData(store.user.id);
+      setDataUser(user || ({} as IUserDataProfile));
+      setEditForm(user || ({} as IUserDataProfile));
     }
+  };
+  useEffect(() => {
+    getUserData();
   }, [store]);
 
   const logout = () => {
     store.logout();
     navigate(RouteNames.MAIN);
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
   };
 
   const handleCancel = () => {
@@ -40,6 +45,7 @@ const UserProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      console.log(editForm);
       // await store.updateUser(editForm);
       setDataUser(editForm);
       setIsEditing(false);
@@ -50,18 +56,22 @@ const UserProfile: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const renderField = (label: string, name: keyof IUser, value: string) => {
+  const renderField = (
+    label: string,
+    name: keyof IUserDataProfile,
+    value: string
+  ) => {
     if (isEditing) {
       return (
-        <div className='info-row'>
+        <div className="info-row">
           <span className="info-label">{label}:</span>
           <input
             type="text"
             name={name}
-            value={editForm.name || ''}
+            value={editForm[name]}
             onChange={handleChange}
             className="info-input"
           />
@@ -69,75 +79,149 @@ const UserProfile: React.FC = () => {
       );
     }
     return (
-      <div className='info-row'>
+      <div className="info-row">
         <span className="info-label">{label}:</span>
         <span className="info-value">{value}</span>
       </div>
     );
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Создаем превью для отображения
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Сохраняем файл в editForm (если нужно отправлять на сервер)
+      setEditForm((prev) => ({ ...prev, avatarFile: file }));
+    }
+  };
+
   return (
     <div className="user-profile">
-      <div className="user-profile__avatar">
-        <img src={avatar} alt="" />
-      </div>
+      <h2 className="user-profile__title">
+        {isEditing ? "Редактирование профиля" : "Ваш профиль"}
+      </h2>
 
-      <div className="user-profile__info">
-        {renderField("Фамилия", "surname", dataUser.surname)}
-        {renderField("Имя", "name", dataUser.name)}
-        {renderField("Отчество", "patronymic", dataUser.patronymic || "")}
-        {renderField("Пол", "gender", dataUser.gender)}
-        {renderField("Дата рождения", "dateBirth", dataUser.dateBirth || "")}
-
-        <div className="info-row">
-          <span className="info-label">Часовой пояс:</span>
-          {isEditing ? (
-            <select
-              name="timeZone"
-              value={editForm.timeZone}
-              onChange={(e) => setEditForm(prev => ({ ...prev, timeZone: Number(e.target.value) }))}
-              className="info-input"
-            >
-              {Object.entries(TimeZoneLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span className="info-value">{getTimeZoneLabel(dataUser.timeZone)}</span>
+      <div className="user-profile__content">
+        <div className="user-profile__avatar">
+          <img
+            src={avatarPreview}
+          />
+          {isEditing && (
+            <div className="avatar-edit">
+              <label htmlFor="avatar-upload" className="avatar-edit__label">
+                Изменить фото
+              </label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="avatar-edit__input"
+              />
+            </div>
           )}
         </div>
 
-        <div className="info-row">
-          <span className="info-label"> Номер телефона: </span>
-          <span className="info-value">{store.user.phone}</span>
-        </div>
+        <div className="user-profile__info">
+          {renderField("Фамилия", "surname", dataUser.surname)}
+          {renderField("Имя", "name", dataUser.name)}
+          {renderField("Отчество", "patronymic", dataUser.patronymic || "")}
+          {renderField("Пол", "gender", dataUser.gender)}
 
-        <div className="info-row">
-          <span className="info-label">Электронная почта: </span>
-          <span className="info-value">{store.user.email}</span>
-        </div>
-
-        {isEditing ? (
-          <div className="user-profile__actions">
-            <button className="auth__button" onClick={handleSave}>
-              Сохранить
-            </button>
-            <button className="auth__button" onClick={handleCancel}>
-              Отмена
-            </button>
+          {/* Дата рождения */}
+          <div className="info-row">
+            <span className="info-label">Дата рождения:</span>
+            {isEditing ? (
+              <input
+                type="date"
+                name="dateBirth"
+                className="info-input"
+                value={editForm.dateBirth || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="info-value">{store.user.dateBirth}</span>
+            )}
           </div>
-        ) : (
-          <>
-            <button className="auth__button" onClick={handleEdit}>
-              Редактировать
-            </button>
-            <button className="auth__button" onClick={logout}>
-              Выйти из аккаунта
-            </button>
-          </>
-        )}
+
+          {/* Часовой пояс */}
+          <div className="info-row">
+            <span className="info-label">Часовой пояс:</span>
+            {isEditing ? (
+              <select
+                name="timeZone"
+                value={editForm.timeZone}
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    timeZone: Number(e.target.value),
+                  }))
+                }
+                className="info-input"
+              >
+                {Object.entries(TimeZoneLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="info-value">
+                {getTimeZoneLabel(dataUser.timeZone)}
+              </span>
+            )}
+          </div>
+
+          {/* Телефон */}
+          <div className="info-row">
+            <span className="info-label">Номер телефона: </span>
+            <span className="info-value">{store.user.phone}</span>
+          </div>
+
+          {/* Почта */}
+          <div className="info-row">
+            <span className="info-label">Электронная почта: </span>
+            <span className="info-value">{store.user.email}</span>
+          </div>
+
+          {isEditing ? (
+            <div className="user-profile__actions">
+              <button
+                className="auth__button user-profile__edit-button"
+                onClick={handleSave}
+              >
+                Сохранить
+              </button>
+              <button
+                className="auth__button user-profile__exit-button"
+                onClick={handleCancel}
+              >
+                Отмена
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                className="auth__button user-profile__edit-button"
+                onClick={() => setIsEditing(true)}
+              >
+                Редактировать
+              </button>
+              <button
+                className="auth__button user-profile__exit-button"
+                onClick={logout}
+              >
+                Выйти из аккаунта
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
