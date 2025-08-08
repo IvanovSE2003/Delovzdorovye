@@ -116,7 +116,6 @@ export default class Store {
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            console.log("Ошибка при проверке пользователя:", error.response?.data?.message);
             return { check: false, message: error.response?.data?.message };
         }
     }

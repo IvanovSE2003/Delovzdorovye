@@ -1,12 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import avatar from "../../../assets/images/avatar.png";
-// import type { IUser } from '../../../models/IUser.js';
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
-import "./UserProfile.scss";
 import type { IUser } from "../../../models/Auth.js";
 import { getTimeZoneLabel } from "../../../models/TimeZones.js";
+import { useNavigate } from "react-router";
+import { RouteNames } from "../../../routes/index.js";
+import { observer } from "mobx-react-lite";
+
+
+import avatar from "../../../assets/images/avatar.png";
+import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
+  const navigate = useNavigate();
   const [dataUser, setDataUser] = useState<IUser>({} as IUser);
   const { store } = useContext(Context);
 
@@ -16,7 +21,7 @@ const UserProfile: React.FC = () => {
 
   const logout = () => {
     store.logout();
-    window.location.href = "/";
+    navigate(RouteNames.MAIN);
   }
 
   return (
@@ -73,4 +78,4 @@ const UserProfile: React.FC = () => {
   );
 };
 
-export default UserProfile;
+export default observer(UserProfile);
