@@ -5,7 +5,6 @@ import ApiError from "../../error/ApiError.js"
 import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
 import User from "../../../../core/domain/entities/user.entity.js";
-import { Api } from "grammy";
 
 export default class UserController {
     constructor(
@@ -245,21 +244,21 @@ export default class UserController {
             const {code, email, phone} = req.body;
 
             if(!code && !email && !phone) {
-                return res.status(404).json({code: false, message: 'Данные не получены'});
+                return res.status(404).json({success: false, message: 'Данные не получены'});
             }
             const credential = email ? email : phone;
             const user = await this.userRepository.findByEmailOrPhone(credential) as User;
 
             if(!user) {
-                return res.status(404).json({code: false, message: 'Пользователь не найден'});
+                return res.status(404).json({success: false, message: 'Пользователь не найден'});
             }
 
             const isCodeValid = await this.authService.verifyTwoFactorCode(user.id, code);
             if(!isCodeValid) {
-                return res.status(404).json({code: false, message: 'Не верный код'});
+                return res.status(404).json({success: false, message: 'Не верный код'});
             }
 
-            return res.status(200).json({code: true, message: 'Верный код'});
+            return res.status(200).json({success: true, message: 'Верный код'});
         } catch(e: any) {
             next(ApiError.badRequest(e.message));
         }
