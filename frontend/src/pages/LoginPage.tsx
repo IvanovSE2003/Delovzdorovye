@@ -8,13 +8,15 @@ const RegisterPage = () => {
         <>
             <div className='auth__window'>
                 <div className='auth__left'>
-                    <Link to="/">
-                        <img src={logo} alt="logo_medonline" />
-                    </Link>
+                    <div className="auth__logo">
+                        <Link to="/">
+                            <img src={logo} alt="logo_medonline" />
+                        </Link>
+                    </div>
                 </div>
                 <div className='auth__right'>
                     <div className='auth__box'>
-                         <FormAuth/>
+                        <FormAuth />
                     </div>
                 </div>
             </div>

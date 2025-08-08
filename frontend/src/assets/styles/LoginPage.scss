@@ -23,6 +23,12 @@
         align-items: center;
     }
 
+    &__logo {
+        img {
+            height: 100px;
+        }
+    }
+
     &__box {
         width: 450px;
         height: 600px;
