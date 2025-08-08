@@ -5,6 +5,7 @@ import { UserModelInterface } from "../models/interfaces/user.model.js"
 import {PatientModelInterface} from './interfaces/patient.model.js'
 import User from '../../../core/domain/entities/user.entity.js'
 import { TelegramModelInterface } from './interfaces/telegram.model.js'
+import { DoctorModelInterface } from './interfaces/doctor.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -44,7 +45,7 @@ const PatientModel = sequelize.define<PatientModelInterface>('patient', {
     activate: {type: DataType.BOOLEAN}
 })
 
-const DoctorModel = sequelize.define('doctor', {
+const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     specialization: {type: DataType.STRING},
     contacts: {type: DataType.STRING, allowNull: true},

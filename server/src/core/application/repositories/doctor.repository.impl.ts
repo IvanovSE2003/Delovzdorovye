@@ -1,62 +1,68 @@
-// import Patient from '../../domain/entities/patient.entity.js';
-// import models from '../../../infrastructure/persostence/models/models.js';
-// import DoctorRepository from '../../domain/repositories/doctor.repository.js';
+import Patient from '../../domain/entities/patient.entity.js';
+import models from '../../../infrastructure/persostence/models/models.js';
+import DoctorRepository from '../../domain/repositories/doctor.repository.js';
+import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
+import Doctor from '../../domain/entities/doctor.entity.js';
 
-// const {UserModel, DoctorModel} = models;
+const {UserModel, DoctorModel} = models;
 
-// export default class DoctorRepositoryImpl implements DoctorRepository {
+export default class DoctorRepositoryImpl implements DoctorRepository {
 
-//     async findById(id: number) {
-//         const doctor = await DoctorModel.findByPk(id);
-//         return doctor ? this.mapToDomainPatient(doctor) : null;
-//     }
+    async findById(id: number): Promise<Doctor | null> {
+        const doctor = await DoctorModel.findByPk(id);
+        return doctor ? this.mapToDomainDoctor(doctor) : null;
+    }
 
-//     async findByUserId(userId: number) {
-//         const user = await UserModel.findByPk(userId);
-//         const patient = await PatientModel.findByPk(user?.id);
-//         return patient ? this.mapToDomainPatient(patient) : null;
-//     }
+    async findByUserId(userId: number) {
+        const user = await UserModel.findByPk(userId);
+        const doctor = await DoctorModel.findByPk(user?.id);
+        return doctor ? this.mapToDomainDoctor(doctor) : null;
+    }
 
-//     async update(patient: Patient): Promise<Patient> {
-//         if (!patient.id) {
-//             throw new Error("ID пациента не найдено для обновления");
-//         }
+    async update(doctor: Doctor): Promise<Doctor> {
+        if (!doctor.id) {
+            throw new Error("ID пациента не найдено для обновления");
+        }
 
-//         const [affectedCount, updatedPatients] = await PatientModel.update(
-//             this.mapToPersistence(patient),
-//             {
-//                 where: { id: patient.id },
-//                 returning: true 
-//             }
-//         );
+        const [affectedCount, updatedPatients] = await DoctorModel.update(
+            this.mapToPersistence(doctor),
+            {
+                where: { id: doctor.id },
+                returning: true 
+            }
+        );
 
-//         if (affectedCount === 0 || !updatedPatients || updatedPatients.length === 0) {
-//             throw new Error(`Пациент с id ${patient.id} не найден`);
-//         }
+        if (affectedCount === 0 || !updatedPatients || updatedPatients.length === 0) {
+            throw new Error(`Пациент с id ${doctor.id} не найден`);
+        }
 
-//         const updatedPatient = updatedPatients[0] as PatientModelInterface;
-//         return this.mapToDomainPatient(updatedPatient);
-//     }
+        const updatedDoctor = updatedPatients[0] as DoctorModelInterface;
+        return this.mapToDomainDoctor(updatedDoctor);
+    }
 
-//     async create(patient: Patient): Promise<Patient> {
-//         const createdPatient = await PatientModel.create(this.mapToPersistence(patient));
-//         return this.mapToDomainPatient(createdPatient);
-//     }
+    async create(doctor: Doctor): Promise<Doctor> {
+        const createdDoctor = await DoctorModel.create(this.mapToPersistence(doctor));
+        return this.mapToDomainDoctor(createdDoctor);
+    }
 
+    private mapToDomainDoctor(doctorModel: DoctorModelInterface): Doctor {
+        return new Doctor(
+            doctorModel.id,
+            doctorModel.specialization,
+            doctorModel.contacts,
+            doctorModel.experience_years,
+            doctorModel.activate,
+            doctorModel.userId
+        );
+    }
 
-//     private mapToDomainPatient(patientModel: DoctorModelInterface): Patient {
-//         return new Doctor(
-//             this.id,
-//             this.
-//         );
-//     }
-
-//     private mapToPersistence(patient: Patient): IDoctorCreationAttributes {
-//         return {
-//             general_info: patient.generalInfo,
-//             analyses_examinations: patient.analysesExaminations,
-//             additionally: patient.additionally,
-//             activate: patient.isActivated 
-//         };
-//     }
-// }
+    private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
+        return {
+            specialization: doctor.specialization,
+            contacts: doctor.contacts,
+            experience_years: doctor.experienceYears,
+            activate: doctor.isActivated,
+            userId: doctor.userId
+        };
+    }
+}

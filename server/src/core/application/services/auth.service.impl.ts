@@ -2,6 +2,7 @@ import AuthService from "../../domain/services/auth.service.js";
 import UserRepository from "../../domain/repositories/user.repository.js";
 import TokenService from "../../domain/services/token.service.js";
 import PatientRepository from "../../domain/repositories/patient.repository.js";
+import DoctorRepository from "../../domain/repositories/doctor.repository.js";
 import MailService from "../../domain/services/mail.service.js";
 import SmsService from "../../domain/services/sms.service.js";
 import TelegramService from "../../domain/services/telegram.service.js";
@@ -16,7 +17,7 @@ export class AuthServiceImpl implements AuthService {
     constructor(
         private readonly userRepository: UserRepository,
         private readonly patientRepository: PatientRepository,
-        private readonly doctorRepository: any,
+        private readonly doctorRepository: DoctorRepository,
         private readonly tokenService: TokenService,
         private readonly mailService: MailService,
         private readonly smsService: SmsService,
@@ -36,10 +37,10 @@ export class AuthServiceImpl implements AuthService {
 
         if(role === 'PACIENT') {
             const patient = new Patient(0, null, null, null, false, savedUser.id);
-            const savedPatient = await this.patientRepository.create(patient);
-            console.log(savedPatient);
+            await this.patientRepository.create(patient);
         } else if(role === 'DOCTOR') {
-            const doctor = new Doctor(0, specialization, contacts, experienceYears, false);
+            const doctor = new Doctor(0, specialization, contacts, experienceYears, false, savedUser.id);
+            await this.doctorRepository.create(doctor);
         }
         await this.mailService.sendActivationEmail(email, activationLink);
 

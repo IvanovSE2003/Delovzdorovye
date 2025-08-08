@@ -20,6 +20,7 @@ router.post('/registration',
     body('email').isEmail(),
     body('password').isLength({min: 7, max: 50}),
     (req: Request, res: Response, next: NextFunction) => userController.registration(req, res, next));
+    
 router.post('/login', (req: Request, res: Response, next: NextFunction) => userController.login(req, res, next));
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
 router.get('/auth', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));

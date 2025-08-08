@@ -1,4 +1,3 @@
-import TelegramBot from 'node-telegram-bot-api';
 import SmsService from "../../domain/services/sms.service.js";
 import TelegramService from '../../domain/services/telegram.service.js';
 import models from '../../../infrastructure/persostence/models/models.js';

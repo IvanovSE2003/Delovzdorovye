@@ -2,9 +2,10 @@ export default class Doctor {
     constructor(
         public readonly id: number,
         public readonly specialization: string,
-        public readonly contacts: string | null,
+        public readonly contacts: string,
         public readonly experienceYears: number,
-        public readonly isActivated: boolean
+        public readonly isActivated: boolean,
+        public readonly userId?: number
     ) {}
 
     activate(): Doctor {
@@ -13,7 +14,8 @@ export default class Doctor {
             this.specialization,
             this.contacts,
             this.experienceYears,
-            this.isActivated
+            true,
+            this.userId
         );
     }
 }
