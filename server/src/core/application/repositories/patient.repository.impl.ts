@@ -44,14 +44,14 @@ export default class PatientRepositoryImpl implements PatientRepository {
         return this.mapToDomainPatient(createdPatient);
     }
 
-
     private mapToDomainPatient(patientModel: PatientModelInterface): Patient {
         return new Patient(
             patientModel.id,
             patientModel.general_info,
             patientModel.analyses_examinations,
             patientModel.additionally,
-            patientModel.activate
+            patientModel.activate,
+            patientModel.userId
         );
     }
 
@@ -60,7 +60,8 @@ export default class PatientRepositoryImpl implements PatientRepository {
             general_info: patient.generalInfo,
             analyses_examinations: patient.analysesExaminations,
             additionally: patient.additionally,
-            activate: patient.isActivated 
+            activate: patient.isActivated,
+            userId: patient.userId
         };
     }
 }

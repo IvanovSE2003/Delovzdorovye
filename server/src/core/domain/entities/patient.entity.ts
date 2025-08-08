@@ -4,7 +4,8 @@ export default class Patient {
         public readonly generalInfo: Record<string, any> | null,
         public readonly analysesExaminations: Record<string, any> | null,
         public readonly additionally: Record<string, any> | null,
-        public readonly isActivated: boolean
+        public readonly isActivated: boolean,
+        public readonly userId? : number
     ) {}
 
     activate() {
@@ -13,7 +14,8 @@ export default class Patient {
             this.generalInfo,
             this.analysesExaminations,
             this.additionally,
-            true
+            true,
+            this.userId
         );
     }
 }

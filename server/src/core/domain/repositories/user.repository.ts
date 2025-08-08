@@ -11,9 +11,6 @@ export default interface UserRepository {
     update(user: User): Promise<User>;
     save(user: User): Promise<User>;
     
-    createPatient(userId: number, patientData: Partial<Patient>): Promise<Patient>;
-    createDoctor(userId: number, doctorData: Partial<Doctor>): Promise<Doctor>;
-    
     findByActivationLink(link: string): Promise<User | null>;
     
     checkUserExists(email?: string, phone?: string): Promise<boolean>;

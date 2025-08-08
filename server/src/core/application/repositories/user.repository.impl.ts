@@ -4,7 +4,7 @@ import User from '../../domain/entities/user.entity.js';
 import Patient from '../../domain/entities/patient.entity.js';
 import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
-import {PatientModelInterface} from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
+import {IPatientCreationAttributes, PatientModelInterface} from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
 import TelegramService from '../../domain/services/telegram.service.js';
 
@@ -54,30 +54,6 @@ export default class UserRepositoryImpl implements UserRepository {
 
     async save(user: User): Promise<User> {
         return user.id ? this.update(user) : this.create(user);
-    }
-
-    async createPatient(userId: number, patientData: Partial<Patient>): Promise<Patient> {
-        const patient = await PatientModel.create({ ...patientData as any, userId }) as unknown as PatientModelInterface;
-        return new Patient(
-            patient.id,
-            patient.general_info,
-            patient.analyses_examinations,
-            patient.additionally,
-            patient.activate
-        );
-    }
-
-    async createDoctor(userId: number, doctorData: Partial<Doctor>): Promise<Doctor> {
-        // const doctor = await DoctorModel.create({ ...doctorData, userId }) as unknown as DoctorModelInterface;
-        // return new Doctor(
-        //     doctor.id,
-        //     doctor.specialization,
-        //     doctor.contacts,
-        //     doctor.experienceYears,
-        //     doctor.activate,
-        //     doctor.userId
-        // );
-        throw ""
     }
 
     async findByActivationLink(link: string): Promise<User | null> {
