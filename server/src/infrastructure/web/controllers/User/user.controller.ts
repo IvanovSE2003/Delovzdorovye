@@ -329,4 +329,59 @@ export default class UserController {
             return next(ApiError.badRequest(e.message));
         }
     }
+
+    async update(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+            const {img, name, surname, patronymic, gender, dateBirth, timeZone, phone, email} = req.body;
+
+            const user = await this.userRepository.findById(Number(id));
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const updatedUser = new User(
+                user.id,
+                name || user.name,
+                surname || user.surname,
+                patronymic || user.patronymic,
+                email || user.email,
+                phone || user.phone,
+                user.pinCode,
+                timeZone || user.timeZone,
+                dateBirth || user.dateBirth,
+                gender || user.gender,
+                user.isActivated,
+                user.activationLink,
+                img || user.img,
+                user.role,
+                user.twoFactorCode,
+                user.twoFactorCodeExpires,
+                user.resetToken,
+                user.resetTokenExpires
+            );
+
+            const result = await this.userRepository.update(updatedUser);
+            res.status(200).json(result);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
+        }
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+
+            const user = await this.userRepository.findById(Number(id));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            await this.userRepository.delete(Number(id));
+
+            res.status(204).send();
+        } catch (error) {
+            next(ApiError.internal('Ошибка при удалении пользователя'));
+        }
+    }
 }

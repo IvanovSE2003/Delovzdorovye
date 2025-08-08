@@ -52,6 +52,13 @@ export default class UserRepositoryImpl implements UserRepository {
         return this.mapToDomainUser(updatedUser);
     }
 
+    async delete(id: number): Promise<void> {
+        const deletedCount = await UserModel.destroy({ where: { id } });
+        if (deletedCount === 0) {
+            throw new Error('Пользователь не найден или не был удален');
+        }
+    }
+
     async save(user: User): Promise<User> {
         return user.id ? this.update(user) : this.create(user);
     }

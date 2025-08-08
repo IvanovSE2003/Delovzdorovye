@@ -13,9 +13,70 @@ export default class PatientRepositoryImpl implements PatientRepository {
     }
 
     async findByUserId(userId: number) {
+        if (isNaN(userId)) {
+            return null;
+        }
         const user = await UserModel.findByPk(userId);
         const patient = await PatientModel.findOne({where: {userId: user?.id}})
         return patient ? this.mapToDomainPatient(patient) : null;
+    }
+
+    async findAll(
+        page: number = 1,
+        limit: number = 10,
+        filters?: {
+            bloodType?: string;
+            isActive?: boolean;
+            gender?: string;
+        }
+    ): Promise<{
+        patients: Patient[];
+        totalCount: number;
+        totalPages: number;
+    }> {
+        const where: any = {};
+        const userWhere: any = {};
+        
+        if (filters?.bloodType) {
+            where.general_info = { bloodType: filters.bloodType };
+        }
+        
+        if (filters?.isActive !== undefined) {
+            where.activate = filters.isActive;
+        }
+        
+        if (filters?.gender) {
+            userWhere.gender = filters.gender;
+        }
+        
+        const totalCount = await PatientModel.count({
+            where,
+            include: [{
+                model: UserModel,
+                where: userWhere,
+                required: true
+            }]
+        });
+        
+        const totalPages = Math.ceil(totalCount / limit);
+        
+        const patients = await PatientModel.findAll({
+            where,
+            include: [{
+                model: UserModel,
+                where: userWhere,
+                required: true
+            }],
+            limit,
+            offset: (page - 1) * limit,
+            order: [['id', 'ASC']] 
+        });
+        
+        return {
+            patients: patients.map(patient => this.mapToDomainPatient(patient)),
+            totalCount,
+            totalPages
+        };
     }
 
     async update(patient: Patient): Promise<Patient> {

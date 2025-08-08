@@ -8,11 +8,45 @@ export default class PatientController {
     ) {}
 
     async getOne(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params;
-        const patient = await this.patientRepository.findByUserId(Number(id));
-        if(!patient) {
-            return next(ApiError.badRequest('Пользователь не является пациентом'));
+        try {
+            const {id} = req.params;
+            const patient = await this.patientRepository.findByUserId(Number(id));
+            if(!patient) {
+                return next(ApiError.badRequest('Пользователь не является пациентом'));
+            }
+            return res.status(200).json(patient)
+        } catch(e: any) {
+            return next(ApiError.badRequest(e.message));
+        }        
+    }
+
+    async getAllPatient(req: Request, res: Response, next: NextFunction) {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            
+            const filters = {
+                bloodType: req.query.bloodType as string | undefined,
+                isActive: req.query.isActive !== undefined 
+                    ? req.query.isActive === 'true' 
+                    : undefined,
+                gender: req.query.gender as string | undefined
+            };
+            
+            const result = await this.patientRepository.findAll(page, limit, filters);
+            
+            res.status(200).json({
+                success: true,
+                data: result.patients,
+                pagination: {
+                    currentPage: page,
+                    totalPages: result.totalPages,
+                    totalItems: result.totalCount,
+                    itemsPerPage: limit
+                }
+            });
+        } catch (error) {
+            next(ApiError.internal('Ошибка при получении списка пациентов'));
         }
-        return res.status(200).json(patient)
     }
 }

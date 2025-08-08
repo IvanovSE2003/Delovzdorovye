@@ -9,6 +9,7 @@ export default interface UserRepository {
     findByPhone(phone: string): Promise<User | null>;
     create(user: User): Promise<User>;
     update(user: User): Promise<User>;
+    delete(id: number): Promise<void>;
     save(user: User): Promise<User>;
     
     findByActivationLink(link: string): Promise<User | null>;
