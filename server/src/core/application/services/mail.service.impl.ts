@@ -108,7 +108,7 @@ export default class MailServiceImpl implements MailService {
                     style="display: inline-block; padding: 12px 24px; 
                     background-color: #2563eb; color: white; 
                     text-decoration: none; border-radius: 4px; margin: 20px 0;">
-                    Сбросить пароль
+                    Сбросить пин-код
                 </a>
                 <p>Или скопируйте ссылку в браузер:</p>
                 <p style="word-break: break-all;">${resetUrl}</p>

@@ -21,7 +21,7 @@ export default class SmsServiceImpl implements SmsService {
         if (userTelegram) {
             await this.telegramService.sendMessage(
                 userTelegram.telegram_chat_id.toString(), 
-                `🔐 Ваш код подтверждения для medOnline: **${code}**\nНе сообщайте его никому!`
+                `🔐 Ваш код подтверждения для Дело в здоровье: **${code}**\nНе сообщайте его никому!`
             )
         }
     }
@@ -37,7 +37,7 @@ export default class SmsServiceImpl implements SmsService {
         if (userTelegram) {
             await this.telegramService.sendMessage(
                 userTelegram.telegram_chat_id.toString(),  
-                '🔔 В ваш аккаунт medOnline был выполнен вход. Если это не вы, смените пароль!'
+                '🔔 В ваш аккаунт Дело в здоровье был выполнен вход. Если это не вы, смените пароль!'
             )
         }
     }
