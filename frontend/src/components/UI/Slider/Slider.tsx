@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Slider.scss';
+import { RouteNames } from '../../../routes';
+import { Link } from 'react-router-dom';
 
 interface Slide {
   id: number;
@@ -56,22 +58,26 @@ const Slider: React.FC = () => {
   // }, [currentSlide, isAutoPlaying, interval, fadeDuration]);
 
   return (
-    <div className="slider">
-      <div style={{ transitionDuration: '500ms' }}>
-        <div className="slider__content">
-          <div className="slider__text">
-            <h3>
-              «Дело в здоровье» <br />
-              – сервис онлайн-консультаций по решению проблем со здоровьем
-            </h3>
-          </div>
-          <div className="slider__button">
-            <a
-              href="#"
-              target="_blank"
-            >
-              Записаться на консультацию
-            </a>
+    <div className="slider container">
+      <div className="container__box">
+        <div style={{ transitionDuration: '500ms' }}>
+          <div className="slider__content">
+            <div className="slider__text">
+              <h3>
+                «Дело в здоровье» <br />
+                – сервис онлайн-консультаций по решению проблем со здоровьем.
+              </h3>
+            </div>
+            <div className="slider__button">
+              <Link to={RouteNames.LOGIN}>
+                <a
+                  href="#"
+                  target="_blank"
+                >
+                  Записаться на консультацию
+                </a>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -2,9 +2,12 @@ import Slider from '../components/UI/Slider/Slider'
 import Header from '../components/UI/Header/Header'
 import Line from '../components/UI/Line/Line';
 import Solutions from '../components/Solutions/Solutions';
+import Costs from '../components/Costs/Costs';
+import Informations from '../components/Informations/Informations';
+import Contacts from '../components/Contacts/Contacts';
 
 const HomePage = () => {
-    const slides = [
+  const slides = [
     {
       id: 1,
       backgroundImage: 'src/assets/images/slides-images/slide1.jpg',
@@ -23,17 +26,22 @@ const HomePage = () => {
       title: 'Третий слайдер',
       buttonLink: 'https://example.com'
     },
-    ];
+  ];
 
-    return (
-        <div>
-            <Header />
-            <Slider />
-            <Line/>
-            <Solutions/>
-            <Line/>
-        </div>
-    )
+  return (
+    <div>
+      <Header />
+      <Slider />
+      <Line />
+      <Solutions />
+      <Line />
+      <Costs />
+      <Line />
+      <Informations />
+      <Line />
+      <Contacts />
+    </div>
+  )
 }
 
 export default HomePage;

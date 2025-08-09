@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import logo from '../../../assets/images/logo.png'
+import logo from '../../../../public/mini-logo.svg'
 import { 
   HomeOutlined, 
   CommentOutlined, 

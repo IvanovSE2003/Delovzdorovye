@@ -9,6 +9,10 @@
     font-style: normal;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .account {
     &-wrapper {
         display: flex;
@@ -25,4 +29,17 @@
 input {
     box-sizing: border-box;
     border: none;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+
+    &__box {
+        max-width: 1600px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
 }

@@ -19,10 +19,10 @@ const Header: React.FC = () => {
           </picture>
         </Link>
         <nav className="header__nav">
-          <a href="#">Какие проблемы решаем?</a>
-          <a href="#">Стоимость</a>
-          <a href="#">Полезная информация</a>
-          <a href="#">Контакты</a>
+          <a href="#solutions">Какие проблемы решаем?</a>
+          <a href="#costs">Стоимость</a>
+          <a href="#informations">Полезная информация</a>
+          <a href="#contacts">Контакты</a>
         </nav>
         <div className="header__profile">
           {store.isAuth

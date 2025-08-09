@@ -11,7 +11,6 @@ const PersonalPage = () => {
     const [role, setRole] = useState<string>("");
 
     useEffect(() => {
-        console.log(store)
         setRole(store.user.role);
     }, [store.user])
 
