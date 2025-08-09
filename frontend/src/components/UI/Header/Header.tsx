@@ -25,21 +25,23 @@ const Header: React.FC = () => {
           <a href="#contacts">Контакты</a>
         </nav>
         <div className="header__profile">
-          {store.isAuth
-            ? 
-            <div className="header__phone">
-              {store.user.phone}
-            </div>
-            : 
-            <Link to={RouteNames.LOGIN}>
-              <button>Войти</button>
-            </Link>
-          }
-          <div className="header__avatar">
-            <Link to={RouteNames.PERSONAL}>
-              <img src={avatar} alt="avatar" />
-            </Link>
+          <div className="header__phone">
+            8 888 888 88 88
           </div>
+          {store.isAuth
+            ?
+            <div className="header__avatar">
+              <Link to={RouteNames.PERSONAL}>
+                <img src={avatar} alt="avatar" />
+              </Link>
+            </div>
+            :
+            <div className="header__avatar">
+              <Link to={RouteNames.LOGIN}>
+                <img src={avatar} alt="avatar" />
+              </Link>
+            </div>
+          }
         </div>
       </div>
     </>
