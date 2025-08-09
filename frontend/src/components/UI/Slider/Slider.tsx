@@ -20,12 +20,7 @@ const Slider: React.FC = () => {
               </div>
               <div className="slider__button">
                 <Link to={RouteNames.LOGIN}>
-                  <a
-                    href="#"
-                    target="_blank"
-                  >
                     Записаться на консультацию
-                  </a>
                 </Link>
               </div>
             </div>

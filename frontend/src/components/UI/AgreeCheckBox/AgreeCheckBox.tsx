@@ -6,15 +6,13 @@ interface AgreeCheckBoxProps {
   agreementText?: string;
   linkText?: string;
   onLinkClick?: () => void;
-  buttonText?: string;
 }
 
 const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
   onAgreementChange,
   agreementText = 'Я согласен с условиями пользовательского соглашения и даю согласие на обработку персональных данных',
-  linkText = 'условиями пользовательского соглашения',
-  onLinkClick,
-  buttonText = 'Продолжить'
+  linkText = ' условиями пользовательского соглашения',
+  onLinkClick
 }) => {
   const [isChecked, setIsChecked] = useState(false);
 
@@ -32,24 +30,22 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
   };
 
   return (
-    <form className="agreement-form">
-      <div className="agreement-container">
+    <div className="agreement">
+      <div className="agreement__container">
         <div
-          tabIndex={0}
-          className={`custom-checkbox ${isChecked ? 'checked' : ''}`}
+          className={`agreement__custom-checkbox ${isChecked ? 'checked' : ''}`}
           onClick={handleCheckboxChange}
           onKeyDown={handleKeyDown}
           role="checkbox"
           aria-checked={isChecked}
         />
         
-        <div className="agreement-text">
+        <div className="agreement__text">
           {agreementText.split(linkText)[0]}
           <span 
-            className="agreement-link" 
+            className="agreement__link" 
             onClick={onLinkClick}
             role="button"
-            tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();
@@ -57,12 +53,12 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
               }
             }}
           >
-            {linkText}
+            {` ${linkText}`}
           </span>
           {agreementText.split(linkText)[1]}
         </div>
       </div>
-    </form>
+    </div>
   );
 };
 

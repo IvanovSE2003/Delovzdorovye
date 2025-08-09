@@ -28,7 +28,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   const [disabled, setDisable] = useState<boolean>(true);
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
-  const [step, setStep] = useState<number>(1); // Шаги регистрации
+  const [step, setStep] = useState<number>(3); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
@@ -92,7 +92,6 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
 
-    // Если пустое хоть одно поле объекта UserDetails
     if (Object.values(userDetails).some((value) => !value || value.trim() === "")) {
       setError("Все поля должны быть заполнены!");
       return;
@@ -121,12 +120,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const SetPinCode = (pin: string) => handleDetailsChange('pin_code', pin);
 
   const handleAgreementChange = (isChecked: boolean) => {
-    console.log('User agreement changed:', isChecked);
+    console.log('Пользователь нажал на галочку:', isChecked);
+    setDisable(!isChecked);
   };
 
   const handleLinkClick = () => {
-    console.log('Link clicked');
-    // Здесь можно открыть модальное окно с соглашением
+    console.log('Нажатие на ссылку');
   };
 
 
@@ -325,12 +324,9 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               <AgreeCheckBox
                 onAgreementChange={handleAgreementChange}
                 onLinkClick={handleLinkClick}
-                agreementText="Я принимаю условия пользовательского соглашения и политики конфиденциальности"
-                linkText="условиями пользовательского соглашения и политики конфиденциальности"
-                buttonText="Зарегистрироваться"
               />
 
-              <button onClick={registration} disabled={disabled} className="auth__button__final">
+              <button onClick={registration} className="auth__button__final" disabled={disabled}>
                 Завершить регистрацию
               </button>
 
