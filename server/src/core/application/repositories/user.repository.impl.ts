@@ -1,14 +1,10 @@
 import { Op } from 'sequelize';
 import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
-import Patient from '../../domain/entities/patient.entity.js';
-import Doctor from "../../domain/entities/doctor.entity.js";
 import models from '../../../infrastructure/persostence/models/models.js';
-import {IPatientCreationAttributes, PatientModelInterface} from '../../../infrastructure/persostence/models/interfaces/patient.model.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
-import TelegramService from '../../domain/services/telegram.service.js';
 
-const {UserModel, PatientModel, DoctorModel} = models;
+const {UserModel} = models;
 
 export default class UserRepositoryImpl implements UserRepository {
     async findByEmailOrPhone(credential: string): Promise<User | null> {
@@ -113,7 +109,10 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.twoFactorCode,
             userModel.twoFactorCodeExpires,
             userModel.resetToken,
-            userModel.resetTokenExpires
+            userModel.resetTokenExpires,
+            userModel.pinAttempts, 
+            userModel.isBlocked,
+            userModel.blockedUntil
         );
     }
 
@@ -135,7 +134,10 @@ export default class UserRepositoryImpl implements UserRepository {
             twoFactorCode: user.twoFactorCode,
             twoFactorCodeExpires: user.twoFactorCodeExpires,
             resetToken: user.resetToken,
-            resetTokenExpires: user.resetTokenExpires
+            resetTokenExpires: user.resetTokenExpires,
+            pinAttempts: user.pinAttempts,
+            isBlocked: user.isBlocked,
+            blockedUntil: user.blockedUntil
         };
     }
 }

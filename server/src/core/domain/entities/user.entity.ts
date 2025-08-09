@@ -17,7 +17,10 @@ export default class User {
         public twoFactorCode: string | null,
         public twoFactorCodeExpires: Date | null,
         public resetToken: string | null,
-        public resetTokenExpires: Date | null
+        public resetTokenExpires: Date | null,
+        public pinAttempts: number, 
+        public isBlocked: boolean, 
+        public blockedUntil: Date | null
     ) {}
 
     activate(): User {
@@ -39,7 +42,10 @@ export default class User {
             this.twoFactorCode,
             this.twoFactorCodeExpires,
             this.resetToken,
-            this.resetTokenExpires
+            this.resetTokenExpires,
+            this.pinAttempts, 
+            this.isBlocked,
+            this.blockedUntil
         );
     }
 
@@ -62,7 +68,10 @@ export default class User {
             code,
             expires,
             this.resetToken,
-            this.resetTokenExpires
+            this.resetTokenExpires,
+            this.pinAttempts, 
+            this.isBlocked,
+            this.blockedUntil
         );
     }
 
@@ -85,7 +94,115 @@ export default class User {
             this.twoFactorCode,
             this.twoFactorCodeExpires,
             resetToken,
-            resetTokenExpires
+            resetTokenExpires,
+            this.pinAttempts, 
+            this.isBlocked,
+            this.blockedUntil
+        );
+    }
+
+    incrementPinAttempts(): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            this.pinAttempts + 1,
+            this.isBlocked,
+            this.blockedUntil
+        );
+    }
+
+    resetPinAttempts(): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            0, // Сбрасываем счетчик попыток
+            this.isBlocked,
+            this.blockedUntil
+        );
+    }
+
+    blockAccount(): User {
+        const blockDuration = 30 * 60 * 1000;
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            this.pinAttempts,
+            true, 
+            new Date(Date.now() + blockDuration) 
+        );
+    }
+
+    unblockAccount(): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            0,
+            false, 
+            null 
         );
     }
 }

@@ -32,7 +32,7 @@ export class AuthServiceImpl implements AuthService {
         }
 
         const activationLink = v4();
-        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.png", role, null, null, null, null);
+        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.png", role, null, null, null, null, 0, false, null);
         const savedUser = await this.userRepository.save(user);
 
         if(role === 'PATIENT') {
@@ -138,8 +138,21 @@ export class AuthServiceImpl implements AuthService {
 
             const isPinValid = await this.userRepository.verifyPinCode(user.id, pinCode);
             if (!isPinValid) {
-                throw new Error("Неверный пин-код");
+                const updatedUser = user.incrementPinAttempts();
+                await this.userRepository.save(updatedUser);
+
+                if (updatedUser.pinAttempts >= 3) {
+                    const blockedUser = updatedUser.blockAccount();
+                    await this.userRepository.save(blockedUser);
+                    throw new Error("Превышено количество попыток. Аккаунт заблокирован на 30 минут.");
+                }
+
+                const attemptsLeft = 3 - updatedUser.pinAttempts;
+                throw new Error(`Неверный пин-код. Осталось попыток: ${attemptsLeft}`);
             }
+
+            const resetUser = user.resetPinAttempts();
+            await this.userRepository.save(resetUser);
 
             const tokens = await this.tokenService.generateTokens({
                 id: user.id,
@@ -150,7 +163,7 @@ export class AuthServiceImpl implements AuthService {
             await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
             return {
-                user,
+                user: resetUser,
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
             };
@@ -238,6 +251,21 @@ export class AuthServiceImpl implements AuthService {
         if (!user || !user.resetTokenExpires || new Date() > user.resetTokenExpires) {
             throw new Error("Недействительный или просроченный токен");
         }
-        await this.userRepository.save(user.setResetToken(null, null, newPin));
+        const updatedUser = user.setResetToken(null, null, newPin).resetPinAttempts().unblockAccount();
+        await this.userRepository.save(updatedUser);
+    }
+
+    async unblockAccount(userId: number): Promise<void> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("Пользователь не найден");
+        }
+
+        if (!user.isBlocked) {
+            throw new Error("Аккаунт не заблокирован");
+        }
+
+        const updatedUser = user.unblockAccount();
+        await this.userRepository.save(updatedUser);
     }
 }

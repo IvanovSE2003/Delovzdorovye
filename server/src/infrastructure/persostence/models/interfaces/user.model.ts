@@ -21,6 +21,9 @@ interface IUserAttributes {
     twoFactorCodeExpires: Date | null;
     resetToken: string | null;
     resetTokenExpires: Date | null;
+    pinAttempts: number;
+    isBlocked: boolean;
+    blockedUntil: Date | null;
 }
 
 export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

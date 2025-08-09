@@ -358,7 +358,10 @@ export default class UserController {
                 user.twoFactorCode,
                 user.twoFactorCodeExpires,
                 user.resetToken,
-                user.resetTokenExpires
+                user.resetTokenExpires,
+                user.pinAttempts,
+                user.isBlocked,
+                user.blockedUntil
             );
 
             const result = await this.userRepository.update(updatedUser);
@@ -382,6 +385,21 @@ export default class UserController {
             res.status(204).send();
         } catch (error) {
             next(ApiError.internal('Ошибка при удалении пользователя'));
+        }
+    }
+
+    async unblockAccount(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.body;
+            
+            if (!userId) {
+                return next(ApiError.badRequest('Не указаны ID пользователей'));
+            }
+
+            await this.authService.unblockAccount(Number(userId));
+            return res.json({ success: true, message: 'Аккаунт успешно разблокирован' });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
         }
     }
 }

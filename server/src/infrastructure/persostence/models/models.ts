@@ -1,11 +1,10 @@
 import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
-import { ITokenModel } from "../../../core/domain/types/IToken.js"
 import { UserModelInterface } from "../models/interfaces/user.model.js"
 import {PatientModelInterface} from './interfaces/patient.model.js'
-import User from '../../../core/domain/entities/user.entity.js'
 import { TelegramModelInterface } from './interfaces/telegram.model.js'
 import { DoctorModelInterface } from './interfaces/doctor.model.js'
+import { TokenModelInterface } from './interfaces/token.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -25,15 +24,18 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     twoFactorCode: {type: DataType.STRING, allowNull: true},
     twoFactorCodeExpires: {type: DataType.DATE, allowNull: true},
     resetToken: {type: DataType.STRING, allowNull: true},
-    resetTokenExpires: {type: DataType.DATE, allowNull: true}
+    resetTokenExpires: {type: DataType.DATE, allowNull: true},
+    pinAttempts: {type: DataType.INTEGER, defaultValue: 0},
+    isBlocked: {type: DataType.BOOLEAN, defaultValue: false},
+    blockedUntil: {type: DataType.DATE, allowNull: true}
 })
 
-const UserTelegramModel = sequelize.define<TelegramModelInterface>('use_telegram', {
+const UserTelegramModel = sequelize.define<TelegramModelInterface>('telegram_user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     telegram_chat_id : {type: DataType.BIGINT, allowNull: false, unique: true}
 }) 
 
-const TokenModel = sequelize.define<ITokenModel>('token', {
+const TokenModel = sequelize.define<TokenModelInterface>('token', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     userId: {type: DataType.INTEGER},
     refreshToken: {type: DataType.TEXT, allowNull: false}

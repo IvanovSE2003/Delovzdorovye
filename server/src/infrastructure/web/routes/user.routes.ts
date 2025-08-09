@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, Router } from "express";
 import userController from "../controllers/User/user.controller.interface.js";
 import {body} from 'express-validator'
 import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
+import adminMiddleware from "../middleware/admin.middleware.js";
 
 
 const router: Router = Router(); 
@@ -35,10 +36,9 @@ router.post('/request-pin-reset',
     body('emailOrPhone').notEmpty(),
     (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
 
-router.post('/reset-pin', 
-    body('token').notEmpty(),
-    body('newPin').isInt().isLength({ min: 4, max: 6 }),
-    (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
+router.post('/reset-pin', body('token').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
+
+router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next))
 
 export default router;
 

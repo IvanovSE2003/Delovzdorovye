@@ -35,4 +35,6 @@ export default interface AuthService {
 
     requestPinReset(emailOrPhone: string): Promise<void>;
     resetPin(resetToken: string, newPin: number): Promise<void>;
+
+    unblockAccount(userId: number): Promise<void>;
 }
