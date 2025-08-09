@@ -16,7 +16,7 @@ const patientRepository = new PatientRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
 const mailService = new MailServiceImpl();
-const SmsService = new SmsServiceImpl(TelegramService);
+const SmsService = new SmsServiceImpl(TelegramService, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 
 const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramService);

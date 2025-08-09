@@ -5,6 +5,7 @@ import ApiError from "../../error/ApiError.js"
 import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
 import User from "../../../../core/domain/entities/user.entity.js";
+import regData from "../../types/reqData.type.js";
 
 export default class UserController {
     constructor(
@@ -16,7 +17,8 @@ export default class UserController {
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
             const {email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, contacts, experienceYears} = req.body;
-            const result = await this.authService.register(email, role, name, surname, patronymic, phone, pin_code, gender, new Date(date_birth), time_zone, specialization, contacts, experienceYears);
+            const data  = { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, contacts, experienceYears } as unknown as regData;
+            const result = await this.authService.register(data);
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -314,7 +316,7 @@ export default class UserController {
         try {
             const { emailOrPhone } = req.body;
             await this.authService.requestPinReset(emailOrPhone);
-            return res.json({ success: true, message: 'Ссылка для сброса пин-кода отправлена на email' });
+            return res.json({ success: true, message: 'Ссылка для сброса пин-кода отправлена' });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }

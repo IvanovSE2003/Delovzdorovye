@@ -31,11 +31,9 @@ export default class TelegramServiceImpl implements TelegramService {
         console.log('Telegram bot stopped');
     }
 
-    async sendMessage(telegram_chat_id: string, text: string): Promise<void> {
+    async sendMessage(telegram_chat_id: string, text: string, parse_mode: object = {parse_mode: 'Markdown'}): Promise<void> {
         try {
-            await this.bot.api.sendMessage(telegram_chat_id, text, {
-                parse_mode: 'Markdown'
-            });
+            await this.bot.api.sendMessage(telegram_chat_id, text, parse_mode);
         } catch (error) {
             console.error('Telegram sendMessage error:', error);
             throw error;

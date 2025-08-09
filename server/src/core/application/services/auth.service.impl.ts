@@ -12,6 +12,7 @@ import Doctor from "../../domain/entities/doctor.entity.js";
 import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
+import regData from "../../../infrastructure/web/types/reqData.type.js";
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -25,24 +26,27 @@ export class AuthServiceImpl implements AuthService {
         private readonly telegramService: TelegramService
     ) {}
 
-    async register(email: string, role: 'PATIENT' | 'DOCTOR' | 'ADMIN', name: string, surname: string, patronymic: string, phone: string, pinCode: number, gender: string, dateBirth: Date, timeZone: number, specialization: string, contacts: string, experienceYears: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-        const exists = await this.userRepository.checkUserExists(email, phone);
+    async register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+        const exists = await this.userRepository.checkUserExists(data.email, data.phone);
         if (exists) {
             throw new Error("Пользователь с таким email или телефоном уже существует");
         }
 
         const activationLink = v4();
-        const user = new User(0, name, surname,patronymic,email, phone, pinCode, timeZone, dateBirth, gender, false, activationLink, "defaultImg.png", role, null, null, null, null, 0, false, null);
+        const user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
+            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, activationLink, "defaultImg.png", 
+            data.role, null, null, null, null, 0, false, null);
+
         const savedUser = await this.userRepository.save(user);
 
-        if(role === 'PATIENT') {
+        if(data.role === 'PATIENT') {
             const patient = new Patient(0, {}, {}, {}, false, savedUser.id);
             await this.patientRepository.create(patient);
-        } else if(role === 'DOCTOR') {
-            const doctor = new Doctor(0, specialization, contacts, experienceYears, false, savedUser.id);
+        } else if(data.role === 'DOCTOR') {
+            const doctor = new Doctor(0, data.specialization, data.contacts, data.experienceYears, false, savedUser.id);
             await this.doctorRepository.create(doctor);
         }
-        await this.mailService.sendActivationEmail(email, activationLink);
+        await this.mailService.sendActivationEmail(data.email, activationLink);
 
         const tokens = await this.tokenService.generateTokens({
             id: savedUser.id,
@@ -234,8 +238,19 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async requestPinReset(emailOrPhone: string): Promise<void> {
-        const user = await this.userRepository.findByEmailOrPhone(emailOrPhone) as User;
-        if (!user) {
+        // const user = await this.userRepository.findByEmailOrPhone(emailOrPhone) as User;
+        const userPhone = await this.userRepository.findByPhone(emailOrPhone);
+        const userEmail = await this.userRepository.findByEmail(emailOrPhone);
+        let method = null, user = null;
+        if(!userPhone) {
+            method = 'SMS';
+            user = userEmail;
+        } else if (!userEmail) {
+            method = 'EMAIL';
+            user = userPhone;
+        } 
+        
+        if(!user || !method) {
             throw new Error("Пользователь не найден");
         }
 
@@ -243,7 +258,11 @@ export class AuthServiceImpl implements AuthService {
         const resetTokenExpires = new Date(Date.now() + 3600000); 
         
         await this.userRepository.save(user.setResetToken(resetToken, resetTokenExpires, user.pinCode));
-        await this.mailService.sendPinCodeResetEmail(user.email, resetToken);
+        if(method === 'SMS') {
+            await this.mailService.sendPinCodeResetEmail(user.email, resetToken);
+        } else if(method === 'EMAIL') {
+            await this.smsService.sendPinCodeResetEmail(user.phone, resetToken);
+        }
     }
 
     async resetPin(resetToken: string, newPin: number): Promise<void> {
@@ -251,6 +270,10 @@ export class AuthServiceImpl implements AuthService {
         if (!user || !user.resetTokenExpires || new Date() > user.resetTokenExpires) {
             throw new Error("Недействительный или просроченный токен");
         }
+        if(user.isBlocked) {
+            throw new Error("Пользователь заблокирован");
+        }
+
         const updatedUser = user.setResetToken(null, null, newPin).resetPinAttempts().unblockAccount();
         await this.userRepository.save(updatedUser);
     }
