@@ -61,7 +61,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [store.error])
 
   useEffect(() => {
-    if (timeLeft > 0 && step === 2) {
+    if (timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     }

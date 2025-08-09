@@ -12,12 +12,12 @@ const Informations = () => {
                         <h3 className="informations__block__title">
                             Как записаться на консультацию?
                         </h3>
-                        <ul className="informations__block__text informations__block__list-numbers">
-                            <li>1. Зарегистрируйтесь или войдите в личный кабинет.</li>
-                            <li>2. Выберите удобные дату и время.</li>
-                            <li>3. Оплатите консультацию.</li>
-                            <li>4. В назначенное время подключитесь к видеоконсультации.</li>
-                        </ul>
+                        <ol className="informations__block__text">
+                            <li>Зарегистрируйтесь или войдите в личный кабинет.</li>
+                            <li>Выберите удобные дату и время.</li>
+                            <li>Оплатите консультацию.</li>
+                            <li>В назначенное время подключитесь к видеоконсультации.</li>
+                        </ol>
                     </div>
 
                     <div className="informations__block">

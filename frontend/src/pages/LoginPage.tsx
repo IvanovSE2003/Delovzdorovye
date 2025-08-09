@@ -10,7 +10,9 @@ const RegisterPage = () => {
                 <div className='auth__left'>
                     <div className="auth__logo">
                         <Link to="/">
-                            <img src={logo} alt="logo_medonline" />
+                        <div className="header__logo">
+                             <img src={logo} alt="logo_medonline" />
+                        </div>
                         </Link>
                     </div>
                 </div>

@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import "../FormAuth/FormAuth.scss";
 import { Context } from "../../main";
 import { motion, AnimatePresence } from "framer-motion";
+import AgreeCheckBox from "../UI/AgreeCheckBox/AgreeCheckBox";
 
 import doctor from "../../assets/images/doctor.png"
 import patient from "../../assets/images/patient.png"
@@ -25,7 +26,8 @@ const stepVariants = {
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
 
-  const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData); 
+  const [disabled, setDisable] = useState<boolean>(true);
+  const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
   const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
 
@@ -43,7 +45,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (emailRegex.test(userDetails.email)) {
       const checkAuth = async () => {
         const isAuth = await store.checkUser("", userDetails.email);
-        if(isAuth.check) {
+        if (isAuth.check) {
           setStyleEmail('invalid');
           setError('Пользователь с такой электронной почтой существует');
         } else {
@@ -58,26 +60,26 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [userDetails.email])
 
   useEffect(() => {
-  if (userDetails?.phone?.length === 11) { 
-    const checkAuth = async () => {
-      const isAuth = await store.checkUser(userDetails.phone, "");
-      if (isAuth.check) {
-        setStylePhone("invalid");
-        setError("Пользователь с таким номером телефона существует");
-      } else {
-        setStylePhone("valid");
-        setError("");
-      }
-    };
-    checkAuth();
-  } else {
-    setStylePhone('');
-  }
-}, [userDetails?.phone]);
+    if (userDetails?.phone?.length === 11) {
+      const checkAuth = async () => {
+        const isAuth = await store.checkUser(userDetails.phone, "");
+        if (isAuth.check) {
+          setStylePhone("invalid");
+          setError("Пользователь с таким номером телефона существует");
+        } else {
+          setStylePhone("valid");
+          setError("");
+        }
+      };
+      checkAuth();
+    } else {
+      setStylePhone('');
+    }
+  }, [userDetails?.phone]);
 
   // Завершение первого этапа 
   const next = (): void => {
-    if(styleEmail == 'valid' && stylePhone == 'valid') {
+    if (styleEmail == 'valid' && stylePhone == 'valid') {
       setStep(2);
       setError("");
     }
@@ -117,6 +119,16 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Измененить состояние пин-кода
   const SetPinCode = (pin: string) => handleDetailsChange('pin_code', pin);
+
+  const handleAgreementChange = (isChecked: boolean) => {
+    console.log('User agreement changed:', isChecked);
+  };
+
+  const handleLinkClick = () => {
+    console.log('Link clicked');
+    // Здесь можно открыть модальное окно с соглашением
+  };
+
 
   return (
     <div className="auth__container">
@@ -310,7 +322,15 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 countNumber={4}
               />
 
-              <button onClick={registration} className="auth__button__final">
+              <AgreeCheckBox
+                onAgreementChange={handleAgreementChange}
+                onLinkClick={handleLinkClick}
+                agreementText="Я принимаю условия пользовательского соглашения и политики конфиденциальности"
+                linkText="условиями пользовательского соглашения и политики конфиденциальности"
+                buttonText="Зарегистрироваться"
+              />
+
+              <button onClick={registration} disabled={disabled} className="auth__button__final">
                 Завершить регистрацию
               </button>
 

@@ -20,13 +20,13 @@ export default class AuthService {
         return $api.get<AuthResponse>('user/refresh');
     }
 
-    // Сбросить пин-код (пароль)
-    static async sendEmailResetPinCode(pin: string) {
-        return $api.post('user/request-password-reset', { pin });
+    // Сбросить пин-код
+    static async sendEmailResetPinCode(emailOrPhone: string) {
+        return $api.post(`user/request-pin-reset`, { emailOrPhone })
     }
 
-    static async resetPinCode(token: string, pinCode: string) {
-        return $api.post(`user/reset-password/${token}`, {newPassword: pinCode})
+    static async resetPinCode(newPin: string, token: string) {
+        return $api.post(`user/reset-pin`, { newPin, token })
     }
 
     // Двухфакторка

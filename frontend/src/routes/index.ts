@@ -13,17 +13,17 @@ export const RouteNames = {
     LOGIN: '/login',
     MAIN: '/',
     PERSONAL: '/personal',
-    RESET: '/password-reset/:token'
+    RESET: '/pinCode-reset/:token'
 } as const;
 
 export const publicRoutes = [
     {path: RouteNames.LOGIN, element: LoginPage},
     {path: RouteNames.MAIN, element: HomePage},
     {path: RouteNames.PERSONAL, element: PersonalPage},
+    {path: RouteNames.RESET, element: RecoverPassPage},
 ]
 
 export const privateRoutes = [
     {path: RouteNames.PERSONAL, element: PersonalPage},
-    {path: RouteNames.RESET, element: RecoverPassPage},
     {path: RouteNames.MAIN, element: HomePage}
 ]

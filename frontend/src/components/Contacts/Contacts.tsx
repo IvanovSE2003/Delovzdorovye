@@ -12,7 +12,7 @@ const Contacts = () => {
 
                     <div className="contacts__info">
                         <p>Остались вопросы?</p>
-                        <span>ask@delovzdorovie.ru<br />8 888 888 88 88</span>
+                        <span><a href="mailto:ask@delovzdorovie.ru">ask@delovzdorovie.ru</a><br /><a href="tel:88888888888">8 888 888 88 88</a></span>
                         <div className="contacts__socials">
                             <p>Социальные сети</p>
                             <div className="contacts__socials__icons">

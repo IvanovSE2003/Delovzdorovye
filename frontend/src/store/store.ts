@@ -149,10 +149,10 @@ export default class Store {
 
     
     // Отправка сообщения на почту о сбросе пин-кода
-    async sendEmailResetPinCode(pin: string): Promise<ResetPassword> {
+    async sendEmailResetPinCode(emailOrPhone: string): Promise<ResetPassword> {
         try {
             this.setError("");
-            const response = await AuthService.sendEmailResetPinCode(pin);
+            const response = await AuthService.sendEmailResetPinCode(emailOrPhone);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
@@ -164,10 +164,10 @@ export default class Store {
     }
 
     // Сборос пин-кода
-    async resetPinCode(token: string, pinCode: string): Promise<ResetPassword> {
+    async resetPinCode(newPin: string, token: string): Promise<ResetPassword> {
         try {
             this.setError("");
-            const response = await AuthService.resetPinCode(token, pinCode);
+            const response = await AuthService.resetPinCode(newPin, token);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;

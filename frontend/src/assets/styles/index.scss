@@ -9,8 +9,17 @@
     font-style: normal;
 }
 
+a {
+    font-weight: bold;
+
+    &:hover {
+        color: $primary-color;
+        cursor: pointer;
+    }
+}
+
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 .account {

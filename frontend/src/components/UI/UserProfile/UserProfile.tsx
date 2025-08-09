@@ -3,6 +3,7 @@ import { Context } from "../../../main.js";
 import { useNavigate } from "react-router";
 import { RouteNames } from "../../../routes/index.js";
 import { observer } from "mobx-react-lite";
+import avatar from "../../../assets/images/defaultImage.png"
 import { URL } from "../../../http";
 
 import type { IUserDataProfile } from "../../../models/Auth.js";
@@ -11,7 +12,7 @@ import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
-  const [avatarPreview, setAvatarPreview] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState(avatar);
   const [dataUser, setDataUser] = useState<IUserDataProfile>(
     {} as IUserDataProfile
   );
@@ -22,6 +23,7 @@ const UserProfile: React.FC = () => {
 
   const { store } = useContext(Context);
 
+  // Получаем данные пользователя
   const getUserData = async () => {
     if (store.isAuth) {
       const user = await store.getUserData(store.user.id);
@@ -33,16 +35,19 @@ const UserProfile: React.FC = () => {
     getUserData();
   }, [store]);
 
+  // Выходим из учетной записи
   const logout = () => {
     store.logout();
     navigate(RouteNames.MAIN);
   };
 
+  // Выходим из режима редактирования
   const handleCancel = () => {
     setIsEditing(false);
     setEditForm(dataUser);
   };
 
+  // Сохраняем изменения редактирования
   const handleSave = async () => {
     try {
       console.log(editForm);
@@ -54,11 +59,13 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  // Добавляем изменения в форму
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Добавляем поле для редактирования
   const renderField = (
     label: string,
     name: keyof IUserDataProfile,
@@ -86,17 +93,15 @@ const UserProfile: React.FC = () => {
     );
   };
 
+  // Добавляем новый аватар для пользователя
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Создаем превью для отображения
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-
-      // Сохраняем файл в editForm (если нужно отправлять на сервер)
       setEditForm((prev) => ({ ...prev, avatarFile: file }));
     }
   };
@@ -108,24 +113,25 @@ const UserProfile: React.FC = () => {
       </h2>
 
       <div className="user-profile__content">
-        <div className="user-profile__avatar">
-          <img
-            src={avatarPreview}
-          />
-          {isEditing && (
-            <div className="avatar-edit">
-              <label htmlFor="avatar-upload" className="avatar-edit__label">
-                Изменить фото
-              </label>
+        <div className="user-profile__content">
+          <div className={`user-profile__avatar ${isEditing ? "editable" : ""}`}>
+            <img
+              src={avatarPreview}
+              alt="Аватар пользователя"
+              onClick={() => isEditing && document.getElementById('avatar-upload')?.click()}
+            />
+            {isEditing && (
               <input
                 id="avatar-upload"
                 type="file"
                 accept="image/*"
                 onChange={handleAvatarChange}
                 className="avatar-edit__input"
+                style={{ display: 'none' }}
               />
-            </div>
-          )}
+            )}
+            {isEditing && <div className="avatar-edit-hint">Нажмите для изменения</div>}
+          </div>
         </div>
 
         <div className="user-profile__info">

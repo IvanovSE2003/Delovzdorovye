@@ -26,7 +26,7 @@ const Header: React.FC = () => {
       </nav>
       <div className="header__profile">
         <div className="header__phone">
-          8 888 888 88 88
+          <a href="tel:88888888888">8 888 888 88 88</a>
         </div>
         {store.isAuth
           ?
