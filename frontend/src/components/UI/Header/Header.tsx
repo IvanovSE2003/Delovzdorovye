@@ -10,41 +10,41 @@ import { RouteNames } from "../../../routes";
 const Header: React.FC = () => {
   const { store } = useContext(Context);
   return (
-    <>
-      <div className="header">
-        <Link to={RouteNames.MAIN}>
-          <picture>
-            <source />
-            <img className="header__logo" src={logo} alt="logo_medonline" />
-          </picture>
-        </Link>
-        <nav className="header__nav">
-          <a href="#solutions">Какие проблемы решаем?</a>
-          <a href="#costs">Стоимость</a>
-          <a href="#informations">Полезная информация</a>
-          <a href="#contacts">Контакты</a>
-        </nav>
-        <div className="header__profile">
-          <div className="header__phone">
-            8 888 888 88 88
-          </div>
-          {store.isAuth
-            ?
-            <div className="header__avatar">
-              <Link to={RouteNames.PERSONAL}>
-                <img src={avatar} alt="avatar" />
-              </Link>
-            </div>
-            :
-            <div className="header__avatar">
-              <Link to={RouteNames.LOGIN}>
-                <img src={avatar} alt="avatar" />
-              </Link>
-            </div>
-          }
+
+    <div className="header">
+      <Link to={RouteNames.MAIN}>
+        <picture>
+          <source />
+          <img className="header__logo" src={logo} alt="logo_medonline" />
+        </picture>
+      </Link>
+      <nav className="header__nav">
+        <a href="#solutions">Какие проблемы решаем?</a>
+        <a href="#costs">Стоимость</a>
+        <a href="#informations">Полезная информация</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+      <div className="header__profile">
+        <div className="header__phone">
+          8 888 888 88 88
         </div>
+        {store.isAuth
+          ?
+          <div className="header__avatar">
+            <Link to={RouteNames.PERSONAL}>
+              <img src={avatar} alt="avatar" />
+            </Link>
+          </div>
+          :
+          <div className="header__avatar">
+            <Link to={RouteNames.LOGIN}>
+              <img src={avatar} alt="avatar" />
+            </Link>
+          </div>
+        }
       </div>
-    </>
+    </div>
+
   );
 };
 

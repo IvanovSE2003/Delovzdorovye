@@ -32,13 +32,10 @@ const HomePage = () => {
     <div>
       <Header />
       <Slider />
-      <Line />
       <Solutions />
       <Line />
       <Costs />
-      <Line />
       <Informations />
-      <Line />
       <Contacts />
     </div>
   )
