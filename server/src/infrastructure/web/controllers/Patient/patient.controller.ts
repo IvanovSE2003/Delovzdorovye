@@ -49,4 +49,26 @@ export default class PatientController {
             next(ApiError.internal('Ошибка при получении списка пациентов'));
         }
     }
+
+    async updatePatient(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+            const {generalInfo, analysesExaminations, additionally} = req.body;
+
+            const patient = await this.patientRepository.findById(Number(id));
+
+            if(!patient) {
+                return next(ApiError.badRequest('Пациент не найден'));
+            }
+
+            const updatePatient = await this.patientRepository.update(patient.updateInfo(generalInfo, analysesExaminations, additionally));
+            if(updatePatient) {
+                return res.status(200).json({success: true, message: 'Картачка пациент успешно обновлена'});
+            } else {
+                return res.status(501).json({success: false, message: 'Не удалось обновить карточку пациента'});
+            }
+        } catch(e: any) {
+            return next(ApiError.badRequest('Ошибка при обновлении данных о пациенте'));
+        }
+    }
 }

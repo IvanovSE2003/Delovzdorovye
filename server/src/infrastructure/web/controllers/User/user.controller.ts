@@ -110,9 +110,9 @@ export default class UserController {
             const creditial = email ? email : phone;
             const user = await this.userRepository.findByEmailOrPhone(creditial) as any;
             if(!user) {
-                return res.status(404).json({check: false, message: 'Такого пользователя не существует'});
+                return res.status(404).json({success: false, message: 'Такого пользователя не существует'});
             }
-            return res.status(200).json({check: true, message: 'Пользователь существует'});
+            return res.status(200).json({success: true, message: 'Пользователь существует'});
         } catch(e: any) {
             return next(ApiError.internal(e.message))
         }
@@ -295,7 +295,7 @@ export default class UserController {
 
     async linkTelegram(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = req.params; 
+            const {userId} = req.params; 
             if (!userId) {
                 return next(ApiError.badRequest('Пользователь не авторизован'));
             }
@@ -367,7 +367,11 @@ export default class UserController {
             );
 
             const result = await this.userRepository.update(updatedUser);
-            res.status(200).json(result);
+            if(result) {
+                res.status(200).json({success: true, message: 'Изменения сохранены'});
+            } else {
+                res.status(404).json({success: false, message: 'Ошибка при сохранении изменений'});
+            }
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }
@@ -402,6 +406,21 @@ export default class UserController {
             return res.json({ success: true, message: 'Аккаунт успешно разблокирован' });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async sendActivationEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {email} = req.body;
+            const user = await this.userRepository.findByEmail(email);
+
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+            await this.authService.sendActivationEmail(email);
+            res.status(200).json({success: true, message: 'Код отправлен на почту'})
+        } catch(e: any) {
+            return next(ApiError.badRequest('Ошибка при отправке ссылки активации по почте'));
         }
     }
 }

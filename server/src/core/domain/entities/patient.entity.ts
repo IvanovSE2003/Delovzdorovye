@@ -18,4 +18,15 @@ export default class Patient {
             this.userId
         );
     }
+
+    updateInfo(generalInfo: object, analysesExaminations: object, additionally: object) {
+        return new Patient(
+            this.id,
+            generalInfo,
+            analysesExaminations,
+            additionally, 
+            this.isActivated,
+            this.userId
+        )
+    }
 }

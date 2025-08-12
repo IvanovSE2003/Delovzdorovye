@@ -32,13 +32,12 @@ router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFuncti
 
 router.post('/activateLinkTg/:userId', (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
-router.post('/request-pin-reset', 
-    body('emailOrPhone').notEmpty(),
-    (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
+router.post('/request-pin-reset', body('emailOrPhone').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
 
 router.post('/reset-pin', body('token').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
 
 router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next))
+router.post('/sendActivationEmail',authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
 
 export default router;
 

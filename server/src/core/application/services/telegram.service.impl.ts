@@ -62,16 +62,18 @@ export default class TelegramServiceImpl implements TelegramService {
         });
 
         this.bot.command('link', async (ctx) => {
-            const [_, code] = ctx.match;
+            const text = ctx.message?.text ?? '';
+            const parts = text.split(' ');
+            const code = parts[1];
             const chatId = ctx.chat.id.toString();
-            
+
             if (!code) {
                 await ctx.reply('❌ Укажите код привязки: /link [ваш_код]');
                 return;
             }
 
             const userId = this.linkTokens.get(code);
-            
+
             if (!userId) {
                 await ctx.reply('❌ Неверный или просроченный код привязки');
                 return;
@@ -91,7 +93,7 @@ export default class TelegramServiceImpl implements TelegramService {
                     telegram_chat_id: chatId,
                     userId
                 });
-                
+
                 this.linkTokens.delete(code);
                 if (this.cleanupTimers.has(code)) {
                     clearTimeout(this.cleanupTimers.get(code));

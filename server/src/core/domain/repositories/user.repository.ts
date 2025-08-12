@@ -1,6 +1,4 @@
 import User from "../entities/user.entity.js";
-import Patient from "../entities/patient.entity.js";
-import Doctor from "../entities/doctor.entity.js";
 
 export default interface UserRepository {
     findByEmailOrPhone(credential: string): unknown;

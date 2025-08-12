@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec tsx src/main.ts",
+    "dev": "start \"\" \"C:\\ospanel\\Open Server Panel.exe\" /start && nodemon --exec tsx src/main.ts",
     "build": "rimraf ./build && npx tsc",
     "start": "npm run build && node build/main",
     "lint": "npx eslint ./src",

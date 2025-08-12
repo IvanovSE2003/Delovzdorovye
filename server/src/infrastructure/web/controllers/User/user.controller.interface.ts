@@ -8,18 +8,17 @@ import TwoFactorServiceImpl from "../../../../core/application/services/twoFacto
 import SmsServiceImpl from "../../../../core/application/services/sms.service.impl.js";
 import PatientRepositoryImpl from "../../../../core/application/repositories/patient.repository.impl.js";
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
-import TelegramServiceImpl from "../../../../core/application/services/telegram.service.impl.js";
+import TelegramServiceStart from "../../../../telegram/startTelegramBot.js";
 
-const TelegramService = new TelegramServiceImpl();
 const userRepository = new UserRepositoryImpl();
 const patientRepository = new PatientRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
 const mailService = new MailServiceImpl();
-const SmsService = new SmsServiceImpl(TelegramService, userRepository);
+const SmsService = new SmsServiceImpl(TelegramServiceStart, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 
-const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramService);
+const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart);
 const userController = new UserController(authService, userRepository, tokenService);
 
 export default userController;

@@ -130,7 +130,7 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async generateTelegramLinkToken(userId: number): Promise<string> {
-        return this.telegramService.generateLinkToken(userId);
+        return await this.telegramService.generateLinkToken(userId);
     }
 
     async login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
@@ -290,5 +290,10 @@ export class AuthServiceImpl implements AuthService {
 
         const updatedUser = user.unblockAccount();
         await this.userRepository.save(updatedUser);
+    }
+
+    async sendActivationEmail(email: string) {
+        const activationLink = v4();
+        await this.mailService.sendActivationEmail(email, activationLink);
     }
 }

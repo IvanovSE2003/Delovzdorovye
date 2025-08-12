@@ -8,4 +8,6 @@ const router: Router = Router();
 router.get('/all', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => patientController.getAllPatient(req, res, next));
 router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => patientController.getOne(req, res, next));
 
+router.put('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => patientController.updatePatient(req, res, next))
+
 export default router;
