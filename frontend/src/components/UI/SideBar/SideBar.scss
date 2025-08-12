@@ -1,13 +1,20 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .sidebar {
-  width: 250px;
-  height: 100vh;
-  background-color: $light-color;
-  padding: 20px 0;
+  width: 300px;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  &__nav {
+    height: max-content;
+    box-sizing: border-box;
+    background-color: $sidebar-color;
+    padding: 20px 20px 20px 10px;
+    border-left: solid 15px $button-color;
+    border-radius: 10px;
+  }
 
   &__logo {
     width: 150px;
@@ -22,28 +29,17 @@
   }
 
   &__menu-item {
-    padding: 12px 20px;
+    padding: 5px 8px 5px 0;
     transition: background-color 0.3s;
-
-    &:hover {
-      background-color: $light-color;
-    }
   }
 
   &__link {
     text-decoration: none;
-    color: #212529;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    color: black;
+    font-size: 1.1rem;
 
     &:hover {
       color: $primary-color;
     }
-  }
-
-  &__icon {
-    font-size: 18px;
   }
 }

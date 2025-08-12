@@ -38,14 +38,14 @@
     &__final {
       padding: 15px 20px;
       border-radius: 10px;
-      background-color: #2980b9;
+      background-color: $button-color;
       margin-top: 25px;
       border: none;
       color: white;
 
       &:hover {
         box-shadow: 0 0 10px $shadow-color;
-        background-color: $secondary-color;
+        background-color: $button-color-hover;
         cursor: pointer;
       }
 

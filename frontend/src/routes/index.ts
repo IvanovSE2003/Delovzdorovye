@@ -1,6 +1,6 @@
 import type React from "react";
 import LoginPage from '../pages/LoginPage'
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/Homepage";
 import RecoverPassPage from "../pages/RecoverPinPage"
 import PersonalPage from "../pages/PersonalAccount/Main";
 
@@ -17,9 +17,8 @@ export const RouteNames = {
 } as const;
 
 export const publicRoutes = [
-    {path: RouteNames.LOGIN, element: LoginPage},
     {path: RouteNames.MAIN, element: HomePage},
-    {path: RouteNames.PERSONAL, element: PersonalPage},
+    {path: RouteNames.LOGIN, element: LoginPage},
     {path: RouteNames.RESET, element: RecoverPassPage},
 ]
 

@@ -32,6 +32,8 @@ export class AuthServiceImpl implements AuthService {
             throw new Error("Пользователь с таким email или телефоном уже существует");
         }
 
+        console.log(data.pinCode, data.timeZone, data.dateBirth)
+
         const activationLink = v4();
         const user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
             data.pinCode, data.timeZone, data.dateBirth, data.gender, false, activationLink, "defaultImg.png", 
@@ -165,7 +167,7 @@ export class AuthServiceImpl implements AuthService {
             });
 
             await this.tokenService.saveToken(user.id, tokens.refreshToken);
-
+            await this.smsService.sendLoginNotification(user.id);
             return {
                 user: resetUser,
                 accessToken: tokens.accessToken,
@@ -234,7 +236,6 @@ export class AuthServiceImpl implements AuthService {
         if(user.twoFactorCode !== code) {
             throw new Error('Код не верный')
         }
-        await this.smsService.sendLoginNotification(user.id)
     }
 
     async requestPinReset(emailOrPhone: string): Promise<void> {
@@ -292,8 +293,7 @@ export class AuthServiceImpl implements AuthService {
         await this.userRepository.save(updatedUser);
     }
 
-    async sendActivationEmail(email: string) {
-        const activationLink = v4();
+    async sendActivationEmail(email: string, activationLink: string) {
         await this.mailService.sendActivationEmail(email, activationLink);
     }
 }

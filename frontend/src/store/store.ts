@@ -105,10 +105,10 @@ export default class Store {
     }
 
     // Проверка существания пользователя по телефону или почте
-    async checkUser(phone: string | null, email: string | null): Promise<TypeResponse> {
+    async checkUser(creditial: string): Promise<TypeResponse> {
         try {
             this.setError("");
-            const response = await UserService.CheckUser(phone, email);
+            const response = await UserService.CheckUser(creditial);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -184,10 +184,10 @@ export default class Store {
 
 
     // Отравка кода на телефон\почту
-    async twoFactorSend(method: "EMAIL" | "SMS", phone: string, email: string): Promise<void> {
+    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<void> {
         try {
             this.setError("");
-            await AuthService.twoFactorSend(method, phone, email);
+            await AuthService.twoFactorSend(method, creditial);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправке кода!");
@@ -226,11 +226,12 @@ export default class Store {
     async sendActivate(email: string): Promise<TypeResponse> {
         try {
             const response = await UserService.sendActivate(email);
+            this.user.isActivated = response.data.success;
             return response.data;
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправки сообщения на почту!");
-            return {success: false, message: this.error};
+            return {success: false, message: this.error}
         }
     }
 }

@@ -1,270 +1,168 @@
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
-import { useNavigate } from "react-router";
-import { RouteNames } from "../../../routes/index.js";
 import { observer } from "mobx-react-lite";
-import avatar from "../../../assets/images/defaultImage.png"
-
-import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
-import { getTimeZoneLabel, TimeZoneLabels } from "../../../models/TimeZones.js";
+import girl from '../../../assets/images/girl.png';
+import man from '../../../assets/images/man.png';
 import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
-  const navigate = useNavigate();
-  const [avatarPreview, setAvatarPreview] = useState(avatar);
-  const [message, setMessage] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [dataUser, setDataUser] = useState<IUserDataProfile>({} as IUserDataProfile);
-  const [editForm, setEditForm] = useState<IUserDataProfile>({} as IUserDataProfile);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const { store } = useContext(Context);
+  const [avatar, setAvatar] = useState(man);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    surname: store.user.surname,
+    name: store.user.name,
+    patronymic: store.user.patronymic,
+    gender: store.user.gender,
+    dateBirth: store.user.dateBirth,
+    phone: store.user.phone,
+    email: store.user.email
+  });
 
-  // Получаем данные пользователя
-  const getUserData = async () => {
-    if (store.isAuth) {
-      const user = await store.getUserData(store.user.id);
-      setDataUser(user || ({} as IUserDataProfile));
-      setEditForm(user || ({} as IUserDataProfile));
-    }
-  };
   useEffect(() => {
-    getUserData();
-  }, [store]);
+    setAvatar(store.user.gender === 'женщина' ? girl : man);
+  }, [store.user.gender]);
 
-  // Выходим из учетной записи
-  const logout = () => {
-    store.logout();
-    navigate(RouteNames.MAIN);
-  };
-
-  // Выходим из режима редактирования
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditForm(dataUser);
-  };
-
-  // Сохраняем изменения редактирования
-  const handleSave = async () => {
-    const data = await store.updateUserData(editForm, store.user.id);
-    setMessage(data.message);
-    setDataUser(editForm);
-    setIsEditing(false);
-  };
-
-  // Добавляем изменения в форму
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Добавляем поле для редактирования
-  const renderField = (
-    label: string,
-    name: keyof IUserDataProfile,
-    value: string
-  ) => {
-    if (isEditing) {
-      return (
-        <div className="info-row">
-          <span className="info-label">{label}:</span>
-          <input
-            type="text"
-            name={name}
-            value={editForm[name]}
-            onChange={handleChange}
-            className="info-input"
-          />
-        </div>
-      );
-    }
-    return (
-      <div className="info-row">
-        <span className="info-label">{label}:</span>
-        <span className="info-value">{value}</span>
-      </div>
-    );
+  const handleSave = () => {
+    // Здесь можно добавить логику сохранения данных
+    // Например: store.updateUserProfile(formData);
+    setIsEditing(false);
   };
 
-  // Добавляем новый аватар для пользователя
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setEditForm((prev) => ({ ...prev, avatarFile: file }));
-    }
+  const handleLogout = () => {
+    store.logout();
   };
-
-  // Отправить сообщение с активацией почты
-  // const sendAcitvate = async () => {
-  //   const data = await store.sendActivate();
-  //   data.success
-  //     ? setMessage(data.message)
-  //     : setError(data.message);
-  // }
 
   return (
     <div className="user-profile">
-      <h3 className="user-profile__error">{error}</h3>
-      <h3 className="user-profile__message">{message}</h3>
-
-      <h2 className="user-profile__title">
-        {isEditing ? "Редактирование профиля" : "Ваш профиль"}
-      </h2>
-
       <div className="user-profile__content">
-        <div className="user-profile__content">
-          <div>
-            <div
-              className={`user-profile__avatar ${isEditing ? "editable" : ""}`}
-              onClick={() => isEditing && document.getElementById('avatar-upload')?.click()}
-            >
-              <img
-                src={avatarPreview}
-                alt="Аватар пользователя"
-              />
-              {isEditing && (
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="avatar-edit__input"
-                  style={{ display: 'none' }}
-                />
-              )}
-            </div>
-            {isEditing && <div className="avatar-edit-hint">Нажмите для изменения</div>}
-          </div>
+        <div className="user-profile__avatar">
+          <img src={avatar} alt="avatar-delovzdorovye" />
         </div>
 
         <div className="user-profile__info">
-          {renderField("Фамилия", "surname", dataUser.surname)}
-          {renderField("Имя", "name", dataUser.name)}
-          {renderField("Отчество", "patronymic", dataUser.patronymic || "")}
-
-          {/* Пол */}
-          <div className="info-row">
-            <span className="info-label">Пол:</span>
-            {isEditing ? (
-              <select
-                name="gender"
-                value={editForm.gender}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    gender: e.target.value as Gender,
-                  }))
-                }
-                className="info-input"
-              >
-                <option value="" disabled>Выберите пол</option>
-                <option value="мужчина">Мужчина</option>
-                <option value="женщина">Женщина</option>
-              </select>
-            ) : (
-              <span className="info-value">{dataUser.gender}</span>
-            )}
-          </div>
-
-          {/* Дата рождения */}
-          <div className="info-row">
-            <span className="info-label">Дата рождения:</span>
-            {isEditing ? (
-              <input
-                type="date"
-                name="dateBirth"
-                className="info-input"
-                value={editForm.dateBirth || ""}
-                onChange={handleChange}
-              />
-            ) : (
-              <span className="info-value">{dataUser.dateBirth}</span>
-            )}
-          </div>
-
-          {/* Часовой пояс */}
-          <div className="info-row">
-            <span className="info-label">Часовой пояс:</span>
-            {isEditing ? (
-              <select
-                name="timeZone"
-                value={editForm.timeZone}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    timeZone: Number(e.target.value),
-                  }))
-                }
-                className="info-input"
-              >
-                {Object.entries(TimeZoneLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span className="info-value">
-                {getTimeZoneLabel(dataUser.timeZone)}
-              </span>
-            )}
-          </div>
-
-          {/* Телефон */}
-          <div className="info-row">
-            <span className="info-label">Номер телефона: </span>
-            <span className="info-value">{store.user.phone}</span>
-          </div>
-
-          {/* Почта */}
-          <div className="info-row">
-            <span className="info-label">Электронная почта: </span>
-            <span className="info-value">
-              {store.user.email}
-            </span>
-          </div>
-
           {isEditing ? (
-            <div className="user-profile__actions">
-              <button
-                className="auth__button user-profile__edit-button"
-                onClick={handleSave}
-              >
-                Сохранить
-              </button>
-              <button
-                className="auth__button user-profile__exit-button"
-                onClick={handleCancel}
-              >
-                Отмена
-              </button>
+            <div className="user-profile__edit-form">
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="surname"
+                  value={formData.surname}
+                  onChange={handleInputChange}
+                  placeholder="Фамилия"
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Имя"
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="patronymic"
+                  value={formData.patronymic || ""}
+                  onChange={handleInputChange}
+                  placeholder="Отчество"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                <div className="auth__radio-btn">
+                  <input
+                    id="male"
+                    type="radio"
+                    name="male"
+                    value="мужчина"
+                    checked={formData.gender === "мужчина"}
+                  />
+                  <label htmlFor="male">Мужчина</label>
+                </div>
+
+                <div className="auth__radio-btn">
+                  <input
+                    id="female"
+                    type="radio"
+                    name="female"
+                    value="женщина"
+                    checked={formData.gender === "женщина"}
+                  />
+                  <label htmlFor="female">Женщина</label>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="date"
+                  name="dateBirth"
+                  value={formData.dateBirth || '"'}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Номер телефона"
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Email"
+                />
+              </div>
             </div>
           ) : (
             <>
-              <button
-                className="auth__button user-profile__edit-button"
-                onClick={() => setIsEditing(true)}
-              >
-                Редактировать
-              </button>
-              <button
-                className="auth__button user-profile__exit-button"
-                onClick={logout}
-              >
-                Выйти из аккаунта
-              </button>
+              <div className="user-profile__fio">
+                {store.user.surname} {store.user.name} {store.user.patronymic}
+              </div>
+
+              <div className="user-profile__main-info">
+                <span>Пол: {store.user.gender}</span>
+                <span>Дата рождения: {store.user.dateBirth}</span>
+                <span>Номер телефона: {store.user.phone}</span>
+                <span>E-mail: {store.user.email}</span>
+              </div>
             </>
           )}
+
+          <div className="user-profile__buttons">
+            {isEditing ? (
+              <>
+                <button className="auth__button" onClick={handleSave}>Сохранить</button>
+                <button className="auth__button" onClick={() => setIsEditing(false)}>Отмена</button>
+              </>
+            ) : (
+              <>
+                <button className="auth__button" onClick={() => setIsEditing(true)}>Редактировать</button>
+                <button className="auth__button" onClick={handleLogout}>Выйти из аккаунта</button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="solutions__warm">
-        <span>
-          Вход в аккаунт доступен только по почте! Чтобы входить по телефону необходимо <a href="/">подключиться к телеграмм-боту</a>.
-        </span>
       </div>
     </div>
   );

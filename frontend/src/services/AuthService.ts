@@ -30,8 +30,8 @@ export default class AuthService {
     }
 
     // Двухфакторка
-    static async twoFactorSend(method: "EMAIL"|"SMS", phone: string, email: string): Promise<void> {
-        return $api.post('user/twoFactorSend', { method, phone, email });
+    static async twoFactorSend(method: "EMAIL"|"SMS", creditial: string): Promise<void> {
+        return $api.post('user/twoFactorSend', { method, creditial });
     }
 
     static async checkVarifyCode(code: string, email: string): Promise<AxiosResponse<TypeResponse>>{

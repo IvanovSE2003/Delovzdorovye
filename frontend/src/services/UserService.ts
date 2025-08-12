@@ -1,6 +1,6 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUserDataProfile, IUser, TypeResponse} from "../models/Auth";
+import type { IUserDataProfile, IUser, TypeResponse } from "../models/Auth";
 
 export default class UserService {
 
@@ -10,8 +10,8 @@ export default class UserService {
     }
 
     // Проверка пользователя на сущестование в БД
-    static CheckUser(phone: string|null, email: string|null):Promise<AxiosResponse<TypeResponse>> {
-        return $api.post<TypeResponse>('/user/check/', {phone, email})
+    static CheckUser(creditial: string):Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>('/user/check/', {creditial});
     }
 
     // Получение данных о побозователе

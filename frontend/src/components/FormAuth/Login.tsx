@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { useNavigate } from 'react-router';
+import { useNavigate } from "react-router";
 import { Context } from "../../main";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -13,7 +13,6 @@ import { RouteNames } from "../../routes";
 const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
   const [isEmailAuth, setIsEmailAuth] = useState<boolean>(false);
-  const [checkUser, setCheckUser] = useState<boolean>(true);
   const [step, setStep] = useState<number>(1);
 
   const [phone, setPhone] = useState<string>("");
@@ -27,26 +26,23 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const stepVariants = {
     enter: { opacity: 0, x: 30 },
     center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -30 }
+    exit: { opacity: 0, x: -30 },
   };
 
   const checkAuth = async () => {
     setError("");
-    const isAuth = await store.checkUser(phone, email);
-    setCheckUser(isAuth.success);
-  }
 
-  useEffect(() => {
-    phone.length === 11 ? checkAuth() : setCheckUser(false);
-  }, [phone]);
+    let isAuth;
+    isEmailAuth
+      ? (isAuth = await store.checkUser(email))
+      : (isAuth = await store.checkUser(phone));
 
-  useEffect(() => {
-    /\S+@\S+\.\S+/.test(email) ? checkAuth() : setCheckUser(false);
-  }, [email]);
+    return isAuth.success;
+  };
 
   useEffect(() => {
     setError(store.error);
-  }, [store.error])
+  }, [store.error]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -57,23 +53,26 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Завершение 1 этапа
   const checkContact = async () => {
-    if (!checkUser) {
-      setError("Пользователь не найден");
-      return;
-    }
-
     if (isEmailAuth) {
-      if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        await store.twoFactorSend("EMAIL", email);
+      } else {
         setError("Введите корректный email");
         return;
       }
-      await store.twoFactorSend("EMAIL", phone, email);
     } else {
-      if (!(/^8\d{10}$/.test(phone))) {
+      if (/^8\d{10}$/.test(phone)) {
+        await store.twoFactorSend("SMS", phone);
+      } else {
         setError("Введите корректный номер телефона (8XXXXXXXXXX)");
         return;
       }
-      await store.twoFactorSend("SMS", phone, email);
+    }
+
+    const isAuth = await checkAuth();
+    if (!isAuth) {
+      setError("Пользователь не найден");
+      return;
     }
 
     setError("");
@@ -81,24 +80,24 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   };
 
   // Завершение 2 этапа
-  const checkCode = async (code: string) => { 
-    if (!(/^\d{6}$/.test(code))) setError("Не корректно введен код!");
+  const checkCode = async (code: string) => {
+    if (!/^\d{6}$/.test(code)) setError("Не корректно введен код!");
     else {
       let data;
       isEmailAuth
-        ? data = await store.checkVarifyCode(code, email)
-        : data = await store.checkVarifyCodeSMS(code, phone);
+        ? (data = await store.checkVarifyCode(code, email))
+        : (data = await store.checkVarifyCodeSMS(code, phone));
 
       if (data.success) setStep(3);
     }
-  }
+  };
 
   // Завершение 3 этапа
   const login = async (pin: string) => {
     setError("");
     await store.login({ phone, email, pin_code: Number(pin) });
     if (store.isAuth) navigate(RouteNames.PERSONAL);
-  }
+  };
 
   // Переключение почта/телефон
   const toggleAuthType = (): void => {
@@ -119,11 +118,11 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setIsResending(true);
     try {
       isEmailAuth
-        ? await store.twoFactorSend("EMAIL", phone, email)
-        : await store.twoFactorSend("SMS", phone, email);
+        ? await store.twoFactorSend("EMAIL", email)
+        : await store.twoFactorSend("SMS", phone);
       setTimeLeft(60);
     } catch (error) {
-      console.error('Ошибка при повторной отправке:', error);
+      console.error("Ошибка при повторной отправке:", error);
     } finally {
       setIsResending(false);
     }
@@ -131,7 +130,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   return (
     <div className="auth__container">
-
       <div className="auth__progress">
         <div
           className="auth__progress-bar"
@@ -179,7 +177,10 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
               {isEmailAuth ? "Войти по телефону" : "Войти по почте"}
             </a>
 
-            <a onClick={() => setState("register")} className="auth__toggle-button">
+            <a
+              onClick={() => setState("register")}
+              className="auth__toggle-button"
+            >
               Зарегистрироваться
             </a>
           </motion.div>
@@ -195,12 +196,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
             transition={{ duration: 0.3 }}
           >
             <div className="auth__form">
-              
               <h2>Введите полученный код</h2>
-              <PinCodeInput
-                onLogin={checkCode}
-                countNumber={6}
-              />
+              <PinCodeInput onLogin={checkCode} countNumber={6} />
 
               <div className="auth__resend-code">
                 {timeLeft > 0 ? (
@@ -208,11 +205,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
                     Отправить код повторно через {timeLeft} сек
                   </span>
                 ) : (
-                  <a
-                    className="auth__resend-button"
-                    onClick={handleResendCode}
-                  >
-                    {isResending ? 'Отправка...' : 'Отправить код повторно'}
+                  <a className="auth__resend-button" onClick={handleResendCode}>
+                    {isResending ? "Отправка..." : "Отправить код повторно"}
                   </a>
                 )}
               </div>
@@ -235,14 +229,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
           >
             <div className="auth__form">
               <h2>Введите ваш пин-код</h2>
-              <PinCodeInput
-                onLogin={login}
-                countNumber={4}
-              />
+              <PinCodeInput onLogin={login} countNumber={4} />
               <button className="auth__button" onClick={handleBack}>
                 Назад
               </button>
-              <a onClick={() => setState("recover")} className="auth__toggle-button">
+              <a
+                onClick={() => setState("recover")}
+                className="auth__toggle-button"
+              >
                 Забыл пин-код
               </a>
             </div>

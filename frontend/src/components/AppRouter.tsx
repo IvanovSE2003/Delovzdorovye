@@ -29,7 +29,7 @@ const AppRouter: React.FC = () => {
                             element={<route.element />}
                         />
                     ))}
-                    <Route path="*" element={<Navigate to={RouteNames.MAIN} replace />} />
+                    <Route path="*" element={<Navigate to={RouteNames.PERSONAL} replace />} />
                 </>
             )}
         </Routes>

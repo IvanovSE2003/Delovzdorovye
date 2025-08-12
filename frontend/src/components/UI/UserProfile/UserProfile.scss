@@ -1,15 +1,10 @@
 @use "../../../assets/styles/variables.scss" as *;
 
 .user-profile {
+  background-color: $profile-color;
+  padding: 1rem 4rem;
+  border-radius: 10px;
   width: max-content;
-  margin: 20px auto;
-  padding: 60px 130px;
-  box-shadow: 0 0 10px $shadow-color;
-
-  &__title {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
 
   &__message {
     text-align: center;
@@ -17,6 +12,7 @@
     font-size: 1.2rem;
     font-weight: bold;
     transition: all 0.5s ease;
+    margin: 0;
   }
 
   &__error {
@@ -25,23 +21,22 @@
     font-size: 1.2rem;
     font-weight: bold;
     transition: all 0.5s ease;
+    margin: 0;
   }
 
-  &__content {
+  &__content{
     display: flex;
-    gap: 100px;
+    gap: 70px;
     justify-content: center;
-    align-items: center;
   }
 
   &__avatar {
-    position: relative;
-    width: 250px;
-    height: 250px;
+    width: 190px;
+    height: 190px;
     border-radius: 50%;
-    border: 5px solid black;
+    border: 2px solid black;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-top: 15px;
 
     img {
       width: 100%;
@@ -51,69 +46,25 @@
     }
   }
 
-  &__name {
-    font-size: 20px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: $primary-color;
-    margin-bottom: 30px;
-    text-align: center;
-    letter-spacing: 0.5px;
-    line-height: 1.3;
-  }
-
   &__info {
-    margin-bottom: 25px;
+    display:  flex;
+    flex-direction: column;
   }
 
-  &__exit-button {
-    background-color: #dd7973;
-    color: white;
+  &__fio {
+    margin: 15px 0;
+    font-weight: bold;
+    font-size: 1.5rem;
   }
 
-  &__edit-button {
-    background-color: #5dbea3;
-    color: white;
-  }
 
-  &__actions {
+  &__main-info {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    flex-direction: column;
+    gap: 13px;
+    margin: 15px 0;
   }
 
-  &__save-button {
-    background-color: #4caf50;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #45a049;
-    }
-  }
-
-  &__cancel-button {
-    background-color: #f44336;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #d32f2f;
-    }
-  }
-
-  .info-input {
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 200px;
-  }
 }
 
 .editable {
@@ -186,4 +137,13 @@
   color: #000;
   font-weight: 400;
   flex-grow: 1;
+}
+
+.form-group {
+    & input {
+      padding: 8px 10px;
+      margin: 3px 0;
+      border-radius: 8px;
+      background-color: $sidebar-color;
+    }
 }

@@ -44,7 +44,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (emailRegex.test(userDetails.email)) {
       const checkAuth = async () => {
-        const isAuth = await store.checkUser("", userDetails.email);
+        const isAuth = await store.checkUser( userDetails.email);
         if (isAuth.success) {
           setStyleEmail('invalid');
           setError('Пользователь с такой электронной почтой существует');
@@ -62,7 +62,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   useEffect(() => {
     if (userDetails?.phone?.length === 11) {
       const checkAuth = async () => {
-        const isAuth = await store.checkUser(userDetails.phone, "");
+        const isAuth = await store.checkUser(userDetails.phone);
         if (isAuth.success) {
           setStylePhone("invalid");
           setError("Пользователь с таким номером телефона существует");

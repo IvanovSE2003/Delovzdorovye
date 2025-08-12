@@ -22,5 +22,5 @@ export default interface AuthService {
     resetPin(resetToken: string, newPin: number): Promise<void>;
 
     unblockAccount(userId: number): Promise<void>;
-    sendActivationEmail(email: string): Promise<void>;
+    sendActivationEmail(email: string, activationLink: string): Promise<void>;
 }

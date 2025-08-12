@@ -12,15 +12,12 @@ export default class TelegramServiceImpl implements TelegramService {
     constructor() {
         this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
         this.setupHandlers();
-        console.log('Telegram bot initialized');
     }
 
     async start(): Promise<void> {
         try {
             await this.bot.start();
-            console.log('Telegram bot started');
         } catch (error) {
-            console.error('Failed to start bot:', error);
             throw error;
         }
     }
@@ -28,10 +25,9 @@ export default class TelegramServiceImpl implements TelegramService {
     async stop(): Promise<void> {
         await this.bot.stop();
         this.cleanupTimers.forEach(timer => clearTimeout(timer));
-        console.log('Telegram bot stopped');
     }
 
-    async sendMessage(telegram_chat_id: string, text: string, parse_mode: object = {parse_mode: 'Markdown'}): Promise<void> {
+    async sendMessage(telegram_chat_id: string, text: string, parse_mode: object = { parse_mode: 'Markdown' }): Promise<void> {
         try {
             await this.bot.api.sendMessage(telegram_chat_id, text, parse_mode);
         } catch (error) {
@@ -43,12 +39,12 @@ export default class TelegramServiceImpl implements TelegramService {
     async generateLinkToken(userId: number): Promise<string> {
         const token = Math.random().toString(36).substring(2, 8);
         this.linkTokens.set(token, userId);
-        
+
         const timer = setTimeout(() => {
             this.linkTokens.delete(token);
             this.cleanupTimers.delete(token);
-        }, 600000); 
-        
+        }, 600000);
+
         this.cleanupTimers.set(token, timer);
         return token;
     }

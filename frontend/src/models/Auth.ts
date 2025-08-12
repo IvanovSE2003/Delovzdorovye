@@ -33,6 +33,12 @@ export interface IUserDataProfile {
     email: string;
 }
 
+export type TypeActivateEmail = {
+    message: string;
+    success: boolean;
+    isActivated: boolean;
+}
+
 export type TypeResponse = {
     message: string;
     success: boolean;
