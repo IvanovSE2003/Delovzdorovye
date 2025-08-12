@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, LoginData, RegistrationData, ResetPassword } from "../models/Auth";
+import type { IUser, IUserDataProfile, LoginData, RegistrationData, TypeResponse } from "../models/Auth";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
@@ -63,9 +63,7 @@ export default class Store {
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при регистрации!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
+            this.setError(error.response?.data?.message || "Ошибка при регистрации!");
         } finally {
             this.setLoading(false);
         }
@@ -82,26 +80,24 @@ export default class Store {
             this.setError("");
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            console.log("Ошибка при выходе:", error.response?.data?.message);
+            this.setError(error.response?.data?.message || "Ошибка при выходе!")
         } finally {
             this.setLoading(false);
         }
     }
 
     // Проверка авторизации пользователя
-    async checkAuth() {
+    async checkAuth(): Promise<void> {
         this.setLoading(true);
         try {
-            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {
-                withCredentials: true
-            });
+            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {withCredentials: true});
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
-            console.log("Ошибка проверки аутентификации:", error.response?.data?.message);
             localStorage.removeItem('token');
+            this.setError(error.response?.data?.message || "Ошибка аунтификациий!")
             this.setAuth(false);
         } finally {
             this.setLoading(false);
@@ -109,122 +105,132 @@ export default class Store {
     }
 
     // Проверка существания пользователя по телефону или почте
-    async checkUser(phone: string | null, email: string | null) {
+    async checkUser(phone: string | null, email: string | null): Promise<TypeResponse> {
         try {
             this.setError("");
-            const response = await UserService.CheckUser(phone, email) as any;
+            const response = await UserService.CheckUser(phone, email);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            return { check: false, message: error.response?.data?.message };
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при проверки пользователя!");
+            return { success: false, message: this.error };
         }
     }
 
     // Получение данные пациента
-    async getPatientData(id: number) {
+    async getPatientData(id: number): Promise<IUser> {
         try {
             const response = await UserService.fetchPatientData(id);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при получении данных пациента!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при получении данных пациента!");
+            return {} as IUser;
         }
     }
 
     // Получение данные пользователя
-    async getUserData(id: number) {
+    async getUserData(id: number): Promise<IUserDataProfile> {
         try {
             const response = await UserService.fetchUserData(id);
             return response.data;
-        } catch(e) {
-            const error = e as AxiosError<{ message: string; }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при получении данных пользователя!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при получении данных пользователя!");
+            return {} as IUserDataProfile;
+        }
+    }
+
+    // Изменение данных пользователя
+    async updateUserData(data: IUserDataProfile, id: number): Promise<TypeResponse> {
+        try {
+            const response = await UserService.updateUserData(data, id);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при изменении данных пользователя!");
+            return { success: false, message: this.error }
         }
     }
 
 
-    
+
     // Отправка сообщения на почту о сбросе пин-кода
-    async sendEmailResetPinCode(emailOrPhone: string): Promise<ResetPassword> {
+    async sendEmailResetPinCode(emailOrPhone: string): Promise<TypeResponse> {
         try {
             this.setError("");
             const response = await AuthService.sendEmailResetPinCode(emailOrPhone);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при отправке сообщения для сброса пин-кода!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
-            return { success: false, message: errorMessage };
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отправке сообщения для сброса пин-кода!");
+            return { success: false, message: error.message };
         }
     }
 
     // Сборос пин-кода
-    async resetPinCode(newPin: string, token: string): Promise<ResetPassword> {
+    async resetPinCode(newPin: string, token: string): Promise<TypeResponse> {
         try {
             this.setError("");
             const response = await AuthService.resetPinCode(newPin, token);
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при сбросе пароля!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
-            return { success: false, message: errorMessage };
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при сбросе пароля!");
+            return { success: false, message: this.error };
         }
     }
 
 
 
     // Отравка кода на телефон\почту
-    async twoFactorSend(method: "EMAIL" | "SMS", phone: string, email: string) {
+    async twoFactorSend(method: "EMAIL" | "SMS", phone: string, email: string): Promise<void> {
         try {
             this.setError("");
-            const response = await AuthService.twoFactorSend(method, phone, email);
-            console.log("Код на указанный контакт отправился!")
-            return response.data;
+            await AuthService.twoFactorSend(method, phone, email);
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при отправке кода!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
-            return { message: errorMessage };
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отправке кода!");
         }
     }
 
     // Проверка кода почты для входа 
-    async checkVarifyCode(code: string, email: string) {
+    async checkVarifyCode(code: string, email: string): Promise<TypeResponse> {
         try {
             this.setError("");
             const response = await AuthService.checkVarifyCode(code, email);
-            console.log("Введенный почтовый код - правильный!");
             return response.data;
         } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при проверке почтового кода!";
-            this.setError(errorMessage);
-            console.error(errorMessage);
-            return { success: false, message: errorMessage };
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при проверке почтового кода!");
+            return { success: false, message: this.error };
         }
     }
 
     // Проверка кода телефона для входа
-    async checkVarifyCodeSMS(code: string, phone: string) {
+    async checkVarifyCodeSMS(code: string, phone: string): Promise<TypeResponse> {
         try {
             this.setError("");
             const response = await AuthService.checkVarifyCodeSMS(code, phone);
-            console.log("Введенный телефонный код - правильный!");
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при проверка телефонного кода!");
+            return { success: false, message: this.error };
+        }
+    }
+    
+
+
+    // Отправить сообщение об активации на почту
+    async sendActivate(email: string): Promise<TypeResponse> {
+        try {
+            const response = await UserService.sendActivate(email);
             return response.data;
         } catch(e) {
-            const error = e as AxiosError<{ message: string}>;
-            const errorMessage = error.response?.data?.message || "Ошибка при проверка телефонного кода!";
-            this.setError(errorMessage);
-            console.error(errorMessage);
-            return { success: false, message: errorMessage }
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отправки сообщения на почту!");
+            return {success: false, message: this.error};
         }
     }
 }

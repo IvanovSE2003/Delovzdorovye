@@ -28,7 +28,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   const [disabled, setDisable] = useState<boolean>(true);
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
-  const [step, setStep] = useState<number>(3); // Шаги регистрации
+  const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
@@ -45,7 +45,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (emailRegex.test(userDetails.email)) {
       const checkAuth = async () => {
         const isAuth = await store.checkUser("", userDetails.email);
-        if (isAuth.check) {
+        if (isAuth.success) {
           setStyleEmail('invalid');
           setError('Пользователь с такой электронной почтой существует');
         } else {
@@ -63,7 +63,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (userDetails?.phone?.length === 11) {
       const checkAuth = async () => {
         const isAuth = await store.checkUser(userDetails.phone, "");
-        if (isAuth.check) {
+        if (isAuth.success) {
           setStylePhone("invalid");
           setError("Пользователь с таким номером телефона существует");
         } else {

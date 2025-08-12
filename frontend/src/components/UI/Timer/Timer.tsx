@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import './Timer.scss';
+import { Context } from "../../../main";
+import { observer } from "mobx-react-lite";
+import { getTimeZoneLabel } from "../../../models/TimeZones";
 
 const Timer: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
+  const { store } = useContext(Context);
 
   useEffect(() => {
     const updateTime = () => {
@@ -11,8 +15,9 @@ const Timer: React.FC = () => {
       const month = now.toLocaleString('ru-RU', { month: 'long' });
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
-      // timezone получаем от сервера и записываем вместо МСК+02:00
-      setCurrentTime(`${day} ${month}, ${hours}:${minutes} MCK+02:00`);
+      store.isAuth
+        ? setCurrentTime(`${day} ${month}, ${hours}:${minutes} ${getTimeZoneLabel(store.user.timeZone)}`)
+        : setCurrentTime('Пользователь не авторизирован!');
     };
 
     updateTime();
@@ -23,4 +28,4 @@ const Timer: React.FC = () => {
   return <div className="timer">{currentTime}</div>;
 };
 
-export default Timer;
+export default observer(Timer);

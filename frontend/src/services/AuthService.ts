@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios';
-import type { LoginData, RegistrationData } from '../models/Auth'
+import type { LoginData, RegistrationData, TypeResponse} from '../models/Auth'
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
 
@@ -21,24 +21,24 @@ export default class AuthService {
     }
 
     // Сбросить пин-код
-    static async sendEmailResetPinCode(emailOrPhone: string) {
-        return $api.post(`user/request-pin-reset`, { emailOrPhone })
+    static async sendEmailResetPinCode(emailOrPhone: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`user/request-pin-reset`, { emailOrPhone })
     }
 
-    static async resetPinCode(newPin: string, token: string) {
-        return $api.post(`user/reset-pin`, { newPin, token })
+    static async resetPinCode(newPin: string, token: string): Promise<AxiosResponse<TypeResponse>>{
+        return $api.post<TypeResponse>(`user/reset-pin`, { newPin, token })
     }
 
     // Двухфакторка
-    static async twoFactorSend(method: "EMAIL"|"SMS", phone: string, email: string) {
+    static async twoFactorSend(method: "EMAIL"|"SMS", phone: string, email: string): Promise<void> {
         return $api.post('user/twoFactorSend', { method, phone, email });
     }
 
-    static async checkVarifyCode(code: string, email: string) {
-        return $api.post('user/checkVarifyCode', { code, email });
+    static async checkVarifyCode(code: string, email: string): Promise<AxiosResponse<TypeResponse>>{
+        return $api.post<TypeResponse>('user/checkVarifyCode', { code, email });
     }
 
-    static async checkVarifyCodeSMS(code: string, phone: string) {
-        return $api.post('user/checkVarifyCodeSMS', {code, phone});
+    static async checkVarifyCodeSMS(code: string, phone: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>('user/checkVarifyCodeSMS', {code, phone});
     }
 }

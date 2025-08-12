@@ -11,6 +11,22 @@
     margin-bottom: 1.5rem;
   }
 
+  &__message {
+    text-align: center;
+    color: $secondary-color;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.5s ease;
+  }
+
+  &__error {
+    text-align: center;
+    color: red;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.5s ease;
+  }
+
   &__content {
     display: flex;
     gap: 100px;
@@ -101,10 +117,47 @@
 }
 
 .editable {
+  position: relative;
+  cursor: pointer;
+
   &:hover {
     border: 5px solid $primary-color;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 32px;
+      height: 32px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M9 2L7 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3l-2-2H9zm3 16a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>');
+      background-repeat: no-repeat;
+      z-index: 1001;
+    }
   }
 }
+
+// Активация электронной почты
+.activated {
+  color: green !important;
+}
+
+.non-activated {
+  color: red !important;
+}
+
 
 .avatar-edit-hint {
   text-align: center;

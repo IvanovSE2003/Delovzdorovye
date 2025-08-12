@@ -33,7 +33,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const checkAuth = async () => {
     setError("");
     const isAuth = await store.checkUser(phone, email);
-    setCheckUser(isAuth.check);
+    setCheckUser(isAuth.success);
   }
 
   useEffect(() => {

@@ -22,9 +22,9 @@ export interface IUser {
 }
 
 export interface IUserDataProfile {
-    avatar: string;
-    surname: string;
+    img: string;
     name: string;
+    surname: string;
     patronymic: string;
     gender: Gender;
     dateBirth: string;
@@ -33,7 +33,7 @@ export interface IUserDataProfile {
     email: string;
 }
 
-export type ResetPassword = {
+export type TypeResponse = {
     message: string;
     success: boolean;
 }

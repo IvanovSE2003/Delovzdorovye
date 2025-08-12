@@ -4,23 +4,19 @@ import { useNavigate } from "react-router";
 import { RouteNames } from "../../../routes/index.js";
 import { observer } from "mobx-react-lite";
 import avatar from "../../../assets/images/defaultImage.png"
-import { URL } from "../../../http";
 
-import type { IUserDataProfile } from "../../../models/Auth.js";
+import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
 import { getTimeZoneLabel, TimeZoneLabels } from "../../../models/TimeZones.js";
 import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const [avatarPreview, setAvatarPreview] = useState(avatar);
-  const [dataUser, setDataUser] = useState<IUserDataProfile>(
-    {} as IUserDataProfile
-  );
-  const [editForm, setEditForm] = useState<IUserDataProfile>(
-    {} as IUserDataProfile
-  );
-  const [isEditing, setIsEditing] = useState(false);
-
+  const [message, setMessage] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [dataUser, setDataUser] = useState<IUserDataProfile>({} as IUserDataProfile);
+  const [editForm, setEditForm] = useState<IUserDataProfile>({} as IUserDataProfile);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const { store } = useContext(Context);
 
   // Получаем данные пользователя
@@ -49,14 +45,10 @@ const UserProfile: React.FC = () => {
 
   // Сохраняем изменения редактирования
   const handleSave = async () => {
-    try {
-      console.log(editForm);
-      // await store.updateUser(editForm);
-      setDataUser(editForm);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Ошибка при обновлении пользователя:", error);
-    }
+    const data = await store.updateUserData(editForm, store.user.id);
+    setMessage(data.message);
+    setDataUser(editForm);
+    setIsEditing(false);
   };
 
   // Добавляем изменения в форму
@@ -106,30 +98,45 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  // Отправить сообщение с активацией почты
+  // const sendAcitvate = async () => {
+  //   const data = await store.sendActivate();
+  //   data.success
+  //     ? setMessage(data.message)
+  //     : setError(data.message);
+  // }
+
   return (
     <div className="user-profile">
+      <h3 className="user-profile__error">{error}</h3>
+      <h3 className="user-profile__message">{message}</h3>
+
       <h2 className="user-profile__title">
         {isEditing ? "Редактирование профиля" : "Ваш профиль"}
       </h2>
 
       <div className="user-profile__content">
         <div className="user-profile__content">
-          <div className={`user-profile__avatar ${isEditing ? "editable" : ""}`}>
-            <img
-              src={avatarPreview}
-              alt="Аватар пользователя"
+          <div>
+            <div
+              className={`user-profile__avatar ${isEditing ? "editable" : ""}`}
               onClick={() => isEditing && document.getElementById('avatar-upload')?.click()}
-            />
-            {isEditing && (
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="avatar-edit__input"
-                style={{ display: 'none' }}
+            >
+              <img
+                src={avatarPreview}
+                alt="Аватар пользователя"
               />
-            )}
+              {isEditing && (
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="avatar-edit__input"
+                  style={{ display: 'none' }}
+                />
+              )}
+            </div>
             {isEditing && <div className="avatar-edit-hint">Нажмите для изменения</div>}
           </div>
         </div>
@@ -138,7 +145,30 @@ const UserProfile: React.FC = () => {
           {renderField("Фамилия", "surname", dataUser.surname)}
           {renderField("Имя", "name", dataUser.name)}
           {renderField("Отчество", "patronymic", dataUser.patronymic || "")}
-          {renderField("Пол", "gender", dataUser.gender)}
+
+          {/* Пол */}
+          <div className="info-row">
+            <span className="info-label">Пол:</span>
+            {isEditing ? (
+              <select
+                name="gender"
+                value={editForm.gender}
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    gender: e.target.value as Gender,
+                  }))
+                }
+                className="info-input"
+              >
+                <option value="" disabled>Выберите пол</option>
+                <option value="мужчина">Мужчина</option>
+                <option value="женщина">Женщина</option>
+              </select>
+            ) : (
+              <span className="info-value">{dataUser.gender}</span>
+            )}
+          </div>
 
           {/* Дата рождения */}
           <div className="info-row">
@@ -152,7 +182,7 @@ const UserProfile: React.FC = () => {
                 onChange={handleChange}
               />
             ) : (
-              <span className="info-value">{store.user.dateBirth}</span>
+              <span className="info-value">{dataUser.dateBirth}</span>
             )}
           </div>
 
@@ -193,7 +223,9 @@ const UserProfile: React.FC = () => {
           {/* Почта */}
           <div className="info-row">
             <span className="info-label">Электронная почта: </span>
-            <span className="info-value">{store.user.email}</span>
+            <span className="info-value">
+              {store.user.email}
+            </span>
           </div>
 
           {isEditing ? (
@@ -228,6 +260,11 @@ const UserProfile: React.FC = () => {
             </>
           )}
         </div>
+      </div>
+      <div className="solutions__warm">
+        <span>
+          Вход в аккаунт доступен только по почте! Чтобы входить по телефону необходимо <a href="/">подключиться к телеграмм-боту</a>.
+        </span>
       </div>
     </div>
   );
