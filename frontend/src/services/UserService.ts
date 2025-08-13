@@ -1,6 +1,6 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUserDataProfile, IUser, TypeResponse } from "../models/Auth";
+import type { IUserDataProfile, IUser, TypeResponse, TypeResponseToken } from "../models/Auth";
 
 export default class UserService {
 
@@ -20,12 +20,16 @@ export default class UserService {
     }
 
     // Изменение данные о пользователе
-    static updateUserData(data: IUserDataProfile, id: number): Promise<AxiosResponse<TypeResponse>> {
-        return $api.put<TypeResponse>(`/user/${id}`, { data });
+    static updateUserData(data: IUserDataProfile, id: number): Promise<AxiosResponse<TypeResponse & {user: IUser}>> {
+        return $api.put<TypeResponse & {user: IUser}>(`/user/${id}`, { data });
     }
 
     // Отправка сообщения на почту об активации аккаунта
     static sendActivate(email: string): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>('user/sendActivationEmail', { email });
+    }
+
+    static getTokenTg(id: number): Promise<AxiosResponse<TypeResponseToken>> {
+        return $api.post<TypeResponseToken>(`user/activateLinkTg/${id}`)
     }
 }

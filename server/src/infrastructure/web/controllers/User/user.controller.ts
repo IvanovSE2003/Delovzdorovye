@@ -154,8 +154,8 @@ export default class UserController {
                 return res.status(200).send(this.renderHtmlPage('Ошибка при активации аккаунта', false));
             }
 
+            await this.userRepository.save(user.activateSMS());
             return res.status(200).send(this.renderHtmlPage('Аккаунт успешно активирован', true));
-
         } catch (e: any) {
             return res.status(500).send(this.renderHtmlPage(`Внутренняя ошибка сервера: ${e.message}`, false));
         }
@@ -279,12 +279,8 @@ export default class UserController {
     async sendTwoFactor(req: Request, res: Response, next: NextFunction) {
         try {
             const { method, creditial } = req.body;
-
-            if (!method && !creditial) {
-                return next(ApiError.badRequest('Данные не получены'));
-            }
             await this.authService.sendTwoFactorCode(creditial, method);
-            return res.status(200).json({ message: 'Код успешно отправлен' });
+            return res.status(200).json({});
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
@@ -292,24 +288,19 @@ export default class UserController {
 
     async checkVarifyCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const { code, email, phone } = req.body;
-
-            if (!code && !email && !phone) {
-                return res.status(404).json({ success: false, message: 'Данные не получены' });
-            }
-            const credential = email ? email : phone;
-            const user = await this.userRepository.findByEmailOrPhone(credential) as User;
+            const { code, creditial } = req.body;
+            const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
 
             if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+                return res.status(404).json({ success: false, message: 'Пользователь не найден'});
             }
 
             const isCodeValid = await this.authService.verifyTwoFactorCode(user.id, code);
             if (!isCodeValid) {
-                return res.status(404).json({ success: false, message: 'Не верный код' });
+                return res.status(404).json({ success: false, message: 'Не верный код'});
             }
 
-            return res.status(200).json({ success: true, message: 'Верный код' });
+            return res.status(200).json({ success: true, message: 'Верный код'});
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
@@ -341,8 +332,7 @@ export default class UserController {
 
             return res.json({
                 success: true,
-                token,
-                instructions: 'Введите этот код в Telegram боте командой /link [код]'
+                token
             });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
@@ -351,9 +341,9 @@ export default class UserController {
 
     async requestPinReset(req: Request, res: Response, next: NextFunction) {
         try {
-            const { emailOrPhone } = req.body;
-            await this.authService.requestPinReset(emailOrPhone);
-            return res.json({ success: true, message: 'Ссылка для сброса пин-кода отправлена' });
+            const { creditial } = req.body;
+            await this.authService.requestPinReset(creditial);
+            return res.status(200).json({success: true, message: 'Сообщение для сброса пин-кода было отправлено'});
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
@@ -372,7 +362,7 @@ export default class UserController {
     async update(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { img, name, surname, patronymic, gender, dateBirth, timeZone, phone, email } = req.body;
+            const { data } = req.body;
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
@@ -381,18 +371,19 @@ export default class UserController {
 
             const updatedUser = new User(
                 user.id,
-                name || user.name,
-                surname || user.surname,
-                patronymic || user.patronymic,
-                email || user.email,
-                phone || user.phone,
+                data.name || user.name,
+                data.surname || user.surname,
+                data.patronymic || user.patronymic,
+                data.email || user.email,
+                data.phone || user.phone,
                 user.pinCode,
-                timeZone || user.timeZone,
-                dateBirth || user.dateBirth,
-                gender || user.gender,
+                data.timeZone || user.timeZone,
+                data.dateBirth || user.dateBirth,
+                data.gender || user.gender,
                 user.isActivated,
+                user.isActivatedSMS,
                 user.activationLink,
-                img || user.img,
+                data.img || user.img,
                 user.role,
                 user.twoFactorCode,
                 user.twoFactorCodeExpires,
@@ -405,9 +396,9 @@ export default class UserController {
 
             const result = await this.userRepository.update(updatedUser);
             if (result) {
-                res.status(200).json({ success: true, message: 'Изменения сохранены' });
+                res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
             } else {
-                res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений' });
+                res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null});
             }
         } catch (e: any) {
             next(ApiError.internal(e.message));
@@ -458,6 +449,34 @@ export default class UserController {
             return res.status(200).json({ success: true, message: 'Код отправлен на почту' });
         } catch (e: any) {
             return next(ApiError.badRequest('Ошибка при отправке ссылки активации по почте'));
+        }
+    }
+
+    async uploadAvatar(req: Request , res: Response, next: NextFunction) {
+        try {
+            const {userId} = req.body;
+
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'Нет файла' });
+            }
+            
+            const fileName = req.file.filename;
+            const user = await this.userRepository.findById(userId);
+
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь для обновления аватара не найден'));
+            }
+
+            this.userRepository.save(user.updateAvatar(fileName));
+
+            res.json({ 
+                success: true, 
+                fileName,
+                message: 'Изображение было обновлено' 
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: 'Server error' });
         }
     }
 }

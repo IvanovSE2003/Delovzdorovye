@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, IUserDataProfile, LoginData, RegistrationData, TypeResponse } from "../models/Auth";
+import type { IUser, IUserDataProfile, LoginData, RegistrationData, TypeResponse, TypeResponseToken } from "../models/Auth";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
@@ -9,6 +9,7 @@ import { API_URL } from "../http";
 
 export default class Store {
     user = {} as IUser;
+    userProfile = {} as IUserDataProfile;
     isAuth = false;
     error = "";
     isLoading = false;
@@ -23,6 +24,10 @@ export default class Store {
 
     setUser(user: IUser) {
         this.user = user;
+    }
+
+    setUserProfile(user: IUserDataProfile) {
+        this.userProfile = user;
     }
 
     setError(error: string) {
@@ -90,7 +95,7 @@ export default class Store {
     async checkAuth(): Promise<void> {
         this.setLoading(true);
         try {
-            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, {withCredentials: true});
+            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, { withCredentials: true });
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user);
@@ -145,7 +150,8 @@ export default class Store {
     async updateUserData(data: IUserDataProfile, id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.updateUserData(data, id);
-            return response.data;
+            this.setUser(response.data.user);
+            return { success: response.data.success, message: response.data.message };
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при изменении данных пользователя!");
@@ -156,15 +162,15 @@ export default class Store {
 
 
     // Отправка сообщения на почту о сбросе пин-кода
-    async sendEmailResetPinCode(emailOrPhone: string): Promise<TypeResponse> {
+    async sendEmailResetPinCode(creditial: string): Promise<TypeResponse> {
         try {
             this.setError("");
-            const response = await AuthService.sendEmailResetPinCode(emailOrPhone);
+            const response = await AuthService.sendEmailResetPinCode(creditial);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправке сообщения для сброса пин-кода!");
-            return { success: false, message: error.message };
+            return { success: false, message: this.error };
         }
     }
 
@@ -181,45 +187,32 @@ export default class Store {
         }
     }
 
-
-
     // Отравка кода на телефон\почту
-    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<void> {
+    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<{message: string}> {
         try {
             this.setError("");
-            await AuthService.twoFactorSend(method, creditial);
+            const response = await AuthService.twoFactorSend(method, creditial);
+            if(response.data.message) this.setError(response.data.message)
+            return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправке кода!");
+            return {message: this.error}
         }
     }
 
     // Проверка кода почты для входа 
-    async checkVarifyCode(code: string, email: string): Promise<TypeResponse> {
+    async checkVarifyCode(code: string, creditial: string): Promise<TypeResponse & {userId: number| null}> {
         try {
             this.setError("");
-            const response = await AuthService.checkVarifyCode(code, email);
+            const response = await AuthService.checkVarifyCode(code, creditial);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при проверке почтового кода!");
-            return { success: false, message: this.error };
+            return { success: false, message: this.error, userId: null };
         }
     }
-
-    // Проверка кода телефона для входа
-    async checkVarifyCodeSMS(code: string, phone: string): Promise<TypeResponse> {
-        try {
-            this.setError("");
-            const response = await AuthService.checkVarifyCodeSMS(code, phone);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при проверка телефонного кода!");
-            return { success: false, message: this.error };
-        }
-    }
-    
 
 
     // Отправить сообщение об активации на почту
@@ -228,10 +221,24 @@ export default class Store {
             const response = await UserService.sendActivate(email);
             this.user.isActivated = response.data.success;
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправки сообщения на почту!");
-            return {success: false, message: this.error}
+            return { success: false, message: this.error }
+        }
+    }
+
+
+
+    // Получить токен для активации телефона у телеграмм-бота
+    async getTokenTg(id: number): Promise<TypeResponseToken> {
+        try {
+            const response = await UserService.getTokenTg(id);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при получение токена!");
+            return { success: false, token: this.error }
         }
     }
 }

@@ -16,6 +16,7 @@ const FormAuth: React.FC = () => {
             <h3 className="auth__title">
                 {state === "login" && "Вход в систему"}
                 {state === "register" && "Регистрация"}
+                {state == "recover" && "Восстановление пин-кода"}
             </h3>
 
             {error && <p className="auth__error">{error}</p>}

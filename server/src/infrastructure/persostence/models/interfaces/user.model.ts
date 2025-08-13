@@ -12,6 +12,7 @@ interface IUserAttributes {
     date_birth: Date;
     gender: string;
     isActivated: boolean;
+    isActivatedSMS: boolean;
     activationLink: string;
     img: string;
     role: 'PATIENT' | 'DOCTOR' | 'ADMIN';

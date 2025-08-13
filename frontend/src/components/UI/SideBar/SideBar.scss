@@ -1,11 +1,9 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .sidebar {
-  width: 300px;
-  padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: 400px;
+  padding: 20px;
+  position: fixed;
 
   &__nav {
     height: max-content;
@@ -38,7 +36,8 @@
   &__link {
     text-decoration: none;
     color: black;
-    font-size: 1.1rem;
+    padding: 10px 15px;
+    font-size: 1.6rem;
 
     &:hover {
       color: $primary-color;

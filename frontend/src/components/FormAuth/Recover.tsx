@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import "./FormAuth.scss";
 import { Context } from "../../main";
 import MyInput from "../UI/MyInput/MyInput";
@@ -16,8 +16,11 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
         return emailRegex.test(email);
     };
 
-    const resetPinCode = async (e: React.FormEvent) => {
-        e.preventDefault();
+    useEffect(() => {
+        setError("");
+    }, [])
+
+    const resetPinCode = async () => {
         setError("");
 
         if (!validateEmail(email)) {
@@ -28,7 +31,6 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
         try {
             const data = await store.sendEmailResetPinCode(email);
             setMessage(data.message);
-
             data.success ? setStep(2) : setError(data.message || "Произошла ошибка при восстановлении пароля");
         } catch (err) {
             setError("Произошла непредвиденная ошибка");
@@ -40,8 +42,6 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
         <>
             {step === 1 ? (
                 <div className="auth__form">
-                    <h3>Восстановление пин-кода</h3>
-
                     <MyInput
                         type="email"
                         id="recover-email"
@@ -61,7 +61,7 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 </div>
             ) : (
                 <div className="recover-success">
-                    <h3>Проверьте вашу почту</h3>
+                    <h2>Проверьте вашу почту</h2>
                     <p>{message}</p>
                     <button
                         onClick={() => setState("login")}

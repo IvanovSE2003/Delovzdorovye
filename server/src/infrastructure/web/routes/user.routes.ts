@@ -3,6 +3,8 @@ import userController from "../controllers/User/user.controller.interface.js";
 import {body} from 'express-validator'
 import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
 import adminMiddleware from "../middleware/admin.middleware.js";
+import upload from "../middleware/upload.middleware.js";
+import User from "../../../core/domain/entities/user.entity.js";
 
 
 const router: Router = Router(); 
@@ -38,6 +40,9 @@ router.post('/reset-pin', body('token').notEmpty(), (req: Request, res: Response
 
 router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next))
 router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
+
+router.post('/upload-avatar', upload.single('avatar'), (req: Request, res: Response, next: NextFunction) => userController.uploadAvatar(req, res, next));
+
 
 export default router;
 

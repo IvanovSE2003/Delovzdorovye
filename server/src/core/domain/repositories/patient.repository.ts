@@ -17,6 +17,6 @@ export default interface PatientRepository {
         totalPages: number;
     }>;
     update(patient: Patient): Promise<Patient>;
-    create(patient: Patient): Promise<Patient>;
+    create(patient: Patient): Promise<Patient | null>;
 
 }

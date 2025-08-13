@@ -53,28 +53,29 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Завершение 1 этапа
   const checkContact = async () => {
-    if (isEmailAuth) {
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        await store.twoFactorSend("EMAIL", email);
-      } else {
-        setError("Введите корректный email");
-        return;
-      }
-    } else {
-      if (/^8\d{10}$/.test(phone)) {
-        await store.twoFactorSend("SMS", phone);
-      } else {
-        setError("Введите корректный номер телефона (8XXXXXXXXXX)");
-        return;
-      }
-    }
-
     const isAuth = await checkAuth();
     if (!isAuth) {
       setError("Пользователь не найден");
       return;
     }
 
+    if (isEmailAuth) {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        const data = await store.twoFactorSend("EMAIL", email);
+        if(data.message) return;
+      } else {
+        setError("Введите корректный email");
+        return;
+      }
+    } else {
+      if (/^8\d{10}$/.test(phone)) {
+        const data = await store.twoFactorSend("SMS", phone);
+        if(data.message) return;
+      } else {
+        setError("Введите корректный номер телефона (8XXXXXXXXXX)");
+        return;
+      }
+    }
     setError("");
     setStep(2);
   };
@@ -86,17 +87,19 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       let data;
       isEmailAuth
         ? (data = await store.checkVarifyCode(code, email))
-        : (data = await store.checkVarifyCodeSMS(code, phone));
+        : (data = await store.checkVarifyCode(code, phone));
 
+      console.log(data)
       if (data.success) setStep(3);
     }
   };
 
   // Завершение 3 этапа
-  const login = async (pin: string) => {
+  const login = async (pin: string, setZero: any) => {
     setError("");
     await store.login({ phone, email, pin_code: Number(pin) });
     if (store.isAuth) navigate(RouteNames.PERSONAL);
+    else setZero();
   };
 
   // Переключение почта/телефон

@@ -13,6 +13,7 @@ import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
 import regData from "../../../infrastructure/web/types/reqData.type.js";
+import { error } from "console";
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -32,22 +33,37 @@ export class AuthServiceImpl implements AuthService {
             throw new Error("Пользователь с таким email или телефоном уже существует");
         }
 
-        console.log(data.pinCode, data.timeZone, data.dateBirth)
-
         const activationLink = v4();
+
+        let defaultImg;
+        if(data.gender === 'Женщина') {
+            defaultImg = "girl.png";
+        } else {
+            defaultImg = "man.png";
+        }
+
         const user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
-            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, activationLink, "defaultImg.png", 
+            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
             data.role, null, null, null, null, 0, false, null);
 
         const savedUser = await this.userRepository.save(user);
 
         if(data.role === 'PATIENT') {
-            const patient = new Patient(0, {}, {}, {}, false, savedUser.id);
+            const patient = new Patient(0, false, savedUser.id, {
+                chronicDiseases: [{ name: "" }],
+                surgeries: [{ year: new Date().getFullYear(), description: "" }],
+                allergies: [{ type: "", description: "" }],
+                medications: [{ name: "", dosage: "" }],
+                analyses: [{ name: "", file: "" }],
+                examinations: [{ name: "", file: "" }],
+                hereditaryDiseases: [{ name: "" }]
+            });
             await this.patientRepository.create(patient);
         } else if(data.role === 'DOCTOR') {
             const doctor = new Doctor(0, data.specialization, data.contacts, data.experienceYears, false, savedUser.id);
             await this.doctorRepository.create(doctor);
         }
+
         await this.mailService.sendActivationEmail(data.email, activationLink);
 
         const tokens = await this.tokenService.generateTokens({
@@ -137,9 +153,13 @@ export class AuthServiceImpl implements AuthService {
 
     async login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
         try {
-            const user = await this.userRepository.findByEmailOrPhone(credential) as any;
+            const user = await this.userRepository.findByEmailOrPhone(credential) as User;
             if (!user) {
                 throw new Error("Пользователь не найден");
+            }
+
+            if(user.isBlocked) {
+                throw new Error('Аккаунт заблокирован')
             }
 
             const isPinValid = await this.userRepository.verifyPinCode(user.id, pinCode);
@@ -167,7 +187,10 @@ export class AuthServiceImpl implements AuthService {
             });
 
             await this.tokenService.saveToken(user.id, tokens.refreshToken);
-            await this.smsService.sendLoginNotification(user.id);
+            if(user.isActivatedSMS) {
+                await this.smsService.sendLoginNotification(user.id);
+            }
+
             return {
                 user: resetUser,
                 accessToken: tokens.accessToken,
@@ -179,12 +202,16 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async sendTwoFactorCode(creditial: string, method: string): Promise<void> {
-        const user = await this.userRepository.findByEmailOrPhone(creditial) as any;
-
-        const code = this.twoFactorService.generateCode();
-        const expires = new Date(Date.now() + 5 * 60 * 1000); 
-        await this.userRepository.save(user.setTwoFactorCode(code, expires));
-        await this.twoFactorService.sendCode(user, method, code);
+        const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
+        if(user) {
+            if(user.isBlocked) {
+                throw new Error("Аккаунт заблокирован");
+            }
+            const code = this.twoFactorService.generateCode();
+            const expires = new Date(Date.now() + 5 * 60 * 1000); 
+            await this.userRepository.save(user.setTwoFactorCode(code, expires));
+            await this.twoFactorService.sendCode(user, method, code);
+        }
     }
 
     async verifyTwoFactorCode(userId: number, code: string): Promise<boolean> {
@@ -239,7 +266,6 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async requestPinReset(emailOrPhone: string): Promise<void> {
-        // const user = await this.userRepository.findByEmailOrPhone(emailOrPhone) as User;
         const userPhone = await this.userRepository.findByPhone(emailOrPhone);
         const userEmail = await this.userRepository.findByEmail(emailOrPhone);
         let method = null, user = null;
@@ -254,7 +280,7 @@ export class AuthServiceImpl implements AuthService {
         if(!user || !method) {
             throw new Error("Пользователь не найден");
         }
-
+        
         const resetToken = v4();
         const resetTokenExpires = new Date(Date.now() + 3600000); 
         
@@ -271,9 +297,8 @@ export class AuthServiceImpl implements AuthService {
         if (!user || !user.resetTokenExpires || new Date() > user.resetTokenExpires) {
             throw new Error("Недействительный или просроченный токен");
         }
-        if(user.isBlocked) {
-            throw new Error("Пользователь заблокирован");
-        }
+
+        this.unblockAccount(user.id);
 
         const updatedUser = user.setResetToken(null, null, newPin).resetPinAttempts().unblockAccount();
         await this.userRepository.save(updatedUser);
