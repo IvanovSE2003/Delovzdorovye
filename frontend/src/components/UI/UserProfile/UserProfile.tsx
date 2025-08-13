@@ -4,30 +4,16 @@ import { observer } from "mobx-react-lite";
 import girl from '../../../assets/images/girl.png';
 import man from '../../../assets/images/man.png';
 import QRcodeImg from '../../../assets/images/qr_code.png';
-import QRcodeImg from '../../../assets/images/qr_code.png';
 import "./UserProfile.scss";
-import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
-import { useNavigate } from "react-router-dom";
-import { RouteNames } from "../../../routes/index.js";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
 import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../../routes/index.js";
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
-  const navigate = useNavigate();
   const { store } = useContext(Context);
   const [avatar, setAvatar] = useState<string>(man);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-
-  const [QRcode, setQRcode] = useState<boolean>(false);
-  const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
-
-  const [formData, setFormData] = useState<IUserDataProfile>({
-    img: "",
-  const [avatar, setAvatar] = useState<string>(man);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-
   const [QRcode, setQRcode] = useState<boolean>(false);
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
 
@@ -37,8 +23,6 @@ const UserProfile: React.FC = () => {
     name: store.user.name,
     patronymic: store.user.patronymic,
     gender: store.user.gender,
-    dateBirth: store.user.dateBirth,
-    phone: store.user.phone,
     dateBirth: store.user.dateBirth,
     phone: store.user.phone,
     email: store.user.email
@@ -85,9 +69,9 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    console.log('formData ', formData)
+    console.log('formData ', formData);
     const data = await store.updateUserData(formData, store.user.id);
-    console.log(data)
+    console.log(data);
     setIsEditing(false);
   };
 
@@ -97,26 +81,26 @@ const UserProfile: React.FC = () => {
       setQRtoken(data.token);
       setQRcode(true);
     } else {
-      console.log("Error")
+      console.log("Error");
     }
-  }
+  };
 
   const handleGenderChange = (gender: Gender) => {
-    setFormData(prev => ({ ...prev, gender }))
-  }
+    setFormData(prev => ({ ...prev, gender }));
+  };
 
   const GetFormatDate = (date: string) => {
     return date.split('-').reverse().join('.');
-  }
+  };
 
   const GetFormatPhone = (phone: string) => {
     return phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
-  }
+  };
 
   const Logout = async () => {
     await store.logout();
     navigate(RouteNames.MAIN);
-  }
+  };
 
   return (
     <div className="user-profile">
@@ -124,7 +108,7 @@ const UserProfile: React.FC = () => {
         <div className="user-profile__content">
           <div className="user-profile__avatar-content">
             <div className="user-profile__avatar">
-              <img  src={avatar} alt="avatar-delovzdorovye" />
+              <img src={avatar} alt="avatar-delovzdorovye" />
             </div>
             {isEditing && (
               <div className="user-profile__links">
@@ -155,28 +139,7 @@ const UserProfile: React.FC = () => {
                     placeholder="Фамилия"
                   />
                 </div>
-          <div className="user-profile__info">
-            {isEditing ? (
-              <div className="user-profile__edit-form">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="surname"
-                    value={formData.surname}
-                    onChange={handleInputChange}
-                    placeholder="Фамилия"
-                  />
-                </div>
 
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Имя"
-                  />
-                </div>
                 <div className="form-group">
                   <input
                     type="text"
@@ -196,28 +159,7 @@ const UserProfile: React.FC = () => {
                     placeholder="Отчество"
                   />
                 </div>
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="patronymic"
-                    value={formData.patronymic || ""}
-                    onChange={handleInputChange}
-                    placeholder="Отчество"
-                  />
-                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
-                  <div className="auth__radio-btn">
-                    <input
-                      id="male"
-                      type="radio"
-                      name="gender"
-                      value="мужчина"
-                      checked={formData.gender === "Мужчина"}
-                      onChange={() => handleGenderChange("Мужчина")}
-                    />
-                    <label htmlFor="male">Мужчина</label>
-                  </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
                   <div className="auth__radio-btn">
                     <input
@@ -243,18 +185,6 @@ const UserProfile: React.FC = () => {
                     <label htmlFor="female">Женщина</label>
                   </div>
                 </div>
-                  <div className="auth__radio-btn">
-                    <input
-                      id="female"
-                      type="radio"
-                      name="gender"
-                      value="женщина"
-                      checked={formData.gender === "Женщина"}
-                      onChange={() => handleGenderChange("Женщина")}
-                    />
-                    <label htmlFor="female">Женщина</label>
-                  </div>
-                </div>
 
                 <div className="form-group">
                   <input
@@ -264,24 +194,7 @@ const UserProfile: React.FC = () => {
                     onChange={handleInputChange}
                   />
                 </div>
-                <div className="form-group">
-                  <input
-                    type="date"
-                    name="dateBirth"
-                    value={formData.dateBirth}
-                    onChange={handleInputChange}
-                  />
-                </div>
 
-                <div className="form-group">
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Номер телефона"
-                  />
-                </div>
                 <div className="form-group">
                   <input
                     type="tel"
@@ -307,21 +220,6 @@ const UserProfile: React.FC = () => {
                 <div className="user-profile__fio">
                   {store.user.surname} {store.user.name} {store.user.patronymic}
                 </div>
-                <div className="form-group">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Email"
-                  />
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="user-profile__fio">
-                  {store.user.surname} {store.user.name} {store.user.patronymic}
-                </div>
 
                 <div className="user-profile__main-info">
                   <span>Пол: {formData.gender}</span>
@@ -331,28 +229,7 @@ const UserProfile: React.FC = () => {
                 </div>
               </>
             )}
-                <div className="user-profile__main-info">
-                  <span>Пол: {formData.gender}</span>
-                  <span>Дата рождения: {GetFormatDate(formData.dateBirth)}</span>
-                  <span>Номер телефона: {GetFormatPhone(formData.phone)}</span>
-                  <span>E-mail: {formData.email}</span>
-                </div>
-              </>
-            )}
 
-            <div className="user-profile__buttons">
-              {isEditing ? (
-                <>
-                  <button className="auth__button" onClick={handleSave}>Сохранить</button>
-                  <button className="auth__button" onClick={() => setIsEditing(false)}>Отмена</button>
-                </>
-              ) : (
-                <>
-                  <button className="auth__button" onClick={() => setIsEditing(true)}>Редактировать</button>
-                  <button className="auth__button" onClick={Logout}>Выйти из аккаунта</button>
-                </>
-              )}
-            </div>
             <div className="user-profile__buttons">
               {isEditing ? (
                 <>
@@ -368,13 +245,6 @@ const UserProfile: React.FC = () => {
             </div>
           </div>
         </div>
-        {!store.user.isActivatedSMS && (
-          <div className="user-profile__warn">
-            <span>Вход доступен только через электронную почту. Чтобы выходить через телефон, его надо
-              <a onClick={openQR}> подключить к телеграмм-боту.</a>
-            </span>
-          </div>
-        )}
         {!store.user.isActivatedSMS && (
           <div className="user-profile__warn">
             <span>Вход доступен только через электронную почту. Чтобы выходить через телефон, его надо
@@ -383,16 +253,6 @@ const UserProfile: React.FC = () => {
           </div>
         )}
       </div>
-      {QRcode && (
-        <div className="QRcode">
-          <div className="QRcode__box">
-            <img src={QRcodeImg} alt="QR-code tg" />
-            <p className="QRcode__token">{QRtoken}</p>
-            <p className="QRcode__description">Ваш токен для подключения</p>
-            <a className="QRcode__close" onClick={() => setQRcode(false)}>Скрыть</a>
-          </div>
-        </div>
-      )}
       {QRcode && (
         <div className="QRcode">
           <div className="QRcode__box">
