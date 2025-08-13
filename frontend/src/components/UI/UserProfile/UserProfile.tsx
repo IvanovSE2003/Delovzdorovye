@@ -3,33 +3,35 @@ import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 import girl from '../../../assets/images/girl.png';
 import man from '../../../assets/images/man.png';
+import QRcodeImg from '../../../assets/images/qr_code.png';
 import "./UserProfile.scss";
+import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
+import { useNavigate } from "react-router-dom";
+import { RouteNames } from "../../../routes/index.js";
 
 const UserProfile: React.FC = () => {
-  const GetFormatDate = (date: string) => {
-    return date.split('-').reverse().join('.');
-  }
-
-  const GetFormatPhone = (phone: string) => {
-    return phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
-  }
-
+  const navigate = useNavigate();
   const { store } = useContext(Context);
-  const [avatar, setAvatar] = useState(man);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [avatar, setAvatar] = useState<string>(man);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  const [QRcode, setQRcode] = useState<boolean>(false);
+  const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
+
+  const [formData, setFormData] = useState<IUserDataProfile>({
+    img: "",
     surname: store.user.surname,
     name: store.user.name,
     patronymic: store.user.patronymic,
     gender: store.user.gender,
-    dateBirth: GetFormatDate(store.user.dateBirth),
-    phone: GetFormatPhone(store.user.phone),
+    dateBirth: store.user.dateBirth,
+    phone: store.user.phone,
     email: store.user.email
   });
 
   useEffect(() => {
-    setAvatar(store.user.gender === 'женщина' ? girl : man);
-  }, [store.user.gender]);
+    setAvatar(formData.gender === 'Женщина' ? girl : man);
+  }, [formData.gender]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -39,147 +41,190 @@ const UserProfile: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Здесь можно добавить логику сохранения данных
-    // Например: store.updateUserProfile(formData);
+  const handleSave = async () => {
+    const data = await store.updateUserData(formData, store.user.id);
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
-    store.logout();
-  };
+  const GetFormatDate = (date: string) => {
+    return date.split('-').reverse().join('.');
+  }
+
+  const GetFormatPhone = (phone: string) => {
+    return phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
+  }
+
+  const openQR = async () => {
+    const data = await store.getTokenTg(store.user.id);
+    if (data.success) {
+      setQRtoken(data.token);
+      setQRcode(true);
+    } else {
+      console.log("Error")
+    }
+  }
+
+  const handleGenderChange = (gender: Gender) => {
+    setFormData(prev => ({ ...prev, gender }))
+  }
+
+  const Logout = async () => {
+    await store.logout();
+    navigate(RouteNames.MAIN);
+  }
 
   return (
     <div className="user-profile">
-      <div className="user-profile__content">
-        <div className="user-profile__avatar-content">
-          <div className="user-profile__avatar">
-            <img src={avatar} alt="avatar-delovzdorovye" />
-          </div>
-          {isEditing && (
-            <div className="user-profile__links">
-              <p>Добавить фото</p>
-              <p>Удалить фото</p>
+      <div className="user-profile__box">
+        <div className="user-profile__content">
+          <div className="user-profile__avatar-content">
+            <div className="user-profile__avatar">
+              <img src={avatar} alt="avatar-delovzdorovye" />
             </div>
-          )}
-        </div>
-
-        <div className="user-profile__info">
-          {isEditing ? (
-            <div className="user-profile__edit-form">
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="surname"
-                  value={formData.surname}
-                  onChange={handleInputChange}
-                  placeholder="Фамилия"
-                />
+            {isEditing && (
+              <div className="user-profile__links">
+                <p>Добавить фото</p>
+                <p>Удалить фото</p>
               </div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Имя"
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="patronymic"
-                  value={formData.patronymic || ""}
-                  onChange={handleInputChange}
-                  placeholder="Отчество"
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
-                <div className="auth__radio-btn">
-                  <input
-                    id="male"
-                    type="radio"
-                    name="male"
-                    value="мужчина"
-                    checked={formData.gender === "мужчина"}
-                  />
-                  <label htmlFor="male">Мужчина</label>
-                </div>
-
-                <div className="auth__radio-btn">
-                  <input
-                    id="female"
-                    type="radio"
-                    name="female"
-                    value="женщина"
-                    checked={formData.gender === "женщина"}
-                  />
-                  <label htmlFor="female">Женщина</label>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="date"
-                  name="dateBirth"
-                  value={formData.dateBirth || '"'}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Номер телефона"
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Email"
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="user-profile__fio">
-                {store.user.surname} {store.user.name} {store.user.patronymic}
-              </div>
-
-              <div className="user-profile__main-info">
-                <span>Пол: {formData.gender}</span>
-                <span>Дата рождения: {GetFormatDate(formData.dateBirth)}</span>
-                <span>Номер телефона: {formData.phone}</span>
-                <span>E-mail: {formData.email}</span>
-              </div>
-            </>
-          )}
-
-          <div className="user-profile__buttons">
-            {isEditing ? (
-              <>
-                <button className="auth__button" onClick={handleSave}>Сохранить</button>
-                <button className="auth__button" onClick={() => setIsEditing(false)}>Отмена</button>
-              </>
-            ) : (
-              <>
-                <button className="auth__button" onClick={() => setIsEditing(true)}>Редактировать</button>
-                <button className="auth__button" onClick={handleLogout}>Выйти из аккаунта</button>
-              </>
             )}
           </div>
+
+          <div className="user-profile__info">
+            {isEditing ? (
+              <div className="user-profile__edit-form">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="surname"
+                    value={formData.surname}
+                    onChange={handleInputChange}
+                    placeholder="Фамилия"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Имя"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="text"
+                    name="patronymic"
+                    value={formData.patronymic || ""}
+                    onChange={handleInputChange}
+                    placeholder="Отчество"
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
+                  <div className="auth__radio-btn">
+                    <input
+                      id="male"
+                      type="radio"
+                      name="gender"
+                      value="мужчина"
+                      checked={formData.gender === "Мужчина"}
+                      onChange={() => handleGenderChange("Мужчина")}
+                    />
+                    <label htmlFor="male">Мужчина</label>
+                  </div>
+
+                  <div className="auth__radio-btn">
+                    <input
+                      id="female"
+                      type="radio"
+                      name="gender"
+                      value="женщина"
+                      checked={formData.gender === "Женщина"}
+                      onChange={() => handleGenderChange("Женщина")}
+                    />
+                    <label htmlFor="female">Женщина</label>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="date"
+                    name="dateBirth"
+                    value={formData.dateBirth}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Номер телефона"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Email"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="user-profile__fio">
+                  {store.user.surname} {store.user.name} {store.user.patronymic}
+                </div>
+
+                <div className="user-profile__main-info">
+                  <span>Пол: {formData.gender}</span>
+                  <span>Дата рождения: {GetFormatDate(formData.dateBirth)}</span>
+                  <span>Номер телефона: {GetFormatPhone(formData.phone)}</span>
+                  <span>E-mail: {formData.email}</span>
+                </div>
+              </>
+            )}
+
+            <div className="user-profile__buttons">
+              {isEditing ? (
+                <>
+                  <button className="auth__button" onClick={handleSave}>Сохранить</button>
+                  <button className="auth__button" onClick={() => setIsEditing(false)}>Отмена</button>
+                </>
+              ) : (
+                <>
+                  <button className="auth__button" onClick={() => setIsEditing(true)}>Редактировать</button>
+                  <button className="auth__button" onClick={Logout}>Выйти из аккаунта</button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+        {!store.user.isActivatedSMS && (
+          <div className="user-profile__warn">
+            <span>Вход доступен только через электронную почту. Чтобы выходить через телефон, его надо
+              <a onClick={openQR}> подключить к телеграмм-боту.</a>
+            </span>
+          </div>
+        )}
       </div>
+      {QRcode && (
+        <div className="QRcode">
+          <div className="QRcode__box">
+            <img src={QRcodeImg} alt="QR-code tg" />
+            <p className="QRcode__token">{QRtoken}</p>
+            <p className="QRcode__description">Ваш токен для подключения</p>
+            <a className="QRcode__close" onClick={() => setQRcode(false)}>Скрыть</a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

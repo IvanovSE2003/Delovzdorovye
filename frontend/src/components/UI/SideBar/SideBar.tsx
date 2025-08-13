@@ -1,17 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-// import logo from '../../../../public/logo.svg'
 import logo from '../../../assets/images/logo.png'
-
-
-// import { 
-//   HomeOutlined, 
-//   CommentOutlined, 
-//   MessageOutlined, 
-//   CalendarOutlined, 
-//   GiftOutlined, 
-//   InfoCircleOutlined 
-// } from '@ant-design/icons';
 import './Sidebar.scss';
 import { RouteNames } from '../../../routes';
 

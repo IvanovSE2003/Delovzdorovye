@@ -2,7 +2,7 @@ import React, { useRef, useEffect, type KeyboardEvent, useState } from 'react';
 import './PinCodeInput.scss';
 
 interface PinCodeInputProps {
-    onLogin: (pin: string) => void;
+    onLogin: (pin: string, setPinCode: any) => void;
     countNumber: number;
 }
 
@@ -21,6 +21,13 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         }
     }, []);
 
+    const setZero = () => {
+        setPinCode(Array(countNumber).fill(''));
+        if (inputRefs.current[0]) {
+            inputRefs.current[0].focus();
+        }
+    }
+
     const handleChange = (index: number, value: string) => {
         if (value && !/^[0-9]$/.test(value)) return;
 
@@ -33,7 +40,7 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         }
 
         if (newPin.every(d => d !== '') && index === countNumber - 1) {
-            onLogin(newPin.join(''));
+            onLogin(newPin.join(''), setZero);
         }
     };
 
@@ -61,7 +68,7 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         inputRefs.current[focusIndex]?.focus();
 
         if (pasteData.length === countNumber) {
-            onLogin(newPin.join(''));
+            onLogin(newPin.join(''), setZero);
         }
     };
 
