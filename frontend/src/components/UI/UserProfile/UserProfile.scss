@@ -6,6 +6,12 @@
   padding: 20px;
 }
 
+.patient-page {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+}
+
 .user-profile {
   background-color: $profile-color;
   padding: 1rem;
@@ -25,11 +31,37 @@
 
   &__message,
   &__error {
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 750px;
+  box-sizing: border-box;
+
+
+  &__box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  &__message,
+  &__error {
     text-align: center;
+    font-size: 1rem;
     font-size: 1rem;
     font-weight: bold;
     transition: all 0.5s ease;
     margin: 0;
+
+    @media (min-width: 576px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__message {
+    color: $secondary-color;
 
     @media (min-width: 576px) {
       font-size: 1.2rem;
@@ -45,7 +77,26 @@
   }
 
   &__content {
+  &__content {
     display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      gap: 40px;
+      justify-content: center;
+    }
+
+    @media (min-width: 992px) {
+      gap: 70px;
+    }
+  }
+
+  &__avatar-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     flex-direction: column;
     gap: 30px;
 
@@ -69,8 +120,21 @@
   &__avatar {
     width: 150px;
     height: 150px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     overflow: hidden;
+    margin-top: 0;
+
+    @media (min-width: 576px) {
+      width: 200px;
+      height: 200px;
+    }
+
+    @media (min-width: 768px) {
+      max-width: 250px;
+      margin-top: 15px;
+    }
     margin-top: 0;
 
     @media (min-width: 576px) {
@@ -95,8 +159,11 @@
     text-align: center;
     color: $primary-color;
     margin-top: 10px;
+    margin-top: 10px;
 
     p {
+      margin: 5px 0;
+
       margin: 5px 0;
 
       &:hover {
@@ -108,13 +175,24 @@
 
   &__info {
     display: flex;
+    display: flex;
     flex-direction: column;
+    max-width: 400px;
     max-width: 400px;
   }
 
   &__fio {
     margin: 10px 0;
+    margin: 10px 0;
     font-weight: bold;
+    font-size: 1.2rem;
+    text-align: center;
+
+    @media (min-width: 576px) {
+      font-size: 1.5rem;
+      text-align: left;
+      margin: 15px 0;
+    }
     font-size: 1.2rem;
     text-align: center;
 
@@ -198,9 +276,92 @@
     border-radius: 8px;
     background-color: $sidebar-color;
     font-size: 1.1rem;
+  margin: 5px 0;
+
+
+  input {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 3px 0;
+    border-radius: 8px;
+    background-color: $sidebar-color;
+    font-size: 1.1rem;
 
     &:focus {
       outline: none;
+    }
+  }
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.auth__radio-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  input {
+    width: auto;
+  }
+
+  label {
+    font-size: 0.9rem;
+
+    @media (min-width: 576px) {
+      font-size: 1rem;
+    }
+  }
+}
+
+.auth__button {
+  width: 100%;
+
+  @media (min-width: 576px) {
+    width: auto;
+    min-width: 120px;
+  }
+}
+
+.QRcode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__box {
+    padding: 20px;
+    width: 400px;
+    animation: scaleIn 0.4s ease-out forwards 0.2s;
+    text-align: center;
+
+    img {
+      width: 100%;
+      pointer-events: none;
+      border-radius: 20px;
+    }
+  }
+
+  &__token {
+    font-size: 2rem;
+    margin: 8px 0;
+    color: $primary-color;
+    font-weight: bold;
+  }
+
+  &__description {
+    margin: 0 0 5px 0;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 }

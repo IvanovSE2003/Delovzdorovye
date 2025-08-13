@@ -12,6 +12,9 @@
         flex: 1;
         margin-left: 250px;
         margin-right: 80px;
+        flex: 1;
+        margin-left: 250px;
+        margin-right: 80px;
         padding: 20px;
     }
 
@@ -29,12 +32,16 @@
             img {
                 width: 100%;
             }
+            img {
+                width: 100%;
+            }
         }
 
         &-message {
             font-size: 1.3rem;
             color: green;
         }
+
 
         &-error {
             font-size: 1.3rem;

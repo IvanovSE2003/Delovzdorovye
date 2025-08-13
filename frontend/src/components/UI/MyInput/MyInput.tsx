@@ -3,6 +3,8 @@ import "./MyInput.scss";
 
 type InputType = "text" | "email" | "password" | "number" | "tel" | "url" | "date";
 
+type InputType = "text" | "email" | "password" | "number" | "tel" | "url";
+
 interface MyInputProps {
   type?: InputType;
   id: string;

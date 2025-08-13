@@ -155,6 +155,7 @@ export default class UserController {
             }
 
             await this.userRepository.save(user.activateSMS());
+            await this.userRepository.save(user.activateSMS());
             return res.status(200).send(this.renderHtmlPage('Аккаунт успешно активирован', true));
         } catch (e: any) {
             return res.status(500).send(this.renderHtmlPage(`Внутренняя ошибка сервера: ${e.message}`, false));
@@ -281,6 +282,7 @@ export default class UserController {
             const { method, creditial } = req.body;
             await this.authService.sendTwoFactorCode(creditial, method);
             return res.status(200).json({});
+            return res.status(200).json({});
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
@@ -290,16 +292,21 @@ export default class UserController {
         try {
             const { code, creditial } = req.body;
             const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
+            const { code, creditial } = req.body;
+            const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
 
             if (!user) {
+                return res.status(404).json({ success: false, message: 'Пользователь не найден'});
                 return res.status(404).json({ success: false, message: 'Пользователь не найден'});
             }
 
             const isCodeValid = await this.authService.verifyTwoFactorCode(user.id, code);
             if (!isCodeValid) {
                 return res.status(404).json({ success: false, message: 'Не верный код'});
+                return res.status(404).json({ success: false, message: 'Не верный код'});
             }
 
+            return res.status(200).json({ success: true, message: 'Верный код'});
             return res.status(200).json({ success: true, message: 'Верный код'});
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
@@ -333,6 +340,7 @@ export default class UserController {
             return res.json({
                 success: true,
                 token
+                token
             });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
@@ -363,6 +371,7 @@ export default class UserController {
         try {
             const { id } = req.params;
             const { data } = req.body;
+            const { data } = req.body;
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
@@ -376,7 +385,15 @@ export default class UserController {
                 data.patronymic || user.patronymic,
                 data.email || user.email,
                 data.phone || user.phone,
+                data.name || user.name,
+                data.surname || user.surname,
+                data.patronymic || user.patronymic,
+                data.email || user.email,
+                data.phone || user.phone,
                 user.pinCode,
+                data.timeZone || user.timeZone,
+                data.dateBirth || user.dateBirth,
+                data.gender || user.gender,
                 data.timeZone || user.timeZone,
                 data.dateBirth || user.dateBirth,
                 data.gender || user.gender,
