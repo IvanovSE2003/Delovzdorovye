@@ -292,8 +292,6 @@ export default class UserController {
         try {
             const { code, creditial } = req.body;
             const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
-            const { code, creditial } = req.body;
-            const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
 
             if (!user) {
                 return res.status(404).json({ success: false, message: 'Пользователь не найден'});
@@ -340,7 +338,6 @@ export default class UserController {
             return res.json({
                 success: true,
                 token
-                token
             });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
@@ -371,7 +368,6 @@ export default class UserController {
         try {
             const { id } = req.params;
             const { data } = req.body;
-            const { data } = req.body;
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
@@ -385,28 +381,20 @@ export default class UserController {
                 data.patronymic || user.patronymic,
                 data.email || user.email,
                 data.phone || user.phone,
-                data.name || user.name,
-                data.surname || user.surname,
-                data.patronymic || user.patronymic,
-                data.email || user.email,
-                data.phone || user.phone,
                 user.pinCode,
-                data.timeZone || user.timeZone,
-                data.dateBirth || user.dateBirth,
-                data.gender || user.gender,
                 data.timeZone || user.timeZone,
                 data.dateBirth || user.dateBirth,
                 data.gender || user.gender,
                 user.isActivated,
                 user.isActivatedSMS,
                 user.activationLink,
-                data.img || user.img,
+                user.img,
                 user.role,
                 user.twoFactorCode,
                 user.twoFactorCodeExpires,
                 user.resetToken,
                 user.resetTokenExpires,
-                user.pinAttempts,
+                user.pinAttempts, 
                 user.isBlocked,
                 user.blockedUntil
             );
