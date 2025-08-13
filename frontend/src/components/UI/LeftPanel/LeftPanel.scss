@@ -1,0 +1,16 @@
+@use '../../../assets/styles/variables.scss' as *;
+
+.left-panel {
+    width: 45px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    top: 10px;
+    right: 10px;
+
+    img {
+        width: 100%;
+    }
+}

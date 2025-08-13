@@ -6,6 +6,14 @@ import man from '../../../assets/images/man.png';
 import "./UserProfile.scss";
 
 const UserProfile: React.FC = () => {
+  const GetFormatDate = (date: string) => {
+    return date.split('-').reverse().join('.');
+  }
+
+  const GetFormatPhone = (phone: string) => {
+    return phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
+  }
+
   const { store } = useContext(Context);
   const [avatar, setAvatar] = useState(man);
   const [isEditing, setIsEditing] = useState(false);
@@ -14,8 +22,8 @@ const UserProfile: React.FC = () => {
     name: store.user.name,
     patronymic: store.user.patronymic,
     gender: store.user.gender,
-    dateBirth: store.user.dateBirth,
-    phone: store.user.phone,
+    dateBirth: GetFormatDate(store.user.dateBirth),
+    phone: GetFormatPhone(store.user.phone),
     email: store.user.email
   });
 
@@ -44,8 +52,16 @@ const UserProfile: React.FC = () => {
   return (
     <div className="user-profile">
       <div className="user-profile__content">
-        <div className="user-profile__avatar">
-          <img src={avatar} alt="avatar-delovzdorovye" />
+        <div className="user-profile__avatar-content">
+          <div className="user-profile__avatar">
+            <img src={avatar} alt="avatar-delovzdorovye" />
+          </div>
+          {isEditing && (
+            <div className="user-profile__links">
+              <p>Добавить фото</p>
+              <p>Удалить фото</p>
+            </div>
+          )}
         </div>
 
         <div className="user-profile__info">
@@ -81,7 +97,7 @@ const UserProfile: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
                 <div className="auth__radio-btn">
                   <input
                     id="male"
@@ -141,10 +157,10 @@ const UserProfile: React.FC = () => {
               </div>
 
               <div className="user-profile__main-info">
-                <span>Пол: {store.user.gender}</span>
-                <span>Дата рождения: {store.user.dateBirth}</span>
-                <span>Номер телефона: {store.user.phone}</span>
-                <span>E-mail: {store.user.email}</span>
+                <span>Пол: {formData.gender}</span>
+                <span>Дата рождения: {GetFormatDate(formData.dateBirth)}</span>
+                <span>Номер телефона: {formData.phone}</span>
+                <span>E-mail: {formData.email}</span>
               </div>
             </>
           )}

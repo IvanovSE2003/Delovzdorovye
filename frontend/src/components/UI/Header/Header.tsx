@@ -1,7 +1,7 @@
 import "./Header.scss";
 import logo from "../../../assets/images/logo.png";
-import avatar from "../../../assets/images/defaultImage.png";
-import React, { useContext, useEffect } from "react";
+import avatar from "../../../assets/images/account.png"
+import React, { useContext } from "react";
 import { Link } from "react-router";
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";

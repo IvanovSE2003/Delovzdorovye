@@ -12,6 +12,7 @@ import { Context } from '../../main';
 import { observer } from 'mobx-react-lite';
 import { RouteNames } from '../../routes';
 import { Link } from 'react-router-dom';
+import LeftPanel from '../../components/UI/LeftPanel/LeftPanel';
 
 const PersonalPage = () => {
     const { store } = useContext(Context);
@@ -26,23 +27,15 @@ const PersonalPage = () => {
     return (
         active
             ?
-            <>
-                <div className='account-header'>
-                    <Link to={RouteNames.MAIN}>
-                        <div className="account-header__logo">
-                            <img src={logo} alt="logo_medonline" />
-                        </div>
-                    </Link>
+            <div className='account-wrapper'>
+                <SideBar />
+                <div className='account-main'>
+                    {role === "PATIENT" && <PatientPage />}
+                    {role === "DOCTOR" && <DoctorPage />}
                 </div>
-                <div className='account-wrapper'>
-                    <SideBar />
-                    <div className='account-main'>
-                        {role === "PATIENT" && <PatientPage />}
-                        {role === "DOCTOR" && <DoctorPage />}
-                    </div>
-                    {/* <Timer /> */}
-                </div>
-            </>
+                <LeftPanel />
+                {/* <Timer /> */}
+            </div>
             :
             <ActivatedEmail />
     )

@@ -13,7 +13,7 @@ export interface IUser {
     pin_code: number;
     password: string;
     timeZone: number;
-    dateBirth: string | null;
+    dateBirth: string;
     gender: Gender;
     isActivated: boolean;
     activationLink: string;
