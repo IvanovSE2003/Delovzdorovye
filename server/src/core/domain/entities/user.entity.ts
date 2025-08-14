@@ -255,7 +255,6 @@ export default class User {
             this.gender,
             this.isActivated,
             this.isActivatedSMS,
-            
             this.activationLink,
             this.img,
             this.role,

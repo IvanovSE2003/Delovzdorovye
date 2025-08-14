@@ -133,6 +133,26 @@ const Transaction = sequelize.define('transaction', {
     date: {type: DataType.DATE}
 })
 
+const ModerationBatchModel = sequelize.define('moderation_batch', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    status: { type: DataType.STRING, defaultValue: 'pending'}, // pending, approved, rejected
+    rejection_reason: { type: DataType.TEXT, allowNull: true },
+    is_urgent: { type: DataType.BOOLEAN, defaultValue: false }
+});
+
+const ModerationChangeModel = sequelize.define('moderation_change', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    field_name: { type: DataType.STRING, allowNull: false },
+    old_value: { type: DataType.TEXT, allowNull: true },
+    new_value: { type: DataType.TEXT, allowNull: false }
+});
+
+ModerationBatchModel.hasOne(ModerationChangeModel);
+ModerationChangeModel.belongsTo(ModerationBatchModel);
+
+UserModel.hasOne(ModerationBatchModel);
+ModerationBatchModel.belongsTo(UserModel);
+
 UserModel.hasOne(DoctorModel)
 DoctorModel.belongsTo(UserModel)
 
@@ -153,6 +173,9 @@ Consultation.belongsTo(PatientModel)
 
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
+
+DoctorModel.hasOne(ModerationBatchModel);
+ModerationBatchModel.belongsTo(DoctorModel);
 
 DoctorModel.hasOne(DoctorsSchedule)
 DoctorsSchedule.belongsTo(DoctorModel)
@@ -200,5 +223,7 @@ export default {
     AnalysisModel,
     ExaminationModel,
     HereditaryDiseaseModel,
-    TimeSlot
+    TimeSlot,
+    ModerationBatchModel,
+    ModerationChangeModel
 }

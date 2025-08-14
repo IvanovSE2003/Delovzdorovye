@@ -101,10 +101,9 @@ export default class UserRepositoryImpl implements UserRepository {
 
     async uploadAvatar(userId: number, img: UploadedFile): Promise<User> {
         const ext = path.extname(img.name); 
-        console.log(ext);
         const fileName = v4() + ext;
         const filePath = path.resolve(__dirname, '..', '..', '..', '..','static', fileName);
-
+        
         await img.mv(filePath); 
 
         const user = await this.findById(userId);
@@ -120,7 +119,6 @@ export default class UserRepositoryImpl implements UserRepository {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
         }
-            
         const userUpdate = await this.save(user.updateAvatar(fileName));
         return userUpdate;
     }
@@ -141,7 +139,7 @@ export default class UserRepositoryImpl implements UserRepository {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
         } else {
-            userDelete =  user;
+            userDelete = user;
         }
 
 

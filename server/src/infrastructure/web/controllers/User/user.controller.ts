@@ -369,20 +369,11 @@ export default class UserController {
             const { id } = req.params;
             const { data } = req.body;
 
+            console.log(data);
+
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
-            }
-
-            let imgUser;
-            if(user.img === 'man.png' || user.img === 'girl.png') {
-                if(user.gender === 'Женщина') {
-                    imgUser = 'girl.png';
-                } else {
-                    imgUser = 'man.png';
-                }
-            } else {
-                imgUser = data.img;
             }
 
             const updatedUser = new User(
@@ -399,7 +390,7 @@ export default class UserController {
                 user.isActivated,
                 user.isActivatedSMS,
                 user.activationLink,
-                imgUser,
+                user.img,
                 user.role,
                 user.twoFactorCode,
                 user.twoFactorCodeExpires,
@@ -410,7 +401,21 @@ export default class UserController {
                 user.blockedUntil
             );
 
-            const result = await this.userRepository.update(updatedUser);
+
+            let imgUser = '';
+            if(updatedUser.img === 'man.png' || updatedUser.img === 'girl.png') {
+                if(updatedUser.gender === 'Женщина') {
+                    imgUser = 'girl.png';
+                } else {
+                    imgUser = 'man.png';
+                }
+            } else {
+                imgUser = data.img;
+            }
+
+            const updatedUser2 = await this.userRepository.save(updatedUser.updateAvatar(imgUser));
+
+            const result = await this.userRepository.update(updatedUser2);
             if (result) {
                 res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
             } else {
@@ -476,6 +481,7 @@ export default class UserController {
                 throw new Error('Файл не загружен или загружено несколько файлов');
             }
             const userUpdate = await this.userRepository.uploadAvatar(Number(userId), img);
+            console.log("user ", userUpdate);
             return res.status(200).json({
                 img: userUpdate.img,
                 surname: userUpdate.surname,
