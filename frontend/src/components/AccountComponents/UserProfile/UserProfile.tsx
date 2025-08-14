@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
@@ -17,7 +17,7 @@ const UserProfile: React.FC = () => {
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
 
   const [formData, setFormData] = useState<IUserDataProfile>({
-    img: `${URL}/${store.user.img}`,
+    img: store.user.img,
     surname: store.user.surname,
     name: store.user.name,
     patronymic: store.user.patronymic,
@@ -37,12 +37,10 @@ const UserProfile: React.FC = () => {
 
       try {
         await store.uploadAvatar(formData);
-
         setFormData(prev => ({
           ...prev,
-          img: `${URL}/${store.user.img}`
+          img: store.user.img
         }));
-
       } catch (error) {
         console.error('Ошибка загрузки изображения:', error);
       }
@@ -54,7 +52,7 @@ const UserProfile: React.FC = () => {
       await store.removeAvatar(store.user.id);
       setFormData(prev => ({
         ...prev,
-        img: `${URL}/${store.user.img}`
+        img: store.user.img
       }));
 
     } catch (error) {
@@ -71,9 +69,7 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    console.log('formData ', formData);
-    const data = await store.updateUserData(formData, store.user.id);
-    console.log(data);
+    await store.updateUserData(formData, store.user.id);
     setIsEditing(false);
   };
 
@@ -110,7 +106,7 @@ const UserProfile: React.FC = () => {
         <div className="user-profile__content">
           <div className="user-profile__avatar-content">
             <div className="user-profile__avatar">
-              <img src={formData.img} alt="avatar-delovzdorovye" />
+              <img src={`${URL}/${store.user.img}`} alt="avatar-delovzdorovye" />
             </div>
             {isEditing && (
               <div className="user-profile__links">
@@ -224,10 +220,10 @@ const UserProfile: React.FC = () => {
                 </div>
 
                 <div className="user-profile__main-info">
-                  <span>Пол: {formData.gender}</span>
-                  <span>Дата рождения: {GetFormatDate(formData.dateBirth)}</span>
-                  <span>Номер телефона: {GetFormatPhone(formData.phone)}</span>
-                  <span>E-mail: {formData.email}</span>
+                  <span>Пол: {store.user.gender}</span>
+                  <span>Дата рождения: {GetFormatDate(store.user.dateBirth)}</span>
+                  <span>Номер телефона: {GetFormatPhone(store.user.phone)}</span>
+                  <span>E-mail: {store.user.email}</span>
                 </div>
               </>
             )}
