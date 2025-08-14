@@ -7,6 +7,7 @@ import { UserModelInterface } from "../../../persostence/models/interfaces/user.
 import User from "../../../../core/domain/entities/user.entity.js";
 import regData from "../../types/reqData.type.js";
 
+
 export default class UserController {
     constructor(
         private readonly authService: AuthService,
@@ -154,8 +155,7 @@ export default class UserController {
                 return res.status(200).send(this.renderHtmlPage('Ошибка при активации аккаунта', false));
             }
 
-            await this.userRepository.save(user.activateSMS());
-            await this.userRepository.save(user.activateSMS());
+            await this.userRepository.save(user.activate());
             return res.status(200).send(this.renderHtmlPage('Аккаунт успешно активирован', true));
         } catch (e: any) {
             return res.status(500).send(this.renderHtmlPage(`Внутренняя ошибка сервера: ${e.message}`, false));
@@ -460,28 +460,24 @@ export default class UserController {
     async uploadAvatar(req: Request , res: Response, next: NextFunction) {
         try {
             const {userId} = req.body;
-
-            if (!req.file) {
-                return res.status(400).json({ success: false, message: 'Нет файла' });
+            const img = req.files?.img;
+            if (!img || Array.isArray(img)) {
+                throw new Error('Файл не загружен или загружено несколько файлов');
             }
-            
-            const fileName = req.file.filename;
-            const user = await this.userRepository.findById(userId);
-
-            if(!user) {
-                return next(ApiError.badRequest('Пользователь для обновления аватара не найден'));
-            }
-
-            this.userRepository.save(user.updateAvatar(fileName));
-
-            res.json({ 
-                success: true, 
-                fileName,
-                message: 'Изображение было обновлено' 
+            const userUpdate = await this.userRepository.uploadAvatar(userId, img);
+            res.status(200).json({
+                avatar: userUpdate.img,
+                surname: userUpdate.surname,
+                name: userUpdate.name,
+                patronymic: userUpdate.patronymic,
+                gender: userUpdate.gender,
+                dateBirth: userUpdate.dateBirth,
+                timeZone: userUpdate.timeZone,
+                phone: userUpdate.phone,
+                email: userUpdate.email
             });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ success: false, message: 'Server error' });
+        } catch (e:any) {
+            res.status(500).json({ success: false, message: e.message });
         }
     }
 }

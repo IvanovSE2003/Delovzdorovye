@@ -3,6 +3,15 @@ import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
 import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
+import { v4 } from 'uuid';
+import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { UploadedFile } from 'express-fileupload';
+import fs from 'fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const {UserModel} = models;
 
@@ -88,6 +97,32 @@ export default class UserRepositoryImpl implements UserRepository {
             }
         });
         return user ? this.mapToDomainUser(user) : null;
+    }
+
+    async uploadAvatar(userId: number, img: UploadedFile): Promise<User> {
+        const ext = path.extname(img.name); 
+        console.log(ext);
+        const fileName = v4() + ext;
+        const filePath = path.resolve(__dirname, '..', '..', '..', '..','static', fileName);
+
+        await img.mv(filePath); 
+
+        const user = await this.findById(userId);
+        if (!user) {
+            throw new Error('Пользователь не найден');
+        }
+
+        if (user.img) {
+            const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
+            try {
+                await fs.unlink(oldAvatarPath); 
+            } catch (err) {
+                console.error('Ошибка при удалении старого аватара:', err);
+            }
+        }
+            
+        const userUpdate = await this.save(user.updateAvatar(fileName));
+        return userUpdate;
     }
 
     private mapToDomainUser(userModel: UserModelInterface): User {

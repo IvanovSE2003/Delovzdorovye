@@ -1,4 +1,5 @@
 import User from "../entities/user.entity.js";
+import { UploadedFile } from 'express-fileupload';
 
 export default interface UserRepository {
     findByEmailOrPhone(credential: string): unknown;
@@ -15,4 +16,5 @@ export default interface UserRepository {
     
     checkUserExists(email?: string, phone?: string): Promise<boolean>;
     verifyPinCode(userId: number, pinCode: number): Promise<boolean>;
+    uploadAvatar(userId: number, img: UploadedFile): Promise<User>;
 }
