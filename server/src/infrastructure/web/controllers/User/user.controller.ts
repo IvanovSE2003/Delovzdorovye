@@ -369,8 +369,6 @@ export default class UserController {
             const { id } = req.params;
             const { data } = req.body;
 
-            console.log(data);
-
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
@@ -417,12 +415,12 @@ export default class UserController {
 
             const result = await this.userRepository.update(updatedUser2);
             if (result) {
-                res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
+                return res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
             } else {
-                res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null});
+                return res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null});
             }
         } catch (e: any) {
-            next(ApiError.internal(e.message));
+            return next(ApiError.internal(e.message));
         }
     }
 
@@ -494,7 +492,7 @@ export default class UserController {
                 email: userUpdate.email
             });
         } catch (e:any) {
-            res.status(500).json({ success: false, message: e.message });
+            return res.status(500).json({ success: false, message: e.message });
         }
     }
 
@@ -514,7 +512,7 @@ export default class UserController {
                 email: userDelete.email
             })
         } catch(e: any) {
-
+            return next(ApiError.badRequest(e.message));
         }
     }
 }

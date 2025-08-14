@@ -42,6 +42,5 @@ router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunct
 router.post('/upload-avatar', (req: Request, res: Response, next: NextFunction) => userController.uploadAvatar(req, res, next));
 router.post('/delete-avatar', (req: Request, res: Response, next: NextFunction) => userController.deleteAvatar(req, res, next));
 
-
 export default router;
 
