@@ -1,6 +1,7 @@
-import FormAuth from "../components/FormAuth/FormAuth";
 import { Link } from 'react-router';
-import logo from '../assets/images/logo.png';
+import logo from '../../public/logo.svg';
+
+import FormAuth from "../components/LoginComponents/FormAuth/FormAuth";
 import '../assets/styles/LoginPage.scss'
 
 const RegisterPage = () => {

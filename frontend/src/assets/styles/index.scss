@@ -22,6 +22,20 @@ html {
     scroll-behavior: smooth;
 }
 
+.button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 15px;
+    background-color: $button-color;
+    box-shadow: 0 0 10px $shadow-color;
+    margin-bottom: 20px;
+    color: white;
+
+    &:hover {
+        background-color: $button-color-hover;
+    }
+}
+
 input {
     box-sizing: border-box;
     border: none;

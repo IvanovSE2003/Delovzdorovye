@@ -1,0 +1,242 @@
+@use "../../../assets/styles/variables.scss" as *;
+
+.auth {
+  &__title {
+    margin-bottom: 20px;
+  }
+
+  &__form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__error {
+    color: red;
+    margin: 0;
+    text-align: center;
+  }
+
+  &__toggle-button {
+    text-align: center;
+  }
+
+  &__button {
+    width: 100%;
+    border: none;
+    padding: 15px 20px;
+    margin: 0.3rem 0;
+    border-radius: 10px;
+    background-color: $light-color;
+
+    &:hover {
+      box-shadow: 0 0 10px $shadow-color;
+      cursor: pointer;
+    }
+
+    &__final {
+      padding: 15px 20px;
+      border-radius: 10px;
+      background-color: $button-color;
+      margin-top: 25px;
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 0 10px $shadow-color;
+        background-color: $button-color-hover;
+        cursor: pointer;
+      }
+
+      &:disabled {
+        background-color: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__radio-btn {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 auto;
+
+    input[type=radio] {
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      text-align: center;
+      cursor: pointer;
+      width: 100%;
+      line-height: 34px;
+      background-color: $light-color;
+      color: #999;
+      border-radius: 6px;
+      user-select: none;
+
+      &:hover {
+        color: #525252;
+      }
+    }
+
+    /* Checked */
+    input[type=radio]:checked+label {
+      background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+      color: white;
+    }
+  }
+
+  &__resend-code {
+    margin: 15px 0;
+    text-align: center;
+  }
+
+  &__timer {
+    color: #666;
+    font-size: 14px;
+  }
+
+  &resend-button {
+    background: none;
+    border: none;
+    color: #2a5885;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+
+  &__container {
+    position: relative;
+    width: 100%;
+  }
+
+  &__progress {
+    height: 5px;
+    background: #eee;
+    margin-bottom: 20px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  &__progress-bar {
+    height: 100%;
+    background: $primary-color;
+    transition: width 0.3s ease;
+  }
+}
+
+h3 {
+  font-size: 35px;
+  color: $primary-color;
+  text-align: center;
+  margin: 0 0 25px 0;
+}
+
+.role-selection {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+
+  &__title {
+    font-size: 1.8rem;
+    color: $primary-color;
+  }
+
+  &__cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+}
+
+.role-card {
+  width: 280px;
+  padding: 2rem;
+  border: 1px solid $light-color;
+  border-radius: 12px;
+  transition: $transition;
+  cursor: pointer;
+  background: rgb(253, 253, 253);
+  box-shadow: 0 0 5px $shadow-color;
+  border: 2px solid transparent;
+  transition: all 0.8s ease;
+
+  &:hover {
+    box-shadow: 0 0 10px $shadow-color;
+    transform: scale(1.02);
+  }
+
+  img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.4rem;
+    color: black;
+    margin-bottom: 1rem;
+  }
+
+  &__description {
+    color: gray;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  &__button {
+    background: $primary-color;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: $transition;
+
+    &:hover {
+      background: $secondary-color;
+    }
+  }
+}
+
+.recover-success {
+  text-align: center;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  animation: fadeIn 0.3s ease-out;
+
+  p {
+    color: $gray-color;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    font-size: 20px;
+
+    strong {
+      color: $secondary-color;
+      font-weight: 500;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

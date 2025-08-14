@@ -1,6 +1,7 @@
 import "./Header.scss";
-import logo from "../../../assets/images/logo.png";
+import logo from "../../../../public/logo.svg";
 import avatar from "../../../assets/images/account.png"
+
 import React, { useContext } from "react";
 import { Link } from "react-router";
 import { Context } from "../../../main";

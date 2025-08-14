@@ -1,0 +1,44 @@
+@use '../../../assets/styles/variables.scss' as *;
+
+.contacts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem;
+    background: linear-gradient(white, $nav-color);
+    gap: 10px;
+    text-align: center;
+
+    &__title {
+        margin-bottom: 80px;
+        font-size: $title-size;
+        font-weight: bold;
+        color: black;
+        text-align: center;
+    }
+
+    &__info {
+        font-size: 1.6rem;
+    }
+
+    &__socials {
+        margin-top: 30px;
+
+        &__icons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+
+            img {
+                transition: all 0.5s ease;
+                width: 50px;
+                height: 50px;
+
+                &:hover {
+                    transform: scale(1.1);
+                }
+            }
+        }
+    }
+}

@@ -1,8 +1,8 @@
 import type React from "react";
 import LoginPage from '../pages/LoginPage'
-import HomePage from "../pages/Homepage";
+import HomePage from "../pages/HomePage";
 import RecoverPassPage from "../pages/RecoverPinPage"
-import PersonalPage from "../pages/PersonalAccount/Main";
+import Account from "../pages/Account";
 
 export interface IRoute {
     path: string;
@@ -23,6 +23,6 @@ export const publicRoutes = [
 ]
 
 export const privateRoutes = [
-    {path: RouteNames.PERSONAL, element: PersonalPage},
+    {path: RouteNames.PERSONAL, element: Account},
     {path: RouteNames.MAIN, element: HomePage}
 ]

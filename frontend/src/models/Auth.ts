@@ -32,22 +32,6 @@ export interface IUserDataProfile {
     email: string;
 }
 
-export type TypeActivateEmail = {
-    message: string;
-    success: boolean;
-    isActivated: boolean;
-}
-
-export type TypeResponseToken = {
-    success: boolean;
-    token: string;
-}
-
-export type TypeResponse = {
-    message: string;
-    success: boolean;
-}
-
 export type LoginData = {
     pin_code: number,
     phone?: string,

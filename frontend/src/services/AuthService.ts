@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios';
-import type { LoginData, RegistrationData, TypeResponse } from '../models/Auth'
+import type { LoginData, RegistrationData } from '../models/Auth'
+import type { TypeResponse } from '../models/response/DefaultResponse';
 import $api from '../http';
 import type { AuthResponse } from '../models/response/AuthResponse';
 

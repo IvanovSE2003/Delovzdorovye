@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Context } from '../main';
 import { observer } from 'mobx-react-lite';
 import logo from '../../public/logo.svg'
-import PinCodeInput from '../components/FormAuth/PinCodeInput/PinCodeInput';
+import PinCodeInput from '../components/LoginComponents/FormAuth/PinCodeInput/PinCodeInput';
 import { RouteNames } from '../routes';
 
 const RecoverPin: React.FC = () => {

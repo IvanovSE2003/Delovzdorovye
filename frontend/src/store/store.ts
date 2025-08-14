@@ -1,5 +1,7 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, IUserDataProfile, LoginData, RegistrationData, TypeResponse, TypeResponseToken } from "../models/Auth";
+import type { IUser, IUserDataProfile, LoginData, RegistrationData } from "../models/Auth";
+import type { TypeResponse } from "../models/response/DefaultResponse";
+import type { TypeResponseToken } from "../models/response/TokenResponse";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
@@ -258,7 +260,7 @@ export default class Store {
     // Манипулируем с аватаром пользователя
     async uploadAvatar(formData: FormData): Promise<void> {
         try {
-            const response = await UserService.uploadAvatar(formData, localStorage.getItem('token'));
+            const response = await UserService.uploadAvatar(formData);
             this.setUserProfile(response.data);
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;

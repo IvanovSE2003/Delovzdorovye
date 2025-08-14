@@ -1,6 +1,8 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUserDataProfile, IUser, TypeResponse, TypeResponseToken } from "../models/Auth";
+import type { IUserDataProfile, IUser } from "../models/Auth";
+import type { TypeResponse } from '../models/response/DefaultResponse';
+import type { TypeResponseToken } from '../models/response/TokenResponse';
 
 export default class UserService {
 
@@ -33,16 +35,15 @@ export default class UserService {
         return $api.post<TypeResponseToken>(`user/activateLinkTg/${id}`)
     }
 
-    static uploadAvatar(formData: FormData, token: string|null): Promise<AxiosResponse<IUserDataProfile>> {
+    static uploadAvatar(formData: FormData): Promise<AxiosResponse<IUserDataProfile>> {
         return $api.post<IUserDataProfile>('/user/upload-avatar', formData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'multipart/form-data'
             }
         });
     }
 
     static removeAvatar(id: number): Promise<AxiosResponse<IUserDataProfile>> {
-        return $api.post<IUserDataProfile>(`/user/avatar/${id}`);
+        return $api.post<IUserDataProfile>(`/user/delete-avatar`, {userId: id});
     }
 }
