@@ -369,6 +369,8 @@ export default class UserController {
             const { id } = req.params;
             const { data } = req.body;
 
+            console.log("Было: ", data);
+
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
@@ -400,20 +402,19 @@ export default class UserController {
             );
 
 
-            let imgUser = '';
-            if(updatedUser.img === 'man.png' || updatedUser.img === 'girl.png') {
-                if(updatedUser.gender === 'Женщина') {
-                    imgUser = 'girl.png';
-                } else {
-                    imgUser = 'man.png';
-                }
-            } else {
+            let imgUser = user.img;
+
+            if(user.img === 'man.png' || user.img === 'girl.png') {
+                imgUser = updatedUser.gender === 'Женщина' ? 'girl.png' : 'man.png';
+            }
+            if(data.img && data.img !== user.img) { 
                 imgUser = data.img;
             }
 
-            const updatedUser2 = await this.userRepository.save(updatedUser.updateAvatar(imgUser));
+            const updatedUserWithAvatar = updatedUser.updateAvatar(imgUser);
+            const result = await this.userRepository.save(updatedUserWithAvatar);
 
-            const result = await this.userRepository.update(updatedUser2);
+            console.log("Стало: ", result);
             if (result) {
                 return res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
             } else {
