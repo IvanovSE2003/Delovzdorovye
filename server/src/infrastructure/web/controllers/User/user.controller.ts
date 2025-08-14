@@ -374,6 +374,17 @@ export default class UserController {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
+            let imgUser;
+            if(user.img === 'man.png' || user.img === 'girl.png') {
+                if(user.gender === 'Женщина') {
+                    imgUser = 'girl.png';
+                } else {
+                    imgUser = 'man.png';
+                }
+            } else {
+                imgUser = data.img;
+            }
+
             const updatedUser = new User(
                 user.id,
                 data.name || user.name,
@@ -388,7 +399,7 @@ export default class UserController {
                 user.isActivated,
                 user.isActivatedSMS,
                 user.activationLink,
-                user.img,
+                imgUser,
                 user.role,
                 user.twoFactorCode,
                 user.twoFactorCodeExpires,
@@ -464,8 +475,8 @@ export default class UserController {
             if (!img || Array.isArray(img)) {
                 throw new Error('Файл не загружен или загружено несколько файлов');
             }
-            const userUpdate = await this.userRepository.uploadAvatar(userId, img);
-            res.status(200).json({
+            const userUpdate = await this.userRepository.uploadAvatar(Number(userId), img);
+            return res.status(200).json({
                 img: userUpdate.img,
                 surname: userUpdate.surname,
                 name: userUpdate.name,
@@ -478,6 +489,26 @@ export default class UserController {
             });
         } catch (e:any) {
             res.status(500).json({ success: false, message: e.message });
+        }
+    }
+
+    async deleteAvatar(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {userId} = req.body;
+            const userDelete = await this.userRepository.deleteAvatar(Number(userId));
+            return res.status(204).json({
+                img: userDelete.img,
+                surname: userDelete.surname,
+                name: userDelete.name,
+                patronymic: userDelete.patronymic,
+                gender: userDelete.gender,
+                dateBirth: userDelete.dateBirth,
+                timeZone: userDelete.timeZone,
+                phone: userDelete.phone,
+                email: userDelete.email
+            })
+        } catch(e: any) {
+
         }
     }
 }

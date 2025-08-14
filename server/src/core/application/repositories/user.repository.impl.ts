@@ -112,7 +112,7 @@ export default class UserRepositoryImpl implements UserRepository {
             throw new Error('Пользователь не найден');
         }
 
-        if (user.img) {
+        if (user.img !== 'man.png' && user.img !== 'girl.png') {
             const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
             try {
                 await fs.unlink(oldAvatarPath); 
@@ -123,6 +123,35 @@ export default class UserRepositoryImpl implements UserRepository {
             
         const userUpdate = await this.save(user.updateAvatar(fileName));
         return userUpdate;
+    }
+
+    async deleteAvatar(userId: number): Promise<User> {
+        const user = await this.findById(userId);
+        if (!user) {
+            throw new Error('Пользователь не найден');
+        }
+
+        let userDelete;
+
+        if (user.img !== 'man.png' && user.img !== 'girl.png')  {
+            const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
+            try {
+                await fs.unlink(oldAvatarPath); 
+            } catch (err) {
+                console.error('Ошибка при удалении старого аватара:', err);
+            }
+        } else {
+            userDelete =  user;
+        }
+
+
+        if(user.gender === 'Женщина') {
+            userDelete = await this.save(user.updateAvatar("girl.png"));
+        } else {
+            userDelete = await this.save(user.updateAvatar("man.png"));
+        }
+
+        return userDelete;
     }
 
     private mapToDomainUser(userModel: UserModelInterface): User {
