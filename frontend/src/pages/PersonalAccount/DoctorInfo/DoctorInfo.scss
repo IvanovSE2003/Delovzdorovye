@@ -1,0 +1,21 @@
+@use "../../../assets/styles/variables.scss" as *;
+
+.doctor-info {
+    width: 90%;
+    margin: 1rem auto;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: $profile-color;
+    box-sizing: border-box;
+    text-align: center;
+
+    &__content {
+        width: 800px;
+        margin: 1rem auto;
+        display: flex;
+        text-align: left;
+        flex-direction: column;
+        gap: 13px;
+        font-size: 1.2rem;
+    }
+}

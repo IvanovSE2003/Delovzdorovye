@@ -240,32 +240,3 @@ h3 {
     }
   }
 }
-
-.reset-pin {
-  display: flex;
-  justify-content: center;
-  height: 100vh;
-  padding: 10%;
-  box-sizing: border-box;
-  background: linear-gradient($primary-color, $secondary-color);
-  overflow-y: hidden;
-
-  &__form {
-    background-color: white;
-    padding: 40px;
-    height: max-content;
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 0 10px $shadow-color;
-  }
-
-  &__logo {
-    width: 400px;
-    margin: 0 auto;
-    margin-bottom: 40px;
-
-    img {
-      width: 100%;
-    }
-  }
-}

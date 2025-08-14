@@ -27,7 +27,14 @@ export default class Store {
     }
 
     setUserProfile(user: IUserDataProfile) {
-        this.userProfile = user;
+        this.user.img = user.img;
+        this.user.name = user.name;
+        this.user.surname = user.surname;
+        this.user.patronymic = user.patronymic;
+        this.user.gender = user.gender;
+        this.user.dateBirth = user.dateBirth;
+        this.user.phone = user.phone;
+        this.user.email = user.email;
     }
 
     setError(error: string) {
@@ -40,6 +47,7 @@ export default class Store {
 
     // Вход в учетную запись
     async login(data: LoginData): Promise<void> {
+        console.log('login')
         try {
             this.setLoading(true);
             this.setError("");
@@ -59,6 +67,7 @@ export default class Store {
 
     // Регистрация
     async registration(data: RegistrationData): Promise<void> {
+        console.log('registration')
         try {
             this.setLoading(true);
             this.setError("");
@@ -76,6 +85,7 @@ export default class Store {
 
     // Выход из учетной записи
     async logout(): Promise<void> {
+        console.log('logout')
         try {
             this.setLoading(true);
             await AuthService.logout();
@@ -93,6 +103,7 @@ export default class Store {
 
     // Проверка авторизации пользователя
     async checkAuth(): Promise<void> {
+        console.log('checkAuth')
         this.setLoading(true);
         try {
             const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, { withCredentials: true });
@@ -111,6 +122,7 @@ export default class Store {
 
     // Проверка существания пользователя по телефону или почте
     async checkUser(creditial: string): Promise<TypeResponse> {
+        console.log('checkUser')
         try {
             this.setError("");
             const response = await UserService.CheckUser(creditial);
@@ -239,6 +251,28 @@ export default class Store {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получение токена!");
             return { success: false, token: this.error }
+        }
+    }
+
+
+    // Манипулируем с аватаром пользователя
+    async uploadAvatar(formData: FormData): Promise<void> {
+        try {
+            const response = await UserService.uploadAvatar(formData, localStorage.getItem('token'));
+            this.setUserProfile(response.data);
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при загрузке фото!");
+        }
+    }
+
+    async removeAvatar(id: number): Promise<void> {
+        try {
+            const response = await UserService.removeAvatar(id);
+            this.setUserProfile(response.data);
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
         }
     }
 }

@@ -38,9 +38,9 @@ const RecoverPin: React.FC = () => {
     }
 
     return (
-        <div className='reset-pin'>
-            <div className='reset-pin__form'>
-                <div className="reset-pin__logo">
+        <div className='color-block'>
+            <div className='color-block__form'>
+                <div className="color-block__logo">
                     <img src={logo} />
                 </div>
                 <div className='auth__form'>

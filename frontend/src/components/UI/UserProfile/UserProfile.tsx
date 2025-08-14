@@ -1,24 +1,23 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
-import girl from '../../../assets/images/girl.png';
-import man from '../../../assets/images/man.png';
-import QRcodeImg from '../../../assets/images/qr_code.png';
-import "./UserProfile.scss";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
 import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../../routes/index.js";
+import { URL } from "../../../http/index.js";
+
+import "./UserProfile.scss";
+import QRcodeImg from '../../../assets/images/qr_code.png';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { store } = useContext(Context);
-  const [avatar, setAvatar] = useState<string>(man);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [QRcode, setQRcode] = useState<boolean>(false);
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
 
   const [formData, setFormData] = useState<IUserDataProfile>({
-    img: "",
+    img: store.user.img,
     surname: store.user.surname,
     name: store.user.name,
     patronymic: store.user.patronymic,
@@ -28,36 +27,39 @@ const UserProfile: React.FC = () => {
     email: store.user.email
   });
 
-  useEffect(() => {
-    setAvatar(formData.gender === 'Женщина' ? girl : man);
-  }, [formData.gender]);
-
-  const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const reader = new FileReader();
 
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setAvatar(event.target.result as string);
-          setFormData(prev => ({
-            ...prev,
-            img: event.target?.result as string
-          }));
-        }
-      };
+      const formData = new FormData();
+      formData.append('img', file);
+      formData.append('userId', store.user.id.toString());
 
-      reader.readAsDataURL(file);
+      try {
+        await store.uploadAvatar(formData);
+
+        setFormData(prev => ({
+          ...prev,
+          img: `${URL}/${store.user.img}`
+        }));
+
+      } catch (error) {
+        console.error('Ошибка загрузки изображения:', error);
+      }
     }
   };
 
-  const handleRemovePhoto = () => {
-    const defaultAvatar = formData.gender === 'Женщина' ? girl : man;
-    setAvatar(defaultAvatar);
-    setFormData(prev => ({
-      ...prev,
-      img: ""
-    }));
+  const handleRemovePhoto = async () => {
+    try {
+      await store.removeAvatar(store.user.id);
+      setFormData(prev => ({
+        ...prev,
+        img: `${URL}/${store.user.img}`
+      }));
+
+    } catch (error) {
+      console.error('Ошибка удаления изображения:', error);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -108,7 +110,7 @@ const UserProfile: React.FC = () => {
         <div className="user-profile__content">
           <div className="user-profile__avatar-content">
             <div className="user-profile__avatar">
-              <img src={avatar} alt="avatar-delovzdorovye" />
+              <img src={`${URL}/${formData.img}`} alt="avatar-delovzdorovye" />
             </div>
             {isEditing && (
               <div className="user-profile__links">

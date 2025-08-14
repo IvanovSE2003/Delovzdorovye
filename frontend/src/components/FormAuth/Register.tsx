@@ -199,7 +199,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   id="male"
                   type="radio"
                   name="male"
-                  value="мужчина"
+                  value="Мужчина"
                   checked={userDetails.gender === "Мужчина"}
                   onChange={(e) => handleDetailsChange("gender", e.target.value)}
                 />
@@ -211,7 +211,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   id="female"
                   type="radio"
                   name="female"
-                  value="женщина"
+                  value="Женщина"
                   checked={userDetails.gender === "Женщина"}
                   onChange={(e) => handleDetailsChange("gender", e.target.value)}
                 />

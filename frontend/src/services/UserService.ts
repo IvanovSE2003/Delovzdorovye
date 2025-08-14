@@ -32,4 +32,17 @@ export default class UserService {
     static getTokenTg(id: number): Promise<AxiosResponse<TypeResponseToken>> {
         return $api.post<TypeResponseToken>(`user/activateLinkTg/${id}`)
     }
+
+    static uploadAvatar(formData: FormData, token: string|null): Promise<AxiosResponse<IUserDataProfile>> {
+        return $api.post<IUserDataProfile>('/user/upload-avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    }
+
+    static removeAvatar(id: number): Promise<AxiosResponse<IUserDataProfile>> {
+        return $api.post<IUserDataProfile>(`/user/avatar/${id}`);
+    }
 }

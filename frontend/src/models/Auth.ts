@@ -1,5 +1,4 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { AuthState } from "../components/FormAuth/FormAuth";
 
 export type Gender = "Мужчина" | "Женщина" | "";
 export type Role = "PATIETN" | "DOCTOR" | "ADMIN" | "";
@@ -15,11 +14,11 @@ export interface IUser {
     timeZone: number;
     dateBirth: string;
     gender: Gender;
+    role: Role;
     isActivated: boolean;
     isActivatedSMS: boolean;
     activationLink: string;
     img: string;
-    role: Role;
 }
 
 export interface IUserDataProfile {

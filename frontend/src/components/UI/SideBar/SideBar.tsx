@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router';
-import logo from '../../../assets/images/logo.png'
 import './Sidebar.scss';
 import { RouteNames } from '../../../routes';
 
@@ -15,11 +14,6 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className="sidebar">
-      <Link to={RouteNames.MAIN}>
-        <div className="sidebar__logo">
-          <img src={logo} alt="logo_medonline" />
-        </div>
-      </Link>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {menuItems.map((item, index) => (

@@ -4,6 +4,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Context } from "../main";
 import { privateRoutes, publicRoutes, RouteNames } from "../routes";
 
+import '../assets/styles/pages.scss'
+
 const AppRouter: React.FC = () => {
     const { store } = useContext(Context);
     const isAuth = store.isAuth;

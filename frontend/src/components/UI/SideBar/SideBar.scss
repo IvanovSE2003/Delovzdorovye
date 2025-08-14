@@ -1,25 +1,17 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .sidebar {
-  width: 400px;
-  padding: 20px;
-  position: fixed;
+  box-sizing: border-box;
+  width: 90%;
+  margin: 0 auto;
 
   &__nav {
     height: max-content;
     box-sizing: border-box;
     background-color: $sidebar-color;
-    padding: 20px 20px 20px 10px;
+    padding: 20px 20px 20px 8px;
     border-left: solid 15px $button-color;
     border-radius: 10px;
-  }
-
-  &__logo {
-    margin: 30px auto;
-  }
-
-  img {
-    width: 100%;
   }
 
   &__menu {
