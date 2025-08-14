@@ -79,7 +79,7 @@ export default class UserController {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
             return res.status(200).json({
-                avatar: user.img,
+                img: user.img,
                 surname: user.surname,
                 name: user.name,
                 patronymic: user.patronymic,
@@ -466,7 +466,7 @@ export default class UserController {
             }
             const userUpdate = await this.userRepository.uploadAvatar(userId, img);
             res.status(200).json({
-                avatar: userUpdate.img,
+                img: userUpdate.img,
                 surname: userUpdate.surname,
                 name: userUpdate.name,
                 patronymic: userUpdate.patronymic,

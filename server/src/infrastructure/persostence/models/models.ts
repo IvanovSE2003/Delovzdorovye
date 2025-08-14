@@ -5,6 +5,7 @@ import {PatientModelInterface} from './interfaces/patient.model.js'
 import { TelegramModelInterface } from './interfaces/telegram.model.js'
 import { DoctorModelInterface } from './interfaces/doctor.model.js'
 import { TokenModelInterface } from './interfaces/token.model.js'
+import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -111,7 +112,7 @@ const Consultation = sequelize.define('consultation', {
     duration: {type: DataType.INTEGER, allowNull: true}
 })
 
-const DoctorsSchedule = sequelize.define('doctors_schedule', {
+const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     date: {type: DataType.DATEONLY},
     day_weekly: {type: DataType.STRING},

@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { Request, Response, NextFunction } from "express";
+import scheduleController from "../controllers/DoctorSchedule/doctorSchedule.controller.interface.js";
 
-const router: Router = Router(); 
+const router = Router(); 
 
-// router.get('/getAll', doctorScheduleController.getAll);
+router.get('/:doctorId', (req: Request<{doctorId: string}>, res: Response, next: NextFunction) => {scheduleController.getByDoctor(req, res, next); });
 
 export default router;
