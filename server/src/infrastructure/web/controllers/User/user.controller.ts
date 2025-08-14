@@ -496,7 +496,7 @@ export default class UserController {
         try {
             const {userId} = req.body;
             const userDelete = await this.userRepository.deleteAvatar(Number(userId));
-            return res.status(204).json({
+            return res.status(200).json({
                 img: userDelete.img,
                 surname: userDelete.surname,
                 name: userDelete.name,
