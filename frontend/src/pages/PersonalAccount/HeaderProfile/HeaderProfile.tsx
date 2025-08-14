@@ -5,6 +5,7 @@ const HeaderProfile = () => {
     return (
         <header className='header-profile'>
             <img src={logo} alt="logo" />
+            <div></div>
         </header>
     )
 }

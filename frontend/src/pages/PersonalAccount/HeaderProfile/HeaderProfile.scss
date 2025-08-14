@@ -1,8 +1,9 @@
 @use "../../../assets/styles/variables.scss" as *;
 
 .header-profile {
-    padding: 30px 15px;
+    padding: 30px;
     position: relative;
     z-index: 10;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 0.8fr 2.2fr;
 }

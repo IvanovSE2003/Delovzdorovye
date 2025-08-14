@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
@@ -17,7 +17,7 @@ const UserProfile: React.FC = () => {
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
 
   const [formData, setFormData] = useState<IUserDataProfile>({
-    img: store.user.img,
+    img: `${URL}/${store.user.img}`,
     surname: store.user.surname,
     name: store.user.name,
     patronymic: store.user.patronymic,
@@ -110,7 +110,7 @@ const UserProfile: React.FC = () => {
         <div className="user-profile__content">
           <div className="user-profile__avatar-content">
             <div className="user-profile__avatar">
-              <img src={`${URL}/${formData.img}`} alt="avatar-delovzdorovye" />
+              <img src={formData.img} alt="avatar-delovzdorovye" />
             </div>
             {isEditing && (
               <div className="user-profile__links">
