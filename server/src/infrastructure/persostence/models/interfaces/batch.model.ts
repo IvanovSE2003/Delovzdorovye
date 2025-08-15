@@ -10,6 +10,7 @@ interface IBatchAttributes {
     old_value: string;
     new_value: string;
     doctorId?: number;
+    userId?: number;
 }
 
 export interface IBatchCreationAttributes extends Optional<IBatchAttributes, 'id'> {}

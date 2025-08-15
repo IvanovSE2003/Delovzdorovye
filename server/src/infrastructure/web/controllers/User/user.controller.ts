@@ -8,6 +8,7 @@ import User from "../../../../core/domain/entities/user.entity.js";
 import regData from "../../types/reqData.type.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
+import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 
 
 export default class UserController {
@@ -15,7 +16,8 @@ export default class UserController {
         private readonly authService: AuthService,
         private readonly userRepository: UserRepository,
         private readonly tokenService: TokenService,
-        private readonly fileService: FileService
+        private readonly fileService: FileService,
+        private readonly batchRepository: BatchRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -36,7 +38,7 @@ export default class UserController {
                 }
             }
 
-            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization,  experienceYears, diploma: diplomaFileName , license: licenseFileName} as unknown as regData;
+            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization, experienceYears, diploma: diplomaFileName, license: licenseFileName } as unknown as regData;
 
             const result = await this.authService.register(data);
 
@@ -183,7 +185,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL; 
+        const clientUrl = process.env.CLIENT_URL;
 
         return `
             <!DOCTYPE html>
@@ -312,18 +314,18 @@ export default class UserController {
             const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
 
             if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден'});
-                return res.status(404).json({ success: false, message: 'Пользователь не найден'});
+                return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+                return res.status(404).json({ success: false, message: 'Пользователь не найден' });
             }
 
             const isCodeValid = await this.authService.verifyTwoFactorCode(user.id, code);
             if (!isCodeValid) {
-                return res.status(404).json({ success: false, message: 'Не верный код'});
-                return res.status(404).json({ success: false, message: 'Не верный код'});
+                return res.status(404).json({ success: false, message: 'Не верный код' });
+                return res.status(404).json({ success: false, message: 'Не верный код' });
             }
 
-            return res.status(200).json({ success: true, message: 'Верный код'});
-            return res.status(200).json({ success: true, message: 'Верный код'});
+            return res.status(200).json({ success: true, message: 'Верный код' });
+            return res.status(200).json({ success: true, message: 'Верный код' });
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
@@ -366,7 +368,7 @@ export default class UserController {
         try {
             const { creditial } = req.body;
             await this.authService.requestPinReset(creditial);
-            return res.status(200).json({success: true, message: 'Сообщение для сброса пин-кода было отправлено'});
+            return res.status(200).json({ success: true, message: 'Сообщение для сброса пин-кода было отправлено' });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
@@ -386,8 +388,6 @@ export default class UserController {
         try {
             const { id } = req.params;
             const { data } = req.body;
-
-            console.log("Было: ", data);
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
@@ -414,29 +414,55 @@ export default class UserController {
                 user.twoFactorCodeExpires,
                 user.resetToken,
                 user.resetTokenExpires,
-                user.pinAttempts, 
+                user.pinAttempts,
                 user.isBlocked,
                 user.blockedUntil
             );
 
 
             let imgUser = user.img;
-
-            if(user.img === 'man.png' || user.img === 'girl.png') {
+            if (user.img === 'man.png' || user.img === 'girl.png') {
                 imgUser = updatedUser.gender === 'Женщина' ? 'girl.png' : 'man.png';
             }
-            if(data.img && data.img !== user.img) { 
+            if (data.img && data.img !== user.img) {
                 imgUser = data.img;
             }
 
             const updatedUserWithAvatar = updatedUser.updateAvatar(imgUser);
-            const result = await this.userRepository.save(updatedUserWithAvatar);
 
-            console.log("Стало: ", result);
-            if (result) {
-                return res.status(200).json({ success: true, message: 'Изменения сохранены', user: result});
+            let result;
+            if (updatedUserWithAvatar.role === 'DOCTOR') {
+
+                const allowedFields: (keyof User)[] = [
+                    'name',
+                    'surname',
+                    'patronymic',
+                    'gender',
+                    'dateBirth'
+                ];
+                const changes = Object.entries(data)
+                    .filter(([field_name]) => allowedFields.includes(field_name as keyof User))
+                    .map(([field_name, new_value]) => {
+                        const field = field_name as keyof User;
+                        const oldValue = user[field];
+
+                        return {
+                            field_name,
+                            old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
+                            new_value: String(new_value)
+                        };
+                    });
+
+                await this.batchRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
+                result = user;
             } else {
-                return res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null});
+                result = await this.userRepository.save(updatedUserWithAvatar);
+            }
+
+            if (result) {
+                return res.status(200).json({ success: true, message: 'Изменения сохранены', user: result });
+            } else {
+                return res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null });
             }
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -490,9 +516,9 @@ export default class UserController {
         }
     }
 
-    async uploadAvatar(req: Request , res: Response, next: NextFunction) {
+    async uploadAvatar(req: Request, res: Response, next: NextFunction) {
         try {
-            const {userId} = req.body;
+            const { userId } = req.body;
             const img = req.files?.img;
             if (!img || Array.isArray(img)) {
                 throw new Error('Файл не загружен или загружено несколько файлов');
@@ -510,14 +536,14 @@ export default class UserController {
                 phone: userUpdate.phone,
                 email: userUpdate.email
             });
-        } catch (e:any) {
+        } catch (e: any) {
             return res.status(500).json({ success: false, message: e.message });
         }
     }
 
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
         try {
-            const {userId} = req.body;
+            const { userId } = req.body;
             const userDelete = await this.userRepository.deleteAvatar(Number(userId));
             return res.status(200).json({
                 img: userDelete.img,
@@ -530,7 +556,7 @@ export default class UserController {
                 phone: userDelete.phone,
                 email: userDelete.email
             })
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }

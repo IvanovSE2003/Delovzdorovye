@@ -4,7 +4,7 @@ import BatchRepository from "../../domain/repositories/batch.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
 
-const { ModerationBatchModel, DoctorModel, UserModel} = models;
+const { ModerationBatchModel, DoctorModel} = models;
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<Batch | null> {
@@ -56,6 +56,19 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }>): Promise<void> {
         const transaction = await ModerationBatchModel.sequelize!.transaction();
         try {
+            
+
+            const filteredChanges = changes.filter(change => {
+                const oldVal = change.old_value?.trim() ?? '';
+                const newVal = change.new_value?.trim() ?? '';
+                return oldVal !== newVal;
+            });
+
+            if (filteredChanges.length === 0) {
+                await transaction.rollback();
+                return; 
+            }
+
             for (const change of changes) {
                 const existingBatch = await ModerationBatchModel.findOne({
                     where: {
@@ -89,6 +102,64 @@ export default class BatchRepositoryImpl implements BatchRepository {
             throw error;
         }
     }
+
+    async createBatchWithChangesUser(
+        userId: number,
+        changes: Array<{
+            field_name: string;
+            old_value: string | null;
+            new_value: string;
+        }>
+    ): Promise<void> {
+        const transaction = await ModerationBatchModel.sequelize!.transaction();
+        try {
+            const filteredChanges = changes.filter(change => {
+                const oldVal = change.old_value?.trim() ?? '';
+                const newVal = change.new_value?.trim() ?? '';
+                return oldVal !== newVal;
+            });
+
+            if (filteredChanges.length === 0) {
+                console.log('Редактировать нечего')
+                await transaction.rollback();
+                return;
+            }
+
+            for (const change of filteredChanges) {
+                const existingBatch = await ModerationBatchModel.findOne({
+                    where: {
+                        userId: userId,
+                        field_name: change.field_name,
+                        status: 'pending' 
+                    },
+                    transaction
+                });
+
+                if (existingBatch) {
+                    await existingBatch.update({
+                        old_value: change.old_value ?? '',
+                        new_value: change.new_value
+                    }, { transaction });
+                } else {
+                    await ModerationBatchModel.create({
+                        userId: userId,
+                        status: 'pending',
+                        is_urgent: false,
+                        field_name: change.field_name,
+                        old_value: change.old_value ?? '',
+                        new_value: change.new_value,
+                        rejection_reason: ''
+                    }, { transaction });
+                }
+            }
+
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
 
     private mapToDomainBatch(batchModel: BatchModelInterface): Batch {
         return new Batch(
