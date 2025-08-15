@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
 export type Gender = "Мужчина" | "Женщина" | "";
-export type Role = "PATIETN" | "DOCTOR" | "ADMIN" | "";
+export type Role = "PATIENT" | "DOCTOR" | "ADMIN" | "";
 export interface IUser {
     id: number;
     name: string;

@@ -1,0 +1,97 @@
+@use "../../../assets/styles/variables.scss" as *;
+
+.doctor-info {
+    width: 90%;
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    background-color: $profile-color;
+    box-sizing: border-box;
+    text-align: center;
+
+    &__content {
+        margin: 1rem auto;
+        padding: 0 1rem;
+        box-sizing: border-box;
+        display: flex;
+        text-align: left;
+        flex-direction: column;
+        gap: 13px;
+        font-size: 1.2rem;
+    }
+}
+
+.file-upload {
+    margin-top: 8px;
+
+    &__buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    &__label,
+    .file-remove-button {
+        display: inline-block;
+        text-align: center;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 10px;
+        width: max-content;
+        font-size: 0.9rem;
+    }
+
+    &__label {
+        background-color: $button-color;
+
+        &:hover {
+            background-color: $button-color-hover;
+        }
+    }
+
+    .file-remove-button {
+        background-color: rgb(186, 16, 16);
+
+        &:hover {
+            background-color: rgb(87, 15, 15);
+        }
+    }
+
+    &__input {
+        display: none;
+    }
+}
+
+.file-info {
+    margin-top: 8px;
+    font-size: 1.1rem;
+
+    &__name {
+        color: $gray-color;
+    }
+
+    &__size {
+        color: $primary-color;
+        margin-left: 8px;
+    }
+}
+
+.form-group {
+    margin-bottom: 16px;
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+}

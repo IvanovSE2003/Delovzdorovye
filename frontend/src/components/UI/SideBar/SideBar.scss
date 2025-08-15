@@ -2,8 +2,12 @@
 
 .sidebar {
   box-sizing: border-box;
-  width: 90%;
   margin: 0 auto;
+  padding: 10px 50px 0 10px;
+
+  &__logo {
+    padding: 1rem 2rem;
+  }
 
   &__nav {
     height: max-content;

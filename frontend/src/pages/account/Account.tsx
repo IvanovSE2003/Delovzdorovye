@@ -1,0 +1,23 @@
+import { observer } from 'mobx-react-lite';
+import { useContext } from 'react';
+import { Context } from '../../main';
+import DoctorPage from './DoctorPage';
+import PatientPage from './PatientPage';
+import AdminPage from './AdminPage';
+
+const PersonalPage = () => {
+  const { store } = useContext(Context);
+
+  switch (store.user.role) {
+    case 'PATIENT':
+      return <PatientPage />;
+    case 'DOCTOR':
+      return <DoctorPage />;
+    case 'ADMIN':
+      return <AdminPage />;
+    default:
+      return <div>Неизвестная роль</div>;
+  }
+};
+
+export default observer(PersonalPage);

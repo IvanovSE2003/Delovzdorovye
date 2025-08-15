@@ -1,10 +1,9 @@
-import Slider from '../components/UI/Slider/Slider'
-import Header from '../components/UI/Header/Header'
-
-import Solutions from '../components/HomeComponents/Solutions/Solutions';
-import Costs from '../components/HomeComponents/Costs/Costs';
-import Informations from '../components/HomeComponents/Informations/Informations';
-import Contacts from '../components/HomeComponents/Contacts/Contacts';
+import Header from '../features/home/Header/Header'
+import Slider from '../features/home/Slider/Slider'
+import Solutions from '../features/home/Solutions/Solutions';
+import Costs from '../features/home/Costs/Costs';
+import Informations from '../features/home/Informations/Informations';
+import Contacts from '../features/home/Contacts/Contacts';
 
 const HomePage = () => {
   return (

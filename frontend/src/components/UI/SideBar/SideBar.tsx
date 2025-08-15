@@ -1,25 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import type { SidebarProps } from '../../../models/MenuItems';
 import './Sidebar.scss';
 import { RouteNames } from '../../../routes';
+import logo from '../../../../public/logo.svg';
 
-const Sidebar: React.FC = () => {
-  const menuItems = [
-    { path: RouteNames.MAIN, name: 'Главная' },
-    { path: RouteNames.MAIN, name: 'Консультации' },
-    { path: RouteNames.MAIN, name: 'Рекомендации' },
-    { path: RouteNames.MAIN, name: 'Полезная информация' },
-  ]
-
-
+const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${className}`}>
+      <Link to={RouteNames.MAIN}>
+        <img className='sidebar__logo' src={logo} alt="logo" />
+      </Link>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
-          {menuItems.map((item, index) => (
+          {menuItems?.map((item, index) => (
             <li key={index} className="sidebar__menu-item">
-              <Link to={item.path} className="sidebar__link">
-                {item.name}
+              <Link
+                to={item.path}
+                className="sidebar__link"
+              >
+                <span className="sidebar__text">{item.name}</span>
               </Link>
             </li>
           ))}
