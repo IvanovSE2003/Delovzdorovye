@@ -2,12 +2,15 @@ import { Request, Response, NextFunction } from "express";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import ApiError from "../../error/ApiError.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
-import Batch from "../../../../core/domain/entities/batch.entity.js";
+import FileService from "../../../../core/domain/services/file.service.js";
+import Doctor from "../../../../core/domain/entities/doctor.entity.js";
+import { UploadedFile } from "express-fileupload";
 
 export default class DoctorController {
     constructor(
         private readonly doctorRepository: DoctorRepository,
-        private readonly batchRepository: BatchRepository
+        private readonly batchRepository: BatchRepository,
+        private readonly fileService: FileService
     ) {}
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -47,17 +50,64 @@ export default class DoctorController {
     }
 
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
-        const {doctorId, data} = req.body;
+        try {
+            const { id } = req.params;
+            let { data } = req.body;
 
-        const doctor = this.doctorRepository.findById(Number(doctorId));
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch {
+                    return next(ApiError.badRequest('Некорректный формат данных'));
+                }
+            }
 
-        if(!doctor) {
-            next(ApiError.badRequest('Доктор не найден'));
+            const doctor = await this.doctorRepository.findById(Number(id));
+            if (!doctor) {
+                return next(ApiError.badRequest('Доктор не найден'));
+            }
+
+            if (req.files?.diploma) {
+                const diplomaFile = req.files.diploma as UploadedFile;
+                const diplomaFileName = await this.fileService.saveFile(diplomaFile);
+                data.diploma = diplomaFileName;
+            }
+            if (req.files?.license) {
+                const licenseFile = req.files.license as UploadedFile;
+                const licenseFileName = await this.fileService.saveFile(licenseFile);
+                data.license = licenseFileName;
+            }
+
+            const allowedFields: (keyof Doctor)[] = [
+                'specialization', 
+                'experienceYears',
+                'diploma',
+                'license',
+            ];
+
+            const changes = Object.entries(data)
+                .filter(([field_name]) => allowedFields.includes(field_name as keyof Doctor))
+                .map(([field_name, new_value]) => {
+                    const field = field_name as keyof Doctor;
+                    const oldValue = doctor[field];
+                    
+                    return {
+                        field_name,
+                        old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
+                        new_value: String(new_value)
+                    };
+                });
+
+            if (changes.length === 0) {
+                return next(ApiError.badRequest('Нет допустимых полей для изменения'));
+            }
+
+            await this.batchRepository.createBatchWithChanges(Number(id), changes);
+
+            return res.json({ success: true, message: 'Изменения отправлены на модерацию' });
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
-
-        data.map(async (value: string, key: string, index: number) => {
-            const batch = new Batch(index, 'pending', '', false, key, "", value);
-            await this.batchRepository.save(batch);
-        });
     }
+
 }

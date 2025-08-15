@@ -1,32 +1,96 @@
+// batch.repository.impl.ts
 import Batch from "../../domain/entities/batch.entity.js";
 import BatchRepository from "../../domain/repositories/batch.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
 
-const { ModerationBatchModel } = models;
+const { ModerationBatchModel, DoctorModel, UserModel} = models;
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<Batch | null> {
-        throw "";
+        const batchModel = await ModerationBatchModel.findByPk(id);
+        return batchModel ? this.mapToDomainBatch(batchModel) : null;
     }
 
     async findAll(page: number, limit: number): Promise<{ batches: Batch[]; totalCount: number; totalPage: number; }> {
-        throw "";
+        const offset = (page - 1) * limit;
+        const { count, rows } = await ModerationBatchModel.findAndCountAll({
+            limit,
+            offset,
+            include: [DoctorModel]
+        });
+
+        return {
+            batches: rows.map(this.mapToDomainBatch),
+            totalCount: count,
+            totalPage: Math.ceil(count / limit)
+        };
     }
 
     async create(batch: Batch): Promise<Batch> {
-        throw "";
+        const batchModel = await ModerationBatchModel.create(this.mapToPersistence(batch));
+        return this.mapToDomainBatch(batchModel);
     }
 
     async update(batch: Batch): Promise<Batch> {
-        throw "";
+        const [affectedCount] = await ModerationBatchModel.update(this.mapToPersistence(batch), {
+            where: { id: batch.id }
+        });
+        
+        if (affectedCount === 0) {
+            throw new Error("Batch not found");
+        }
+        
+        const updatedBatch = await ModerationBatchModel.findByPk(batch.id);
+        return this.mapToDomainBatch(updatedBatch!);
     }
 
     async save(batch: Batch): Promise<Batch> {
         return batch.id ? this.update(batch) : this.create(batch);
     }
 
-    private mapToDomainUser(batchModel: BatchModelInterface): Batch {
+    async createBatchWithChanges(doctorId: number, changes: Array<{
+        field_name: string;
+        old_value: string | null;
+        new_value: string;
+    }>): Promise<void> {
+        const transaction = await ModerationBatchModel.sequelize!.transaction();
+        try {
+            for (const change of changes) {
+                const existingBatch = await ModerationBatchModel.findOne({
+                    where: {
+                        doctorId: doctorId,
+                        field_name: change.field_name,
+                        status: 'pending' 
+                    },
+                    transaction
+                });
+
+                if (existingBatch) {
+                    await existingBatch.update({
+                        old_value: change.old_value ?? '',
+                        new_value: change.new_value
+                    }, { transaction });
+                } else {
+                    await ModerationBatchModel.create({
+                        doctorId: doctorId,
+                        status: 'pending',
+                        is_urgent: false,
+                        field_name: change.field_name,
+                        old_value: change.old_value ?? '',
+                        new_value: change.new_value,
+                        rejection_reason: ''
+                    }, { transaction });
+                }
+            }
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    private mapToDomainBatch(batchModel: BatchModelInterface): Batch {
         return new Batch(
             batchModel.id,
             batchModel.status,
@@ -41,11 +105,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
     private mapToPersistence(batch: Batch): IBatchCreationAttributes {
         return {
             status: batch.status,
-            rejection_reason: batch.rejection_reason,
+            rejection_reason: batch.rejection_reason || null,
             is_urgent: batch.is_urgent,
             field_name: batch.field_name,
-            old_value: batch.old_value,
+            old_value: batch.old_value || null,
             new_value: batch.new_value
-        };
+        } as IBatchCreationAttributes; 
     }
 }

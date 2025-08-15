@@ -65,7 +65,7 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async save(user: User): Promise<User> {
-        return user.id ? this.update(user) : this.create(user);
+        return user.id ? await this.update(user) : await this.create(user);
     }
 
     async findByActivationLink(link: string): Promise<User | null> {

@@ -10,6 +10,7 @@ export default interface regData {
     dateBirth: Date,
     timeZone: number,
     specialization: string,
-    contacts: string,
     experienceYears: number
+    diploma: string,
+    license: string
 }

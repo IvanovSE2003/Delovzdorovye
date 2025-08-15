@@ -121,8 +121,9 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return new Doctor(
             doctorModel.id,
             doctorModel.specialization,
-            doctorModel.contacts,
             doctorModel.experience_years,
+            doctorModel.diploma,
+            doctorModel.license,
             doctorModel.activate,
             doctorModel.userId
         );
@@ -131,8 +132,9 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
         return {
             specialization: doctor.specialization,
-            contacts: doctor.contacts,
             experience_years: doctor.experienceYears,
+            diploma: doctor.diploma,
+            license: doctor.license,
             activate: doctor.isActivated,
             userId: doctor.userId
         };

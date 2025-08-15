@@ -9,8 +9,10 @@ import SmsServiceImpl from "../../../../core/application/services/sms.service.im
 import PatientRepositoryImpl from "../../../../core/application/repositories/patient.repository.impl.js";
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
 import TelegramServiceStart from "../../../../telegram/startTelegramBot.js";
+import FileServiceImpt from "../../../../core/application/services/file.service.impl.js";
 
 const userRepository = new UserRepositoryImpl();
+const fileService = new FileServiceImpt();
 const patientRepository = new PatientRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
@@ -19,6 +21,6 @@ const SmsService = new SmsServiceImpl(TelegramServiceStart, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 
 const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart);
-const userController = new UserController(authService, userRepository, tokenService);
+const userController = new UserController(authService, userRepository, tokenService, fileService);
 
 export default userController;

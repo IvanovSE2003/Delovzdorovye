@@ -1,3 +1,4 @@
+// batch.model.ts (интерфейс)
 import { Model, Optional } from 'sequelize';
 
 interface IBatchAttributes {
@@ -8,6 +9,7 @@ interface IBatchAttributes {
     field_name: string;
     old_value: string;
     new_value: string;
+    doctorId?: number;
 }
 
 export interface IBatchCreationAttributes extends Optional<IBatchAttributes, 'id'> {}

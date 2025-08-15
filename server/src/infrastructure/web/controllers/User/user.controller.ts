@@ -6,20 +6,38 @@ import TokenService from "../../../../core/domain/services/token.service.js";
 import { UserModelInterface } from "../../../persostence/models/interfaces/user.model.js";
 import User from "../../../../core/domain/entities/user.entity.js";
 import regData from "../../types/reqData.type.js";
+import { UploadedFile } from 'express-fileupload';
+import FileService from "../../../../core/domain/services/file.service.js";
 
 
 export default class UserController {
     constructor(
         private readonly authService: AuthService,
         private readonly userRepository: UserRepository,
-        private readonly tokenService: TokenService
+        private readonly tokenService: TokenService,
+        private readonly fileService: FileService
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, contacts, experienceYears } = req.body;
-            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization, contacts, experienceYears } as unknown as regData;
-            console.log("data:", data);
+            const { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, experienceYears } = req.body;
+
+            let diplomaFileName: string | null = null;
+            let licenseFileName: string | null = null;
+
+            if (req.files) {
+                if (req.files.diploma) {
+                    const diplomaFile = req.files.diploma as UploadedFile;
+                    diplomaFileName = await this.fileService.saveFile(diplomaFile);
+                }
+                if (req.files.license) {
+                    const licenseFile = req.files.license as UploadedFile;
+                    licenseFileName = await this.fileService.saveFile(licenseFile);
+                }
+            }
+
+            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization,  experienceYears, diploma: diplomaFileName , license: licenseFileName} as unknown as regData;
+
             const result = await this.authService.register(data);
 
             res.cookie("refreshToken", result.refreshToken, {

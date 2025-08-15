@@ -3,10 +3,11 @@ import { Model, Optional } from 'sequelize';
 interface IDoctortAttributes {
     id: number;
     specialization: string;
-    contacts: string,
-    experience_years: number,
-    activate: boolean,
-    userId?: number
+    experience_years: number;
+    diploma: string;
+    license: string;
+    activate: boolean;
+    userId?: number;
 }
 
 export interface IDoctorCreationAttributes extends Optional<IDoctortAttributes, 'id'> {}

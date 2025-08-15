@@ -99,8 +99,9 @@ const HereditaryDiseaseModel = sequelize.define('hereditary_disease', {
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     specialization: {type: DataType.STRING},
-    contacts: {type: DataType.STRING, allowNull: true},
     experience_years: {type: DataType.INTEGER},
+    diploma: {type: DataType.STRING,  allowNull: true},
+    license: {type: DataType.STRING,  allowNull: true},
     activate: {type: DataType.BOOLEAN, defaultValue: false}
 });
 
