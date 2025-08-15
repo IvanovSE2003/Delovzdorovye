@@ -48,14 +48,16 @@ export default class DoctorController {
 
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         const {doctorId, data} = req.body;
+
         const doctor = this.doctorRepository.findById(Number(doctorId));
 
         if(!doctor) {
-            next(ApiError.badRequest('Доктор не наден'));
+            next(ApiError.badRequest('Доктор не найден'));
         }
 
-        await this.batchRepository.create(new Batch(0, 'pending', '', false, [
-
-        ]))
+        data.map(async (value: string, key: string, index: number) => {
+            const batch = new Batch(index, 'pending', '', false, key, "", value);
+            await this.batchRepository.save(batch);
+        });
     }
 }

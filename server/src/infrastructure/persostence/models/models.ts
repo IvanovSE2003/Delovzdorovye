@@ -6,6 +6,7 @@ import { TelegramModelInterface } from './interfaces/telegram.model.js'
 import { DoctorModelInterface } from './interfaces/doctor.model.js'
 import { TokenModelInterface } from './interfaces/token.model.js'
 import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.js'
+import { BatchModelInterface } from './interfaces/batch.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -133,22 +134,15 @@ const Transaction = sequelize.define('transaction', {
     date: {type: DataType.DATE}
 })
 
-const ModerationBatchModel = sequelize.define('moderation_batch', {
+const ModerationBatchModel = sequelize.define<BatchModelInterface>('moderation_batch', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     status: { type: DataType.STRING, defaultValue: 'pending'}, // pending, approved, rejected
     rejection_reason: { type: DataType.TEXT, allowNull: true },
-    is_urgent: { type: DataType.BOOLEAN, defaultValue: false }
-});
-
-const ModerationChangeModel = sequelize.define('moderation_change', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    is_urgent: { type: DataType.BOOLEAN, defaultValue: false },
     field_name: { type: DataType.STRING, allowNull: false },
     old_value: { type: DataType.TEXT, allowNull: true },
     new_value: { type: DataType.TEXT, allowNull: false }
 });
-
-ModerationBatchModel.hasOne(ModerationChangeModel);
-ModerationChangeModel.belongsTo(ModerationBatchModel);
 
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
@@ -224,6 +218,5 @@ export default {
     ExaminationModel,
     HereditaryDiseaseModel,
     TimeSlot,
-    ModerationBatchModel,
-    ModerationChangeModel
+    ModerationBatchModel
 }
