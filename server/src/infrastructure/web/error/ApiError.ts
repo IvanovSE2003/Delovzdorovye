@@ -1,43 +1,34 @@
 class ApiError extends Error {
     public status: number;  
     public message: string;
-    public errors: any[];
+    public success: boolean;
     public originalError?: Error;
 
-    constructor(status: number, message: string, errors: any[] = []) {
+    constructor(status: number, success: boolean, message: string) {
         super()
         this.status = status;
         this.message = message;    
-        this.errors = errors;
-    }
-
-    withOriginalError(error: Error): this {
-        this.originalError = error;
-        return this;
+        this.success = success;
     }
 
     static badRequest(message: string) {
-        return new ApiError(404, message);
+        return new ApiError(404, false, message);
     }
 
     static internal(message: string) {
-        return new ApiError(500, message);
+        return new ApiError(500, false, message);
     }
 
     static forbiden(message: string) {
-        return new ApiError(403, message);
+        return new ApiError(403, false, message);
     }
 
     static notAuthorized(message: string) {
-        return new ApiError(401, message);
+        return new ApiError(401, false, message);
     }
 
     static tokenInvalid(message: string) {
-        return new ApiError(505, message);
-    }
-
-    static errorValidation(message: string, errors = [] as any) {
-        return new ApiError(400, message, errors);
+        return new ApiError(505, false, message);
     }
 }
 

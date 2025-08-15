@@ -13,7 +13,6 @@ import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
 import regData from "../../../infrastructure/web/types/reqData.type.js";
-import { error } from "console";
 
 export class AuthServiceImpl implements AuthService {
     constructor(

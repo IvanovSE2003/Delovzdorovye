@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import ApiError from "../../error/ApiError.js";
+import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
+import Batch from "../../../../core/domain/entities/batch.entity.js";
 
 export default class DoctorController {
     constructor(
-        private readonly doctorRepository: DoctorRepository
+        private readonly doctorRepository: DoctorRepository,
+        private readonly batchRepository: BatchRepository
     ) {}
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -41,5 +44,18 @@ export default class DoctorController {
         } catch (error) {
             next(ApiError.internal('Ошибка при получении списка докторов'));
         }
+    }
+
+    async updateDoctor(req: Request, res: Response, next: NextFunction) {
+        const {doctorId, data} = req.body;
+        const doctor = this.doctorRepository.findById(Number(doctorId));
+
+        if(!doctor) {
+            next(ApiError.badRequest('Доктор не наден'));
+        }
+
+        await this.batchRepository.create(new Batch(0, 'pending', '', false, [
+
+        ]))
     }
 }
