@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
@@ -245,7 +245,7 @@ const UserProfile: React.FC = () => {
         </div>
         {!store.user.isActivatedSMS && (
           <div className="user-profile__warn">
-            <span>Вход доступен только через электронную почту. Чтобы выходить через телефон, его надо
+            <span>Вход доступен только по электронной почте. Чтобы входить по номеру телефона, его надо
               <a onClick={openQR}> подключить к телеграмм-боту.</a>
             </span>
           </div>
