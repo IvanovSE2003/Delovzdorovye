@@ -49,6 +49,14 @@ export default class DoctorController {
         }
     }
 
+    async getOne(req: Request, res: Response, next: NextFunction) {
+        try {
+
+        } catch(e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;

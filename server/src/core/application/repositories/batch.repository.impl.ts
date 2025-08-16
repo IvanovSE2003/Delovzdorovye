@@ -103,14 +103,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
         }
     }
 
-    async createBatchWithChangesUser(
-        userId: number,
-        changes: Array<{
-            field_name: string;
-            old_value: string | null;
-            new_value: string;
-        }>
-    ): Promise<void> {
+    async createBatchWithChangesUser(userId: number,changes: Array<{field_name: string;old_value: string | null;new_value: string;}>): Promise<void> {
         const transaction = await ModerationBatchModel.sequelize!.transaction();
         try {
             const filteredChanges = changes.filter(change => {
@@ -120,7 +113,6 @@ export default class BatchRepositoryImpl implements BatchRepository {
             });
 
             if (filteredChanges.length === 0) {
-                console.log('Редактировать нечего')
                 await transaction.rollback();
                 return;
             }

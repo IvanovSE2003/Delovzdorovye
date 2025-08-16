@@ -30,7 +30,8 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     resetTokenExpires: {type: DataType.DATE, allowNull: true},
     pinAttempts: {type: DataType.INTEGER, defaultValue: 0},
     isBlocked: {type: DataType.BOOLEAN, defaultValue: false},
-    blockedUntil: {type: DataType.DATE, allowNull: true}
+    blockedUntil: {type: DataType.DATE, allowNull: true},
+    sentChanges: {type: DataType.BOOLEAN, allowNull: true, defaultValue: false}
 })
 
 const UserTelegramModel = sequelize.define<TelegramModelInterface>('telegram_user', {

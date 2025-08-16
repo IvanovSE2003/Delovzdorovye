@@ -416,7 +416,8 @@ export default class UserController {
                 user.resetTokenExpires,
                 user.pinAttempts,
                 user.isBlocked,
-                user.blockedUntil
+                user.blockedUntil,
+                user.sentChanges
             );
 
 
@@ -432,7 +433,6 @@ export default class UserController {
 
             let result;
             if (updatedUserWithAvatar.role === 'DOCTOR') {
-
                 const allowedFields: (keyof User)[] = [
                     'name',
                     'surname',
@@ -454,6 +454,7 @@ export default class UserController {
                     });
 
                 await this.batchRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
+                await this.userRepository.save(user.setSentChanges());
                 result = user;
             } else {
                 result = await this.userRepository.save(updatedUserWithAvatar);

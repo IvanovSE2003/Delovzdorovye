@@ -21,7 +21,8 @@ export default class User {
         public resetTokenExpires: Date | null,
         public pinAttempts: number, 
         public isBlocked: boolean, 
-        public blockedUntil: Date | null
+        public blockedUntil: Date | null,
+        public sentChanges: boolean | null
     ) {}
 
     activate(): User {
@@ -47,7 +48,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -74,7 +76,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         )
     }
 
@@ -101,7 +104,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -128,7 +132,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -155,7 +160,8 @@ export default class User {
             resetTokenExpires,
             this.pinAttempts, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -182,7 +188,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts + 1,
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -209,7 +216,8 @@ export default class User {
             this.resetTokenExpires,
             0, 
             this.isBlocked,
-            this.blockedUntil
+            this.blockedUntil,
+            this.sentChanges
         );
     }
 
@@ -237,7 +245,8 @@ export default class User {
             this.resetTokenExpires,
             this.pinAttempts,
             true, 
-            new Date(Date.now() + blockDuration) 
+            new Date(Date.now() + blockDuration),
+            this.sentChanges
         );
     }
 
@@ -264,7 +273,36 @@ export default class User {
             this.resetTokenExpires,
             0,
             false, 
-            null 
+            null,
+            this.sentChanges
+        );
+    }
+
+    setSentChanges(): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.isActivatedSMS,
+            this.activationLink,
+            this.img,
+            this.role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            this.pinAttempts, 
+            this.isBlocked,
+            this.blockedUntil,
+            true
         );
     }
 }

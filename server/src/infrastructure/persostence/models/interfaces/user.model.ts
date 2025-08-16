@@ -25,6 +25,7 @@ interface IUserAttributes {
     pinAttempts: number;
     isBlocked: boolean;
     blockedUntil: Date | null;
+    sentChanges: boolean | null;
 }
 
 export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

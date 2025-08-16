@@ -175,7 +175,8 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.resetTokenExpires,
             userModel.pinAttempts, 
             userModel.isBlocked,
-            userModel.blockedUntil
+            userModel.blockedUntil,
+            userModel.sentChanges
         );
     }
 
@@ -201,7 +202,8 @@ export default class UserRepositoryImpl implements UserRepository {
             resetTokenExpires: user.resetTokenExpires,
             pinAttempts: user.pinAttempts,
             isBlocked: user.isBlocked,
-            blockedUntil: user.blockedUntil
+            blockedUntil: user.blockedUntil,
+            sentChanges: user.sentChanges
         };
     }
 }
