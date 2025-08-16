@@ -396,9 +396,9 @@ export default class UserController {
 
             const updatedUser = new User(
                 user.id,
-                data.name || user.name,
-                data.surname || user.surname,
-                data.patronymic || user.patronymic,
+                'name' in data ? data.name : user.name, // явная проверка наличия поля
+                'surname' in data ? data.surname : user.surname,
+                'patronymic' in data ? data.patronymic : user.patronymic,
                 data.email || user.email,
                 data.phone || user.phone,
                 user.pinCode,
