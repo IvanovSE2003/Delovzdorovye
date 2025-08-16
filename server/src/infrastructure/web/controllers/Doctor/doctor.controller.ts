@@ -51,7 +51,12 @@ export default class DoctorController {
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
-
+            const {id} = req.params;
+            const doctor = await this.doctorRepository.findByUserId(Number(id));
+            if(!doctor) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+            res.status(200).json(doctor);
         } catch(e: any) {
             return next(ApiError.badRequest(e.message));
         }

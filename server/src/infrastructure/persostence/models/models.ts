@@ -10,9 +10,9 @@ import { BatchModelInterface } from './interfaces/batch.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: DataType.STRING, allowNull: false},
-    surname: {type: DataType.STRING, allowNull: false}, 
-    patronymic: {type: DataType.STRING, allowNull: false},
+    name: {type: DataType.STRING, allowNull: true},
+    surname: {type: DataType.STRING, allowNull: true}, 
+    patronymic: {type: DataType.STRING, allowNull: true},
     email: {type: DataType.STRING, unique: true, allowNull: true},
     phone: {type: DataType.STRING, unique: true, allowNull: true},
     pin_code: {type: DataType.INTEGER, allowNull: false},
