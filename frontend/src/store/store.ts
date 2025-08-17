@@ -8,6 +8,7 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import type { AuthResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
+import type { PatientData, PatientDataResponse } from "../models/PatientData";
 
 export default class Store {
     user = {} as IUser;
@@ -137,14 +138,14 @@ export default class Store {
     }
 
     // Получение данные пациента
-    async getPatientData(id: number): Promise<IUser> {
+    async getPatientData(id: number): Promise<PatientData> {
         try {
             const response = await UserService.fetchPatientData(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получении данных пациента!");
-            return {} as IUser;
+            return {} as PatientData;
         }
     }
 
@@ -275,6 +276,17 @@ export default class Store {
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
+        }
+    }
+
+
+    async getBatchAll(limit: number, page: number) {
+        try {
+            const response = await UserService.getBatchAll(limit, page);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при удалении фото!"); 
         }
     }
 }

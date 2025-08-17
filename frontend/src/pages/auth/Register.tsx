@@ -44,7 +44,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (emailRegex.test(userDetails.email)) {
       const checkAuth = async () => {
-        const isAuth = await store.checkUser( userDetails.email);
+        const isAuth = await store.checkUser(userDetails.email);
         if (isAuth.success) {
           setStyleEmail('invalid');
           setError('Пользователь с такой электронной почтой существует');
@@ -77,11 +77,22 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
+  const checkAllData = () => {
+    return userDetails.email && userDetails.phone
+      && userDetails.gender && userDetails.date_birth
+      && userDetails.time_zone;
+  }
+
   // Завершение первого этапа 
   const next = (): void => {
     if (styleEmail == 'valid' && stylePhone == 'valid') {
-      setStep(2);
-      setError("");
+      if (checkAllData()) {
+        setStep(2);
+        setError("");
+      } else {
+        setError("Заполните все обязательные поля! Они обозначены *")
+        return;
+      }
     }
   }
 
@@ -176,7 +187,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
             <MyInput
               id="email"
-              label="Электронная почта"
+              label="Электронная почта *"
               value={userDetails.email}
               onChange={(value) => handleDetailsChange("email", value)}
               className={styleEmail}
@@ -185,7 +196,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
             <MyInput
               id="phone"
-              label="Телефон"
+              label="Телефон *"
               value={userDetails.phone}
               maxLength={11}
               onChange={(value) => handleDetailsChange("phone", value)}
@@ -203,7 +214,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   checked={userDetails.gender === "Мужчина"}
                   onChange={(e) => handleDetailsChange("gender", e.target.value)}
                 />
-                <label htmlFor="male">Мужчина</label>
+                <label htmlFor="male">Мужчина *</label>
               </div>
 
               <div className="auth__radio-btn">
@@ -215,14 +226,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   checked={userDetails.gender === "Женщина"}
                   onChange={(e) => handleDetailsChange("gender", e.target.value)}
                 />
-                <label htmlFor="female">Женщина</label>
+                <label htmlFor="female">Женщина *</label>
               </div>
             </div>
 
             <MyInput
               type="date"
               id="date_birth"
-              label="Дата рождения"
+              label="Дата рождения *"
               value={userDetails.date_birth}
               onChange={(value) => handleDetailsChange("date_birth", value)}
               required
@@ -231,11 +242,11 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             <MySelect
               value={userDetails.time_zone}
               onChange={(value) => handleDetailsChange("time_zone", value)}
-              label="Часовой пояс"
-              defaultValue="-1"
+              label="Часовой пояс *"
+              defaultValue=""
               required
             >
-              <option value="-1">Выбрать</option>
+              <option value="">Выбрать</option>
               {Object.entries(TimeZoneLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}

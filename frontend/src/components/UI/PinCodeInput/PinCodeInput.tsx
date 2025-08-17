@@ -2,7 +2,7 @@ import React, { useRef, useEffect, type KeyboardEvent, useState } from 'react';
 import './PinCodeInput.scss';
 
 interface PinCodeInputProps {
-    onLogin: (pin: string, setPinCode: any) => void;
+    onLogin: (pin: string) => void;
     countNumber: number;
 }
 
@@ -14,19 +14,24 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         inputRefs.current = inputRefs.current.slice(0, countNumber);
     }, [countNumber]);
 
-    // Фокусируем первый инпут
     useEffect(() => {
         if (inputRefs.current[0]) {
             inputRefs.current[0].focus();
         }
     }, []);
 
-    const setZero = () => {
-        setPinCode(Array(countNumber).fill(''));
-        if (inputRefs.current[0]) {
-            inputRefs.current[0].focus();
+    useEffect(() => {
+        if (code.every(d => d !== '')) {
+            onLogin(code.join(''));
         }
-    }
+    }, [code]);
+
+    // Эффект для фокусировки первого инпута после сброса
+    useEffect(() => {
+        if (code.every(d => d === '')) {
+            inputRefs.current[0]?.focus();
+        }
+    }, [code]);
 
     const handleChange = (index: number, value: string) => {
         if (value && !/^[0-9]$/.test(value)) return;
@@ -35,12 +40,9 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         newPin[index] = value;
         setPinCode(newPin);
 
+        // Фокусировка следующего инпута
         if (value && index < countNumber - 1) {
             setTimeout(() => inputRefs.current[index + 1]?.focus(), 0);
-        }
-
-        if (newPin.every(d => d !== '') && index === countNumber - 1) {
-            onLogin(newPin.join(''), setZero);
         }
     };
 
@@ -66,10 +68,6 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber }) => 
         const lastFilledIndex = newPin.findIndex((digit) => digit === '');
         const focusIndex = lastFilledIndex === -1 ? countNumber - 1 : Math.min(lastFilledIndex - 1, countNumber - 1);
         inputRefs.current[focusIndex]?.focus();
-
-        if (pasteData.length === countNumber) {
-            onLogin(newPin.join(''), setZero);
-        }
     };
 
     return (

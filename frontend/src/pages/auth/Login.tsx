@@ -22,6 +22,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [isResending, setIsResending] = useState<boolean>(false);
 
+
   // Анимации
   const stepVariants = {
     enter: { opacity: 0, x: 30 },
@@ -43,6 +44,11 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   useEffect(() => {
     setError(store.error);
   }, [store.error]);
+
+  // Сбрасываем все ошибки при открытии входа
+  useEffect(() => {
+    setError("")
+  }, [])
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -93,11 +99,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   };
 
   // Завершение 3 этапа
-  const login = async (pin: string, setZero: any) => {
+  const login = async (pin: string) => {
+    if(pin === "") {
+      setError("Поля не должны быть пустыми!");
+      return;
+    }
     setError("");
     await store.login({ phone, email, pin_code: Number(pin) });
     if (store.isAuth) navigate(RouteNames.PERSONAL);
-    else setZero();
   };
 
   // Переключение почта/телефон

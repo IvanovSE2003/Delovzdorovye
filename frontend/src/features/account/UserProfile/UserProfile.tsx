@@ -215,9 +215,10 @@ const UserProfile: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="user-profile__fio">
-                  {store.user.surname} {store.user.name} {store.user.patronymic}
-                </div>
+                {(!store.user.name && !store.user.surname && !store.user.patronymic)
+                  ? <div className="user-profile__fio">Анонимный пользователь</div>
+                  : <div className="user-profile__fio">{store.user?.surname} {store.user?.name} {store.user?.patronymic}</div>
+                }
 
                 <div className="user-profile__main-info">
                   <span>Пол: {store.user.gender}</span>

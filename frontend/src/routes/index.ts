@@ -12,23 +12,37 @@ import TimeSheet from "../pages/account/doctor/TimeSheet";
 import Help from "../pages/account/doctor/Help";
 import Finance from "../pages/account/doctor/Finance";
 
+import Specialists from "../pages/account/admin/specialists";
+import Users from '../pages/account/admin/Users';
+
 export interface IRoute {
     path: string;
     element: React.ReactNode;
 }
+
+export type ProtectedRoute = {
+    path: string;
+    element: React.ComponentType;
+    roles?: string[];
+};
 
 export const RouteNames = {
     LOGIN: '/login',
     MAIN: '/',
     PERSONAL: '/personal',
     RESET: '/pinCode-reset/:token',
+    USEFULINFO: '/usefulinfo',
+
     CONSULTATIONSPAT: '/patient/consultations',
+    RECOMENDATIONS: '/patient/recomendations',
+
     CONSULTATIONSDOC: '/doctor/consultations',
     TIMESHEET: '/doctor/timesheet',
     HELP: '/doctor/help',
     FINANCE: '/doctor/finance',
-    RECOMENDATIONS: '/recomendations',
-    USEFULINFO: '/usefulinfo'
+
+    SPECIALISTS: '/admin/specialists',
+    USERS: '/admin/users',
 } as const;
 
 export const menuItemsPatient = [
@@ -47,20 +61,35 @@ export const menuItemsDoctor = [
     { path: RouteNames.USEFULINFO, name: 'Полезная информация'},
 ]
 
+export const menuItemsAdmin = [
+    { path: RouteNames.MAIN, name: 'Главная'},
+    { path: RouteNames.SPECIALISTS, name: 'Специалисты'},
+    { path: RouteNames.USERS, name: 'Пользователи'}
+]
+
 export const publicRoutes = [
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },
     { path: RouteNames.RESET, element: RecoverPinPage },
 ]
 
-export const privateRoutes = [
-    { path: RouteNames.PERSONAL, element: Account },
+export const privateRoutes: ProtectedRoute[] = [
+    // Общие маршруты для всех авторизованных
     { path: RouteNames.MAIN, element: HomePage },
-    { path: RouteNames.CONSULTATIONSPAT, element: ConsultationsPat},
-    { path: RouteNames.RECOMENDATIONS, element: Recomendations },
-    { path: RouteNames.USEFULINFO, element: UsefulInfo },
-    { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc},
-    { path: RouteNames.TIMESHEET, element: TimeSheet},
-    { path: RouteNames.HELP, element: Help},
-    { path: RouteNames.FINANCE, element: Finance},
-]
+    { path: RouteNames.PERSONAL, element: Account },
+    
+    // Маршруты для пациентов
+    { path: RouteNames.CONSULTATIONSPAT, element: ConsultationsPat, roles: ['PATIENT'] },
+    { path: RouteNames.RECOMENDATIONS, element: Recomendations, roles: ['PATIENT'] },
+    { path: RouteNames.USEFULINFO, element: UsefulInfo, roles: ['PATIENT', 'DOCTOR'] },
+    
+    // Маршруты для врачей
+    { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc, roles: ['DOCTOR'] },
+    { path: RouteNames.TIMESHEET, element: TimeSheet, roles: ['DOCTOR'] },
+    { path: RouteNames.HELP, element: Help, roles: ['DOCTOR'] },
+    { path: RouteNames.FINANCE, element: Finance, roles: ['DOCTOR'] },
+    
+    // Маршруты для администраторов
+    { path: RouteNames.SPECIALISTS, element: Specialists, roles: ['ADMIN'] },
+    { path: RouteNames.USERS, element: Users, roles: ['ADMIN'] },
+];

@@ -3,12 +3,13 @@ import type { AxiosResponse } from "axios";
 import type { IUserDataProfile, IUser } from "../models/Auth";
 import type { TypeResponse } from '../models/response/DefaultResponse';
 import type { TypeResponseToken } from '../models/response/TokenResponse';
+import type { PatientData } from '../models/PatientData';
 
 export default class UserService {
 
     // Получение данные о пациенте
-    static fetchPatientData(id: number): Promise<AxiosResponse<IUser>> {
-        return $api.get<IUser>(`/patient/${id}`);
+    static fetchPatientData(id: number): Promise<AxiosResponse<PatientData>> {
+        return $api.get<PatientData>(`/patient/${id}`);
     }
 
     // Проверка пользователя на сущестование в БД
@@ -45,5 +46,9 @@ export default class UserService {
 
     static removeAvatar(id: number): Promise<AxiosResponse<IUserDataProfile>> {
         return $api.post<IUserDataProfile>(`/user/delete-avatar`, {userId: id});
+    }
+
+    static getBatchAll(limit: number, page: number) {
+        return $api.post('/batch/all', {limit, page});
     }
 }
