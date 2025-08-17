@@ -100,6 +100,24 @@ const UserProfile: React.FC = () => {
     navigate(RouteNames.MAIN);
   };
 
+  const getRoleName = () => {
+    const Role = store.user.role;
+    switch (Role) {
+      case "PATIENT": return 'Пациент';
+      case "DOCTOR": return 'Доктор';
+      default: return 'Админ';
+    }
+  };
+
+  const getRoleClassName = () => {
+    const Role = store.user.role;
+    return Role === "PATIENT"
+      ? 'user-profile__role--patient'
+      : Role === "DOCTOR"
+        ? 'user-profile__role--doctor'
+        : 'user-profile__role--admin';
+  };
+
   return (
     <div className="user-profile">
       <div className="user-profile__box">
@@ -215,10 +233,15 @@ const UserProfile: React.FC = () => {
               </div>
             ) : (
               <>
-                {(!store.user.name && !store.user.surname && !store.user.patronymic)
-                  ? <div className="user-profile__fio">Анонимный пользователь</div>
-                  : <div className="user-profile__fio">{store.user?.surname} {store.user?.name} {store.user?.patronymic}</div>
-                }
+                <div>
+                  {(!store.user.name && !store.user.surname && !store.user.patronymic)
+                    ? <div className="user-profile__fio">Анонимный пользователь</div>
+                    : <div className="user-profile__fio">{store.user?.surname} {store.user?.name} {store.user?.patronymic}</div>
+                  }
+                  <div className={`user-profile__role ${getRoleClassName()}`}>
+                    {getRoleName()}
+                  </div>
+                </div>
 
                 <div className="user-profile__main-info">
                   <span>Пол: {store.user.gender}</span>

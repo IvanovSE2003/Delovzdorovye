@@ -1,7 +1,7 @@
 @use "./variables.scss" as *;
-@import './pages/account.scss';
-@import './pages/home.scss';
-@import './pages/auth.scss';
+@use "./pages/account.scss";
+@use "./pages/home.scss";
+@use "./pages/auth.scss";
 
 
 .color-block {

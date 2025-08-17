@@ -37,13 +37,27 @@
     color: red;
   }
 
+  &__role {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+
+    &--patient {
+      color: $patient-color;
+    }
+
+    &--doctor {
+      color: $doctor-color;
+    }
+  }
+
   &__content {
     display: grid;
     grid-template-columns: 1.5fr 2fr;
     gap: 60px;
     font-size: 1.2rem;
     width: 100%;
-    color: #485267;
+    color: $text-color;
   }
 
   &__avatar-content {
@@ -89,15 +103,10 @@
   }
 
   &__fio {
-    margin: 10px 0;
+    margin: 2px 0;
     font-size: 1.4rem;
     font-weight: bolder;
-    text-align: center;
-
-    @media (min-width: 576px) {
-      text-align: left;
-      margin: 15px 0;
-    }
+    text-align: left;
   }
 
   &__main-info {

@@ -1,14 +1,12 @@
+@use '../variables.scss' as *;
+
 // Общие стили для всех профилей
 .account {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-
   &__main {
     display: flex;
     flex: 1;
     position: relative;
+    height: 100vh;
   }
 
   &__content {
@@ -16,8 +14,6 @@
     box-sizing: border-box;
     padding: 20px;
     margin-top: 95px;
-
-    overflow: hidden;
     width: 100%;
     max-width: 100%;
 

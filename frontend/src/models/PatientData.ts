@@ -42,7 +42,7 @@ export interface MedicalData {
   medications: Medication[];
   analyses: Analysis[];
   examinations: Examination[];
-  user: User;
+  user?: User;
 }
 
 export interface PatientData {

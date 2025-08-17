@@ -1,14 +1,19 @@
 @use "../../../assets/styles/variables.scss" as *;
 
 .rightPanel {
-    width: 60px;
-    padding: 15px;
-    margin: 0 20px;
-    height: 100vh;
+    width: 55px;
+    padding: 20px;
+    margin: 10px 20px;
+    border-radius: 10px;
+    border-top: 10px solid $primary-color;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
+
+    background-color: $sidebar-color;
+
 
     img {
         width: 100%;
