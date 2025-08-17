@@ -1,3 +1,5 @@
+import TimeSlotsArray from "../../../infrastructure/web/types/timeSlot.type.js";
+
 type Time = `${number}:${number}`;
 
 export default class DoctorSchedule {
@@ -8,11 +10,7 @@ export default class DoctorSchedule {
         public readonly time_start: Time,
         public readonly time_end: Time,
         public readonly doctorId?: number,
-        public readonly timeSlot?: timeSlotData
+        public readonly timeSlot?: TimeSlotsArray
     ) {}
 }
 
-interface timeSlotData {
-    time? : string,
-    is_available? : boolean
-}

@@ -9,7 +9,7 @@ export default class DoctorScheduleController {
     
     async getByDoctor(req: Request<{doctorId: string}, any, any, any>, res: Response, next: NextFunction) {
         try {
-            const {doctorId} = req.params;
+            const { doctorId } = req.params;
             const schedule = await this.doctorScheduleRepository.findByDoctorId(Number(doctorId));
             
             if(!schedule) {

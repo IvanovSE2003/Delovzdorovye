@@ -51,6 +51,10 @@ export default class BatchRepositoryImpl implements BatchRepository {
         return batch.id ? this.update(batch) : this.create(batch);
     }
 
+    async delete(batchId: number): Promise<void> {
+        await ModerationBatchModel.destroy({where: {id: batchId}});
+    }
+
     async createBatchWithChangesUser(userId: number, changes: Array<{
         field_name: string;
         old_value: string | null;

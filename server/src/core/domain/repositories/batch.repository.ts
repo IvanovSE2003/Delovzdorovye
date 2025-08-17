@@ -6,5 +6,6 @@ export default interface BatchRepository {
     create(batch: Batch): Promise<Batch>;
     update(batch: Batch): Promise<Batch>;
     save(batch: Batch): Promise<Batch>;
+    delete(batchId: number): Promise<void>;
     createBatchWithChangesUser(userId: number, changes: Array<{field_name: string;  old_value: string | null;  new_value: string;}>): Promise<Batch[]>;
 }

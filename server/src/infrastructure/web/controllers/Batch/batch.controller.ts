@@ -61,7 +61,6 @@ export default class BatchController {
     async confirm(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { masParam } = req.body;
 
             const batch = await this.batchRepository.findById(Number(id));
             
@@ -132,12 +131,36 @@ export default class BatchController {
                 await this.userRepository.update(user);
             }
 
-            batch.status = 'approved';
-            await this.batchRepository.save(batch);
+            await this.batchRepository.delete(batch.id);
+
 
             return res.status(200).json({ 
                 success: true, 
                 message: 'Изменение успешно подтверждено и применено' 
+            });
+        } catch(e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async reject(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {id} = req.params;
+            const {rejection_reason} = req.body;
+
+            const batch = await this.batchRepository.findById(Number(id));
+                
+            if (!batch) {
+                return next(ApiError.badRequest('Изменение не найдено'));
+            }
+
+            // создание уведомлений
+            console.log(rejection_reason);
+
+            await this.batchRepository.delete(batch.id);
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Изменение успешно отменено и сообщение отправлено' 
             });
         } catch(e: any) {
             return next(ApiError.badRequest(e.message));
