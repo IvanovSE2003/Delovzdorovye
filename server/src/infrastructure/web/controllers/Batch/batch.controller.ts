@@ -27,10 +27,25 @@ export default class BatchController {
             const limit = req.body.limit || 10;
             const page = req.body.page || 1;
             const batches = await this.batchRepository.findAll(Number(page), Number(limit));
-            if(!batches) {
-                return next(ApiError.badRequest('Изменения не наденый'));
+            
+            if(!batches || batches.batches.length === 0) {
+                return next(ApiError.badRequest('Изменения не найдены'));
             }
-            return res.status(200).json(batches);
+
+            const formattedBatches = batches.batches.map(batch => ({
+                field_name: batch.field_name,
+                old_value: batch.old_value,
+                new_value: batch.new_value,
+                userName: batch.userName,
+                userSurname: batch.userSurname,
+                userPatronymic: batch.userPatronymic
+            }));
+
+            return res.status(200).json({
+                batches: formattedBatches,
+                totalCount: batches.totalCount,
+                totalPage: batches.totalPage
+            });
         } catch(e: any) {
             next(ApiError.badRequest(e.message));
         }

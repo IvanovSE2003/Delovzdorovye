@@ -170,9 +170,6 @@ Consultation.belongsTo(PatientModel)
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
 
-DoctorModel.hasOne(ModerationBatchModel);
-ModerationBatchModel.belongsTo(DoctorModel);
-
 DoctorModel.hasOne(DoctorsSchedule)
 DoctorsSchedule.belongsTo(DoctorModel)
 

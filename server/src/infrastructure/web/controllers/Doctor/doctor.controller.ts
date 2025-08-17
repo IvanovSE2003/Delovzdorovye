@@ -5,12 +5,14 @@ import BatchRepository from "../../../../core/domain/repositories/batch.reposito
 import FileService from "../../../../core/domain/services/file.service.js";
 import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 import { UploadedFile } from "express-fileupload";
+import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 
 export default class DoctorController {
     constructor(
         private readonly doctorRepository: DoctorRepository,
         private readonly batchRepository: BatchRepository,
-        private readonly fileService: FileService
+        private readonly fileService: FileService,
+        private readonly userRepository: UserRepository
     ) {}
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -103,9 +105,10 @@ export default class DoctorController {
                 .map(([field_name, new_value]) => {
                     const field = field_name as keyof Doctor;
                     const oldValue = doctor[field];
+                    const translatedFieldName = FIELD_TRANSLATIONS[field_name] || field_name;
                     
                     return {
-                        field_name,
+                        field_name: translatedFieldName,
                         old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
                         new_value: String(new_value)
                     };
@@ -115,12 +118,22 @@ export default class DoctorController {
                 return next(ApiError.badRequest('Нет допустимых полей для изменения'));
             }
 
-            await this.batchRepository.createBatchWithChanges(Number(id), changes);
+            const user = await this.userRepository.findByDoctorId(doctor.id);
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь для данного доктора не найден'))
+            }
+            await this.batchRepository.createBatchWithChangesUser(Number(user.id), changes);
 
             return res.json({ success: true, message: 'Изменения отправлены на модерацию' });
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }
     }
-
 }
+
+const FIELD_TRANSLATIONS: Record<string, string> = {
+    specialization: 'Специализация',
+    experienceYears: 'Опыт работы',
+    diploma: 'Диплом',
+    license: 'Лицензия',
+};

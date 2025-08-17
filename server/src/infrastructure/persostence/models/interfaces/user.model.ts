@@ -26,6 +26,7 @@ interface IUserAttributes {
     isBlocked: boolean;
     blockedUntil: Date | null;
     sentChanges: boolean | null;
+    doctorId?: number
 }
 
 export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}

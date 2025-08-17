@@ -396,7 +396,7 @@ export default class UserController {
 
             const updatedUser = new User(
                 user.id,
-                'name' in data ? data.name : user.name, // явная проверка наличия поля
+                'name' in data ? data.name : user.name, 
                 'surname' in data ? data.surname : user.surname,
                 'patronymic' in data ? data.patronymic : user.patronymic,
                 data.email || user.email,
@@ -445,9 +445,10 @@ export default class UserController {
                     .map(([field_name, new_value]) => {
                         const field = field_name as keyof User;
                         const oldValue = user[field];
-
+                        const translatedFieldName = FIELD_TRANSLATIONS[field_name] || field_name;
+                        
                         return {
-                            field_name,
+                            field_name: translatedFieldName,
                             old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
                             new_value: String(new_value)
                         };
@@ -562,3 +563,12 @@ export default class UserController {
         }
     }
 }
+
+
+const FIELD_TRANSLATIONS: Record<string, string> = {
+    name: 'Имя',
+    surname: 'Фамилия',
+    patronymic: 'Отчество',
+    gender: 'Пол',
+    dateBirth: 'Дата рождения'
+};

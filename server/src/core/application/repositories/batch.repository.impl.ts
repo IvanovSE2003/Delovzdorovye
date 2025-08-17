@@ -1,10 +1,9 @@
-// batch.repository.impl.ts
 import Batch from "../../domain/entities/batch.entity.js";
 import BatchRepository from "../../domain/repositories/batch.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
 
-const { ModerationBatchModel, DoctorModel} = models;
+const { ModerationBatchModel, UserModel} = models;
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<Batch | null> {
@@ -17,11 +16,14 @@ export default class BatchRepositoryImpl implements BatchRepository {
         const { count, rows } = await ModerationBatchModel.findAndCountAll({
             limit,
             offset,
-            include: [DoctorModel]
+            include: [{
+                model: UserModel,
+                attributes: ['name', 'surname', 'patronymic']
+            }]
         });
-
+    
         return {
-            batches: rows.map(this.mapToDomainBatch),
+            batches: rows.map(batch => this.mapToDomainBatch(batch)),
             totalCount: count,
             totalPage: Math.ceil(count / limit)
         };
@@ -49,61 +51,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
         return batch.id ? this.update(batch) : this.create(batch);
     }
 
-    async createBatchWithChanges(doctorId: number, changes: Array<{
+    async createBatchWithChangesUser(userId: number, changes: Array<{
         field_name: string;
         old_value: string | null;
         new_value: string;
-    }>): Promise<void> {
-        const transaction = await ModerationBatchModel.sequelize!.transaction();
-        try {
-            
-
-            const filteredChanges = changes.filter(change => {
-                const oldVal = change.old_value?.trim() ?? '';
-                const newVal = change.new_value?.trim() ?? '';
-                return oldVal !== newVal;
-            });
-
-            if (filteredChanges.length === 0) {
-                await transaction.rollback();
-                return; 
-            }
-
-            for (const change of changes) {
-                const existingBatch = await ModerationBatchModel.findOne({
-                    where: {
-                        doctorId: doctorId,
-                        field_name: change.field_name,
-                        status: 'pending' 
-                    },
-                    transaction
-                });
-
-                if (existingBatch) {
-                    await existingBatch.update({
-                        old_value: change.old_value ?? '',
-                        new_value: change.new_value
-                    }, { transaction });
-                } else {
-                    await ModerationBatchModel.create({
-                        doctorId: doctorId,
-                        status: 'pending',
-                        is_urgent: false,
-                        field_name: change.field_name,
-                        old_value: change.old_value ?? '',
-                        new_value: change.new_value,
-                        rejection_reason: ''
-                    }, { transaction });
-                }
-            }
-            await transaction.commit();
-        } catch (error) {
-            await transaction.rollback();
-            throw error;
-        }
-    }
-
-    async createBatchWithChangesUser(userId: number,changes: Array<{field_name: string;old_value: string | null;new_value: string;}>): Promise<void> {
+    }>): Promise<Batch[]> {
         const transaction = await ModerationBatchModel.sequelize!.transaction();
         try {
             const filteredChanges = changes.filter(change => {
@@ -114,17 +66,20 @@ export default class BatchRepositoryImpl implements BatchRepository {
 
             if (filteredChanges.length === 0) {
                 await transaction.rollback();
-                return;
+                return [];
             }
+
+            const createdBatches: Batch[] = [];
 
             for (const change of filteredChanges) {
                 const existingBatch = await ModerationBatchModel.findOne({
                     where: {
                         userId: userId,
                         field_name: change.field_name,
-                        status: 'pending' 
+                        status: 'pending'
                     },
-                    transaction
+                    transaction,
+                    include: [UserModel]
                 });
 
                 if (existingBatch) {
@@ -132,8 +87,9 @@ export default class BatchRepositoryImpl implements BatchRepository {
                         old_value: change.old_value ?? '',
                         new_value: change.new_value
                     }, { transaction });
+                    createdBatches.push(this.mapToDomainBatch(existingBatch));
                 } else {
-                    await ModerationBatchModel.create({
+                    const newBatch = await ModerationBatchModel.create({
                         userId: userId,
                         status: 'pending',
                         is_urgent: false,
@@ -141,28 +97,39 @@ export default class BatchRepositoryImpl implements BatchRepository {
                         old_value: change.old_value ?? '',
                         new_value: change.new_value,
                         rejection_reason: ''
-                    }, { transaction });
+                    }, { transaction, include: [UserModel] });
+
+                    createdBatches.push(this.mapToDomainBatch(newBatch));
                 }
             }
 
             await transaction.commit();
+            return createdBatches;
         } catch (error) {
             await transaction.rollback();
             throw error;
         }
     }
 
-
     private mapToDomainBatch(batchModel: BatchModelInterface): Batch {
-        return new Batch(
+        const batch = new Batch(
             batchModel.id,
             batchModel.status,
             batchModel.rejection_reason,
             batchModel.is_urgent,
             batchModel.field_name,
             batchModel.old_value,
-            batchModel.new_value
+            batchModel.new_value,
+            batchModel.userId
         );
+        
+        if (batchModel.user) {
+            batch.userName = batchModel.user.name;
+            batch.userSurname = batchModel.user.surname;
+            batch.userPatronymic = batchModel.user.patronymic;
+        }
+        
+        return batch;
     }
 
     private mapToPersistence(batch: Batch): IBatchCreationAttributes {
@@ -172,7 +139,8 @@ export default class BatchRepositoryImpl implements BatchRepository {
             is_urgent: batch.is_urgent,
             field_name: batch.field_name,
             old_value: batch.old_value || null,
-            new_value: batch.new_value
+            new_value: batch.new_value,
+            userId: batch.userId
         } as IBatchCreationAttributes; 
     }
 }

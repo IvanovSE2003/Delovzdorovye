@@ -43,6 +43,11 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
+    async findByDoctorId(doctorId: number): Promise<User | null> {
+        const user = await UserModel.findOne({where: { doctorId }});
+        return user ? this.mapToDomainUser(user): null;
+    }
+
     async create(user: User): Promise<User> {
         const createdUser = await UserModel.create(this.mapToPersistence(user));
         return this.mapToDomainUser(createdUser);

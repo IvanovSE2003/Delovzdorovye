@@ -6,6 +6,7 @@ export default interface UserRepository {
     findById(id: number): Promise<User | null>;
     findByEmail(email: string): Promise<User | null>;
     findByPhone(phone: string): Promise<User | null>;
+    findByDoctorId(doctorId: number): Promise<User | null>;
     create(user: User): Promise<User>;
     update(user: User): Promise<User>;
     delete(id: number): Promise<void>;
