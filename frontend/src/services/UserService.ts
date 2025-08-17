@@ -47,8 +47,4 @@ export default class UserService {
     static removeAvatar(id: number): Promise<AxiosResponse<IUserDataProfile>> {
         return $api.post<IUserDataProfile>(`/user/delete-avatar`, {userId: id});
     }
-
-    static getBatchAll(limit: number, page: number) {
-        return $api.post('/batch/all', {limit, page});
-    }
 }

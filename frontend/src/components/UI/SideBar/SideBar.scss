@@ -27,6 +27,14 @@
   &__menu-item {
     padding: 5px 8px 5px 0;
     transition: background-color 0.3s;
+
+    &--active {
+
+      .sidebar__link{
+        color: $button-color;
+        font-weight: bolder;
+      }
+    }
   }
 
   &__link {

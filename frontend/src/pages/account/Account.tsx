@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { Context } from '../../main';
 import DoctorPage from './DoctorPage';
 import PatientPage from './PatientPage';
-import AdminPage from './admin/Specialists';
+import Specialists from './admin/Specialists';
 
 const PersonalPage = () => {
   const { store } = useContext(Context);
@@ -14,7 +14,7 @@ const PersonalPage = () => {
     case 'DOCTOR':
       return <DoctorPage />;
     case 'ADMIN':
-      return <AdminPage />;
+      return <Specialists />;
     default:
       return <div>Неизвестная роль</div>;
   }

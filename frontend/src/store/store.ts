@@ -9,6 +9,7 @@ import axios from "axios";
 import type { AuthResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
 import type { PatientData, PatientDataResponse } from "../models/PatientData";
+import BatchService from "../services/BatchService";
 
 export default class Store {
     user = {} as IUser;
@@ -280,13 +281,38 @@ export default class Store {
     }
 
 
+    // Манипуляция со специалистами в админ панеле
     async getBatchAll(limit: number, page: number) {
         try {
-            const response = await UserService.getBatchAll(limit, page);
+            const response = await BatchService.getBatchAll(limit, page);
             return response.data;
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при удалении фото!"); 
+        }
+    }
+
+    async confirmChange(id: number): Promise<TypeResponse> {
+        try {
+            const response = await BatchService.confirmChange(id);
+            console.log(response.data);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при подтверждении изменений!");
+            return {success: false, message: this.error};
+        }
+    }
+
+    async rejectChange(id: number, message: string): Promise<TypeResponse> {
+        try {
+            const response = await BatchService.rejectChange(id, message);
+            console.log(response.data);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
+            return {success: false, message: this.error};
         }
     }
 }
