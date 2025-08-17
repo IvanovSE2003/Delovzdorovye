@@ -539,7 +539,7 @@ export default class UserController {
                 email: userUpdate.email
             });
         } catch (e: any) {
-            return res.status(500).json({ success: false, message: e.message });
+            return next(ApiError.badRequest(e.message));
         }
     }
 

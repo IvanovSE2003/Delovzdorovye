@@ -1,12 +1,12 @@
 export default class Doctor {
     constructor(
-        public readonly id: number,
-        public readonly specialization: string,
-        public readonly experienceYears: number,
-        public readonly diploma: string,
-        public readonly license: string,
-        public readonly isActivated: boolean,
-        public readonly userId?: number
+        public id: number,
+        public specialization: string,
+        public experienceYears: number,
+        public diploma: string,
+        public license: string,
+        public isActivated: boolean,
+        public userId?: number
     ) {}
 
     activate(): Doctor {
