@@ -3,6 +3,7 @@ import './PatientInfo.scss';
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
 import type { PatientData } from "../../../models/PatientData";
+import Loader from "../../../components/UI/Loader/Loader";
 
 const PatientInfo: React.FC = () => {
   const { store } = useContext(Context);
@@ -33,7 +34,7 @@ const PatientInfo: React.FC = () => {
   }, [store, store.user?.id]);
 
   if (loading) {
-    return <div className="loading">Загрузка данных...</div>;
+    return <Loader/>;
   }
 
   if (error) {
@@ -125,33 +126,6 @@ const PatientInfo: React.FC = () => {
             <p>Нет данных о лекарствах</p>
           )}
         </div>
-
-        {/* <h2>Анализы и обследования</h2>
-        <div className="info-section">
-          <h3>Анализы</h3>
-          {medicalData.analyses.length > 0 ? (
-            medicalData.analyses.map(analysis => (
-              <div key={analysis.id}>
-                <p><strong>Название:</strong> {analysis.name || "Не указано"}</p>
-                {analysis.file && <p><strong>Файл:</strong> {analysis.file}</p>}
-              </div>
-            ))
-          ) : (
-            <p>Нет данных об анализах</p>
-          )}
-
-          <h3>Обследования</h3>
-          {medicalData.examinations.length > 0 ? (
-            medicalData.examinations.map(examination => (
-              <div key={examination.id}>
-                <p><strong>Название:</strong> {examination.name || "Не указано"}</p>
-                {examination.file && <p><strong>Файл:</strong> {examination.file}</p>}
-              </div>
-            ))
-          ) : (
-            <p>Нет данных об обследованиях</p>
-          )} */}
-        {/* </div> */}
       </div>
     </div>
   );

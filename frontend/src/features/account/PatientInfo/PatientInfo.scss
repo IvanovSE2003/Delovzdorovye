@@ -7,14 +7,13 @@
     margin-top: 20px;
 
     &__form {
-        background-color: white;
-        box-shadow: 0 0 10px $shadow-color;
+        background-color: $profile-color;
         width: max-content;
         height: max-content;
         padding: 20px;
         border-radius: 10px;
         width: 90%;
-        margin: 0 auto;
+        margin: 20px auto;
         box-sizing: border-box;
     }
 

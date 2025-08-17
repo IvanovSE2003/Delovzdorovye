@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { Context } from '../../main';
 import DoctorPage from './DoctorPage';
 import PatientPage from './PatientPage';
-import AdminPage from './admin/specialists';
+import AdminPage from './admin/Specialists';
 
 const PersonalPage = () => {
   const { store } = useContext(Context);
