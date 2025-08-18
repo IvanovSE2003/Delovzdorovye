@@ -14,6 +14,8 @@ export default interface UserRepository {
     
     findByActivationLink(link: string): Promise<User | null>;
     findByResetToken(resetToken: string): Promise<User | null>;
+
+    getAll(): Promise<User[]>;
     
     checkUserExists(email?: string, phone?: string): Promise<boolean>;
     verifyPinCode(userId: number, pinCode: number): Promise<boolean>;

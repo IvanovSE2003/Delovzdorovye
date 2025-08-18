@@ -157,6 +157,11 @@ export default class UserRepositoryImpl implements UserRepository {
         return userDelete;
     }
 
+    async getAll(): Promise<User[]> {
+        const users = await UserModel.findAll();
+        return users.map(user => this.mapToDomainUser(user));
+    }
+
     private mapToDomainUser(userModel: UserModelInterface): User {
         return new User(
             userModel.id,

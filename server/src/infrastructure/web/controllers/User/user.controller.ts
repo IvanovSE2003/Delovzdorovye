@@ -613,7 +613,7 @@ export default class UserController {
 
     async changeRole(req: Request, res: Response, next: NextFunction) {
         const { userId, newRole } = req.body;
-        const user = this.userRepository.findById(Number(userId)) as unknown as User;
+        const user = await this.userRepository.findById(Number(userId));
         if(!user) {
             return next(ApiError.badRequest('Пользователь не найден'));
         }
@@ -622,6 +622,7 @@ export default class UserController {
             return next(ApiError.badRequest('Неизвестная роль'));
         }
         await this.userRepository.save(user.setRole(newRole));
+        return res.status(200).json({success: true, message: `Роль пользователя была изменена на ${newRole}`});
     }
 }
 

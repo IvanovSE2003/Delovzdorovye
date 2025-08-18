@@ -91,6 +91,18 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         };
     }
 
+    async findByUserIds(userIds: number[]): Promise<Doctor[]> {
+        const doctors = await DoctorModel.findAll({
+            where: { 
+                userId: { 
+                    [Op.in]: userIds 
+                } 
+            }
+        });
+        
+        return doctors.map(doctor => this.mapToDomainDoctor(doctor));
+    }
+
     async update(doctor: Doctor): Promise<Doctor> {
         if (!doctor.id) {
             throw new Error("ID пациента не найдено для обновления");

@@ -18,6 +18,7 @@ export default interface DoctorRepository {
         totalCount: number;
         totalPages: number;
     }>;
+    findByUserIds(userIds: number[]): Promise<Doctor[]>;
     update(doctor: Doctor): Promise<Doctor>;
     create(doctor: Doctor): Promise<Doctor>;
 }

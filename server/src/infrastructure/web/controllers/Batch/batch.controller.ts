@@ -5,6 +5,7 @@ import DoctorRepository from '../../../../core/domain/repositories/doctor.reposi
 import UserRepository from '../../../../core/domain/repositories/user.repository.js';
 import Doctor from '../../../../core/domain/entities/doctor.entity.js';
 import User from '../../../../core/domain/entities/user.entity.js';
+import UserShortInfoDto from '../../types/UserShortInfoDto.js';
 
 export default class BatchController {
     constructor(
@@ -164,6 +165,60 @@ export default class BatchController {
             });
         } catch(e: any) {
             return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async getAllUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const users = await this.userRepository.getAll();
+            
+            if (!users || users.length === 0) {
+                return res.status(404).json({ message: 'Пользователи не найдены' });
+            }
+
+            const doctorUserIds = users
+                .filter(user => user.role === 'DOCTOR')
+                .map(user => user.id);
+
+            const doctors = await this.doctorRepository.findByUserIds(doctorUserIds);
+
+            const doctorMap = new Map<number, Doctor>();
+            doctors.forEach(doctor => {
+                if (doctor.userId) {
+                    doctorMap.set(doctor.userId, doctor);
+                }
+            });
+
+            const response = users.map(user => {
+                const userData: UserShortInfoDto = {
+                    role: user.role,
+                    name: user.name,
+                    surname: user.surname,
+                    patronymic: user.patronymic,
+                    img: user.img,
+                    phone: user.phone,
+                    gender: user.gender,
+                    email: user.email,
+                    specialization: null,
+                    diploma: null,
+                    license: null
+                };
+
+                if (user.role === 'DOCTOR') {
+                    const doctorInfo = doctorMap.get(user.id);
+                    if (doctorInfo) {
+                        userData.specialization = doctorInfo.specialization || null;
+                        userData.diploma = doctorInfo.diploma || null;
+                        userData.license = doctorInfo.license || null;
+                    }
+                }
+
+                return userData;
+            });
+
+            return res.status(200).json(response);
+        } catch (e: any) {
+            next(ApiError.badRequest(e.message)); 
         }
     }
 }
