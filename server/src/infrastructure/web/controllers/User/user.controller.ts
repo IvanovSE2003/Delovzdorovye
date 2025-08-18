@@ -59,10 +59,10 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { credential, pin_code, twoFactorCode, twoFactorMethod } = req.body;
+            const { creditial, pin_code, twoFactorCode, twoFactorMethod } = req.body;
 
             const result = await this.authService.login(
-                credential, 
+                creditial, 
                 pin_code,
                 twoFactorMethod,
                 twoFactorCode
