@@ -59,8 +59,7 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, phone, pin_code, twoFactorCode, twoFactorMethod } = req.body;
-            let credential = email ? email : phone;
+            const { credential, pin_code, twoFactorCode, twoFactorMethod } = req.body;
 
             const result = await this.authService.login(
                 credential, 
@@ -71,7 +70,7 @@ export default class UserController {
 
             if (result.requiresTwoFactor) {
                 return res.json({
-                    requiresTwoFactor: true,
+                    success: true,
                     tempToken: result.tempToken,
                     message: twoFactorMethod 
                         ? `Код подтверждения отправлен ${twoFactorMethod === 'EMAIL' ? 'на email' : 'по SMS'}` 
@@ -87,6 +86,7 @@ export default class UserController {
 
             return res.json({
                 accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
                 user: result.user,
             });
         } catch (e: any) {
