@@ -5,3 +5,9 @@ export interface AuthResponse {
     refreshToken: string;
     user: IUser;
 }
+
+export interface LoginResponse {
+    success: boolean;
+    tempToken: string;
+    message: string;
+}

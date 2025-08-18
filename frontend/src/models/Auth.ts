@@ -30,12 +30,13 @@ export interface IUserDataProfile {
     dateBirth: string;
     phone: string;
     email: string;
+    anonym: boolean;
 }
 
 export type LoginData = {
-    pin_code: number,
-    phone?: string,
-    email?: string
+    creditial: string;
+    twoFactorMethod: "SMS"|"EMAIL";
+    pin_code: number;
 }
 
 export type RegistrationData = {

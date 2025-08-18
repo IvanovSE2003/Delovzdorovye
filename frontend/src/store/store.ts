@@ -6,7 +6,7 @@ import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
 import axios from "axios";
-import type { AuthResponse } from "../models/response/AuthResponse";
+import type { AuthResponse, LoginResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
 import type { PatientData, PatientDataResponse } from "../models/PatientData";
 import BatchService from "../services/BatchService";
@@ -49,23 +49,33 @@ export default class Store {
         this.isLoading = bool;
     }
 
-    // Вход в учетную запись
-    async login(data: LoginData): Promise<void> {
-        console.log('login')
+    // Первый этап входа
+    async login(data: LoginData): Promise<LoginResponse> {
         try {
-            this.setLoading(true);
-            this.setError("");
             const response = await AuthService.login(data);
-            localStorage.setItem('token', response.data.accessToken);
-            this.setAuth(true);
-            this.setUser(response.data.user);
+            localStorage.setItem('tempToken', response.data.tempToken);
+            return response.data;
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
             const errorMessage = error.response?.data?.message || "Ошибка при входе!";
             this.setError(errorMessage);
+            return {success: false, message: this.error, tempToken: ""}
+        }
+    }
+
+    // Второй этап входа
+    async completeTwoFactor(tempToken: string|null, code: string): Promise<void> {
+        try {
+            const response = await AuthService.completeTwoFactor(tempToken, code);
+            localStorage.removeItem('tempToken');
+            localStorage.setItem('accessToken', response.data.accessToken);
+            this.setAuth(true);
+            this.setUser(response.data.user);
+        } catch(e) {
+            const error = e as AxiosError<{ message: string }>;
+            const errorMessage = error.response?.data?.message || "Ошибка при входе!";
+            this.setError(errorMessage);
             console.log(errorMessage);
-        } finally {
-            this.setLoading(false);
         }
     }
 

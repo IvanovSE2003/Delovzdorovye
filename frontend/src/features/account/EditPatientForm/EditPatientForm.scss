@@ -1,99 +1,106 @@
+@use '../../../assets/styles/variables.scss' as *;
+
 .edit-form {
-  width: 100%;
+  width: 90%;
   margin: 20px auto;
   padding: 20px;
-  background: white;
+  background-color: $profile-color;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 
-  h2 {
-    color: #2c3e50;
-    margin-bottom: 20px;
-  }
-}
+  &__section {
+    margin-bottom: 30px;
+    padding: 15px;
+    border-radius: 5px;
 
-.form-section {
-  margin-bottom: 30px;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 5px;
-
-  h3 {
-    margin-top: 0;
-    color: #3498db;
-  }
-}
-
-.form-record {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 5px;
-}
-
-.form-group {
-  margin-bottom: 10px;
-
-  label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-
-  input, textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-
-  textarea {
-    min-height: 80px;
-  }
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-
-  button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .save-btn {
-    background-color: #27ae60;
-    color: white;
-
-    &:hover {
-      background-color: darken(#27ae60, 10%);
+    h2 {
+      margin-bottom: 10px;
     }
   }
 
-  .cancel-btn {
+  &__record {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    box-sizing: border-box;
+    border-radius: 5px;
+  }
+
+  &__group {
+    margin-bottom: 10px;
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+      border-radius: 4px;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+  }
+
+  &__add {
+    width: max-content;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: $button-color;
+    color: white;
+  }
+
+  .delete-btn {
     background-color: #e74c3c;
     color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    margin-top: 10px;
+    cursor: pointer;
 
     &:hover {
       background-color: darken(#e74c3c, 10%);
     }
   }
-}
 
-.delete-btn {
-  background-color: #e74c3c;
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 3px;
-  margin-top: 10px;
-  cursor: pointer;
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 
-  &:hover {
-    background-color: darken(#e74c3c, 10%);
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background-color: #27ae60;
+      color: white;
+
+      &:hover {
+        background-color: darken(#27ae60, 10%);
+      }
+    }
+
+    .cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+
+      &:hover {
+        background-color: darken(#e74c3c, 10%);
+      }
+    }
   }
 }

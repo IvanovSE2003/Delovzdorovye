@@ -62,78 +62,90 @@ const EditPatientForm: React.FC<EditPatientFormProps> = ({ patientData, onSave, 
             case 'surgeries':
                 setSurgeries(surgeries.filter(s => s.id !== Number(id)));
                 break;
-            // Аналогично для других типов...
         }
     };
 
     return (
         <div className="edit-form">
-            <h2>Редактирование данных пациента</h2>
+            <h3>Редактирование данных пациента</h3>
 
-            <div className="form-section">
-                <h3>Хирургические вмешательства</h3>
+            <div className="edit-form__section">
+                <h2>Хирургические вмешательства</h2>
                 {surgeries.map((surgery, index) => (
-                    <div key={surgery.id} className="form-record">
+                    <div key={surgery.id} className="edit-form__record">
                         <h4>Запись #{index + 1}</h4>
-                        <div className="form-group">
+                        <div className="edit-form__group">
                             <label>Год:</label>
                             <input
                                 type="text"
                                 value={surgery.year}
-                                onChange={(e) => handleSurgeryChange(surgery.id, 'year', e.target.value)}
+                                // onChange={(e) => handleSurgeryChange(surgery.id, 'year', e.target.value)}
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="edit-form__group">
                             <label>Описание:</label>
                             <textarea
                                 value={surgery.description}
-                                onChange={(e) => handleSurgeryChange(surgery.id, 'description', e.target.value)}
-                            />
-                        </div>
-                        <button
-                            className="delete-btn"
-                            onClick={() => deleteRecord('surgeries', surgery.id.toString())}
-                        >
-                            Удалить
-                        </button>
-                    </div>
-                ))}
-                <button onClick={addNewSurgery}>+ Добавить вмешательство</button>
-            </div>
-
-            <div className="form-section">
-                <h3>Аллергии</h3>
-                {allergies.map((allergy, index) => (
-                    <div key={allergy.id} className="form-record">
-                        <h4>Запись #{index + 1}</h4>
-                        <div className="form-group">
-                            <label>Тип:</label>
-                            <input
-                                type="text"
-                                value={allergy.type}
-                                // onChange={(e) => handleSurgeryChange(allergy.id, '', e.target.value)}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Описание:</label>
-                            <textarea
-                                value={allergy.description}
                                 // onChange={(e) => handleSurgeryChange(surgery.id, 'description', e.target.value)}
                             />
                         </div>
                         <button
                             className="delete-btn"
-                            onClick={() => deleteRecord('allergies', allergy.id.toString())}
+                            // onClick={() => deleteRecord('surgeries', surgery.id.toString())}
                         >
                             Удалить
                         </button>
                     </div>
                 ))}
-                <button onClick={addNewSurgery}>+ Добавить аллергию</button>
+                <button
+                    className="edit-form__add"
+                    onClick={addNewSurgery}
+                >
+                    + Добавить вмешательство
+                </button>
+            </div>
+
+            <div className="edit-form__section">
+                <h2>Аллергии</h2>
+                {allergies 
+                    ? allergies.map((allergy, index) => (
+                        <div key={allergy.id} className="edit-form__record">
+                            <h4>Запись #{index + 1}</h4>
+                            <div className="edit-form__group">
+                                <label>Тип:</label>
+                                <input
+                                    type="text"
+                                    value={allergy.type}
+                                // onChange={(e) => handleSurgeryChange(allergy.id, '', e.target.value)}
+                                />
+                            </div>
+                            <div className="edit-form__group">
+                                <label>Описание:</label>
+                                <textarea
+                                    value={allergy.description}
+                                // onChange={(e) => handleSurgeryChange(surgery.id, 'description', e.target.value)}
+                                />
+                            </div>
+                            <button
+                                className="delete-btn"
+                                // onClick={() => deleteRecord('allergies', allergy.id.toString())}
+                            >
+                                Удалить
+                            </button>
+                        </div>
+                    ))
+                    : <div>Данные не найдены</div>
+                }
+                <button
+                    className="edit-form__add"
+                    onClick={addNewSurgery}
+                >
+                    + Добавить аллергию
+                </button>
             </div>
 
 
-            <div className="form-actions">
+            <div className="edit-form__actions">
                 <button className="save-btn" onClick={handleSave}>
                     Сохранить изменения
                 </button>

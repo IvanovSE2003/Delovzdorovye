@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../public/logo.svg";
 import { useContext, useState } from "react";
 import { Context } from "../../main";
+import { observer } from "mobx-react-lite";
 
 const ActivatedEmail = () => {
   const { store } = useContext(Context);
@@ -30,6 +31,7 @@ const ActivatedEmail = () => {
 
         <div className="account-blocked">
           <h1 className="account-blocked__title">Активируйте аккаунт</h1>
+          <p className="account-blocked__email"> {store.user.email}</p>
 
           <h3 className="account-blocked__message">{message}</h3>
           <h3 className="account-blocked__error">{error}</h3>
@@ -64,4 +66,4 @@ const ActivatedEmail = () => {
   );
 };
 
-export default ActivatedEmail;
+export default observer(ActivatedEmail);

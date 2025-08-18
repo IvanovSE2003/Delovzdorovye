@@ -30,6 +30,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
   const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
+  const [anonym, setAnonym] = useState<boolean>(false);
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
   const [stylePhone, setStylePhone] = useState<string>(""); // стиль для ввода телефона
@@ -40,6 +41,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setError("");
   }, [step])
 
+  // Проверка на сущ. пользователя по почте
   useEffect(() => {
     const emailRegex = /\S+@\S+\.\S+/;
     if (emailRegex.test(userDetails.email)) {
@@ -59,6 +61,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails.email])
 
+  // Проверка на сущ. пользвоателя по телефону
   useEffect(() => {
     if (userDetails?.phone?.length === 11) {
       const checkAuth = async () => {
@@ -77,6 +80,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
+  // Проверка что введены все обязательные поля
   const checkAllData = () => {
     return userDetails.email && userDetails.phone
       && userDetails.gender && userDetails.date_birth
@@ -161,29 +165,43 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             transition={{ duration: 0.2 }}
             className="auth__form"
           >
-            <MyInput
-              id="surname"
-              label="Фамилия"
-              value={userDetails.surname}
-              onChange={(value) => handleDetailsChange("surname", value)}
-              required
-            />
+            <div className="anonym-block">
+              <input
+                type="checkbox"
+                name="anonym"
+                value="anonym"
+                onClick={() => setAnonym(prev => !prev)}
+              />
+              <span>Анонимная регистрация</span>
+            </div>
 
-            <MyInput
-              id="name"
-              label="Имя"
-              value={userDetails.name}
-              onChange={(value) => handleDetailsChange("name", value)}
-              required
-            />
+            {!anonym && (
+              <>
+                <MyInput
+                  id="surname"
+                  label="Фамилия"
+                  value={userDetails.surname}
+                  onChange={(value) => handleDetailsChange("surname", value)}
+                  required
+                />
 
-            <MyInput
-              id="patronymic"
-              label="Отчество"
-              value={userDetails.patronymic}
-              onChange={(value) => handleDetailsChange("patronymic", value)}
-              required
-            />
+                <MyInput
+                  id="name"
+                  label="Имя"
+                  value={userDetails.name}
+                  onChange={(value) => handleDetailsChange("name", value)}
+                  required
+                />
+
+                <MyInput
+                  id="patronymic"
+                  label="Отчество"
+                  value={userDetails.patronymic}
+                  onChange={(value) => handleDetailsChange("patronymic", value)}
+                  required
+                />
+              </>
+            )}
 
             <MyInput
               id="email"

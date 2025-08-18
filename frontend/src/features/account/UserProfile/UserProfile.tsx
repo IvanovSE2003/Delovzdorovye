@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
@@ -15,6 +15,7 @@ const UserProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [QRcode, setQRcode] = useState<boolean>(false);
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
+  const [anonym, setAnonym] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<IUserDataProfile>({
     img: store.user.img,
@@ -24,7 +25,8 @@ const UserProfile: React.FC = () => {
     gender: store.user.gender,
     dateBirth: store.user.dateBirth,
     phone: store.user.phone,
-    email: store.user.email
+    email: store.user.email,
+    anonym: false,
   });
 
   const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,8 +71,10 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    await store.updateUserData(formData, store.user.id);
-    setIsEditing(false);
+    console.log(formData);
+    // Если хоть одно поле пустое и нет флага "аноним", то ошибка
+    // await store.updateUserData(formData, store.user.id);
+    // setIsEditing(false);
   };
 
   const openQR = async () => {
@@ -118,6 +122,21 @@ const UserProfile: React.FC = () => {
         : 'user-profile__role--admin';
   };
 
+  useEffect(() => {
+    anonym
+      ? setFormData(prev => ({
+        ...prev,
+        name: "",
+        surname: "",
+        patronymic: "",
+        anonym: anonym
+      }))
+      : setFormData(prev => ({
+        ...prev,
+        anonym: anonym
+      }));
+  }, [anonym])
+
   return (
     <div className="user-profile">
       <div className="user-profile__box">
@@ -146,35 +165,49 @@ const UserProfile: React.FC = () => {
           <div className="user-profile__info">
             {isEditing ? (
               <div className="user-profile__edit-form">
-                <div className="form-group">
+                <div className="anonym-block">
                   <input
-                    type="text"
-                    name="surname"
-                    value={formData.surname}
-                    onChange={handleInputChange}
-                    placeholder="Фамилия"
+                    type="checkbox"
+                    name="anonym"
+                    value="anonym"
+                    onClick={() => { setAnonym(prev => !prev) }}
                   />
+                  <span>Анонимный пользователь</span>
                 </div>
 
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Имя"
-                  />
-                </div>
+                {!anonym && (
+                  <>
+                    <div className="form-group">
+                      <input
+                        type="text"
+                        name="surname"
+                        value={formData.surname}
+                        onChange={handleInputChange}
+                        placeholder="Фамилия"
+                      />
+                    </div>
 
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="patronymic"
-                    value={formData.patronymic || ""}
-                    onChange={handleInputChange}
-                    placeholder="Отчество"
-                  />
-                </div>
+                    <div className="form-group">
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Имя"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <input
+                        type="text"
+                        name="patronymic"
+                        value={formData.patronymic || ""}
+                        onChange={handleInputChange}
+                        placeholder="Отчество"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
                   <div className="auth__radio-btn">

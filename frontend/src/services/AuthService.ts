@@ -2,15 +2,19 @@ import type { AxiosResponse } from 'axios';
 import type { LoginData, RegistrationData } from '../models/Auth'
 import type { TypeResponse } from '../models/response/DefaultResponse';
 import $api from '../http';
-import type { AuthResponse } from '../models/response/AuthResponse';
+import type { AuthResponse, LoginResponse } from '../models/response/AuthResponse';
 
 export default class AuthService {
-    static async login(Data: LoginData): Promise<AxiosResponse<AuthResponse>> {
-        return $api.post<AuthResponse>('user/login', Data);
+    static async login(data: LoginData): Promise<AxiosResponse<LoginResponse>> {
+        return $api.post<LoginResponse>('user/login', data);
     }
 
-    static async registration(Data: RegistrationData): Promise<AxiosResponse<AuthResponse>> {
-        return $api.post<AuthResponse>('user/registration', Data);
+    static async completeTwoFactor(tempToken: string|null, code: string) {
+        return $api.post<AuthResponse>('user/complete-two-factor', { tempToken, code });
+    }
+
+    static async registration(data: RegistrationData): Promise<AxiosResponse<AuthResponse>> {
+        return $api.post<AuthResponse>('user/registration', data);
     }
 
     static async logout(): Promise<void> {
