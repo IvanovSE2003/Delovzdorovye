@@ -27,11 +27,6 @@ const Specialists = () => {
     const [rejectReason, setRejectReason] = useState<string>("");
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
 
-    const logout = () => {
-        store.logout();
-        navigate(RouteNames.MAIN);
-    }
-
     const getBatchAll = async () => {
         try {
             const data = await store.getBatchAll(10, 1);
@@ -131,7 +126,6 @@ const Specialists = () => {
 
     return (
         <AccountLayout menuItems={menuItemsAdmin}>
-            <button onClick={logout}>Выйти из аккаунта</button>
             <h3 className="tab">Редактирование профилей</h3>
 
             {message && <div className="alert alert-success">{message}</div>}

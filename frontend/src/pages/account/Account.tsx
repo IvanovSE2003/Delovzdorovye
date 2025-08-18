@@ -5,8 +5,16 @@ import DoctorPage from './DoctorPage';
 import PatientPage from './PatientPage';
 import Specialists from './admin/Specialists';
 
+import { useNavigate } from 'react-router';
+import { RouteNames } from '../../routes';
+
 const PersonalPage = () => {
+  const navigate = useNavigate();
   const { store } = useContext(Context);
+  const logout = async () => {
+    await store.logout();
+    navigate(RouteNames.MAIN);
+  }
 
   switch (store.user.role) {
     case 'PATIENT':
@@ -14,9 +22,14 @@ const PersonalPage = () => {
     case 'DOCTOR':
       return <DoctorPage />;
     case 'ADMIN':
-      return <Specialists />;
+      return (
+        <>
+          <button onClick={logout}>Выйти</button>
+          <Specialists />
+        </>
+      );
     default:
-      return <div>Неизвестная роль</div>;
+return <div>Неизвестная роль</div>;
   }
 };
 

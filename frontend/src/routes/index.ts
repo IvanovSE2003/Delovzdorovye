@@ -12,7 +12,7 @@ import TimeSheet from "../pages/account/doctor/TimeSheet";
 import Help from "../pages/account/doctor/Help";
 import Finance from "../pages/account/doctor/Finance";
 
-import Specialists from "../pages/account/admin/specialists";
+import Specialists from "../pages/account/admin/Specialists";
 import Users from '../pages/account/admin/Users';
 
 export interface IRoute {

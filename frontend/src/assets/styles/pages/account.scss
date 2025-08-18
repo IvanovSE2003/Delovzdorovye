@@ -336,7 +336,6 @@
   color: red;
 
   &:hover {
-    cursor: pointer;
     background-color: #ad3642;
     color: white;
   }
@@ -346,10 +345,18 @@
   color: green;
 
   &:hover {
-    cursor: pointer;
     background-color:#218838;
     color: white;
   }
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.non-clickable {
+  cursor: default !important;
+  color: $gray-color;
 }
 
 .users {

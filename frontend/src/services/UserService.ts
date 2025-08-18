@@ -55,4 +55,8 @@ export default class UserService {
     static async unblockUser(id: number): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>('/user/unblock-account', {userId: id});
     }
+
+    static async changeRoleUser(id: number, newRole: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>('/user/change-role', { userId: id, newRole})
+    }
 }

@@ -358,4 +358,15 @@ export default class Store {
             return {success: false, message: this.error};
         }
     }
+
+    async changeRoleUser(id: number, newRole: string): Promise<TypeResponse> {
+        try {
+            const response = await UserService.changeRoleUser(id, newRole);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при изменении роли пользователя!");
+            return {success: false, message: this.error};
+        }
+    }
 }

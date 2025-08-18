@@ -4,6 +4,7 @@ import AccountLayout from "../AccountLayout";
 import { Context } from "../../../main";
 import type { User } from "../../../models/Auth";
 import { URL } from "../../../http";
+import { observer } from "mobx-react-lite";
 
 const Users = () => {
   const { store } = useContext(Context);
@@ -18,12 +19,7 @@ const Users = () => {
   const getAllUsers = async () => {
     const data = await store.getUsersAll();
     setUsers(data);
-    console.log(data);
   }
-
-  const handleToggleBlock = (userId: number) => {
-    console.log(`Toggling block for user ${userId}`);
-  };
 
   const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
     setPreviewImage(`${URL}/${imgPath}`);
@@ -34,15 +30,31 @@ const Users = () => {
     setPreviewImage(null);
   };
 
-  const blockedOrUnblocked = async (id: number, isBlocked: boolean) => {
-    if (!isBlocked) {
-      const data = await store.blockUser(id);
-      console.log(data);
-    } else {
-      const data = await store.unblockUser(id);
-      console.log(data);
-    }
+  const blockedOrUnblocked = async (id: number, isBlocked: boolean, role: string) => {
+    if (role === "ADMIN") return;
+    
+    !isBlocked
+      ? await store.blockUser(id)
+      : await store.unblockUser(id);
+
     getAllUsers();
+  }
+
+  const changeRoleUser = async (id: number, role: string) => {
+    if (role === "ADMIN") return;
+    
+    let data;
+    if (role === "DOCTOR") {
+      data = await store.changeRoleUser(id, "PATIENT");
+    } else {
+      data = await store.changeRoleUser(id, "DOCTOR");
+    }
+    console.log(data);
+    getAllUsers();
+  }
+
+  const isActionAllowed = (role: string) => {
+    return role !== "ADMIN";
   }
 
   return (
@@ -96,10 +108,9 @@ const Users = () => {
             {users ? users.map((user) => (
               <tr key={user.phone} className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}`}>
                 <td>
-                  {user.role === 'DOCTOR'
-                    ? 'Доктор'
-                    : 'Пациент'
-                  }
+                  {user.role === "ADMIN" && "Админ"}
+                  {user.role === "DOCTOR" && "Доктор"}
+                  {user.role === "PATIENT" && "Пациент"}
                 </td>
                 <td>
                   {(user.name && user.surname && user.patronymic)
@@ -125,10 +136,17 @@ const Users = () => {
                 <td>{user.specialization || "-"}</td>
                 <td>{user.diploma || "-"}</td>
                 <td>{user.license || "-"}</td>
-                <td>Сменить роль</td>
+                <td 
+                  onClick={() => isActionAllowed(user.role) && changeRoleUser(user.id, user.role)}
+                  className={isActionAllowed(user.role) ? "clickable" : "non-clickable"}
+                >
+                  {user.role === "DOCTOR" && "Сделать пациентом"}
+                  {user.role === "PATIENT" && "Сделать доктором"}
+                  {user.role === "ADMIN" && "-"}
+                </td>
                 <td
-                  onClick={() => blockedOrUnblocked(user.id, user.isBlocked)}
-                  className={user.isBlocked ? "action-unblock-user" : "action-block-user"}
+                  onClick={() => isActionAllowed(user.role) && blockedOrUnblocked(user.id, user.isBlocked, user.role)}
+                  className={`${user.isBlocked ? "action-unblock-user" : "action-block-user"} ${isActionAllowed(user.role) ? "clickable" : "non-clickable"}`}
                 >
                   {user.isBlocked ? "Разблокировать" : "Заблокировать"}
                 </td>
@@ -137,9 +155,7 @@ const Users = () => {
               <tr>
                 <td colSpan={10}>Нет данных</td>
               </tr>
-            )
-
-            }
+            )}
           </tbody>
         </table>
       </div>
@@ -147,4 +163,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default observer(Users);
