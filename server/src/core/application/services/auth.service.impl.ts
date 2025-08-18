@@ -197,7 +197,11 @@ export class AuthServiceImpl implements AuthService {
                 await this.userRepository.save(user.setTwoFactorCode(code, expires));
                 
                 if (twoFactorMethod) {
-                    await this.twoFactorService.sendCode(user, twoFactorMethod, code);
+                    if(twoFactorMethod === "SMS" && user.isActivatedSMS) {
+                        await this.twoFactorService.sendCode(user, twoFactorMethod, code);
+                    } else {
+                        await this.twoFactorService.sendCode(user, "EMAIL", code);
+                    }
                 } else {
                     await this.mailService.sendTwoFactorCode(user.email, code);
                 }
