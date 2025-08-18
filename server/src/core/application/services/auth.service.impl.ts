@@ -188,14 +188,14 @@ export class AuthServiceImpl implements AuthService {
             }
 
             const resetUser = await this.userRepository.save(user.resetPinAttempts());
-            
+
             if (!twoFactorCode) {
                 const code = this.twoFactorService.generateCode();
                 const expires = new Date(Date.now() + 5 * 60 * 1000); 
                 
                 await this.userRepository.save(user.setTwoFactorCode(code, expires));
 
-                if(twoFactorMethod === "SMS" && user.isActivatedSMS) {
+                if(twoFactorMethod === "SMS" && !user.isActivatedSMS) {
                     twoFactorMethod = 'EMAIL';
                 }
                 
