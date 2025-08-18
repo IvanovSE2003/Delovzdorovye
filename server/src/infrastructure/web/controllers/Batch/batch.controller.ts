@@ -201,7 +201,8 @@ export default class BatchController {
                     email: user.email,
                     specialization: null,
                     diploma: null,
-                    license: null
+                    license: null,
+                    isBlocked: user.isBlocked
                 };
 
                 if (user.role === 'DOCTOR') {

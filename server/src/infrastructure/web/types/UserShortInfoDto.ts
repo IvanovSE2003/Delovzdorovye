@@ -10,4 +10,5 @@ export default interface UserShortInfoDto {
     specialization?: string | null;
     diploma?: string | null;
     license?: string | null;
+    isBlocked: boolean;
 }
