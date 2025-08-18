@@ -13,6 +13,8 @@ router.post('/registration',
     (req: Request, res: Response, next: NextFunction) => userController.registration(req, res, next));
     
 router.post('/login', (req: Request, res: Response, next: NextFunction) => userController.login(req, res, next));
+router.post('/complete-two-factor', (req: Request, res: Response, next: NextFunction) => userController.completeTwoFactorAuth(req, res, next));
+
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
 router.get('/auth', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
 
@@ -36,7 +38,10 @@ router.post('/request-pin-reset', body('emailOrPhone').notEmpty(), (req: Request
 
 router.post('/reset-pin', body('token').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
 
-router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next))
+router.post('/change-role', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.changeRole(req, res, next));
+
+router.post('/block-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.blockAccount(req, res, next));
+router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next));
 router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
 
 router.post('/upload-avatar', (req: Request, res: Response, next: NextFunction) => userController.uploadAvatar(req, res, next));

@@ -13,8 +13,8 @@ class TokenServiceImpl implements TokenService {
         private readonly accessExpiresIn: string = '5m',
         private readonly refreshExpiresIn: string = '24h'
     ) {
-        if (!secretKey || !refreshKey) {
-            throw new Error('Секретные ключи не найдены');
+        if (!this.secretKey || !this.refreshKey) {
+            throw new Error('JWT секретные ключи не настроены');
         }
     }
 

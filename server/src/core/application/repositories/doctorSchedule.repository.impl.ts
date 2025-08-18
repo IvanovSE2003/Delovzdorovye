@@ -13,7 +13,8 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             where: {doctorId},
             include: [{
                 model: TimeSlot,
-                as: 'timeSlots'
+                as: 'time_slots',
+                foreignKey: 'schedule_id'
             }]
         });
         return schedule ? this.mapToDomainSchedule(schedule) : null;
@@ -23,7 +24,8 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         const schedule = await DoctorsSchedule.findByPk(id, {
             include: [{
                 model: TimeSlot,
-                as: 'time_slots'
+                as: 'time_slots',
+                foreignKey: 'schedule_id'
             }]
         });
         return schedule ? this.mapToDomainSchedule(schedule) : null;
@@ -53,15 +55,15 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         }
     }
 
-    async createWithTimeSlots(schedule: DoctorSchedule, timeSlots: TimeSlotsArray): Promise<DoctorSchedule> {
+    async createWithTimeSlots(schedule: DoctorSchedule, time_slots: TimeSlotsArray): Promise<DoctorSchedule> {
         const transaction = await sequelize.transaction();
         
         try {
             const createdSchedule = await DoctorsSchedule.create(this.mapToPersistence(schedule), {transaction});
             
-            if (timeSlots.length > 0) {
+            if (time_slots.length > 0) {
                 await TimeSlot.bulkCreate(
-                    timeSlots.map(slot => ({
+                    time_slots.map(slot => ({
                         ...slot,
                         doctorScheduleId: createdSchedule.id
                     })),
@@ -77,8 +79,8 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         }
     }
 
-    private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & {timeSlots?: any[]}): DoctorSchedule {
-        const timeSlots: TimeSlotsArray | undefined = scheduleModel.timeSlots?.map(slot => ({
+    private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & {time_slots?: any[]}): DoctorSchedule {
+        const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({
             time: slot.time,
             is_available: slot.is_available
         }));
@@ -90,7 +92,7 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             scheduleModel.time_start,
             scheduleModel.time_end,
             scheduleModel.doctorId,
-            timeSlots
+            time_slots
         );
     }
 

@@ -43,7 +43,7 @@ export class AuthServiceImpl implements AuthService {
 
         const user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
             data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
-            data.role, null, null, null, null, 0, false, null);
+            data.role, null, null, null, null, 0, false, null, false);
 
         const savedUser = await this.userRepository.save(user);
 
@@ -150,15 +150,26 @@ export class AuthServiceImpl implements AuthService {
         return await this.telegramService.generateLinkToken(userId);
     }
 
-    async login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+    async login(
+        credential: string, 
+        pinCode: number, 
+        twoFactorMethod?: string,
+        twoFactorCode?: string
+    ): Promise<{ 
+        user: User; 
+        accessToken: string; 
+        refreshToken: string;
+        requiresTwoFactor?: boolean;
+        tempToken?: string;
+    }> {
         try {
             const user = await this.userRepository.findByEmailOrPhone(credential) as User;
             if (!user) {
                 throw new Error("Пользователь не найден");
             }
 
-            if(user.isBlocked) {
-                throw new Error('Аккаунт заблокирован')
+            if (user.isBlocked) {
+                throw new Error('Аккаунт заблокирован');
             }
 
             const isPinValid = await this.userRepository.verifyPinCode(user.id, pinCode);
@@ -179,6 +190,43 @@ export class AuthServiceImpl implements AuthService {
             const resetUser = user.resetPinAttempts();
             await this.userRepository.save(resetUser);
 
+            if (!twoFactorCode) {
+                const code = this.twoFactorService.generateCode();
+                const expires = new Date(Date.now() + 5 * 60 * 1000); 
+                
+                await this.userRepository.save(user.setTwoFactorCode(code, expires));
+                
+                if (twoFactorMethod) {
+                    await this.twoFactorService.sendCode(user, twoFactorMethod, code);
+                } else {
+                    await this.mailService.sendTwoFactorCode(user.email, code);
+                }
+
+                const tempToken = jwt.sign(
+                    {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                        twoFactorRequired: true
+                    },
+                    this.twoFactorService.getTempSecret(),
+                    { expiresIn: '5m' } 
+                );
+
+                return {
+                    user: resetUser,
+                    accessToken: '',
+                    refreshToken: '',
+                    requiresTwoFactor: true,
+                    tempToken
+                };
+            }
+
+            const isValid = await this.twoFactorService.verifyCode(user, twoFactorCode);
+            if (!isValid) {
+                throw new Error('Неверный код подтверждения');
+            }
+
             const tokens = await this.tokenService.generateTokens({
                 id: user.id,
                 email: user.email,
@@ -186,17 +234,18 @@ export class AuthServiceImpl implements AuthService {
             });
 
             await this.tokenService.saveToken(user.id, tokens.refreshToken);
-            if(user.isActivatedSMS) {
+
+            if (user.isActivatedSMS) {
                 await this.smsService.sendLoginNotification(user.id);
             }
 
             return {
                 user: resetUser,
                 accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
+                refreshToken: tokens.refreshToken
             };
-        } catch(e: any) {
-            throw new Error(e.message)
+        } catch (e: any) {
+            throw new Error(e.message);
         }
     }
 
@@ -221,13 +270,14 @@ export class AuthServiceImpl implements AuthService {
         return await this.twoFactorService.verifyCode(user, code);
     }
 
-    async completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string }> {
+    async completeTwoFactorAuth(tempToken: string, code: string): Promise<{accessToken: string; refreshToken: string; user: User; }> {
         const payload = jwt.verify(tempToken, this.twoFactorService.getTempSecret()) as jwt.JwtPayload & {
             id: number;
             email: string;
             role: string;
             twoFactorRequired: boolean;
         };
+
         if (!payload || !payload.twoFactorRequired) {
             throw new Error('Неверный временный токен');
         }
@@ -250,7 +300,15 @@ export class AuthServiceImpl implements AuthService {
 
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
-        return tokens;
+        if (user.isActivatedSMS) {
+            await this.smsService.sendLoginNotification(user.id);
+        }
+
+        return {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            user: user 
+        };
     }
 
     async sendLoginNotification(phone: string, code: string): Promise<void> {
@@ -314,6 +372,20 @@ export class AuthServiceImpl implements AuthService {
         }
 
         const updatedUser = user.unblockAccount();
+        await this.userRepository.save(updatedUser);
+    }
+
+    async blockAccount(userId: number): Promise<void> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("Пользователь не найден");
+        }
+
+        if (user.isBlocked) {
+            throw new Error("Аккаунт уже заблокирован");
+        }
+
+        const updatedUser = user.blockAccount();
         await this.userRepository.save(updatedUser);
     }
 

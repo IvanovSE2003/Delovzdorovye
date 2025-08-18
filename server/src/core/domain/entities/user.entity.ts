@@ -305,4 +305,32 @@ export default class User {
             true
         );
     }
+
+    setRole(role: "PATIENT" | "DOCTOR" | "ADMIN"): User {
+        return new User(
+            this.id,
+            this.name,
+            this.surname,
+            this.patronymic,
+            this.email,
+            this.phone,
+            this.pinCode,
+            this.timeZone,
+            this.dateBirth,
+            this.gender,
+            this.isActivated,
+            this.isActivatedSMS,
+            this.activationLink,
+            this.img,
+            role,
+            this.twoFactorCode,
+            this.twoFactorCodeExpires,
+            this.resetToken,
+            this.resetTokenExpires,
+            this.pinAttempts, 
+            this.isBlocked,
+            this.blockedUntil,
+            this.sentChanges
+        );
+    }
 }

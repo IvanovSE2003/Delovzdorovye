@@ -9,7 +9,7 @@ import regData from "../../types/reqData.type.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
-
+import dataResult from "../../types/dataResultAuth.js";
 
 export default class UserController {
     constructor(
@@ -59,11 +59,46 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, phone, pin_code } = req.body;
+            const { email, phone, pin_code, twoFactorCode, twoFactorMethod } = req.body;
+            let credential = email ? email : phone;
 
-            let credential = email ? email : phone
+            const result = await this.authService.login(
+                credential, 
+                pin_code,
+                twoFactorMethod,
+                twoFactorCode
+            ) as dataResult;
 
-            const result = await this.authService.login(credential, pin_code);
+            if (result.requiresTwoFactor) {
+                return res.json({
+                    requiresTwoFactor: true,
+                    tempToken: result.tempToken,
+                    message: twoFactorMethod 
+                        ? `Код подтверждения отправлен ${twoFactorMethod === 'EMAIL' ? 'на email' : 'по SMS'}` 
+                        : 'Код подтверждения отправлен на email'
+                });
+            }
+
+            res.cookie("refreshToken", result.refreshToken, {
+                maxAge: 24 * 60 * 60 * 1000, 
+                httpOnly: true,
+                secure: true,
+            });
+
+            return res.json({
+                accessToken: result.accessToken,
+                user: result.user,
+            });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async completeTwoFactorAuth(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { tempToken, code } = req.body;
+            
+            const result = await this.authService.completeTwoFactorAuth(tempToken, code) as dataResult;
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -73,6 +108,7 @@ export default class UserController {
 
             return res.json({
                 accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
                 user: result.user,
             });
         } catch (e: any) {
@@ -492,13 +528,28 @@ export default class UserController {
         try {
             const { userId } = req.body;
 
-            if (!userId) {
-                return next(ApiError.badRequest('Не указаны ID пользователей'));
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
             }
 
             await this.authService.unblockAccount(Number(userId));
-            return res.json({ success: true, message: 'Аккаунт успешно разблокирован' });
+            return res.status(200).json({ success: true, message: 'Аккаунт успешно разблокирован' });
         } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async blockAccount(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.body;
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+            await this.authService.blockAccount(Number(userId));
+            return res.status(200).json({ success: true, message: 'Аккаунт заблокирован' })
+        } catch(e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
@@ -561,6 +612,19 @@ export default class UserController {
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
+    }
+
+    async changeRole(req: Request, res: Response, next: NextFunction) {
+        const { userId, newRole } = req.body;
+        const user = this.userRepository.findById(Number(userId)) as unknown as User;
+        if(!user) {
+            return next(ApiError.badRequest('Пользователь не найден'));
+        }
+
+        if(newRole !== "PATIENT" && newRole !== "DOCTOR" && newRole !== "ADMIN") {
+            return next(ApiError.badRequest('Неизвестная роль'));
+        }
+        await this.userRepository.save(user.setRole(newRole));
     }
 }
 

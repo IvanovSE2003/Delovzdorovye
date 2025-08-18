@@ -1,9 +1,7 @@
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import User from "../../domain/entities/user.entity.js";
 import MailService from "../../domain/services/mail.service.js";
-import ApiError from '../../../infrastructure/web/error/ApiError.js';
 import SmsService from "../../domain/services/sms.service.js";
-import { v4 } from "uuid";
 
 export default class TwoFactorServiceImpl implements TwoFactorService {
     constructor(

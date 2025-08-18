@@ -5,7 +5,7 @@ import regData from "../../../infrastructure/web/types/reqData.type.js";
 export default interface AuthService {
     register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }>;
 
-    login(credential: string, pinCode: number): Promise<{ user: User; accessToken: string; refreshToken: string }>;
+    login(credential: string, pinCode: number, twoFactorMethod?: string, twoFactorCode?: string): Promise<{ user: User; accessToken: string; refreshToken: string }>;
 
     logout(refreshToken: string): Promise<void>;
     refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;
@@ -22,5 +22,6 @@ export default interface AuthService {
     resetPin(resetToken: string, newPin: number): Promise<void>;
 
     unblockAccount(userId: number): Promise<void>;
+    blockAccount(userId: number): Promise<void>;
     sendActivationEmail(email: string, activationLink: string): Promise<void>;
 }

@@ -1,6 +1,9 @@
 import { Bot } from 'grammy';
 import TelegramService from '../../domain/services/telegram.service.js';
 import models from '../../../infrastructure/persostence/models/models.js';
+import { Op } from 'sequelize';
+import UserRepositoryImpl from '../repositories/user.repository.impl.js';
+import UserRepository from '../../domain/repositories/user.repository.js';
 
 const { UserTelegramModel } = models;
 
@@ -8,6 +11,7 @@ export default class TelegramServiceImpl implements TelegramService {
     private bot: Bot;
     private linkTokens = new Map<string, number>();
     private cleanupTimers = new Map<string, NodeJS.Timeout>();
+    private readonly userRepository: UserRepository = new UserRepositoryImpl(); 
 
     constructor() {
         this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
@@ -69,6 +73,7 @@ export default class TelegramServiceImpl implements TelegramService {
             }
 
             const userId = this.linkTokens.get(code);
+            const user = await this.userRepository.findById(Number(userId));
 
             if (!userId) {
                 await ctx.reply('❌ Неверный или просроченный код привязки');
@@ -77,7 +82,12 @@ export default class TelegramServiceImpl implements TelegramService {
 
             try {
                 const existingLink = await UserTelegramModel.findOne({
-                    where: { userId }
+                    where: {
+                        [Op.or]: [
+                            { userId: userId },
+                            { telegram_chat_id: chatId }
+                        ]
+                    }
                 });
 
                 if (existingLink) {
@@ -94,6 +104,10 @@ export default class TelegramServiceImpl implements TelegramService {
                 if (this.cleanupTimers.has(code)) {
                     clearTimeout(this.cleanupTimers.get(code));
                     this.cleanupTimers.delete(code);
+                }
+
+                if(user) {
+                    await this.userRepository.save(user.activateSMS())
                 }
 
                 await ctx.reply('✅ Аккаунт успешно привязан!');
