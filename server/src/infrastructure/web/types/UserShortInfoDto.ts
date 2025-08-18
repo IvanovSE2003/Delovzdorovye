@@ -1,4 +1,5 @@
 export default interface UserShortInfoDto {
+    id: number;
     role: string;
     name: string | null;
     surname: string | null;

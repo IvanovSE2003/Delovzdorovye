@@ -191,6 +191,7 @@ export default class BatchController {
 
             const response = users.map(user => {
                 const userData: UserShortInfoDto = {
+                    id: user.id,
                     role: user.role,
                     name: user.name,
                     surname: user.surname,
