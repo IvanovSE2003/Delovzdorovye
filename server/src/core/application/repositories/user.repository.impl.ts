@@ -186,7 +186,8 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.pinAttempts, 
             userModel.isBlocked,
             userModel.blockedUntil,
-            userModel.sentChanges
+            userModel.sentChanges,
+            userModel.isAnonymous
         );
     }
 
@@ -213,7 +214,8 @@ export default class UserRepositoryImpl implements UserRepository {
             pinAttempts: user.pinAttempts,
             isBlocked: user.isBlocked,
             blockedUntil: user.blockedUntil,
-            sentChanges: user.sentChanges
+            sentChanges: user.sentChanges,
+            isAnonymous: user.isAnonymous
         };
     }
 }

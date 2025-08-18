@@ -22,7 +22,8 @@ export default class User {
         public pinAttempts: number, 
         public isBlocked: boolean, 
         public blockedUntil: Date | null,
-        public sentChanges: boolean | null
+        public sentChanges: boolean | null,
+        public isAnonymous: boolean | null
     ) {}
 
     activate(): User {
@@ -49,7 +50,8 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -77,7 +79,8 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         )
     }
 
@@ -105,7 +108,8 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -133,7 +137,8 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -161,7 +166,8 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -189,7 +195,8 @@ export default class User {
             this.pinAttempts + 1,
             this.isBlocked,
             this.blockedUntil,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -223,7 +230,8 @@ export default class User {
             this.pinAttempts,
             true, 
             new Date(Date.now() + blockDuration),
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -251,7 +259,8 @@ export default class User {
             0,
             false, 
             null,
-            this.sentChanges
+            this.sentChanges,
+            this.isAnonymous
         );
     }
 
@@ -279,12 +288,18 @@ export default class User {
             this.pinAttempts, 
             this.isBlocked,
             this.blockedUntil,
-            true
+            true,
+            this.isAnonymous
         );
     }
 
     setRole(role: "PATIENT" | "DOCTOR" | "ADMIN"): User {
         this.role = role;
+        return this;
+    }
+
+    setAnonymous(flag: boolean) {
+        this.isActivated = flag;
         return this;
     }
 }

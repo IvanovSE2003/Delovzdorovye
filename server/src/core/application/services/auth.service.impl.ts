@@ -41,9 +41,16 @@ export class AuthServiceImpl implements AuthService {
             defaultImg = "man.png";
         }
 
-        const user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
-            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
-            data.role, null, null, null, null, 0, false, null, false);
+        let user;
+        if(data.isAnonymous) {
+            user = new User(0, "", "", "", data.email, data.phone, 
+                            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
+                            data.role, null, null, null, null, 0, false, null, false, data.isAnonymous);
+        } else {
+            user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
+                data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
+                data.role, null, null, null, null, 0, false, null, false, data.isAnonymous);
+        }
 
         const savedUser = await this.userRepository.save(user);
 
