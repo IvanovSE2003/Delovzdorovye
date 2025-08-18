@@ -12,5 +12,6 @@ export default interface regData {
     specialization: string,
     experienceYears: number
     diploma: string,
-    license: string
+    license: string,
+    isAnonymous: boolean
 }

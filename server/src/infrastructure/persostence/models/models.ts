@@ -31,7 +31,8 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     pinAttempts: {type: DataType.INTEGER, defaultValue: 0},
     isBlocked: {type: DataType.BOOLEAN, defaultValue: false},
     blockedUntil: {type: DataType.DATE, allowNull: true},
-    sentChanges: {type: DataType.BOOLEAN, allowNull: true, defaultValue: false}
+    sentChanges: {type: DataType.BOOLEAN, allowNull: true, defaultValue: false},
+    isAnonymous: {type: DataType.BOOLEAN, allowNull: true, defaultValue: false},
 })
 
 const UserTelegramModel = sequelize.define<TelegramModelInterface>('telegram_user', {

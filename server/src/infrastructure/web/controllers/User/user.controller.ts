@@ -22,7 +22,7 @@ export default class UserController {
 
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, experienceYears } = req.body;
+            const { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, experienceYears, isAnonymous} = req.body;
 
             let diplomaFileName: string | null = null;
             let licenseFileName: string | null = null;
@@ -38,7 +38,7 @@ export default class UserController {
                 }
             }
 
-            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization, experienceYears, diploma: diplomaFileName, license: licenseFileName } as unknown as regData;
+            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization, experienceYears, diploma: diplomaFileName, license: licenseFileName, isAnonymous} as unknown as regData;
 
             const result = await this.authService.register(data);
 
@@ -450,7 +450,8 @@ export default class UserController {
                 user.pinAttempts,
                 user.isBlocked,
                 user.blockedUntil,
-                user.sentChanges
+                user.sentChanges,
+                user.isAnonymous
             );
 
 
