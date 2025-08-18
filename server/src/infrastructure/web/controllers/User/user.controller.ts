@@ -71,10 +71,7 @@ export default class UserController {
             if (result.requiresTwoFactor) {
                 return res.json({
                     success: true,
-                    tempToken: result.tempToken,
-                    message: twoFactorMethod 
-                        ? `Код подтверждения отправлен ${twoFactorMethod === 'EMAIL' ? 'на email' : 'по SMS'}` 
-                        : 'Код подтверждения отправлен на email'
+                    tempToken: result.tempToken
                 });
             }
 

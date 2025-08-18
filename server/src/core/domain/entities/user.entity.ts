@@ -193,32 +193,9 @@ export default class User {
         );
     }
 
-    resetPinAttempts(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            0, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges
-        );
+    resetPinAttempts(): this {
+        this.pinAttempts = 0;
+        return this;
     }
 
     blockAccount(): User {

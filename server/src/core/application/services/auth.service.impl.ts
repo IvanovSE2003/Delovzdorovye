@@ -187,21 +187,20 @@ export class AuthServiceImpl implements AuthService {
                 throw new Error(`Неверный пин-код. Осталось попыток: ${attemptsLeft}`);
             }
 
-            const resetUser = user.resetPinAttempts();
-            await this.userRepository.save(resetUser);
-
+            const resetUser = await this.userRepository.save(user.resetPinAttempts());
+            
             if (!twoFactorCode) {
                 const code = this.twoFactorService.generateCode();
                 const expires = new Date(Date.now() + 5 * 60 * 1000); 
                 
                 await this.userRepository.save(user.setTwoFactorCode(code, expires));
+
+                if(twoFactorMethod === "SMS" && user.isActivatedSMS) {
+                    twoFactorMethod = 'EMAIL';
+                }
                 
                 if (twoFactorMethod) {
-                    if(twoFactorMethod === "SMS" && user.isActivatedSMS) {
-                        await this.twoFactorService.sendCode(user, twoFactorMethod, code);
-                    } else {
-                        await this.twoFactorService.sendCode(user, "EMAIL", code);
-                    }
+                    await this.twoFactorService.sendCode(user, twoFactorMethod, code);
                 } else {
                     await this.mailService.sendTwoFactorCode(user.email, code);
                 }
