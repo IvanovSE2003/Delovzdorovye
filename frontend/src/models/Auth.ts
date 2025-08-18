@@ -33,6 +33,22 @@ export interface IUserDataProfile {
     anonym: boolean;
 }
 
+export interface User {
+  id: number;
+  role: string;
+  name: string;
+  surname: string;
+  patronymic: string;
+  img: string;
+  gender: string;
+  phone: string;
+  email: string;
+  specialization: string;
+  diploma: string;
+  license: string;
+  isBlocked: boolean;
+}
+
 export type LoginData = {
     creditial: string;
     twoFactorMethod: "SMS"|"EMAIL";

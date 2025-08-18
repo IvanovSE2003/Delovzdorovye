@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, IUserDataProfile, LoginData, RegistrationData } from "../models/Auth";
+import type { IUser, IUserDataProfile, LoginData, RegistrationData, User } from "../models/Auth";
 import type { TypeResponse } from "../models/response/DefaultResponse";
 import type { TypeResponseToken } from "../models/response/TokenResponse";
 import AuthService from "../services/AuthService";
@@ -305,7 +305,6 @@ export default class Store {
     async confirmChange(id: number): Promise<TypeResponse> {
         try {
             const response = await BatchService.confirmChange(id);
-            console.log(response.data);
             return response.data;
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;
@@ -317,11 +316,45 @@ export default class Store {
     async rejectChange(id: number, message: string): Promise<TypeResponse> {
         try {
             const response = await BatchService.rejectChange(id, message);
-            console.log(response.data);
             return response.data;
         } catch(e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
+            return {success: false, message: this.error};
+        }
+    }
+
+
+    // Получить всех пользователей
+    async getUsersAll(): Promise<User[]> {
+        try {
+            const response = await BatchService.getUsersAll();
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при получении пользователей!");
+            return [];
+        }
+    }
+
+    async blockUser(id: number): Promise<TypeResponse> {
+        try {
+            const response = await UserService.blockUser(id);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при блокировки пользователя!");
+            return {success: false, message: this.error};
+        }
+    }
+
+    async unblockUser(id: number): Promise<TypeResponse> {
+        try {
+            const response = await UserService.unblockUser(id);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка разблокировки пользователя!");
             return {success: false, message: this.error};
         }
     }

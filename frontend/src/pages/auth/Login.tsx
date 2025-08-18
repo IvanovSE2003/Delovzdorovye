@@ -11,13 +11,12 @@ import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../routes";
 
 const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
+  const { store } = useContext(Context);
   const navigate = useNavigate();
+
   const [method, setMethod] = useState<"SMS" | "EMAIL">("SMS");
   const [step, setStep] = useState<number>(1);
-
   const [emailOrphone, setEmailOrPhone] = useState<string>("");
-
-  const { store } = useContext(Context);
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [isResending, setIsResending] = useState<boolean>(false);
 
@@ -39,10 +38,9 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setError(store.error);
   }, [store.error]);
 
-  // Сбрасываем все ошибки при открытии входа
   useEffect(() => {
     setError("")
-  }, [])
+  }, [step])
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -79,7 +77,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Завершение 2 этапа
   const login = async (code: string) => {
-    console.log(code)
     const correctCode = /^\d{4}$/.test(code);
     if (!correctCode)
       setError("Не корректно введен код!");

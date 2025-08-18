@@ -17,6 +17,7 @@
     width: 100%;
     max-width: 100%;
     height: max-content;
+    overflow: hidden;
 
     >* {
       max-width: 100%;
@@ -61,6 +62,10 @@
 
 // Страницы профиля администратора
 .admin-page {
+  width: 100%;
+  overflow-x: auto; // Основной скролл для таблицы
+  -webkit-overflow-scrolling: touch;
+
   &__title {
     margin-top: 20px;
   }
@@ -78,7 +83,9 @@
   }
 
   &__table {
-    width: 100%;
+    width: auto;
+    min-width: 100%;
+    white-space: nowrap;
 
     & thead {
       background-color: $primary-color;
@@ -124,6 +131,17 @@
   }
 }
 
+.tab {
+  padding: 10px 15px;
+  background-color: $secondary-color;
+  border: 1px solid $gray-color;
+  border-radius: 10px;
+  color: $text-color;
+  width: max-content;
+  font-size: 1.4rem;
+  margin-top: 20px;
+}
+
 // Анимации
 @keyframes fadeIn {
   from {
@@ -144,16 +162,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
   }
 }
 
@@ -324,15 +332,24 @@
   }
 }
 
-.tab {
-  padding: 10px 15px;
-  background-color: $secondary-color;
-  border: 1px solid $gray-color;
-  border-radius: 10px;
-  color: $text-color;
-  width: max-content;
-  font-size: 1.4rem;
-  margin-top: 20px;
+.action-block-user {
+  color: red;
+
+  &:hover {
+    cursor: pointer;
+    background-color: #ad3642;
+    color: white;
+  }
+}
+
+.action-unblock-user {
+  color: green;
+
+  &:hover {
+    cursor: pointer;
+    background-color:#218838;
+    color: white;
+  }
 }
 
 .users {
@@ -352,6 +369,19 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &__row-blocked {
+    background-color: #e7972f !important;
+    color: white;
+
+    a {
+      color: white;
+
+      &:hover {
+        color: $primary-color;
+      }
+    }
   }
 
   &__table {
@@ -381,34 +411,6 @@
       text-align: left;
       border-bottom: 1px solid #e0e0e0;
       white-space: nowrap;
-    }
-  }
-
-  &__checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-
-    &-input {
-      cursor: pointer;
-    }
-
-    &-label {
-      user-select: none;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .users {
-    &__table {
-
-      &-header,
-      &-cell {
-        padding: 8px 10px;
-        font-size: 14px;
-      }
     }
   }
 }

@@ -1,61 +1,80 @@
+import { useContext, useEffect, useState } from "react";
 import { menuItemsAdmin } from "../../../routes";
 import AccountLayout from "../AccountLayout";
-
-interface User {
-  id: number;
-  role: string;
-  name: string;
-  photo: string;
-  gender: string;
-  phone: string;
-  email: string;
-  specialization: string;
-  diploma: string;
-  license: string;
-  status: string;
-  isBlocked: boolean;
-}
+import { Context } from "../../../main";
+import type { User } from "../../../models/Auth";
+import { URL } from "../../../http";
 
 const Users = () => {
-  const users: User[] = [
-    {
-      id: 1,
-      role: "Специалист",
-      name: "Иванова Мария Ивановна",
-      photo: "Документ",
-      gender: "Женщина",
-      phone: "8 868 888 88 88",
-      email: "homevo@mail.ru",
-      specialization: "Нутрициолог",
-      diploma: "Документ",
-      license: "Документ",
-      status: "Врем.",
-      isBlocked: false,
-    },
-    {
-      id: 2,
-      role: "Пользователь",
-      name: "Иванов Иван Иванович",
-      photo: "Документ",
-      gender: "Мужчина",
-      phone: "8 868 888 88 88",
-      email: "homev@mail.ru",
-      specialization: "-",
-      diploma: "-",
-      license: "-",
-      status: "Врем.",
-      isBlocked: false,
-    },
-  ];
+  const { store } = useContext(Context);
+  const [users, setUsers] = useState<User[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    getAllUsers();
+  }, [])
+
+  const getAllUsers = async () => {
+    const data = await store.getUsersAll();
+    setUsers(data);
+    console.log(data);
+  }
 
   const handleToggleBlock = (userId: number) => {
     console.log(`Toggling block for user ${userId}`);
   };
 
+  const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
+    setPreviewImage(`${URL}/${imgPath}`);
+    setPreviewPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleImageLeave = () => {
+    setPreviewImage(null);
+  };
+
+  const blockedOrUnblocked = async (id: number, isBlocked: boolean) => {
+    if (!isBlocked) {
+      const data = await store.blockUser(id);
+      console.log(data);
+    } else {
+      const data = await store.unblockUser(id);
+      console.log(data);
+    }
+    getAllUsers();
+  }
+
   return (
     <AccountLayout menuItems={menuItemsAdmin}>
       <h1 className="tab">Профили</h1>
       <div className="admin-page">
+        {previewImage && (
+          <div
+            className="image-preview"
+            style={{
+              position: 'fixed',
+              left: `${previewPosition.x + 20}px`,
+              top: `${previewPosition.y + 20}px`,
+              zIndex: 1000,
+              backgroundColor: 'white',
+              padding: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+            }}
+          >
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{
+                maxWidth: '200px',
+                maxHeight: '200px'
+              }}
+            />
+          </div>
+        )}
+
         <table className="admin-page__table">
           <thead>
             <tr>
@@ -74,21 +93,53 @@ const Users = () => {
           </thead>
 
           <tbody className="users__table-body">
-            {users.map((user) => (
-              <tr key={user.id} className="users__table-row">
-                <td>{user.role}</td>
-                <td>{user.name}</td>
-                <td>{user.photo}</td>
+            {users ? users.map((user) => (
+              <tr key={user.phone} className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}`}>
+                <td>
+                  {user.role === 'DOCTOR'
+                    ? 'Доктор'
+                    : 'Пациент'
+                  }
+                </td>
+                <td>
+                  {(user.name && user.surname && user.patronymic)
+                    ? (<div>{user.name} {user.surname} {user.patronymic}</div>)
+                    : (<div>Анонимный пользователь</div>)
+                  }
+                </td>
+                <td>
+                  {user.img ? (
+                    <a
+                      href={`${URL}/${user.img}`}
+                      onMouseEnter={(e) => handleImageHover(e, user.img)}
+                      onMouseLeave={handleImageLeave}
+                      onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
+                    >
+                      Изображение
+                    </a>
+                  ) : 'Нет фото'}
+                </td>
                 <td>{user.gender}</td>
                 <td>{user.phone}</td>
                 <td>{user.email}</td>
-                <td>{user.specialization}</td>
-                <td>{user.diploma}</td>
-                <td>{user.license}</td>
-                <td>{user.status}</td>
-                <td>Заблокировать</td>
+                <td>{user.specialization || "-"}</td>
+                <td>{user.diploma || "-"}</td>
+                <td>{user.license || "-"}</td>
+                <td>Сменить роль</td>
+                <td
+                  onClick={() => blockedOrUnblocked(user.id, user.isBlocked)}
+                  className={user.isBlocked ? "action-unblock-user" : "action-block-user"}
+                >
+                  {user.isBlocked ? "Разблокировать" : "Заблокировать"}
+                </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan={10}>Нет данных</td>
+              </tr>
+            )
+
+            }
           </tbody>
         </table>
       </div>

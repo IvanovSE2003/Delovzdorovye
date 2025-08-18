@@ -302,8 +302,8 @@ const UserProfile: React.FC = () => {
         </div>
         {!store.user.isActivatedSMS && (
           <div className="user-profile__warn">
-            <span>Вход доступен только по электронной почте. Чтобы входить по номеру телефона, его надо
-              <a onClick={openQR}> подключить к телеграмм-боту.</a>
+            <span>Вход доступен только по электронной почте. Код подтверждения приходит на почту, а не в Telegram. Если хотите использовать Telegram для входа, то можете
+              <a onClick={openQR}> подключить номер телефона к боту.</a>
             </span>
           </div>
         )}

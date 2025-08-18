@@ -47,4 +47,12 @@ export default class UserService {
     static removeAvatar(id: number): Promise<AxiosResponse<IUserDataProfile>> {
         return $api.post<IUserDataProfile>(`/user/delete-avatar`, {userId: id});
     }
+
+    static blockUser(id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>('/user/block-account', {userId: id});
+    }
+
+    static async unblockUser(id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>('/user/unblock-account', {userId: id});
+    }
 }
