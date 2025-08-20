@@ -332,24 +332,6 @@
   }
 }
 
-.action-block-user {
-  color: red;
-
-  &:hover {
-    background-color: #ad3642;
-    color: white;
-  }
-}
-
-.action-unblock-user {
-  color: green;
-
-  &:hover {
-    background-color:#218838;
-    color: white;
-  }
-}
-
 .clickable {
   cursor: pointer;
 }

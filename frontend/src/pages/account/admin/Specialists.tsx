@@ -172,7 +172,7 @@ const Specialists = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={5}>Нет данных для отображения</td>
+                                <td colSpan={5}>Нет данных</td>
                             </tr>
                         )}
                     </tbody>

@@ -32,7 +32,7 @@ const Users = () => {
 
   const blockedOrUnblocked = async (id: number, isBlocked: boolean, role: string) => {
     if (role === "ADMIN") return;
-    
+
     !isBlocked
       ? await store.blockUser(id)
       : await store.unblockUser(id);
@@ -42,7 +42,7 @@ const Users = () => {
 
   const changeRoleUser = async (id: number, role: string) => {
     if (role === "ADMIN") return;
-    
+
     let data;
     if (role === "DOCTOR") {
       data = await store.changeRoleUser(id, "PATIENT");
@@ -113,10 +113,12 @@ const Users = () => {
                   {user.role === "PATIENT" && "Пациент"}
                 </td>
                 <td>
-                  {(user.name && user.surname && user.patronymic)
-                    ? (<div>{user.name} {user.surname} {user.patronymic}</div>)
-                    : (<div>Анонимный пользователь</div>)
-                  }
+                  <a href={`/profile/${user.id}`}>
+                    {(user.name && user.surname && user.patronymic)
+                      ? <div> {user.name} {user.surname} {user.patronymic} </div>
+                      : <div> Анонимный пользователь </div>
+                    }
+                  </a>
                 </td>
                 <td>
                   {user.img ? (
@@ -126,7 +128,7 @@ const Users = () => {
                       onMouseLeave={handleImageLeave}
                       onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
                     >
-                      Изображение
+                      Документ
                     </a>
                   ) : 'Нет фото'}
                 </td>
@@ -136,7 +138,7 @@ const Users = () => {
                 <td>{user.specialization || "-"}</td>
                 <td>{user.diploma || "-"}</td>
                 <td>{user.license || "-"}</td>
-                <td 
+                <td
                   onClick={() => isActionAllowed(user.role) && changeRoleUser(user.id, user.role)}
                   className={isActionAllowed(user.role) ? "clickable" : "non-clickable"}
                 >

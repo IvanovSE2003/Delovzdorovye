@@ -23,11 +23,19 @@ const stepVariants = {
   exit: { opacity: 0, x: -30 }
 };
 
+interface DoctorDetails {
+  specialization: string;
+  experienceYears: string;
+  diploma: File;
+  license: File;
+}
+
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
 
   const [disabled, setDisable] = useState<boolean>(true);
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
+  const [doctorDetails, setDoctorDetails] = useState<DoctorDetails>({} as DoctorDetails);
   const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
   const [anonym, setAnonym] = useState<boolean>(false);
@@ -88,7 +96,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }
 
   // Завершение первого этапа 
-  const next = (): void => {
+  const handleStep1 = (): void => {
     if (styleEmail == 'valid' && stylePhone == 'valid') {
       if (checkAllData()) {
         setStep(2);
@@ -100,7 +108,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }
 
-  // Завершение оставшихся этапов
+  // Завершение третьего этапа
+  const handleStep3 = () => {
+    setStep(4);
+  }
+
+  // Завершение четвертого этапов
   const registration = (): void => {
     if (replyPinCode !== userDetails.pin_code) {
       setError("Пин-коды не совпадают!");
@@ -124,15 +137,16 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   };
 
   // Добавить что-то к данным пользователя
-  const handleDetailsChange = (
-    field: keyof RegistrationData,
-    value: string | Gender | Role
-  ): void => {
+  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | Gender | Role): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleDoctorDetailsChange = (field: keyof DoctorDetails, value: string | File): void => {
+    setDoctorDetails((prev) => ({ ...prev, [field]: value }));
+  };
+
   // Измененить состояние пин-кода
-  const SetPinCode = (pin: string) => handleDetailsChange('pin_code', pin);
+  const SetPinCode = (pin: string) => handleUserDetailsChange('pin_code', pin);
 
   const handleAgreementChange = (isChecked: boolean) => {
     console.log('Пользователь нажал на галочку:', isChecked);
@@ -181,7 +195,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   id="surname"
                   label="Фамилия"
                   value={userDetails.surname}
-                  onChange={(value) => handleDetailsChange("surname", value)}
+                  onChange={(value) => handleUserDetailsChange("surname", value)}
                   required
                 />
 
@@ -189,7 +203,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   id="name"
                   label="Имя"
                   value={userDetails.name}
-                  onChange={(value) => handleDetailsChange("name", value)}
+                  onChange={(value) => handleUserDetailsChange("name", value)}
                   required
                 />
 
@@ -197,7 +211,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   id="patronymic"
                   label="Отчество"
                   value={userDetails.patronymic}
-                  onChange={(value) => handleDetailsChange("patronymic", value)}
+                  onChange={(value) => handleUserDetailsChange("patronymic", value)}
                   required
                 />
               </>
@@ -207,7 +221,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               id="email"
               label="Электронная почта *"
               value={userDetails.email}
-              onChange={(value) => handleDetailsChange("email", value)}
+              onChange={(value) => handleUserDetailsChange("email", value)}
               className={styleEmail}
               required
             />
@@ -217,7 +231,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               label="Телефон *"
               value={userDetails.phone}
               maxLength={11}
-              onChange={(value) => handleDetailsChange("phone", value)}
+              onChange={(value) => handleUserDetailsChange("phone", value)}
               className={stylePhone}
               required
             />
@@ -230,7 +244,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   name="male"
                   value="Мужчина"
                   checked={userDetails.gender === "Мужчина"}
-                  onChange={(e) => handleDetailsChange("gender", e.target.value)}
+                  onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
                 />
                 <label htmlFor="male">Мужчина *</label>
               </div>
@@ -242,7 +256,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   name="female"
                   value="Женщина"
                   checked={userDetails.gender === "Женщина"}
-                  onChange={(e) => handleDetailsChange("gender", e.target.value)}
+                  onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
                 />
                 <label htmlFor="female">Женщина *</label>
               </div>
@@ -253,13 +267,13 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               id="date_birth"
               label="Дата рождения *"
               value={userDetails.date_birth}
-              onChange={(value) => handleDetailsChange("date_birth", value)}
+              onChange={(value) => handleUserDetailsChange("date_birth", value)}
               required
             />
 
             <MySelect
               value={userDetails.time_zone}
-              onChange={(value) => handleDetailsChange("time_zone", value)}
+              onChange={(value) => handleUserDetailsChange("time_zone", value)}
               label="Часовой пояс *"
               defaultValue=""
               required
@@ -272,7 +286,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               ))}
             </MySelect>
 
-            <button className="auth__button" onClick={next}>
+            <button className="auth__button" onClick={handleStep1}>
               Продолжить
             </button>
             <a onClick={() => setState("login")} className="auth__toggle-button">
@@ -295,7 +309,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 <div
                   className="role-card role-card_doctor"
                   onClick={() => {
-                    handleDetailsChange("role", "DOCTOR");
+                    handleUserDetailsChange("role", "DOCTOR");
                     setStep(3);
                   }}
                 >
@@ -309,8 +323,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 <div
                   className="role-card role-card_patient"
                   onClick={() => {
-                    handleDetailsChange("role", "PATIENT");
-                    setStep(3);
+                    handleUserDetailsChange("role", "PATIENT");
+                    setStep(4);
                   }}
                 >
                   <img className="role-card__icon" src={patient} alt="patient" />
@@ -328,9 +342,71 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
           </motion.div>
         )}
 
+
         {step === 3 && (
           <motion.div
             key="step3"
+            initial="enter"
+            animate="center"
+            exit="exit"
+            variants={stepVariants}
+            transition={{ duration: 0.3 }}
+            className="auth__form"
+          >
+            <MyInput
+              id="specialization"
+              label="Специализация"
+              value={doctorDetails.specialization}
+              onChange={(value) => handleDoctorDetailsChange("specialization", value)}
+              required
+            />
+
+            <MyInput
+              id="experienceYears"
+              label="Опыт работы"
+              type="number"
+              value={doctorDetails.experienceYears}
+              onChange={(value) => handleDoctorDetailsChange("experienceYears", value)}
+              required
+            />
+
+            <MyInput
+              id="diploma"
+              type="file"
+              accept=".pdf"
+              label="Диплом"
+              onChange={(file) => handleDoctorDetailsChange("diploma", file)}
+              required
+            />
+
+            <MyInput
+              id="license"
+              type="file"
+              accept=".pdf"
+              label="Лицензия"
+              onChange={(file) => handleDoctorDetailsChange("license", file)}
+              required
+            />
+
+            <button
+              className="auth__button"
+              onClick={handleStep3}
+            >
+              Продолжить
+            </button>
+
+            <button
+              className="auth__button"
+              onClick={handleBack}
+            >
+              Назад
+            </button>
+          </motion.div>
+        )}
+
+        {step === 4 && (
+          <motion.div
+            key="step4"
             initial="enter"
             animate="center"
             exit="exit"

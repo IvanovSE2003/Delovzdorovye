@@ -8,8 +8,9 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import type { AuthResponse, LoginResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
-import type { PatientData, PatientDataResponse } from "../models/PatientData";
+import type { PatientData } from "../models/PatientData";
 import BatchService from "../services/BatchService";
+import DoctorService, { type DoctorResponse } from "../services/DoctorService";
 
 export default class Store {
     user = {} as IUser;
@@ -367,6 +368,18 @@ export default class Store {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при изменении роли пользователя!");
             return {success: false, message: this.error};
+        }
+    }
+
+
+    async getDoctorInfo(id: number): Promise<DoctorResponse> {
+        try {
+            const response = await DoctorService.getDoctorInfo(id);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при получении информации о докторе");
+            return {} as DoctorResponse;
         }
     }
 }

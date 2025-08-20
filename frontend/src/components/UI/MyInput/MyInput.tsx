@@ -2,66 +2,74 @@ import { useState, useCallback } from "react";
 import "./MyInput.scss";
 
 type InputType = "text" | "email" | "password" | "number" | "tel" | "url" | "date";
+type FileInputType = "file";
 
-interface MyInputProps {
-  type?: InputType;
+interface BaseInputProps {
   id: string;
   label: string;
-  value: string;
-  onChange: (value: string) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  maxLength?: number;
   required?: boolean;
   placeholder?: string;
   className?: string;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
-const MyInput: React.FC<MyInputProps> = ({
-  type = "text",
-  id,
-  label,
-  value = "",
-  onChange,
-  onBlur,
-  maxLength,
-  required = false,
-  className = "",
-  placeholder = " ",
-}) => {
+interface TextInputProps extends BaseInputProps {
+  type?: InputType;
+  value: string;
+  onChange: (value: string) => void;
+  maxLength?: number;
+}
+
+interface FileInputProps extends BaseInputProps {
+  type: FileInputType;
+  value?: never; // Запрещаем value для файлов
+  onChange: (file: File) => void;
+  accept?: string;
+}
+
+type MyInputProps = TextInputProps | FileInputProps;
+
+const MyInput: React.FC<MyInputProps> = (props) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value);
+      if (props.type === "file") {
+        const file = e.target.files?.[0];
+        if (file) {
+          setFileName(file.name);
+          props.onChange(file);
+        }
+      } else {
+        props.onChange(e.target.value);
+      }
     },
-    [onChange]
+    [props]
   );
 
   const handleFocus = useCallback(() => setIsFocused(true), []);
-
-  const handleBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      setIsFocused(false);
-      onBlur?.(e);
-    },
-    [onBlur]
-  );
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false);
+    props.onBlur?.(e);
+  }, [props]);
 
   return (
     <div className={`auth__input-group ${isFocused ? "focused" : ""}`}>
       <input
-        className={`auth__input ${className}`}
-        type={type}
-        id={id}
-        value={value}
+        className={`auth__input ${props.className || ""}`}
+        type={props.type || "text"}
+        id={props.id}
+        value={props.type === "file" ? undefined : props.value}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        maxLength={maxLength}
-        required={required}
-        placeholder={placeholder}
+        maxLength={props.type === "file" ? undefined : props.maxLength}
+        required={props.required}
+        placeholder={props.placeholder || " "}
+        accept={props.type === "file" ? props.accept : undefined}
       />
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={props.id}>{props.label}</label>
     </div>
   );
 };

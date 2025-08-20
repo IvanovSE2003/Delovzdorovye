@@ -15,6 +15,8 @@ import Finance from "../pages/account/doctor/Finance";
 import Specialists from "../pages/account/admin/Specialists";
 import Users from '../pages/account/admin/Users';
 
+import Profile from "../pages/account/Profile";
+
 export interface IRoute {
     path: string;
     element: React.ReactNode;
@@ -43,13 +45,15 @@ export const RouteNames = {
 
     SPECIALISTS: '/admin/specialists',
     USERS: '/admin/users',
+
+    PROFILE: '/profile/:id'
 } as const;
 
 export const menuItemsPatient = [
     { path: RouteNames.MAIN, name: 'Главная' },
     { path: RouteNames.CONSULTATIONSPAT, name: 'Консультации' },
     { path: RouteNames.RECOMENDATIONS, name: 'Рекомендации' },
-    { path: RouteNames.USEFULINFO, name: 'Полезная информация' }
+    { path: RouteNames.USEFULINFO, name: 'Полезная информация' },
 ];
 
 export const menuItemsDoctor = [
@@ -64,19 +68,23 @@ export const menuItemsDoctor = [
 export const menuItemsAdmin = [
     { path: RouteNames.MAIN, name: 'Главная'},
     { path: RouteNames.SPECIALISTS, name: 'Специалисты'},
-    { path: RouteNames.USERS, name: 'Пользователи'}
+    { path: RouteNames.USERS, name: 'Пользователи'},
 ]
 
 export const publicRoutes = [
+    // Общие машруты для всех неавторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },
     { path: RouteNames.RESET, element: RecoverPinPage },
+    { path: RouteNames.PROFILE, element: Profile},
 ]
 
 export const privateRoutes: ProtectedRoute[] = [
     // Общие маршруты для всех авторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.PERSONAL, element: Account },
+    { path: RouteNames.RESET, element: RecoverPinPage },
+    { path: RouteNames.PROFILE, element: Profile},
     
     // Маршруты для пациентов
     { path: RouteNames.CONSULTATIONSPAT, element: ConsultationsPat, roles: ['PATIENT'] },

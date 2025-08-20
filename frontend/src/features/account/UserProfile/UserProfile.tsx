@@ -73,8 +73,8 @@ const UserProfile: React.FC = () => {
   const handleSave = async () => {
     console.log(formData);
     // Если хоть одно поле пустое и нет флага "аноним", то ошибка
-    // await store.updateUserData(formData, store.user.id);
-    // setIsEditing(false);
+    await store.updateUserData(formData, store.user.id);
+    setIsEditing(false);
   };
 
   const openQR = async () => {
