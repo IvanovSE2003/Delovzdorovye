@@ -1,6 +1,10 @@
 import Doctor from "../entities/doctor.entity.js";
 import TimeSlot from "../entities/timeSlot.entity.js";
 
+// interface DoctorWithUser extends Omit<Doctor, 'activate'> {
+//     isActivated: boolean;
+// }
+
 export default interface DoctorRepository {
     findById(id: number): Promise<Doctor | null>;
     findByUserId(userId: number): Promise<Doctor | null>;

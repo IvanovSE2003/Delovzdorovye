@@ -104,7 +104,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     model: UserModel,
                     where: userWhere,
                     required: true,
-                    attributes: { exclude: ['pin_code', 'activationLink'] }
+                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender']
                 },
                 {
                     model: SpecializationModel,
@@ -119,7 +119,23 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         });
 
         return {
-            doctors: doctors.map(doctor => this.mapToDomainDoctor(doctor)),
+            doctors: doctors.map(doctor => {
+                const domainDoctor = this.mapToDomainDoctor(doctor);
+                return {
+                    id: domainDoctor.id,
+                    experienceYears: domainDoctor.experienceYears,
+                    diploma: domainDoctor.diploma,
+                    license: domainDoctor.license,
+                    isActivated: domainDoctor.isActivated,
+                    specializations: domainDoctor.specializations,
+                    userId: domainDoctor.userId,
+                    userName: domainDoctor.userName,
+                    userSurname: domainDoctor.userSurname,
+                    userPatronymic: domainDoctor.userPatronymic,
+                    userAvatar: domainDoctor.userAvatar,
+                    userGender: domainDoctor.userGender
+                };
+            }),
             totalCount,
             totalPages
         };
@@ -234,7 +250,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [{
                 model: models.TimeSlot,
                 required: false,
-                where: { is_available: true } 
+                where: { is_available: true }
             }]
         });
 
@@ -283,7 +299,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         );
     }
 
-    private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[] }): Doctor {
+    private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[]; user?: any }): Doctor {
         const specializations = doctorModel.specializations
             ? doctorModel.specializations.map(spec => spec.name)
             : [];
@@ -293,9 +309,14 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             doctorModel.experience_years,
             doctorModel.diploma,
             doctorModel.license,
-            doctorModel.activate,
+            doctorModel.isActivated,
             specializations,
-            doctorModel.userId
+            doctorModel.userId,
+            doctorModel.user?.name,
+            doctorModel.user?.surname,
+            doctorModel.user?.patronymic,
+            doctorModel.user?.img,
+            doctorModel.user?.gender
         );
     }
 
@@ -304,8 +325,12 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             experience_years: doctor.experienceYears,
             diploma: doctor.diploma,
             license: doctor.license,
-            activate: doctor.isActivated,
+            isActivated: doctor.isActivated,
             userId: doctor.userId
         };
     }
 }
+
+// interface DoctorWithUser extends Omit<Doctor, 'activate'> {
+//     isActivated: boolean; 
+// }

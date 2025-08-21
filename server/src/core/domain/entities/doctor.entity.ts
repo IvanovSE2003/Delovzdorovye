@@ -1,23 +1,16 @@
 export default class Doctor {
     constructor(
-        public id: number,
-        public experienceYears: number,
-        public diploma: string,
-        public license: string,
-        public isActivated: boolean,
-        public specializations: string[],
-        public userId?: number
+        public readonly id: number,
+        public readonly experienceYears: number,
+        public readonly diploma: string,
+        public readonly license: string,
+        public readonly isActivated: boolean,
+        public readonly specializations: string[],
+        public readonly userId?: number,
+        public readonly userName?: string,
+        public readonly userSurname?: string,
+        public readonly userPatronymic?: string,
+        public readonly userAvatar?: string,
+        public readonly userGender?: string
     ) {}
-
-    activate(): Doctor {
-        return new Doctor(
-            this.id,
-            this.experienceYears,
-            this.diploma,
-            this.license,
-            true,
-            this.specializations, 
-            this.userId
-        );
-    }
 }
