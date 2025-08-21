@@ -11,7 +11,7 @@ const RightPanel = () => {
         <aside className='rightPanel'>
             <Link to={RouteNames.PERSONAL} className={`svg-link ${isAccountPath() ? 'active' : ''}`}>
                 <svg
-                    className="account-icon"
+                    className="icon"
                     version="1.1"
                     xmlns="http://www.w3.org/2000/svg"
                     width="60"
@@ -30,7 +30,7 @@ const RightPanel = () => {
             </Link>
             <Link to={RouteNames.BELL} className={`svg-link ${isBellPath() ? 'active' : ''}`}>
                 <svg
-                    className='bell-icon'
+                    className='icon'
                     version="1.1"
                     xmlns="http://www.w3.org/2000/svg"
                     width="60"

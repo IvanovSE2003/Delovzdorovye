@@ -3,15 +3,6 @@
 @use "./pages/home.scss";
 @use "./pages/auth.scss";
 
-.profile {
-  background-color: $profile-color;
-  padding: 3rem;
-  border-radius: 8px;
-  margin: 0 auto;
-  width: 90%;
-  box-sizing: border-box;
-}
-
 .color-block {
   display: flex;
   justify-content: center;

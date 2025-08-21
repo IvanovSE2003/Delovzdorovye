@@ -11,7 +11,6 @@ const PatientInfo: React.FC = () => {
   const [patientData, setPatientData] = useState<PatientData>({} as PatientData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   useEffect(() => {
@@ -24,7 +23,6 @@ const PatientInfo: React.FC = () => {
           throw new Error("Пользователь не авторизован");
         }
         const data = await store.getPatientData(store.user.id);
-        console.log(data)
         setPatientData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Не удалось загрузить данные пациента');
@@ -42,31 +40,19 @@ const PatientInfo: React.FC = () => {
 
   const handleSave = async (updatedData: PatientData) => {
     console.log(updatedData);
-    // try {
-    //   await store.updatePatientData(store.user.id, updatedData);
-    //   setPatientData(updatedData);
-    //   setIsEditing(false);
-    // } catch (error) {
-    //   setError("Не удалось сохранить изменения");
-    // }
+    // await store.updatePatientData(store.user.id, updatedData);
+    // setPatientData(updatedData);
+    // setIsEditing(false);
   };
 
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
-
-  if (!patientData) {
-    return <div>Данные пациента отсутствуют</div>;
-  }
+  if (loading) return <Loader />;
+  if (error) return <div className="error">{error}</div>;
+  if (!patientData) return <div>Данные пациента отсутствуют</div>;
 
   const { medicalData } = patientData;
 
   return (
-    <div className="patientinfo">
+    <div className="patient-card">
       {isEditing ? (
         <EditPatientForm
           patientData={patientData}
@@ -74,91 +60,178 @@ const PatientInfo: React.FC = () => {
           onCancel={() => setIsEditing(false)}
         />
       ) : (
-        <div className="patientinfo">
-          <div className="patientinfo__form">
-            <h3>Карточка пациента</h3>
+        <>
+          <div className="card-header">
+            <h1>Карточка пациента</h1>
+            <div className="subtitle">Полная медицинская информация</div>
+          </div>
 
-            <h2>Хирургические вмешательства</h2>
-            <div className="patientinfo__info-section">
+          <div className="medical-sections">
+
+            {/* Хирургия */}
+            <div className="medical-section">
+              <div className="section-header">
+                <div className="section-icon">🩺</div>
+                <h2 className="section-title">Хирургические вмешательства</h2>
+              </div>
               {medicalData.surgeries.length > 0 ? (
                 medicalData.surgeries.map((surgery, index) => (
-                  <div className="patientinfo__block" key={surgery.id}>
-                    <p><strong>Запись №{index + 1}</strong></p>
-                    <p><strong>Год:</strong> {surgery.year}</p>
-                    <p><strong>Описание:</strong> {surgery.description || "Нет данных"}</p>
+                  <div className="record" key={surgery.id}>
+                    <div className="record-header">
+                      <span className="record-number">Запись №{index + 1}</span>
+                      <span className="record-date">{surgery.year}</span>
+                    </div>
+                    <div className="record-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Год:</span>
+                        <span className="detail-value">{surgery.year}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Описание:</span>
+                        <span className={`detail-value ${!surgery.description ? "no-data" : ""}`}>
+                          {surgery.description || "Нет данных"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p>Нет данных о хирургических вмешательствах</p>
+                <p>Нет данных</p>
               )}
             </div>
 
-            <h2>Аллергии</h2>
-            <div className="patientinfo__info-section">
+            {/* Аллергии */}
+            <div className="medical-section">
+              <div className="section-header">
+                <div className="section-icon">⚠️</div>
+                <h2 className="section-title">Аллергии</h2>
+              </div>
               {medicalData.allergies.length > 0 ? (
                 medicalData.allergies.map((allergy, index) => (
-                  <div className="patientinfo__block" key={allergy.id}>
-                    <p><strong>Запись №{index + 1}</strong></p>
-                    <p><strong>Тип:</strong> {allergy.type}</p>
-                    <p><strong>Описание:</strong> {allergy.description || "Нет данных"}</p>
+                  <div className="record" key={allergy.id}>
+                    <div className="record-header">
+                      <span className="record-number">Запись №{index + 1}</span>
+                    </div>
+                    <div className="record-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Тип:</span>
+                        <span className="detail-value">{allergy.type || "Не указан"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Описание:</span>
+                        <span className={`detail-value ${!allergy.description ? "no-data" : ""}`}>
+                          {allergy.description || "Нет данных"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p>Нет данных об аллергиях</p>
+                <p>Нет данных</p>
               )}
             </div>
 
-            <h2>Лекарства</h2>
-            <div className="patientinfo__info-section">
+            {/* Лекарства */}
+            <div className="medical-section">
+              <div className="section-header">
+                <div className="section-icon">💊</div>
+                <h2 className="section-title">Лекарства</h2>
+              </div>
               {medicalData.medications.length > 0 ? (
                 medicalData.medications.map((medication, index) => (
-                  <div className="patientinfo__block" key={medication.id}>
-                    <p><strong>Запись №{index + 1}</strong></p>
-                    <p><strong>Название:</strong> {medication.name}</p>
-                    <p><strong>Дозировка:</strong> {medication.dosage || "Нет данных"}</p>
+                  <div className="record" key={medication.id}>
+                    <div className="record-header">
+                      <span className="record-number">Запись №{index + 1}</span>
+                    </div>
+                    <div className="record-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Название:</span>
+                        <span className="detail-value">{medication.name || "Не указано"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Дозировка:</span>
+                        <span className={`detail-value ${!medication.dosage ? "no-data" : ""}`}>
+                          {medication.dosage || "Нет данных"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p>Нет данных о лекарствах</p>
+                <p>Нет данных</p>
               )}
             </div>
 
-            <h2>Обследования</h2>
-            <div className="patientinfo__info-section">
+            {/* Обследования */}
+            <div className="medical-section">
+              <div className="section-header">
+                <div className="section-icon">🔍</div>
+                <h2 className="section-title">Обследования</h2>
+              </div>
               {medicalData.examinations.length > 0 ? (
                 medicalData.examinations.map((examination, index) => (
-                  <div className="patientinfo__block" key={examination.id}>
-                    <p><strong>Запись №{index + 1}</strong></p>
-                    <p><strong>Название:</strong> {examination.name}</p>
-                    <p><strong>Файл:</strong> {examination.file || "Нет данных"}</p>
+                  <div className="record" key={examination.id}>
+                    <div className="record-header">
+                      <span className="record-number">Запись №{index + 1}</span>
+                    </div>
+                    <div className="record-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Название:</span>
+                        <span className="detail-value">{examination.name || "Не указано"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Файл:</span>
+                        <span className={`detail-value ${!examination.file ? "no-data" : ""}`}>
+                          {examination.file || "Нет данных"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p>Нет данных о лекарствах</p>
+                <p>Нет данных</p>
               )}
             </div>
 
-            <h2>Анализы</h2>
-            <div className="patientinfo__info-section">
+            {/* Анализы */}
+            <div className="medical-section">
+              <div className="section-header">
+                <div className="section-icon">🧪</div>
+                <h2 className="section-title">Анализы</h2>
+              </div>
               {medicalData.analyses.length > 0 ? (
                 medicalData.analyses.map((analyse, index) => (
-                  <div className="patientinfo__block" key={analyse.id}>
-                    <p><strong>Запись №{index + 1}</strong></p>
-                    <p><strong>Название:</strong> {analyse.name}</p>
-                    <p><strong>Файл:</strong> {analyse.file || "Нет данных"}</p>
+                  <div className="record" key={analyse.id}>
+                    <div className="record-header">
+                      <span className="record-number">Запись №{index + 1}</span>
+                    </div>
+                    <div className="record-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Название:</span>
+                        <span className="detail-value">{analyse.name || "Не указано"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Файл:</span>
+                        <span className={`detail-value ${!analyse.file ? "no-data" : ""}`}>
+                          {analyse.file || "Нет данных"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
-                <p>Нет данных о лекарствах</p>
+                <p>Нет данных</p>
               )}
             </div>
+          </div>
+
+          <div className="edit-btn">
             <button onClick={handleEditClick}>Редактировать данные</button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
-
 };
 
 export default observer(PatientInfo);

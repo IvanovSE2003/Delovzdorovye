@@ -6,12 +6,10 @@ const UsefulInfo = () => {
             <div className="usefulinfo">
                 <div className="usefulinfo-block">
                     <h2 className="usefulinfo-block__qustion">Как записаться на консультацию?</h2>
-                    <p className="userfulinfo-block__answer">
-                        <ol>
-                            <li>Перейдите на главную страницу.</li>
-                            <li>Нажмите кнопку «Записаться на консультацию».</li>
-                            <li>В открывшейся форме укажите желаемую дату и время специалиста.</li>
-                        </ol>
+                    <p className="usefulinfo-block__answer">
+                        1. Перейдите на главную страницу. <br/>
+                        2. Нажмите кнопку "Записаться на консультацию". <br/>
+                        3. В открывшейся форме укажите желаемую дату и время специалиста.
                     </p>
                 </div>
             </div>
@@ -25,7 +23,7 @@ const UsefulInfo = () => {
                 </div>
             </div>
 
-            
+
         </AccountLayout>
     )
 }
