@@ -1,4 +1,5 @@
 import Doctor from "../entities/doctor.entity.js";
+import TimeSlot from "../entities/timeSlot.entity.js";
 
 export default interface DoctorRepository {
     findById(id: number): Promise<Doctor | null>;
@@ -21,4 +22,6 @@ export default interface DoctorRepository {
     findByUserIds(userIds: number[]): Promise<Doctor[]>;
     update(doctor: Doctor): Promise<Doctor>;
     create(doctor: Doctor): Promise<Doctor>;
+
+    getTimeSlots(doctorId: number): Promise<TimeSlot[]>;
 }

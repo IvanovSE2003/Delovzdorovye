@@ -2,8 +2,9 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
+import TimeSlot from '../../domain/entities/timeSlot.entity.js';
 
 const { UserModel, DoctorModel, SpecializationModel } = models;
 
@@ -222,6 +223,64 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             await transaction.rollback();
             throw error;
         }
+    }
+
+    async getTimeSlots(doctorId: number): Promise<TimeSlot[]> {
+
+        const doctorSchedules = await models.DoctorsSchedule.findAll({
+            where: {
+                doctorId: doctorId
+            },
+            include: [{
+                model: models.TimeSlot,
+                required: false,
+                where: { is_available: true } 
+            }]
+        });
+
+        const timeSlots: TimeSlot[] = [];
+
+        for (const schedule of doctorSchedules) {
+
+            for (const slot of (schedule as any).time_slots || []) {
+
+                const scheduleDate = new Date(schedule.date);
+                const [hours, minutes] = slot.time.split(':').map(Number);
+                scheduleDate.setHours(hours, minutes, 0, 0);
+
+                if (scheduleDate < new Date()) {
+                    continue;
+                }
+
+                const timeSlot = new TimeSlot(
+                    slot.id,
+                    slot.time,
+                    scheduleDate,
+                    slot.is_available,
+                    slot.consultationId,
+                    slot.patientId,
+                    schedule.id
+                );
+
+                timeSlots.push(timeSlot);
+            }
+        }
+
+        return timeSlots.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
+    }
+
+    private mapToDomainTimeSlot(slotModel: any, scheduleDate: Date): TimeSlot {
+        const dateTime = new Date(scheduleDate);
+        const [hours, minutes] = slotModel.time.split(':');
+        dateTime.setHours(parseInt(hours), parseInt(minutes));
+
+        return new TimeSlot(
+            slotModel.id,
+            slotModel.time,
+            dateTime,
+            slotModel.is_available,
+            slotModel.doctors_schedule_id
+        );
     }
 
     private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[] }): Doctor {

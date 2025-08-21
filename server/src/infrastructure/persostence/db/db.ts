@@ -24,7 +24,7 @@ const sequelize = new Sequelize(
         dialect: "postgres",
         host: process.env.DB_HOST,
         port: dbPort,  
-        logging: console.log,
+        logging: false,
     }
 );
 

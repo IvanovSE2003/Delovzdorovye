@@ -13,29 +13,29 @@ export default class DoctorController {
         private readonly batchRepository: BatchRepository,
         private readonly fileService: FileService,
         private readonly userRepository: UserRepository
-    ) {}
+    ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
-            
+
             const filters = {
                 specialization: req.query.specialization as string | undefined,
-                isActive: req.query.isActive !== undefined 
-                    ? req.query.isActive === 'true' 
+                isActive: req.query.isActive !== undefined
+                    ? req.query.isActive === 'true'
                     : undefined,
                 gender: req.query.gender as string | undefined,
-                experienceMin: req.query.experienceMin 
-                    ? parseInt(req.query.experienceMin as string) 
+                experienceMin: req.query.experienceMin
+                    ? parseInt(req.query.experienceMin as string)
                     : undefined,
-                experienceMax: req.query.experienceMax 
-                    ? parseInt(req.query.experienceMax as string) 
+                experienceMax: req.query.experienceMax
+                    ? parseInt(req.query.experienceMax as string)
                     : undefined
             };
-            
+
             const result = await this.doctorRepository.findAll(page, limit, filters);
-            
+
             res.status(200).json({
                 success: true,
                 data: result.doctors,
@@ -53,13 +53,13 @@ export default class DoctorController {
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const doctor = await this.doctorRepository.findByUserId(Number(id));
-            if(!doctor) {
+            if (!doctor) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
             res.status(200).json(doctor);
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
@@ -94,7 +94,7 @@ export default class DoctorController {
             }
 
             const allowedFields: (keyof Doctor)[] = [
-                'specializations', 
+                'specializations',
                 'experienceYears',
                 'diploma',
                 'license',
@@ -106,7 +106,7 @@ export default class DoctorController {
                     const field = field_name as keyof Doctor;
                     const oldValue = doctor[field];
                     const translatedFieldName = FIELD_TRANSLATIONS[field_name] || field_name;
-                    
+
                     return {
                         field_name: translatedFieldName,
                         old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
@@ -119,7 +119,7 @@ export default class DoctorController {
             }
 
             const user = await this.userRepository.findByDoctorId(doctor.id);
-            if(!user) {
+            if (!user) {
                 return next(ApiError.badRequest('Пользователь для данного доктора не найден'))
             }
             await this.batchRepository.createBatchWithChangesUser(Number(user.id), changes);
@@ -127,6 +127,22 @@ export default class DoctorController {
             return res.json({ success: true, message: 'Изменения отправлены на модерацию' });
         } catch (e: any) {
             next(ApiError.internal(e.message));
+        }
+    }
+
+    async getTimeSlotByDoctorId(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const doctor = await this.doctorRepository.findById(Number(id));
+
+            if (!doctor) {
+                return next(ApiError.badRequest('Доктор не найден'));
+            }
+
+            const timeSlots = await this.doctorRepository.getTimeSlots(doctor.id);
+            return res.status(200).json(timeSlots);
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
         }
     }
 }
