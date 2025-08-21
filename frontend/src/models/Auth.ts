@@ -19,6 +19,7 @@ export interface IUser {
     isActivatedSMS: boolean;
     activationLink: string;
     isAnonymous: boolean;
+    sentChanges: boolean;
     img: string;
 }
 

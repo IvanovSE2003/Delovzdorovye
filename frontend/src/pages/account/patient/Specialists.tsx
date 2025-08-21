@@ -8,7 +8,11 @@ interface IDoctors {
     experienceYears: number;
     diploma: string;
     license: string;
-    specializations: string[]
+    specializations: string[],
+    userName: string,
+    userSurname: string,
+    userPatronymic: string,
+    userAvatar: string,
     // timeZone: string;
 }
 
@@ -36,14 +40,14 @@ const Specialists: React.FC = () => {
                 {doctors.map((doctor: any) => (
                     <div key={doctor.id} className="profile">
                         <div className="profile__avatar">
-                            <img src={`${URL}/${doctor.img}`} alt="avatar-delovzdorovye" />
+                            <img src={`${URL}/${doctor.userAvatar}`} alt="avatar-delovzdorovye" />
                         </div>
 
                         <div className="profile__info">
-                            <div className="profile__fio"> {doctor.surname} {doctor.name} {doctor.patronymic}  </div>
+                            <div className="profile__fio"> {doctor.userSurname} {doctor.userName} {doctor.userPatronymic} </div>
 
                             <div className="profile__main-info">
-                                <span><span className="label">Специализация: </span> {doctor.specializations.join(', ')} </span>
+                                <span><span className="label">{doctor.specializations.length > 1? "Специализации" : "Специализация"}: </span> {doctor.specializations.join(', ')} </span>
                                 <span><span className="label">Диплом: </span><a href={`${URL}/${doctor.diploma}`}>Документ</a></span>
                                 <span><span className="label">Лицензия: </span><a href={`${URL}/${doctor.license}`}>Документ</a></span>
                                 {/* <span><span className="label">Часовой пояс:</span>{doctor.timeZone}</span> */}

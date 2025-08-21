@@ -61,7 +61,7 @@ const PatientInfo: React.FC = () => {
         />
       ) : (
         <>
-          <div className="card-header">
+          <div className="patient-card__header">
             <h1>Карточка пациента</h1>
             <div className="subtitle">Полная медицинская информация</div>
           </div>
@@ -79,7 +79,6 @@ const PatientInfo: React.FC = () => {
                   <div className="record" key={surgery.id}>
                     <div className="record-header">
                       <span className="record-number">Запись №{index + 1}</span>
-                      <span className="record-date">{surgery.year}</span>
                     </div>
                     <div className="record-details">
                       <div className="detail-item">

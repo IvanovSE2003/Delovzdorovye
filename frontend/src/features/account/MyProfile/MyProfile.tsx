@@ -302,13 +302,22 @@ const UserProfile: React.FC = () => {
             </div>
           </div>
         </div>
-        {!store.user.isActivatedSMS && (
-          <div className="user-profile__warn">
-            <span>Вход доступен только по электронной почте. Код подтверждения приходит на почту, а не в Telegram. Если хотите использовать Telegram для входа, то можете
-              <a onClick={openQR}> подключить номер телефона к боту.</a>
-            </span>
-          </div>
-        )}
+        <div className="warms">
+          {!store.user.isActivatedSMS && (
+            <div className="user-profile__error-block">
+              <span>Вход доступен только по электронной почте. Код подтверждения приходит на почту, а не в Telegram. Если хотите использовать Telegram для входа, то можете
+                <a onClick={openQR}> подключить номер телефона к боту.</a>
+              </span>
+            </div>
+          )}
+
+          {store.user.sentChanges && (
+            <div className="user-profile__warn-block">
+              <span>Ваши изменения находятся на модерации у администратора. Изменения принимаются или отклоняются администратором в течении нескольких минут. </span>
+            </div>
+          )}
+
+        </div>
       </div>
       {QRcode && (
         <div className="QRcode">
