@@ -2,11 +2,13 @@
 
 .sidebar {
   box-sizing: border-box;
-  margin: 0 auto;
+  margin: 0 1rem;
   padding: 10px 50px 0 10px;
 
   &__logo {
-    padding: 1rem 2rem;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    width: 100%;
   }
 
   &__nav {
@@ -29,9 +31,8 @@
     transition: background-color 0.3s;
 
     &--active {
-
       .sidebar__link{
-        color: $button-color;
+        color: black;
         font-weight: bolder;
       }
     }

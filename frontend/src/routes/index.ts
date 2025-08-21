@@ -3,9 +3,12 @@ import LoginPage from '../pages/auth/LoginPage'
 import HomePage from "../pages/HomePage";
 import RecoverPinPage from "../pages/auth/RecoverPinPage"
 import Account from "../pages/account/Account";
+import UsefulInfo from "../pages/account/patient/UsefulInfo";
+
 import ConsultationsPat from "../pages/account/patient/Consultations";
 import Recomendations from "../pages/account/patient/Recomendations";
-import UsefulInfo from "../pages/account/patient/UsefulInfo";
+import MainPat from "../pages/account/patient/Main";
+import SpecialistsPat from "../pages/account/patient/Specialists";
 
 import ConsultationsDoc from "../pages/account/doctor/Consultations";
 import TimeSheet from "../pages/account/doctor/TimeSheet";
@@ -15,7 +18,8 @@ import Finance from "../pages/account/doctor/Finance";
 import Specialists from "../pages/account/admin/Specialists";
 import Users from '../pages/account/admin/Users';
 
-import Profile from "../pages/account/Profile";
+import Profile from "../pages/account/SomeProfile";
+import Bell from "../pages/account/Bell";
 
 export interface IRoute {
     path: string;
@@ -29,30 +33,37 @@ export type ProtectedRoute = {
 };
 
 export const RouteNames = {
+    // Общие пути
     LOGIN: '/login',
     MAIN: '/',
     PERSONAL: '/personal',
     RESET: '/pinCode-reset/:token',
     USEFULINFO: '/usefulinfo',
+    PROFILE: '/profile/:id',
+    BELL: '/notifications',
 
+    // Пути для пациента
     CONSULTATIONSPAT: '/patient/consultations',
     RECOMENDATIONS: '/patient/recomendations',
+    SPECIALISTPAT: '/patient/specialist',
+    MAINPAT: '/patient/main',
 
+    // Пути для доктора
     CONSULTATIONSDOC: '/doctor/consultations',
     TIMESHEET: '/doctor/timesheet',
     HELP: '/doctor/help',
     FINANCE: '/doctor/finance',
 
+    // Пути для админа
     SPECIALISTS: '/admin/specialists',
     USERS: '/admin/users',
-
-    PROFILE: '/profile/:id'
 } as const;
 
 export const menuItemsPatient = [
-    { path: RouteNames.MAIN, name: 'Главная' },
+    { path: RouteNames.MAINPAT, name: 'Главная' },
     { path: RouteNames.CONSULTATIONSPAT, name: 'Консультации' },
     { path: RouteNames.RECOMENDATIONS, name: 'Рекомендации' },
+    { path: RouteNames.SPECIALISTPAT, name: 'Специалисты'},
     { path: RouteNames.USEFULINFO, name: 'Полезная информация' },
 ];
 
@@ -85,11 +96,14 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.PERSONAL, element: Account },
     { path: RouteNames.RESET, element: RecoverPinPage },
     { path: RouteNames.PROFILE, element: Profile},
+    { path: RouteNames.BELL, element: Bell},
     
     // Маршруты для пациентов
+    { path: RouteNames.MAINPAT, element: MainPat, roles: ['PATIENT'] },
     { path: RouteNames.CONSULTATIONSPAT, element: ConsultationsPat, roles: ['PATIENT'] },
     { path: RouteNames.RECOMENDATIONS, element: Recomendations, roles: ['PATIENT'] },
     { path: RouteNames.USEFULINFO, element: UsefulInfo, roles: ['PATIENT', 'DOCTOR'] },
+    { path: RouteNames.SPECIALISTPAT, element: SpecialistsPat, roles: ['PATIENT']},
     
     // Маршруты для врачей
     { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc, roles: ['DOCTOR'] },

@@ -57,6 +57,21 @@
   display: grid;
   grid-template-columns: 0.8fr 2.2fr;
   margin-right: 110px;
+
+  .image-preview {
+    position: fixed;
+    z-index: 1000;
+    background-color: white;
+    padding: 5px;
+    border: 1px solid $light-color;
+    border-radius: 5px;
+    box-shadow: 0 0 10px $shadow-color;
+
+    img {
+      max-width: 200px;
+      max-height: 200px;
+    }
+  }
 }
 
 
@@ -140,6 +155,395 @@
   width: max-content;
   font-size: 1.4rem;
   margin-top: 20px;
+}
+
+// Профиль другого пользователя
+.some-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background-color: $profile-color;
+  border-radius: 10px;
+  padding: 30px 20px;
+
+  &__avatar {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    margin-top: 20px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+  }
+
+  &__fio {
+    font-size: 1.6em;
+    font-weight: bold;
+  }
+
+  &__role {
+    color: $doctor-color;
+    font-size: 1.3rem;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 1.2rem;
+    color: $gray-color;
+
+    .label {
+      font-weight: bold;
+      color: black;
+    }
+  }
+}
+
+// Главная страница для пациента
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'main-block main-block'
+    'nearest other';
+  row-gap: 20px;
+  column-gap: 40px;
+
+  &__main-block {
+    grid-area: main-block;
+    background-color: #E1F7EB;
+    color: $text-color;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+
+    &__title {
+      font-size: 1.6rem;
+      font-weight: bolder;
+      text-align: left;
+    }
+
+    &__text {
+      font-size: 1.4rem;
+      text-align: justify;
+    }
+
+    &__button {
+      padding: 1rem 3rem;
+      border-radius: 8px;
+      font-size: 1.3rem;
+      color: white;
+      font-weight: bold;
+      border: none;
+      background-color: #4CAF50;
+      width: max-content;
+      transition: transform 0.3s ease-in-out;
+
+      &:hover {
+        background-color: #3a873d;
+        cursor: pointer;
+        transform: scale(1.01);
+      }
+    }
+  }
+
+  &__nearest {
+    grid-area: nearest;
+    background-color: #F2E8FF;
+    color: $text-color;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 1rem 2rem;
+    min-height: 500px;
+
+    &__title {
+      text-align: center;
+      font-weight: bold;
+      color: black;
+      font-size: 1.6rem;
+    }
+
+    &__block {
+      background-color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      span {
+        color: #9C62F3;
+        font-size: 1.4rem;
+        font-weight: bold;
+      }
+
+      p {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  &__other {
+    grid-area: other;
+    background-color: #F2EFDB;
+    padding: 10px;
+    border-radius: 10px;
+  }
+}
+
+// Полезная информация для пациента
+.usefulinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+
+  &-block {
+    background-color: #F2E8FF;
+    border-radius: 10px;
+    color: $text-color;
+    padding: 1rem 2rem;
+
+    &__qustion {
+      text-align: left;
+      font-weight: bold;
+      color: #0C055C;
+      font-size: 1.7rem;
+    }
+
+    &__answer {
+      font-size: 1.3rem;
+      text-align: justify;
+    }
+  }
+}
+
+// Модальное окно для записи на консультацию
+.modal {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.304);
+}
+
+.record-modal {
+  width: 50%;
+  position: absolute;
+  padding: 1.5rem 2rem;
+  background-color: #08A88A;
+  border-radius: 10px;
+
+  &__title {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: bolder;
+    margin-bottom: 20px;
+  }
+
+  &__close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 2rem;
+    color: red;
+    border: none;
+    background: none;
+    transition: all 0.4s ease-in-out;
+
+    &:hover {
+      cursor: pointer;
+      font-size: 2.3rem;
+      top: 13px;
+      right: 13px;
+    }
+  }
+
+  &__title-date {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  &__date-time {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 1.5rem;
+    gap: 20px;
+
+    .celendary,
+    .time {
+      min-height: 400px;
+      width: 100%;
+      background-color: white;
+      border-radius: 10px;
+      padding: 1rem 2rem;
+      box-sizing: border-box;
+    }
+  }
+
+  &__problems {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #D1F2EA;
+    border: none;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+  }
+
+  &__button {
+    background-color: #066E5A;
+    padding: 0.8rem 2rem;
+    width: 100%;
+    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.4s ease-in-out;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+
+  ;
+}
+
+// Страница с уведомлениями
+.notifications {
+  padding: 2rem;
+  background-color: #066E5A;
+  border-radius: 10px;
+
+  &__title {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: bolder;
+    margin-bottom: 2rem;
+  }
+
+  &__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .block {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+
+      h3 {
+        font-size: 1.4rem;
+        text-align: left;
+        color: $text-color;
+      }
+
+      p {
+        font-size: 1.2rem;
+        color: $gray-color;
+      }
+    }
+  }
+}
+
+// Страница с консультациями
+.consultations {
+  background-color: #F0EDD6;
+  padding: 2rem 3rem;
+  border-radius: 10px;
+
+  &__title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: bolder;
+    color: black;
+  }
+
+  &__consultations-now {
+    .block {
+      background-color: white;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      border: 1px solid black;
+
+      h2 {
+        text-align: left;
+      }
+
+      .icons {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+
+        .icon-block {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+
+          img {
+            width: 30px;
+            height: 30px;
+          }
+        }
+      }
+    }
+  }
+
+  &__consultations-archive {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    h2 {
+      text-align: left;
+    }
+
+    .block {
+      width: 100%;
+      box-sizing: border-box;
+      background-color: white;
+      border-radius: 10px;
+      border: 1px solid black;
+      padding: 1rem 2rem;
+
+      .icons {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+
+        .icon-block {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+
+          img {
+            width: 30px;
+            height: 30px;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Анимации
@@ -400,6 +804,27 @@
       text-align: left;
       border-bottom: 1px solid #e0e0e0;
       white-space: nowrap;
+    }
+  }
+}
+
+
+.another-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  &__avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
     }
   }
 }

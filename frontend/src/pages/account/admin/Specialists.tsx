@@ -1,23 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { menuItemsAdmin, RouteNames } from "../../../routes";
-import AccountLayout from "../AccountLayout";
 import { Context } from "../../../main";
-import { useNavigate } from "react-router";
 import { URL } from "../../../http";
+import { observer } from "mobx-react-lite";
+import AccountLayout from "../AccountLayout";
+import type { Batch } from "../../../models/IBatch";
 
-interface Batch {
-    id: number;
-    field_name: string;
-    new_value: string;
-    old_value: string;
-    userName: string;
-    userSurname: string;
-    userPatronymic: string;
-}
-
-const Specialists = () => {
+const Specialists:React.FC = () => {
     const { store } = useContext(Context);
-    const navigate = useNavigate();
 
     const [message, setMessage] = useState<string>("");
     const [error, setError] = useState<string>("");
@@ -125,7 +114,7 @@ const Specialists = () => {
     }, []);
 
     return (
-        <AccountLayout menuItems={menuItemsAdmin}>
+        <AccountLayout>
             <h3 className="tab">Редактирование профилей</h3>
 
             {message && <div className="alert alert-success">{message}</div>}
@@ -219,4 +208,4 @@ const Specialists = () => {
     )
 }
 
-export default Specialists;
+export default observer(Specialists);

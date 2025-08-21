@@ -1,10 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { menuItemsAdmin } from "../../../routes";
-import AccountLayout from "../AccountLayout";
 import { Context } from "../../../main";
 import type { User } from "../../../models/Auth";
 import { URL } from "../../../http";
 import { observer } from "mobx-react-lite";
+import AccountLayout from "../AccountLayout";
 
 const Users = () => {
   const { store } = useContext(Context);
@@ -58,32 +57,18 @@ const Users = () => {
   }
 
   return (
-    <AccountLayout menuItems={menuItemsAdmin}>
+    <AccountLayout>
       <h1 className="tab">Профили</h1>
       <div className="admin-page">
         {previewImage && (
           <div
             className="image-preview"
             style={{
-              position: 'fixed',
               left: `${previewPosition.x + 20}px`,
               top: `${previewPosition.y + 20}px`,
-              zIndex: 1000,
-              backgroundColor: 'white',
-              padding: '5px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
             }}
           >
-            <img
-              src={previewImage}
-              alt="Preview"
-              style={{
-                maxWidth: '200px',
-                maxHeight: '200px'
-              }}
-            />
+            <img src={previewImage} alt="Preview" />
           </div>
         )}
 

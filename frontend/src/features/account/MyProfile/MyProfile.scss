@@ -23,10 +23,6 @@
     font-weight: bold;
     transition: all 0.5s ease;
     margin: 0;
-
-    @media (min-width: 576px) {
-      font-size: 1.2rem;
-    }
   }
 
   &__message {
@@ -39,16 +35,8 @@
 
   &__role {
     margin: 0;
-    font-size: 1.2rem;
-    font-weight: bold;
-
-    &--patient {
-      color: $patient-color;
-    }
-
-    &--doctor {
-      color: $doctor-color;
-    }
+    font-size: 1.3rem;
+    color: $doctor-color;
   }
 
   &__content {
@@ -103,8 +91,7 @@
   }
 
   &__fio {
-    margin: 2px 0;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: bolder;
     text-align: left;
   }
@@ -173,6 +160,15 @@
     &:focus {
       outline: none;
     }
+
+    &:hover {
+      background-color: $light-color;
+    }
+
+    &:read-only:hover {
+      background-color: $sidebar-color;
+      cursor: no-drop;
+    }
   }
 }
 
@@ -186,11 +182,7 @@
   }
 
   label {
-    font-size: 0.9rem;
-
-    @media (min-width: 576px) {
-      font-size: 1rem;
-    }
+    font-size: 1.15rem;
   }
 }
 

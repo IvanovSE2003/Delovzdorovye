@@ -7,11 +7,10 @@ import ActivatedEmail from '../auth/ActivatedEmail';
 import Loader from '../../components/UI/Loader/Loader';
 
 interface AccountLayoutProps {
-  menuItems: Array<{ path: string, name: string }>;
   children: React.ReactNode;
 }
 
-const AccountLayout = observer(({ menuItems, children }: AccountLayoutProps) => {
+const AccountLayout:React.FC<AccountLayoutProps> = ({ children }) => {
   const { store } = useContext(Context);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [active, setActive] = useState<boolean>(false);
@@ -36,13 +35,13 @@ const AccountLayout = observer(({ menuItems, children }: AccountLayoutProps) => 
 
   return (
     <div className="account__main">
-      <SideBar menuItems={menuItems} />
+      <SideBar menuItems={store.menuItems} />
       <main className='account__content'>
         {children}
       </main>
       <RightPanel />
     </div>
   );
-});
+};
 
-export default AccountLayout;
+export default observer(AccountLayout);

@@ -6,6 +6,9 @@ import logo from '../../../../public/logo.svg';
 
 const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
   const location = useLocation();
+
+  console.log(location.pathname)
+  console.log(menuItems[0].path)
   
   return (
     <div className={`sidebar ${className}`}>
@@ -22,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
                 to={item.path}
                 className="sidebar__link"
               >
-                <span className="sidebar__text">{item.name}</span>
+                {item.name}
               </Link>
             </li>
           ))}

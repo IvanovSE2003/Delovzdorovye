@@ -18,11 +18,13 @@ export interface IUser {
     isActivated: boolean;
     isActivatedSMS: boolean;
     activationLink: string;
+    isAnonymous: boolean;
     img: string;
 }
 
 export interface IUserDataProfile {
     img: string;
+    role: Role;
     name: string;
     surname: string;
     patronymic: string;
@@ -30,7 +32,7 @@ export interface IUserDataProfile {
     dateBirth: string;
     phone: string;
     email: string;
-    anonym: boolean;
+    isAnonymous: boolean;
 }
 
 export interface User {

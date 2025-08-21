@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, IUserDataProfile, LoginData, RegistrationData, User } from "../models/Auth";
+import type { IUser, IUserDataProfile, LoginData, RegistrationData, Role, User } from "../models/Auth";
 import type { TypeResponse } from "../models/response/DefaultResponse";
 import type { TypeResponseToken } from "../models/response/TokenResponse";
 import AuthService from "../services/AuthService";
@@ -11,13 +11,18 @@ import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import BatchService from "../services/BatchService";
 import DoctorService, { type DoctorResponse } from "../services/DoctorService";
+import { menuItemsAdmin, menuItemsDoctor, menuItemsPatient } from "../routes";
+
+interface ImenuItems {
+    path: string;
+    name: string;
+}
 
 export default class Store {
     user = {} as IUser;
-    userProfile = {} as IUserDataProfile;
     isAuth = false;
     error = "";
-    isLoading = false;
+    menuItems = [] as ImenuItems[];
 
     constructor() {
         makeAutoObservable(this);
@@ -46,8 +51,10 @@ export default class Store {
         this.error = error;
     }
 
-    setLoading(bool: boolean) {
-        this.isLoading = bool;
+    setMenuItems(role: Role) {
+        role === 'ADMIN' && (this.menuItems = menuItemsAdmin);
+        role === 'DOCTOR'&& (this.menuItems = menuItemsDoctor);
+        role === 'PATIENT' && (this.menuItems = menuItemsPatient);
     }
 
     // Первый этап входа
@@ -71,6 +78,7 @@ export default class Store {
             localStorage.removeItem('tempToken');
             localStorage.setItem('accessToken', response.data.accessToken);
             this.setAuth(true);
+            this.setMenuItems(response.data.user.role);
             this.setUser(response.data.user);
         } catch(e) {
             const error = e as AxiosError<{ message: string }>;
@@ -82,27 +90,23 @@ export default class Store {
 
     // Регистрация
     async registration(data: RegistrationData): Promise<void> {
-        console.log('registration')
         try {
-            this.setLoading(true);
             this.setError("");
             const response = await AuthService.registration(data);
             localStorage.setItem('token', response.data.accessToken);
+            this.setMenuItems(response.data.user.role);
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
             this.setError(error.response?.data?.message || "Ошибка при регистрации!");
-        } finally {
-            this.setLoading(false);
         }
     }
 
-    // Выход из учетной записи
+    // Выход
     async logout(): Promise<void> {
         console.log('logout')
         try {
-            this.setLoading(true);
             await AuthService.logout();
             localStorage.removeItem('token');
             this.setAuth(false);
@@ -111,27 +115,23 @@ export default class Store {
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
             this.setError(error.response?.data?.message || "Ошибка при выходе!")
-        } finally {
-            this.setLoading(false);
         }
     }
 
     // Проверка авторизации пользователя
     async checkAuth(): Promise<void> {
         console.log('checkAuth')
-        this.setLoading(true);
         try {
             const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, { withCredentials: true });
             localStorage.setItem('token', response.data.accessToken);
             this.setAuth(true);
+            this.setMenuItems(response.data.user.role);
             this.setUser(response.data.user);
         } catch (e) {
             const error = e as AxiosError<{ message: string }>;
             localStorage.removeItem('token');
             this.setError(error.response?.data?.message || "Ошибка аунтификациий!")
             this.setAuth(false);
-        } finally {
-            this.setLoading(false);
         }
     }
 
@@ -214,6 +214,8 @@ export default class Store {
         }
     }
 
+
+
     // Отравка кода на телефон\почту
     async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<{message: string}> {
         try {
@@ -241,8 +243,7 @@ export default class Store {
         }
     }
 
-
-    // Отправить сообщение об активации на почту
+    // Отправить сообщение об активации почты
     async sendActivate(email: string): Promise<TypeResponse> {
         try {
             const response = await UserService.sendActivate(email);
@@ -257,7 +258,7 @@ export default class Store {
 
 
 
-    // Получить токен для активации телефона у телеграмм-бота
+    // Получить токен для активации телеграмм-бота
     async getTokenTg(id: number): Promise<TypeResponseToken> {
         try {
             const response = await UserService.getTokenTg(id);
@@ -270,7 +271,7 @@ export default class Store {
     }
 
 
-    // Манипулируем с аватаром пользователя
+    // Загрузить аватар пользователя
     async uploadAvatar(formData: FormData): Promise<void> {
         try {
             const response = await UserService.uploadAvatar(formData);
@@ -281,6 +282,7 @@ export default class Store {
         }
     }
 
+    // Удалить аватар пользователя
     async removeAvatar(id: number): Promise<void> {
         try {
             const response = await UserService.removeAvatar(id);
@@ -292,7 +294,7 @@ export default class Store {
     }
 
 
-    // Манипуляция со специалистами в админ панеле
+    // Получить все изменения у специалиста
     async getBatchAll(limit: number, page: number) {
         try {
             const response = await BatchService.getBatchAll(limit, page);
@@ -303,6 +305,7 @@ export default class Store {
         }
     }
 
+    // Принять изменения
     async confirmChange(id: number): Promise<TypeResponse> {
         try {
             const response = await BatchService.confirmChange(id);
@@ -314,6 +317,7 @@ export default class Store {
         }
     }
 
+    // Отклонить изменения
     async rejectChange(id: number, message: string): Promise<TypeResponse> {
         try {
             const response = await BatchService.rejectChange(id, message);
@@ -338,6 +342,7 @@ export default class Store {
         }
     }
 
+    // Заблокировать пользователя
     async blockUser(id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.blockUser(id);
@@ -349,6 +354,7 @@ export default class Store {
         }
     }
 
+    // Разблокировать пользователя
     async unblockUser(id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.unblockUser(id);
@@ -360,6 +366,7 @@ export default class Store {
         }
     }
 
+    // Изменить роль пользователю
     async changeRoleUser(id: number, newRole: string): Promise<TypeResponse> {
         try {
             const response = await UserService.changeRoleUser(id, newRole);
@@ -372,6 +379,7 @@ export default class Store {
     }
 
 
+    // Получить дополнительную информацию о докторе
     async getDoctorInfo(id: number): Promise<DoctorResponse> {
         try {
             const response = await DoctorService.getDoctorInfo(id);

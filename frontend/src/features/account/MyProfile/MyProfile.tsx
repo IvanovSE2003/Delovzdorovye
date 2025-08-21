@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../../routes/index.js";
 import { URL } from "../../../http/index.js";
 
-import "./UserProfile.scss";
+import "./MyProfile.scss";
 import QRcodeImg from '../../../assets/images/qr_code.png';
 
 const UserProfile: React.FC = () => {
@@ -19,6 +19,7 @@ const UserProfile: React.FC = () => {
 
   const [formData, setFormData] = useState<IUserDataProfile>({
     img: store.user.img,
+    role: store.user.role,
     surname: store.user.surname,
     name: store.user.name,
     patronymic: store.user.patronymic,
@@ -26,7 +27,7 @@ const UserProfile: React.FC = () => {
     dateBirth: store.user.dateBirth,
     phone: store.user.phone,
     email: store.user.email,
-    anonym: false,
+    isAnonymous: false,
   });
 
   const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,18 +109,9 @@ const UserProfile: React.FC = () => {
     const Role = store.user.role;
     switch (Role) {
       case "PATIENT": return 'Пациент';
-      case "DOCTOR": return 'Доктор';
-      default: return 'Админ';
+      case "DOCTOR": return 'Специалист';
+      default: return 'Администратор';
     }
-  };
-
-  const getRoleClassName = () => {
-    const Role = store.user.role;
-    return Role === "PATIENT"
-      ? 'user-profile__role--patient'
-      : Role === "DOCTOR"
-        ? 'user-profile__role--doctor'
-        : 'user-profile__role--admin';
   };
 
   useEffect(() => {
@@ -145,7 +137,7 @@ const UserProfile: React.FC = () => {
             <div className="user-profile__avatar">
               <img src={`${URL}/${store.user.img}`} alt="avatar-delovzdorovye" />
             </div>
-            {isEditing && (
+            {isEditing && !anonym && (
               <div className="user-profile__links">
                 <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
                   <p>Добавить фото</p>
@@ -184,6 +176,7 @@ const UserProfile: React.FC = () => {
                         value={formData.surname}
                         onChange={handleInputChange}
                         placeholder="Фамилия"
+                        title="Фамилия"
                       />
                     </div>
 
@@ -194,6 +187,7 @@ const UserProfile: React.FC = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="Имя"
+                        title="Имя"
                       />
                     </div>
 
@@ -204,6 +198,7 @@ const UserProfile: React.FC = () => {
                         value={formData.patronymic || ""}
                         onChange={handleInputChange}
                         placeholder="Отчество"
+                        title="Отчество"
                       />
                     </div>
                   </>
@@ -217,6 +212,7 @@ const UserProfile: React.FC = () => {
                       name="gender"
                       value="мужчина"
                       checked={formData.gender === "Мужчина"}
+                      title="Пол"
                       onChange={() => handleGenderChange("Мужчина")}
                     />
                     <label htmlFor="male">Мужчина</label>
@@ -228,6 +224,7 @@ const UserProfile: React.FC = () => {
                       type="radio"
                       name="gender"
                       value="женщина"
+                      title="Пол"
                       checked={formData.gender === "Женщина"}
                       onChange={() => handleGenderChange("Женщина")}
                     />
@@ -239,6 +236,7 @@ const UserProfile: React.FC = () => {
                   <input
                     type="date"
                     name="dateBirth"
+                    title="Дата рождения"
                     value={formData.dateBirth}
                     onChange={handleInputChange}
                   />
@@ -251,6 +249,8 @@ const UserProfile: React.FC = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="Номер телефона"
+                    title="Нельзя редактировать"
+                    readOnly
                   />
                 </div>
 
@@ -261,6 +261,8 @@ const UserProfile: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Email"
+                    title="Нельзя редактировать"
+                    readOnly
                   />
                 </div>
               </div>
@@ -271,16 +273,16 @@ const UserProfile: React.FC = () => {
                     ? <div className="user-profile__fio">Анонимный пользователь</div>
                     : <div className="user-profile__fio">{store.user?.surname} {store.user?.name} {store.user?.patronymic}</div>
                   }
-                  <div className={`user-profile__role ${getRoleClassName()}`}>
+                  <div className='user-profile__role'>
                     {getRoleName()}
                   </div>
                 </div>
 
                 <div className="user-profile__main-info">
-                  <span>Пол: {store.user.gender}</span>
-                  <span>Дата рождения: {GetFormatDate(store.user.dateBirth)}</span>
-                  <span>Номер телефона: {GetFormatPhone(store.user.phone)}</span>
-                  <span>E-mail: {store.user.email}</span>
+                  <span><span className="label">Пол:</span> {store.user.gender}</span>
+                  <span><span className="label">Дата рождения:</span> {GetFormatDate(store.user.dateBirth)}</span>
+                  <span><span className="label">Номер телефона:</span> {GetFormatPhone(store.user.phone)}</span>
+                  <span><span className="label">E-mail:</span> {store.user.email}</span>
                 </div>
               </>
             )}
