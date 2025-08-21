@@ -32,7 +32,7 @@ router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) 
 router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next));
 router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next));
 
-router.post('/activateLinkTg/:userId', (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
+router.post('/activateLinkTg/:userId', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
 router.post('/request-pin-reset', body('emailOrPhone').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
 
@@ -44,8 +44,8 @@ router.post('/block-account', authMiddlewareInstance, adminMiddleware(), (req: R
 router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next));
 router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
 
-router.post('/upload-avatar', (req: Request, res: Response, next: NextFunction) => userController.uploadAvatar(req, res, next));
-router.post('/delete-avatar', (req: Request, res: Response, next: NextFunction) => userController.deleteAvatar(req, res, next));
+router.post('/upload-avatar', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.uploadAvatar(req, res, next));
+router.post('/delete-avatar', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.deleteAvatar(req, res, next));
 
 export default router;
 

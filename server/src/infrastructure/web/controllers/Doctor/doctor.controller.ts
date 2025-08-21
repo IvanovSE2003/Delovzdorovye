@@ -94,7 +94,7 @@ export default class DoctorController {
             }
 
             const allowedFields: (keyof Doctor)[] = [
-                'specialization', 
+                'specializations', 
                 'experienceYears',
                 'diploma',
                 'license',

@@ -1,22 +1,40 @@
-import Patient from '../../domain/entities/patient.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
 import { Op } from 'sequelize';
+import sequelize from '../../../infrastructure/persostence/db/db.js';
 
-const {UserModel, DoctorModel} = models;
+const { UserModel, DoctorModel, SpecializationModel } = models;
 
 export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async findById(id: number): Promise<Doctor | null> {
-        const doctor = await DoctorModel.findByPk(id);
+        const doctor = await DoctorModel.findByPk(id, {
+            include: [
+                {
+                    model: SpecializationModel,
+                    through: { attributes: [] }, // Не включаем атрибуты связующей таблицы
+                    attributes: ['name'] // Загружаем только названия
+                }
+            ]
+        });
+
         return doctor ? this.mapToDomainDoctor(doctor) : null;
     }
 
     async findByUserId(userId: number) {
-        const user = await UserModel.findByPk(userId);
-        const doctor = await DoctorModel.findByPk(user?.id);
+        const doctor = await DoctorModel.findOne({
+            where: { userId },
+            include: [
+                {
+                    model: SpecializationModel,
+                    through: { attributes: [] },
+                    attributes: ['name']
+                }
+            ]
+        });
+
         return doctor ? this.mapToDomainDoctor(doctor) : null;
     }
 
@@ -37,15 +55,15 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }> {
         const where: any = {};
         const userWhere: any = {};
-        
+
         if (filters?.specialization) {
-            where.specialization = filters.specialization;
+            where['$specializations.name$'] = filters.specialization;
         }
-        
+
         if (filters?.isActive !== undefined) {
             where.activate = filters.isActive;
         }
-        
+
         if (filters?.experienceMin !== undefined || filters?.experienceMax !== undefined) {
             where.experience_years = {};
             if (filters?.experienceMin !== undefined) {
@@ -55,35 +73,50 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 where.experience_years[Op.lte] = filters.experienceMax;
             }
         }
-        
+
         if (filters?.gender) {
             userWhere.gender = filters.gender;
         }
-        
+
         const totalCount = await DoctorModel.count({
             where,
-            include: [{
-                model: UserModel,
-                where: userWhere,
-                required: true
-            }]
+            include: [
+                {
+                    model: UserModel,
+                    where: userWhere,
+                    required: true
+                },
+                {
+                    model: SpecializationModel,
+                    where: filters?.specialization ? { name: filters.specialization } : {},
+                    required: !!filters?.specialization
+                }
+            ]
         });
-        
+
         const totalPages = Math.ceil(totalCount / limit);
-        
+
         const doctors = await DoctorModel.findAll({
             where,
-            include: [{
-                model: UserModel,
-                where: userWhere,
-                required: true,
-                attributes: { exclude: ['pin_code', 'activationLink'] } 
-            }],
+            include: [
+                {
+                    model: UserModel,
+                    where: userWhere,
+                    required: true,
+                    attributes: { exclude: ['pin_code', 'activationLink'] }
+                },
+                {
+                    model: SpecializationModel,
+                    through: { attributes: [] },
+                    attributes: ['name'],
+                    where: filters?.specialization ? { name: filters.specialization } : {}
+                }
+            ],
             limit,
             offset: (page - 1) * limit,
-            order: [['experience_years', 'DESC'], ['id', 'ASC']] 
+            order: [['experience_years', 'DESC'], ['id', 'ASC']]
         });
-        
+
         return {
             doctors: doctors.map(doctor => this.mapToDomainDoctor(doctor)),
             totalCount,
@@ -93,57 +126,122 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async findByUserIds(userIds: number[]): Promise<Doctor[]> {
         const doctors = await DoctorModel.findAll({
-            where: { 
-                userId: { 
-                    [Op.in]: userIds 
-                } 
+            where: {
+                userId: {
+                    [Op.in]: userIds
+                }
             }
         });
-        
+
         return doctors.map(doctor => this.mapToDomainDoctor(doctor));
     }
 
     async update(doctor: Doctor): Promise<Doctor> {
         if (!doctor.id) {
-            throw new Error("ID пациента не найдено для обновления");
+            throw new Error("ID доктора не найдено для обновления");
         }
 
-        const [affectedCount, updatedPatients] = await DoctorModel.update(
-            this.mapToPersistence(doctor),
-            {
-                where: { id: doctor.id },
-                returning: true 
+        const transaction = await sequelize.transaction();
+
+        try {
+            const [affectedCount, updatedDoctors] = await DoctorModel.update(
+                this.mapToPersistence(doctor),
+                {
+                    where: { id: doctor.id },
+                    returning: true,
+                    transaction
+                }
+            );
+
+            if (affectedCount === 0 || !updatedDoctors || updatedDoctors.length === 0) {
+                throw new Error(`Доктор с id ${doctor.id} не найден`);
             }
-        );
 
-        if (affectedCount === 0 || !updatedPatients || updatedPatients.length === 0) {
-            throw new Error(`Пациент с id ${doctor.id} не найден`);
+            const updatedDoctor = updatedDoctors[0] as DoctorModelInterface;
+
+            const specializationInstances = [];
+            for (const specName of doctor.specializations) {
+                const [spec] = await SpecializationModel.findOrCreate({
+                    where: { name: specName },
+                    transaction
+                });
+                specializationInstances.push(spec);
+            }
+
+            await updatedDoctor.setSpecializations(specializationInstances, { transaction });
+            await transaction.commit();
+
+            const fullDoctor = await DoctorModel.findByPk(doctor.id, {
+                include: [{
+                    model: SpecializationModel,
+                    through: { attributes: [] },
+                    attributes: ['name']
+                }]
+            });
+
+            return this.mapToDomainDoctor(fullDoctor!);
+
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
         }
-
-        const updatedDoctor = updatedPatients[0] as DoctorModelInterface;
-        return this.mapToDomainDoctor(updatedDoctor);
     }
 
     async create(doctor: Doctor): Promise<Doctor> {
-        const createdDoctor = await DoctorModel.create(this.mapToPersistence(doctor));
-        return this.mapToDomainDoctor(createdDoctor);
+        const transaction = await sequelize.transaction();
+
+        try {
+            const createdDoctor = await DoctorModel.create(
+                this.mapToPersistence(doctor),
+                { transaction }
+            );
+
+            const specializationInstances = [];
+            for (const specName of doctor.specializations) {
+                const [spec] = await SpecializationModel.findOrCreate({
+                    where: { name: specName },
+                    transaction
+                });
+                specializationInstances.push(spec);
+            }
+
+            await createdDoctor.setSpecializations(specializationInstances, { transaction });
+            await transaction.commit();
+
+            const fullDoctor = await DoctorModel.findByPk(createdDoctor.id, {
+                include: [{
+                    model: SpecializationModel,
+                    through: { attributes: [] },
+                    attributes: ['name']
+                }]
+            });
+
+            return this.mapToDomainDoctor(fullDoctor!);
+
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
 
-    private mapToDomainDoctor(doctorModel: DoctorModelInterface): Doctor {
+    private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[] }): Doctor {
+        const specializations = doctorModel.specializations
+            ? doctorModel.specializations.map(spec => spec.name)
+            : [];
+
         return new Doctor(
             doctorModel.id,
-            doctorModel.specialization,
             doctorModel.experience_years,
             doctorModel.diploma,
             doctorModel.license,
             doctorModel.activate,
+            specializations,
             doctorModel.userId
         );
     }
 
     private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
         return {
-            specialization: doctor.specialization,
             experience_years: doctor.experienceYears,
             diploma: doctor.diploma,
             license: doctor.license,

@@ -10,6 +10,8 @@ import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import dataResult from "../../types/dataResultAuth.js";
+import PatientRepository from "../../../../core/domain/repositories/patient.repository.js";
+import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 
 export default class UserController {
     constructor(

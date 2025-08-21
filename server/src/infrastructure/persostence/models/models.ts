@@ -7,6 +7,7 @@ import { DoctorModelInterface } from './interfaces/doctor.model.js'
 import { TokenModelInterface } from './interfaces/token.model.js'
 import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.js'
 import { BatchModelInterface } from './interfaces/batch.model.js'
+import { SpecializationModelInterface } from './interfaces/specializations.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -100,19 +101,34 @@ const HereditaryDiseaseModel = sequelize.define('hereditary_disease', {
 
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
-    specialization: {type: DataType.STRING},
     experience_years: {type: DataType.INTEGER},
     diploma: {type: DataType.STRING,  allowNull: true},
     license: {type: DataType.STRING,  allowNull: true},
     activate: {type: DataType.BOOLEAN, defaultValue: false}
 });
 
+const SpecializationModel = sequelize.define<SpecializationModelInterface>('specialization', {
+    id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: DataType.STRING}
+});
+
+const RatingModel = sequelize.define('rating', {
+    id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
+    score: {type: DataType.INTEGER},
+    comment: {type: DataType.TEXT, allowNull: true}
+});
+
+const ProblemModel = sequelize.define('problem', {
+    id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: DataType.STRING}
+})
+
 const Consultation = sequelize.define('consultation', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
-    datatime_consult: {type: DataType.DATE},
-    status: {type: DataType.STRING, defaultValue: "expectation"},
-    problems_data: {type: DataType.JSONB},
-    recommendations: {type: DataType.TEXT},
+    consultation_status: {type: DataType.STRING},
+    payment_status: {type: DataType.STRING},
+    other_problem: {type: DataType.TEXT, allowNull: true},
+    recommendations: {type: DataType.STRING},
     duration: {type: DataType.INTEGER, allowNull: true}
 })
 
@@ -146,6 +162,8 @@ const ModerationBatchModel = sequelize.define<BatchModelInterface>('moderation_b
     old_value: { type: DataType.TEXT, allowNull: true },
     new_value: { type: DataType.TEXT, allowNull: false }
 });
+
+
 
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
@@ -201,6 +219,22 @@ HereditaryDiseaseModel.belongsTo(PatientModel);
 DoctorsSchedule.hasMany(TimeSlot);
 TimeSlot.belongsTo(DoctorsSchedule);
 
+DoctorModel.belongsToMany(SpecializationModel, { through: 'doctor_specializations' });
+SpecializationModel.belongsToMany(DoctorModel, { through: 'doctor_specializations' });
+
+Consultation.belongsToMany(ProblemModel, { through: 'consultation_problems' });
+ProblemModel.belongsToMany(Consultation, { through: 'consultation_problems' });
+
+Consultation.hasOne(RatingModel);
+RatingModel.belongsTo(Consultation);
+
+PatientModel.hasMany(RatingModel);
+RatingModel.belongsTo(PatientModel);
+
+DoctorModel.hasMany(RatingModel);
+RatingModel.belongsTo(DoctorModel);
+
+
 export default {
     UserModel,
     DoctorModel,
@@ -218,5 +252,8 @@ export default {
     ExaminationModel,
     HereditaryDiseaseModel,
     TimeSlot,
-    ModerationBatchModel
+    ModerationBatchModel,
+    SpecializationModel,
+    RatingModel,
+    ProblemModel
 }

@@ -66,7 +66,7 @@ export class AuthServiceImpl implements AuthService {
             });
             await this.patientRepository.create(patient);
         } else if(data.role === 'DOCTOR') {
-            const doctor = new Doctor(0, data.specialization, data.experienceYears, data.diploma, data.license , false, savedUser.id);
+            const doctor = new Doctor(0, data.experienceYears, data.diploma, data.license , false, savedUser.id);
             await this.doctorRepository.create(doctor);
         }
 
