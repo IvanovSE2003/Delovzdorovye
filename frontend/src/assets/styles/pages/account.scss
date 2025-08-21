@@ -158,20 +158,21 @@
 }
 
 // Профиль другого пользователя
-.some-profile {
+.profile {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 30px;
   background-color: $profile-color;
   border-radius: 10px;
-  padding: 30px 20px;
+  padding: 2rem 3rem;
 
   &__avatar {
-    width: 250px;
+    min-width: 250px;
     height: 250px;
     border-radius: 50%;
-    margin-top: 20px;
     overflow: hidden;
+    box-sizing: border-box;
 
     img {
       width: 100%;
@@ -205,7 +206,7 @@
     color: $gray-color;
 
     .label {
-      font-weight: bold;
+      font-weight: bolder;
       color: black;
     }
   }
@@ -421,6 +422,7 @@
 
     &:hover {
       transform: scale(1.03);
+      cursor: pointer;
     }
   }
 
@@ -430,7 +432,7 @@
 // Страница с уведомлениями
 .notifications {
   padding: 2rem;
-  background-color: #066E5A;
+  background-color: $doctor-color;
   border-radius: 10px;
 
   &__title {
@@ -487,24 +489,6 @@
       h2 {
         text-align: left;
       }
-
-      .icons {
-        display: flex;
-        gap: 30px;
-        margin-top: 20px;
-
-        .icon-block {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 5px;
-
-          img {
-            width: 30px;
-            height: 30px;
-          }
-        }
-      }
     }
   }
 
@@ -524,25 +508,105 @@
       border-radius: 10px;
       border: 1px solid black;
       padding: 1rem 2rem;
+    }
+  }
+}
+.icons {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
 
-      .icons {
+  .icon-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+
+    img {
+      width: 30px;
+      height: 30px;
+    }
+  }
+}
+
+
+// SVG-иконки на сайте
+.svg-link {
+  transition: all 0.3s ease;
+
+  &.active {
+    fill: $doctor-color;
+  }
+
+  &:hover {
+    filter: none;
+  }
+}
+
+.icon {
+  transition: all 0.3s ease;
+}
+
+.svg-link:hover .icon {
+  fill: $primary-color;
+  cursor: pointer;
+}
+
+// Страница рекомендаций
+.recomendations {
+  background-color: #E1F7EB;
+  padding: 2rem;
+  border-radius: 10px;
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: bolder;
+    margin-bottom: 2rem;
+  }
+
+  &__blocks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    .block {
+      border: 1px solid black;
+      background-color: white;
+      width: 70%;
+      border-radius: 10px;
+      color: $text-color;
+      padding: 1rem 2rem;
+
+      h3 {
+        font-size: 1.2rem;
+        font-weight: bolder;
+        text-align: left;
+        color: black;
+        margin-bottom: 10px;
+      }
+
+      &__info {
         display: flex;
-        gap: 30px;
-        margin-top: 20px;
-
-        .icon-block {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 5px;
-
-          img {
-            width: 30px;
-            height: 30px;
-          }
-        }
+        justify-content: space-between;
       }
     }
+  }
+}
+
+// Страница специалисты
+.specialists {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  &__title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bolder;
+    margin-bottom: 2rem;
+    padding: 5px;
   }
 }
 

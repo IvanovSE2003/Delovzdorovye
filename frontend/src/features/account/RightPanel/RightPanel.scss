@@ -19,34 +19,3 @@
         width: 100%;
     }
 }
-
-.svg-link {
-    transition: all 0.3s ease;
-
-    &.active {
-        fill: $doctor-color;
-    }
-
-    &:hover {
-        filter: none;
-    }
-}
-
-.account-icon,
-.bell-icon {
-    transition: all 0.3s ease;
-}
-
-.svg-link:hover .account-icon,
-.svg-link:hover .bell-icon {
-    fill: $primary-color;
-}
-
-.notification-icon {
-    transition: all 0.3s ease;
-
-    &:hover {
-        transform: scale(1.05);
-        filter: brightness(1.2);
-    }
-}

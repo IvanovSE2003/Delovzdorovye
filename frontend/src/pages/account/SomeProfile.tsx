@@ -27,24 +27,24 @@ const Profile = () => {
 
     return (
         <AccountLayout>
-            <div className="some-profile">
-                <div className="some-profile__avatar">
+            <div className="profile">
+                <div className="profile__avatar">
                     <img src={`${URL}/${profile.img}`} alt="avatar-delovzdorovye" />
                 </div>
 
-                <div className="some-profile__info">
+                <div className="profile__info">
 
                     <div>
                         {(!profile.name && !profile.surname && !profile.patronymic)
-                            ? <div className="some-profile__fio"> Анонимный пользователь </div>
-                            : <div className="some-profile__fio"> {profile.surname} {profile?.name} {profile?.patronymic} </div>
+                            ? <div className="profile__fio"> Анонимный пользователь </div>
+                            : <div className="profile__fio"> {profile.surname} {profile?.name} {profile?.patronymic} </div>
                         }
-                        <div className="some-profile__role">
+                        <div className="profile__role">
                             {profile.role ? profile.role : "Неизвестная роль"}
                         </div>
                     </div>
 
-                    <div className="some-profile__main-info">
+                    <div className="profile__main-info">
                         <span><span className="label">Пол:</span> {profile.gender}</span>
                         <span><span className="label">Дата рождения:</span> {GetFormatDate(profile.dateBirth)}</span>
                         <span><span className="label">Номер телефона:</span> {GetFormatPhone(profile.phone)}</span>
