@@ -36,7 +36,8 @@ export default class ProfileController {
                 avatar: user.img,
                 name: user.name,
                 surname: user.surname,
-                patronymic: user.patronymic
+                patronymic: user.patronymic,
+                role: user.role
             };
 
             const age = user.dateBirth ? calculateAge(user.dateBirth) : 0;
