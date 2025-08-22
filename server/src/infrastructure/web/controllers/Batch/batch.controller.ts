@@ -111,6 +111,12 @@ export default class BatchController {
 
             await this.batchRepository.delete(batch.id);
 
+            const batches = await this.batchRepository.findAllByUserId(user.id);
+            if(batches.length === 0) {
+                await this.userRepository.save(user.setSentChanges(false));
+            }
+
+
             return res.status(200).json({
                 success: true,
                 message: "Изменение успешно подтверждено и применено",

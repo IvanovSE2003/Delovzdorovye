@@ -78,8 +78,8 @@ export default class User {
         return this;
     }
 
-    setSentChanges(): User {
-        this.sentChanges = true;
+    setSentChanges(sentChanges: boolean): User {
+        this.sentChanges = sentChanges;
         return this;
     }
 
@@ -92,6 +92,7 @@ export default class User {
         this.isActivated = flag;
         return this;
     }
+
 
     cloneWithChanges(changes: Partial<User>): User {
         return new User(

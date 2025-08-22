@@ -3,13 +3,22 @@ import BatchRepository from "../../domain/repositories/batch.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
 
-const { ModerationBatchModel, UserModel} = models;
+const { ModerationBatchModel, UserModel } = models;
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<Batch | null> {
         const batchModel = await ModerationBatchModel.findByPk(id);
         return batchModel ? this.mapToDomainBatch(batchModel) : null;
     }
+
+    async findAllByUserId(userId: number): Promise<Batch[]> {
+        const batchesModel = await models.ModerationBatchModel.findAll({ where: { userId } });
+
+        const batches: Batch[] = batchesModel.map(batch => this.mapToDomainBatch(batch));
+
+        return batches;
+    }
+
 
     async findAll(page: number, limit: number): Promise<{ batches: Batch[]; totalCount: number; totalPage: number; }> {
         const offset = (page - 1) * limit;
@@ -21,7 +30,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
                 attributes: ['name', 'surname', 'patronymic']
             }]
         });
-    
+
         return {
             batches: rows.map(batch => this.mapToDomainBatch(batch)),
             totalCount: count,
@@ -38,11 +47,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
         const [affectedCount] = await ModerationBatchModel.update(this.mapToPersistence(batch), {
             where: { id: batch.id }
         });
-        
+
         if (affectedCount === 0) {
             throw new Error("Batch not found");
         }
-        
+
         const updatedBatch = await ModerationBatchModel.findByPk(batch.id);
         return this.mapToDomainBatch(updatedBatch!);
     }
@@ -52,7 +61,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }
 
     async delete(batchId: number): Promise<void> {
-        await ModerationBatchModel.destroy({where: {id: batchId}});
+        await ModerationBatchModel.destroy({ where: { id: batchId } });
     }
 
     async createBatchWithChangesUser(userId: number, changes: Array<{
@@ -126,13 +135,13 @@ export default class BatchRepositoryImpl implements BatchRepository {
             batchModel.new_value,
             batchModel.userId
         );
-        
+
         if (batchModel.user) {
             batch.userName = batchModel.user.name;
             batch.userSurname = batchModel.user.surname;
             batch.userPatronymic = batchModel.user.patronymic;
         }
-        
+
         return batch;
     }
 
@@ -145,6 +154,6 @@ export default class BatchRepositoryImpl implements BatchRepository {
             old_value: batch.old_value || null,
             new_value: batch.new_value,
             userId: batch.userId
-        } as IBatchCreationAttributes; 
+        } as IBatchCreationAttributes;
     }
 }

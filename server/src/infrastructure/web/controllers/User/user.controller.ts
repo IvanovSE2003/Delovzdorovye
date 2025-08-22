@@ -433,7 +433,7 @@ export default class UserController {
                     Number(updatedUserWithAvatar.id),
                     changes
                 );
-                await this.userRepository.save(user.setSentChanges());
+                await this.userRepository.save(user.setSentChanges(true));
                 result = user;
             } else {
                 result = await this.userRepository.save(updatedUserWithAvatar);
