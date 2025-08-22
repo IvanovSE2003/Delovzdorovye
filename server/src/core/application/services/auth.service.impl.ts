@@ -24,7 +24,7 @@ export class AuthServiceImpl implements AuthService {
         private readonly smsService: SmsService,
         private readonly twoFactorService: TwoFactorService,
         private readonly telegramService: TelegramService
-    ) {}
+    ) { }
 
     async register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }> {
         const exists = await this.userRepository.checkUserExists(data.email, data.phone);
@@ -33,41 +33,81 @@ export class AuthServiceImpl implements AuthService {
         }
 
         const activationLink = v4();
+        const defaultImg = data.gender === "Женщина" ? "girl.png" : "man.png";
 
-        let defaultImg;
-        if(data.gender === 'Женщина') {
-            defaultImg = "girl.png";
-        } else {
-            defaultImg = "man.png";
-        }
+        const baseUserData = {
+            id: 0,
+            email: data.email,
+            phone: data.phone,
+            pinCode: data.pinCode,
+            timeZone: data.timeZone,
+            dateBirth: data.dateBirth,
+            gender: data.gender,
+            isActivated: false,
+            isBanned: false,
+            activationLink,
+            avatar: defaultImg,
+            role: data.role,
+            isAnonymous: data.isAnonymous,
+        };
 
-        let user;
-        if(data.isAnonymous) {
-            user = new User(0, "", "", "", data.email, data.phone, 
-                            data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
-                            data.role, null, null, null, null, 0, false, null, false, data.isAnonymous);
-        } else {
-            user = new User(0, data.name, data.surname, data.patronymic, data.email, data.phone, 
-                data.pinCode, data.timeZone, data.dateBirth, data.gender, false, false, activationLink, defaultImg, 
-                data.role, null, null, null, null, 0, false, null, false, data.isAnonymous);
-        }
+        const user = new User(
+            baseUserData.id,
+            data.isAnonymous ? "" : data.name,
+            data.isAnonymous ? "" : data.surname,
+            data.isAnonymous ? "" : data.patronymic,
+            baseUserData.email,
+            baseUserData.phone,
+            baseUserData.pinCode,
+            baseUserData.timeZone,
+            baseUserData.dateBirth,
+            baseUserData.gender,
+            baseUserData.isActivated,
+            baseUserData.isBanned,
+            baseUserData.activationLink,
+            baseUserData.avatar,
+            baseUserData.role,
+            null,
+            null,
+            null,
+            null,
+            0,
+            false,
+            null,
+            false,
+            baseUserData.isAnonymous
+        );
 
         const savedUser = await this.userRepository.save(user);
 
-        if(data.role === 'PATIENT') {
-            const patient = new Patient(0, false, savedUser.id, {
-                chronicDiseases: [{ name: "" }],
-                surgeries: [{ year: new Date().getFullYear(), description: "" }],
-                allergies: [{ type: "", description: "" }],
-                medications: [{ name: "", dosage: "" }],
-                analyses: [{ name: "", file: "" }],
-                examinations: [{ name: "", file: "" }],
-                hereditaryDiseases: [{ name: "" }]
-            });
-            await this.patientRepository.create(patient);
-        } else if(data.role === 'DOCTOR') {
-            const doctor = new Doctor(0, data.experienceYears, data.diploma, data.license , false, savedUser.id);
-            await this.doctorRepository.create(doctor);
+        switch (data.role) {
+            case "PATIENT":
+                await this.patientRepository.create(
+                    new Patient(0, false, savedUser.id, {
+                        chronicDiseases: [{ name: "" }],
+                        surgeries: [{ year: new Date().getFullYear(), description: "" }],
+                        allergies: [{ type: "", description: "" }],
+                        medications: [{ name: "", dosage: "" }],
+                        analyses: [{ name: "", file: "" }],
+                        examinations: [{ name: "", file: "" }],
+                        hereditaryDiseases: [{ name: "" }],
+                    })
+                );
+                break;
+
+            case "DOCTOR":
+                await this.doctorRepository.create(
+                    new Doctor(
+                        0,
+                        data.experienceYears,
+                        data.diploma,
+                        data.license,
+                        false,
+                        data.specializations,
+                        savedUser.id
+                    )
+                );
+                break;
         }
 
         await this.mailService.sendActivationEmail(data.email, activationLink);
@@ -87,13 +127,14 @@ export class AuthServiceImpl implements AuthService {
         };
     }
 
+
     async logout(refreshToken: string): Promise<void> {
-        if(!refreshToken) {
+        if (!refreshToken) {
             throw new Error("Токен не найден");
         }
-        
+
         const tokenData = this.tokenService.validateRefreshToken(refreshToken);
-        if(!tokenData) {
+        if (!tokenData) {
             throw new Error("Не валирный токен");
         }
 
@@ -101,17 +142,17 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; }> {
-        if(!refreshToken) {
+        if (!refreshToken) {
             throw new Error("Токен не найден");
         }
 
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
-        if(!userData) {
+        if (!userData) {
             throw new Error("Не валирный токен");
         }
 
         const tokenFromDb = await this.tokenService.findToken(refreshToken);
-        if(!tokenFromDb) {
+        if (!tokenFromDb) {
             throw new Error("Токен не найден в базе данных");
         }
 
@@ -139,13 +180,13 @@ export class AuthServiceImpl implements AuthService {
         if (!user) {
             return false;
         }
-        
+
         if (user.id !== userId) {
             return false;
         }
 
         if (user.isActivated) {
-            return true; 
+            return true;
         }
 
         user.isActivated = true;
@@ -158,13 +199,13 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async login(
-        credential: string, 
-        pinCode: number, 
+        credential: string,
+        pinCode: number,
         twoFactorMethod?: string,
         twoFactorCode?: string
-    ): Promise<{ 
-        user: User; 
-        accessToken: string; 
+    ): Promise<{
+        user: User;
+        accessToken: string;
         refreshToken: string;
         requiresTwoFactor?: boolean;
         tempToken?: string;
@@ -198,14 +239,14 @@ export class AuthServiceImpl implements AuthService {
 
             if (!twoFactorCode) {
                 const code = this.twoFactorService.generateCode();
-                const expires = new Date(Date.now() + 5 * 60 * 1000); 
-                
+                const expires = new Date(Date.now() + 5 * 60 * 1000);
+
                 await this.userRepository.save(user.setTwoFactorCode(code, expires));
 
-                if(twoFactorMethod === "SMS" && !user.isActivatedSMS) {
+                if (twoFactorMethod === "SMS" && !user.isActivatedSMS) {
                     twoFactorMethod = 'EMAIL';
                 }
-                
+
                 if (twoFactorMethod) {
                     await this.twoFactorService.sendCode(user, twoFactorMethod, code);
                 } else {
@@ -220,7 +261,7 @@ export class AuthServiceImpl implements AuthService {
                         twoFactorRequired: true
                     },
                     this.twoFactorService.getTempSecret(),
-                    { expiresIn: '5m' } 
+                    { expiresIn: '5m' }
                 );
 
                 return {
@@ -261,12 +302,12 @@ export class AuthServiceImpl implements AuthService {
 
     async sendTwoFactorCode(creditial: string, method: string): Promise<void> {
         const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
-        if(user) {
-            if(user.isBlocked) {
+        if (user) {
+            if (user.isBlocked) {
                 throw new Error("Аккаунт заблокирован");
             }
             const code = this.twoFactorService.generateCode();
-            const expires = new Date(Date.now() + 5 * 60 * 1000); 
+            const expires = new Date(Date.now() + 5 * 60 * 1000);
             await this.userRepository.save(user.setTwoFactorCode(code, expires));
             await this.twoFactorService.sendCode(user, method, code);
         }
@@ -280,7 +321,7 @@ export class AuthServiceImpl implements AuthService {
         return await this.twoFactorService.verifyCode(user, code);
     }
 
-    async completeTwoFactorAuth(tempToken: string, code: string): Promise<{accessToken: string; refreshToken: string; user: User; }> {
+    async completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: User; }> {
         const payload = jwt.verify(tempToken, this.twoFactorService.getTempSecret()) as jwt.JwtPayload & {
             id: number;
             email: string;
@@ -317,17 +358,17 @@ export class AuthServiceImpl implements AuthService {
         return {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            user: user 
+            user: user
         };
     }
 
     async sendLoginNotification(phone: string, code: string): Promise<void> {
         const user = await this.userRepository.findByPhone(phone) as unknown as User;
-        if(!user) {
+        if (!user) {
             throw new Error('Пользователь не найден');
         }
 
-        if(user.twoFactorCode !== code) {
+        if (user.twoFactorCode !== code) {
             throw new Error('Код не верный')
         }
     }
@@ -336,25 +377,25 @@ export class AuthServiceImpl implements AuthService {
         const userPhone = await this.userRepository.findByPhone(emailOrPhone);
         const userEmail = await this.userRepository.findByEmail(emailOrPhone);
         let method = null, user = null;
-        if(!userPhone) {
+        if (!userPhone) {
             method = 'SMS';
             user = userEmail;
         } else if (!userEmail) {
             method = 'EMAIL';
             user = userPhone;
-        } 
-        
-        if(!user || !method) {
+        }
+
+        if (!user || !method) {
             throw new Error("Пользователь не найден");
         }
-        
+
         const resetToken = v4();
-        const resetTokenExpires = new Date(Date.now() + 3600000); 
-        
+        const resetTokenExpires = new Date(Date.now() + 3600000);
+
         await this.userRepository.save(user.setResetToken(resetToken, resetTokenExpires, user.pinCode));
-        if(method === 'SMS') {
+        if (method === 'SMS') {
             await this.mailService.sendPinCodeResetEmail(user.email, resetToken);
-        } else if(method === 'EMAIL') {
+        } else if (method === 'EMAIL') {
             await this.smsService.sendPinCodeResetEmail(user.phone, resetToken);
         }
     }

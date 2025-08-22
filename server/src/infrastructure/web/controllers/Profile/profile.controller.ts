@@ -97,7 +97,7 @@ export default class ProfileController {
             const roleMapping = profileMappings[userLinker.role as keyof typeof profileMappings] || profileMappings.default;
             const data = roleMapping[user.role as keyof typeof roleMapping] || roleMapping.default;
 
-            res.status(200).json(data);
+            return res.status(200).json(data);
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }

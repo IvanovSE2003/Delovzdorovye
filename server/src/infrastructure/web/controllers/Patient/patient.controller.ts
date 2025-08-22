@@ -10,10 +10,12 @@ export default class PatientController {
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
             const {id} = req.params;
+
             const patient = await this.patientRepository.findByUserId(Number(id));
             if(!patient) {
                 return next(ApiError.badRequest('Пользователь не является пациентом'));
             }
+
             return res.status(200).json(patient)
         } catch(e: any) {
             return next(ApiError.badRequest(e.message));
@@ -35,7 +37,7 @@ export default class PatientController {
             
             const result = await this.patientRepository.findAll(page, limit, filters);
             
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 data: result.patients,
                 pagination: {
@@ -45,28 +47,15 @@ export default class PatientController {
                     itemsPerPage: limit
                 }
             });
-        } catch (error) {
-            next(ApiError.internal('Ошибка при получении списка пациентов'));
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 
     async updatePatient(req: Request, res: Response, next: NextFunction) {
         try {
             const {id} = req.params;
-            const {generalInfo, analysesExaminations, additionally} = req.body;
-
-            const patient = await this.patientRepository.findById(Number(id));
-
-            if(!patient) {
-                return next(ApiError.badRequest('Пациент не найден'));
-            }
-
-            const updatePatient = await this.patientRepository.update(patient.updateInfo(generalInfo, analysesExaminations, additionally));
-            if(updatePatient) {
-                return res.status(200).json({success: true, message: 'Картачка пациент успешно обновлена'});
-            } else {
-                return res.status(501).json({success: false, message: 'Не удалось обновить карточку пациента'});
-            }
+            
         } catch(e: any) {
             return next(ApiError.badRequest('Ошибка при обновлении данных о пациенте'));
         }

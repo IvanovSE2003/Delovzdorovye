@@ -8,7 +8,7 @@ export default interface UserShortInfoDto {
     phone: string;
     gender: string;
     email: string;
-    specialization?: string | null;
+    specializations?: string[] | null;
     diploma?: string | null;
     license?: string | null;
     isBlocked: boolean;

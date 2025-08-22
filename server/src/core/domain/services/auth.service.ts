@@ -13,7 +13,7 @@ export default interface AuthService {
 
     sendTwoFactorCode(creditial: string, method: string): Promise<void>;
     verifyTwoFactorCode(userId: number, code: string): Promise<boolean>;
-    completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string }>;  
+    completeTwoFactorAuth(tempToken: string, code: string): Promise<{accessToken: string; refreshToken: string; user: User; }>;  
     sendLoginNotification(phone: string, code: string): Promise<void>;  
 
     generateTelegramLinkToken(userId: number): Promise<string>;

@@ -19,185 +19,44 @@ export default class User {
         public twoFactorCodeExpires: Date | null,
         public resetToken: string | null,
         public resetTokenExpires: Date | null,
-        public pinAttempts: number, 
-        public isBlocked: boolean, 
+        public pinAttempts: number,
+        public isBlocked: boolean,
         public blockedUntil: Date | null,
         public sentChanges: boolean | null,
         public isAnonymous: boolean | null
-    ) {}
+    ) { }
 
     activate(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            true,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        );
-    }
-
-    updateAvatar(fileName: string): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            fileName,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        )
+        this.isActivated = true;
+        return this;
     }
 
     activateSMS(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            true,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.isActivatedSMS = true;
+        return this;
+    }
+
+    updateAvatar(fileName: string): User {
+        this.img = fileName;
+        return this;
     }
 
     setTwoFactorCode(code: string, expires: Date): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            code,
-            expires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.twoFactorCode = code;
+        this.twoFactorCodeExpires = expires;
+        return this;
     }
 
     setResetToken(resetToken: string | null, resetTokenExpires: Date | null, pin_code: number) {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            pin_code,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            resetToken,
-            resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.pinCode = pin_code;
+        this.resetToken = resetToken;
+        this.resetTokenExpires = resetTokenExpires;
+        return this;
     }
 
     incrementPinAttempts(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts + 1,
-            this.isBlocked,
-            this.blockedUntil,
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.pinAttempts = this.pinAttempts + 1;
+        return this;
     }
 
     resetPinAttempts(): this {
@@ -207,90 +66,21 @@ export default class User {
 
     blockAccount(): User {
         const blockDuration = 30 * 60 * 1000;
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts,
-            true, 
-            new Date(Date.now() + blockDuration),
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.isBlocked = true;
+        this.blockedUntil = new Date(Date.now() + blockDuration);
+        return this;
     }
 
     unblockAccount(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            0,
-            false, 
-            null,
-            this.sentChanges,
-            this.isAnonymous
-        );
+        this.pinAttempts = 0;
+        this.isBlocked = false;
+        this.blockedUntil = null;
+        return this;
     }
 
     setSentChanges(): User {
-        return new User(
-            this.id,
-            this.name,
-            this.surname,
-            this.patronymic,
-            this.email,
-            this.phone,
-            this.pinCode,
-            this.timeZone,
-            this.dateBirth,
-            this.gender,
-            this.isActivated,
-            this.isActivatedSMS,
-            this.activationLink,
-            this.img,
-            this.role,
-            this.twoFactorCode,
-            this.twoFactorCodeExpires,
-            this.resetToken,
-            this.resetTokenExpires,
-            this.pinAttempts, 
-            this.isBlocked,
-            this.blockedUntil,
-            true,
-            this.isAnonymous
-        );
+        this.sentChanges = true;
+        return this;
     }
 
     setRole(role: "PATIENT" | "DOCTOR" | "ADMIN"): User {
@@ -301,5 +91,34 @@ export default class User {
     setAnonymous(flag: boolean) {
         this.isActivated = flag;
         return this;
+    }
+
+    cloneWithChanges(changes: Partial<User>): User {
+        return new User(
+            this.id,
+            changes.name ?? this.name,
+            changes.surname ?? this.surname,
+            changes.patronymic ?? this.patronymic,
+            changes.email ?? this.email,
+            changes.phone ?? this.phone,
+            changes.pinCode ?? this.pinCode,
+            changes.timeZone ?? this.timeZone,
+            changes.dateBirth ?? this.dateBirth,
+            changes.gender ?? this.gender,
+            changes.isActivated ?? this.isActivated,
+            changes.isActivatedSMS ?? this.isActivatedSMS,
+            changes.activationLink ?? this.activationLink,
+            changes.img ?? this.img,
+            changes.role ?? this.role,
+            changes.twoFactorCode ?? this.twoFactorCode,
+            changes.twoFactorCodeExpires ?? this.twoFactorCodeExpires,
+            changes.resetToken ?? this.resetToken,
+            changes.resetTokenExpires ?? this.resetTokenExpires,
+            changes.pinAttempts ?? this.pinAttempts,
+            changes.isBlocked ?? this.isBlocked,
+            changes.blockedUntil ?? this.blockedUntil,
+            changes.sentChanges ?? this.sentChanges,
+            changes.isAnonymous ?? this.isAnonymous
+        );
     }
 }

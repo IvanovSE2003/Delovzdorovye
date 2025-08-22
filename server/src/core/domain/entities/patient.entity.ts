@@ -1,9 +1,9 @@
 export default class Patient {
     constructor(
-        public readonly id: number,
-        public readonly isActivated: boolean,
-        public readonly userId?: number,
-        public readonly medicalData?: PatientMedicalData
+        public id: number,
+        public isActivated: boolean,
+        public userId?: number,
+        public medicalData?: PatientMedicalData
     ) {}
 
     get chronicDiseases() {
@@ -38,13 +38,9 @@ export default class Patient {
         return this.medicalData?.user;
     }
 
-    activate() {
-        return new Patient(
-            this.id,
-            true,
-            this.userId,
-            this.medicalData
-        );
+    activate(): Patient {
+        this.isActivated = true;
+        return this;
     }
 }
 

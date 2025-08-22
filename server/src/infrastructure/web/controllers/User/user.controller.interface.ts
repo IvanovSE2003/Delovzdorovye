@@ -1,4 +1,3 @@
-// infrastructure/web/controllers/userControllerInstance.js
 import { AuthServiceImpl } from "../../../../core/application/services/auth.service.impl.js";
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
 import TokenServiceImpl from "../../../../core/application/services/token.service.impl.js";

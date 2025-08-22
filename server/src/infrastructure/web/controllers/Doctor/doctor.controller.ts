@@ -36,7 +36,7 @@ export default class DoctorController {
 
             const result = await this.doctorRepository.findAll(page, limit, filters);
 
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 data: result.doctors,
                 pagination: {
@@ -46,8 +46,8 @@ export default class DoctorController {
                     itemsPerPage: limit
                 }
             });
-        } catch (error) {
-            next(ApiError.internal('Ошибка при получении списка докторов'));
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 
@@ -58,7 +58,7 @@ export default class DoctorController {
             if (!doctor) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
-            res.status(200).json(doctor);
+            return res.status(200).json(doctor);
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
@@ -67,66 +67,58 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            let { data } = req.body;
-
-            if (typeof data === 'string') {
-                try {
-                    data = JSON.parse(data);
-                } catch {
-                    return next(ApiError.badRequest('Некорректный формат данных'));
-                }
-            }
+            const { data } = req.body as { data: Partial<Doctor> };
 
             const doctor = await this.doctorRepository.findById(Number(id));
             if (!doctor) {
-                return next(ApiError.badRequest('Доктор не найден'));
+                return next(ApiError.badRequest("Доктор не найден"));
             }
 
-            if (req.files?.diploma) {
-                const diplomaFile = req.files.diploma as UploadedFile;
-                const diplomaFileName = await this.fileService.saveFile(diplomaFile);
-                data.diploma = diplomaFileName;
-            }
-            if (req.files?.license) {
-                const licenseFile = req.files.license as UploadedFile;
-                const licenseFileName = await this.fileService.saveFile(licenseFile);
-                data.license = licenseFileName;
+            const fileFields: (keyof Doctor)[] = ["diploma", "license"];
+            for (const field of fileFields) {
+                const file = req.files?.[field] as UploadedFile | undefined;
+                if (file) {
+                    const fileName = await this.fileService.saveFile(file);
+                    data[field] = fileName as any; 
+                }
             }
 
             const allowedFields: (keyof Doctor)[] = [
-                'specializations',
-                'experienceYears',
-                'diploma',
-                'license',
+                "specializations",
+                "experienceYears",
+                "diploma",
+                "license",
             ];
 
             const changes = Object.entries(data)
-                .filter(([field_name]) => allowedFields.includes(field_name as keyof Doctor))
-                .map(([field_name, new_value]) => {
-                    const field = field_name as keyof Doctor;
-                    const oldValue = doctor[field];
-                    const translatedFieldName = FIELD_TRANSLATIONS[field_name] || field_name;
-
+                .filter(([field]) => allowedFields.includes(field as keyof Doctor))
+                .map(([field, newValue]) => {
+                    const key = field as keyof Doctor;
+                    const oldValue = doctor[key];
                     return {
-                        field_name: translatedFieldName,
-                        old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
-                        new_value: String(new_value)
+                        field_name: FIELD_TRANSLATIONS[field] || field,
+                        old_value: oldValue != null ? String(oldValue) : null,
+                        new_value: String(newValue),
                     };
                 });
 
-            if (changes.length === 0) {
-                return next(ApiError.badRequest('Нет допустимых полей для изменения'));
+            if (!changes.length) {
+                return next(ApiError.badRequest("Нет допустимых полей для изменения"));
             }
 
             const user = await this.userRepository.findByDoctorId(doctor.id);
             if (!user) {
-                return next(ApiError.badRequest('Пользователь для данного доктора не найден'))
+                return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
             }
-            await this.batchRepository.createBatchWithChangesUser(Number(user.id), changes);
 
-            return res.json({ success: true, message: 'Изменения отправлены на модерацию' });
+            await this.batchRepository.createBatchWithChangesUser(user.id, changes);
+
+            return res.json({
+                success: true,
+                message: "Изменения отправлены на модерацию",
+            });
         } catch (e: any) {
-            next(ApiError.internal(e.message));
+            return next(ApiError.internal(e.message));
         }
     }
 

@@ -10,8 +10,6 @@ import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import dataResult from "../../types/dataResultAuth.js";
-import PatientRepository from "../../../../core/domain/repositories/patient.repository.js";
-import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 
 export default class UserController {
     constructor(
@@ -24,23 +22,44 @@ export default class UserController {
 
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, role, name, surname, patronymic, phone, pin_code, gender, date_birth, time_zone, specialization, experienceYears, isAnonymous} = req.body;
+            const {
+                email,
+                role,
+                name,
+                surname,
+                patronymic,
+                phone,
+                pin_code: pinCode,
+                gender,
+                date_birth: dateBirth,
+                time_zone: timeZone,
+                specializations,
+                experienceYears,
+                isAnonymous,
+            } = req.body;
 
-            let diplomaFileName: string | null = null;
-            let licenseFileName: string | null = null;
+            const saveFile = async (file?: UploadedFile) => file ? await this.fileService.saveFile(file) : null;
 
-            if (req.files) {
-                if (req.files.diploma) {
-                    const diplomaFile = req.files.diploma as UploadedFile;
-                    diplomaFileName = await this.fileService.saveFile(diplomaFile);
-                }
-                if (req.files.license) {
-                    const licenseFile = req.files.license as UploadedFile;
-                    licenseFileName = await this.fileService.saveFile(licenseFile);
-                }
-            }
+            const diploma = await saveFile(req.files?.diploma as UploadedFile) || "";
+            const license = await saveFile(req.files?.license as UploadedFile) || "";
 
-            const data = { email, role, name, surname, patronymic, phone, pinCode: pin_code, gender, dateBirth: date_birth, timeZone: time_zone, specialization, experienceYears, diploma: diplomaFileName, license: licenseFileName, isAnonymous} as unknown as regData;
+            const data: regData = {
+                email,
+                role,
+                name,
+                surname,
+                patronymic,
+                phone,
+                pinCode,
+                gender,
+                dateBirth,
+                timeZone,
+                specializations,
+                experienceYears,
+                diploma,
+                license,
+                isAnonymous,
+            };
 
             const result = await this.authService.register(data);
 
@@ -61,33 +80,26 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { creditial, pin_code, twoFactorCode, twoFactorMethod } = req.body;
+            const { creditial, pin_code: pinCode, twoFactorCode, twoFactorMethod } = req.body;
 
-            const result = await this.authService.login(
-                creditial, 
-                pin_code,
+            const result: dataResult = await this.authService.login(
+                creditial,
+                pinCode,
                 twoFactorMethod,
                 twoFactorCode
-            ) as dataResult;
+            );
 
             if (result.requiresTwoFactor) {
-                return res.json({
-                    success: true,
-                    tempToken: result.tempToken
-                });
+                return res.json({ success: true, tempToken: result.tempToken });
             }
 
             res.cookie("refreshToken", result.refreshToken, {
-                maxAge: 24 * 60 * 60 * 1000, 
+                maxAge: 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
             });
 
-            return res.json({
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
-                user: result.user,
-            });
+            return res.json(result);
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
@@ -96,8 +108,8 @@ export default class UserController {
     async completeTwoFactorAuth(req: Request, res: Response, next: NextFunction) {
         try {
             const { tempToken, code } = req.body;
-            
-            const result = await this.authService.completeTwoFactorAuth(tempToken, code) as dataResult;
+
+            const result: dataResult = await this.authService.completeTwoFactorAuth(tempToken, code);
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -105,24 +117,22 @@ export default class UserController {
                 secure: true,
             });
 
-            return res.json({
-                accessToken: result.accessToken,
-                refreshToken: result.refreshToken,
-                user: result.user,
-            });
+            return res.json(result);
         } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
+            next(ApiError.badRequest(e.message));
         }
     }
 
     async logout(req: Request, res: Response, next: NextFunction) {
         try {
             const { refreshToken } = req.cookies;
+
             await this.authService.logout(refreshToken);
             res.clearCookie('refreshToken');
-            return res.json({ message: "Успешный выход" });
+
+            return res.json({ success: true, message: "Успешный выход" });
         } catch (e: any) {
-            return next(ApiError.badRequest(e.message))
+            next(ApiError.badRequest(e.message))
         }
     }
 
@@ -152,12 +162,16 @@ export default class UserController {
     async check(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.user) {
-                return next(ApiError.internal('Пользователь не авторизован'));
+                return next(ApiError.internal("Пользователь не авторизован"));
             }
-            const tokens = await this.tokenService.generateTokens({ ...req.user })
-            return res.status(200).json({ tokens })
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message))
+
+            const tokens = await this.tokenService.generateTokens({ ...req.user });
+            return res.status(200).json({ tokens });
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return next(ApiError.badRequest(e.message));
+            }
+            return next(ApiError.badRequest("Неизвестная ошибка"));
         }
     }
 
@@ -166,7 +180,7 @@ export default class UserController {
             const { creditial } = req.body;
             const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
             if (!user) {
-                return res.status(404).json({ success: false, message: 'Такого пользователя не существует' });
+                return next(ApiError.badRequest('Такого пользователя не существует'));
             }
             return res.status(200).json({ success: true, message: 'Пользователь существует' });
         } catch (e: any) {
@@ -193,119 +207,72 @@ export default class UserController {
             const activationLink = req.params.link;
 
             if (!activationLink) {
-                return res.status(400).send(this.renderHtmlPage('Некорректная ссылка активации', false));
+                return res.status(400).send(this.renderHtmlPage("Некорректная ссылка активации", false));
             }
 
             const user = await this.userRepository.findByActivationLink(activationLink);
             if (!user) {
-                return res.status(404).send(this.renderHtmlPage('Пользователь не найден', false));
+                return res.status(404).send(this.renderHtmlPage("Пользователь не найден", false));
             }
 
             if (user.isActivated) {
-                return res.status(200).send(this.renderHtmlPage('Аккаунт уже был активирован ранее', true));
+                return res.status(200).send(this.renderHtmlPage("Аккаунт уже был активирован ранее", true));
             }
 
             const isActivated = await this.authService.activate(activationLink, user.id);
             if (!isActivated) {
-                return res.status(200).send(this.renderHtmlPage('Ошибка при активации аккаунта', false));
+                return res.status(500).send(this.renderHtmlPage("Ошибка при активации аккаунта", false));
             }
 
             await this.userRepository.save(user.activate());
-            return res.status(200).send(this.renderHtmlPage('Аккаунт успешно активирован', true));
+            return res.status(200).send(this.renderHtmlPage("Аккаунт успешно активирован", true));
         } catch (e: any) {
-            return res.status(500).send(this.renderHtmlPage(`Внутренняя ошибка сервера: ${e.message}`, false));
+            return next(ApiError.badRequest("Неизвестная ошибка"));
         }
-    }
-
-    private renderHtmlPage(message: string, isSuccess: boolean): string {
-        const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
-        const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL;
-
-        return `
-            <!DOCTYPE html>
-            <html lang="ru">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${title}</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        padding: 50px;
-                    }
-                    h1 {
-                        color: ${color};
-                    }
-                    .container {
-                        max-width: 600px;
-                        margin: 0 auto;
-                    }
-                    .btn {
-                        display: inline-block;
-                        margin-top: 20px;
-                        padding: 10px 20px;
-                        background-color: ${isSuccess ? '#4CAF50' : '#f44336'};
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 4px;
-                        transition: background-color 0.3s;
-                    }
-                    .btn:hover {
-                        background-color: ${isSuccess ? '#45a049' : '#d32f2f'};
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>${title}</h1>
-                    <p>${message}</p>
-                    <a href="${clientUrl}/personal" class="btn">Перейти в личный кабинет</a>
-                </div>
-            </body>
-            </html>
-            `;
     }
 
     async refresh(req: Request, res: Response, next: NextFunction) {
-        const { refreshToken } = req.cookies;
-        if (!refreshToken) {
-            return next(ApiError.notAuthorized('Пользователь не авторизован'));
+        try {
+            const { refreshToken } = req.cookies;
+            if (!refreshToken) {
+                return next(ApiError.notAuthorized('Пользователь не авторизован'));
+            }
+            const userPayload = this.tokenService.validateRefreshToken(refreshToken);
+
+            if (!userPayload || typeof userPayload === 'string') {
+                return next(ApiError.notAuthorized('Невалидный токен'));
+            }
+
+            if (!userPayload.id || !userPayload.email) {
+                return next(ApiError.notAuthorized('Токен не содержит необходимых данных'));
+            }
+
+            const tokenFromDb = await this.tokenService.findToken(refreshToken);
+            if (!tokenFromDb) {
+                return next(ApiError.notAuthorized('Токен не найден в базе'));
+            }
+
+            const user = await this.userRepository.findById(userPayload.id);
+            if (!user) {
+                return next(ApiError.notAuthorized('Пользователь не найден'));
+            }
+
+            const tokens = await this.tokenService.generateTokens({ ...user });
+            await this.tokenService.saveToken(user.id, tokens.refreshToken);
+
+            res.cookie('refreshToken', tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true
+            });
+
+            return res.json({
+                accessToken: tokens.accessToken,
+                user: user
+            });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
         }
-        const userPayload = await this.tokenService.validateRefreshToken(refreshToken);
-
-        if (!userPayload || typeof userPayload === 'string') {
-            return next(ApiError.notAuthorized('Невалидный токен'));
-        }
-        if (!userPayload.id || !userPayload.email) {
-            return next(ApiError.notAuthorized('Токен не содержит необходимых данных'));
-        }
-
-        const tokenFromDb = await this.tokenService.findToken(refreshToken);
-
-        if (!tokenFromDb) {
-            return next(ApiError.notAuthorized('Токен не найден в базе'));
-        }
-
-        const user = await this.userRepository.findById(userPayload.id);
-        if (!user) {
-            return next(ApiError.notAuthorized('Пользователь не найден'));
-        }
-
-        const tokens = await this.tokenService.generateTokens({ ...user });
-        await this.tokenService.saveToken(user.id, tokens.refreshToken);
-
-        res.cookie('refreshToken', tokens.refreshToken, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            secure: true
-        });
-
-        return res.json({
-            accessToken: tokens.accessToken,
-            user: user
-        });
     }
 
     async verifyTwoFactor(req: Request, res: Response, next: NextFunction) {
@@ -426,84 +393,51 @@ export default class UserController {
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
-                return next(ApiError.badRequest('Пользователь не найден'));
+                return next(ApiError.badRequest("Пользователь не найден"));
             }
 
-            const updatedUser = new User(
-                user.id,
-                'name' in data ? data.name : user.name, 
-                'surname' in data ? data.surname : user.surname,
-                'patronymic' in data ? data.patronymic : user.patronymic,
-                data.email || user.email,
-                data.phone || user.phone,
-                user.pinCode,
-                data.timeZone || user.timeZone,
-                data.dateBirth || user.dateBirth,
-                data.gender || user.gender,
-                user.isActivated,
-                user.isActivatedSMS,
-                user.activationLink,
-                user.img,
-                user.role,
-                user.twoFactorCode,
-                user.twoFactorCodeExpires,
-                user.resetToken,
-                user.resetTokenExpires,
-                user.pinAttempts,
-                user.isBlocked,
-                user.blockedUntil,
-                user.sentChanges,
-                user.isAnonymous
-            );
+            const updatedUser = user.cloneWithChanges({
+                name: data.name ?? user.name,
+                surname: data.surname ?? user.surname,
+                patronymic: data.patronymic ?? user.patronymic,
+                email: data.email ?? user.email,
+                phone: data.phone ?? user.phone,
+                timeZone: data.timeZone ?? user.timeZone,
+                dateBirth: data.dateBirth ?? user.dateBirth,
+                gender: data.gender ?? user.gender,
+            });
 
+            const avatar =
+                data.img && data.img !== user.img
+                    ? data.img
+                    : user.img === "man.png" || user.img === "girl.png"
+                        ? updatedUser.gender === "Женщина"
+                            ? "girl.png"
+                            : "man.png"
+                        : user.img;
 
-            let imgUser = user.img;
-            if (user.img === 'man.png' || user.img === 'girl.png') {
-                imgUser = updatedUser.gender === 'Женщина' ? 'girl.png' : 'man.png';
-            }
-            if (data.img && data.img !== user.img) {
-                imgUser = data.img;
-            }
+            const updatedUserWithAvatar = updatedUser.updateAvatar(avatar);
+            let result: User;
 
-            const updatedUserWithAvatar = updatedUser.updateAvatar(imgUser);
-
-            let result;
-            if (updatedUserWithAvatar.role === 'DOCTOR') {
-                const allowedFields: (keyof User)[] = [
-                    'name',
-                    'surname',
-                    'patronymic',
-                    'gender',
-                    'dateBirth'
-                ];
-                const changes = Object.entries(data)
-                    .filter(([field_name]) => allowedFields.includes(field_name as keyof User))
-                    .map(([field_name, new_value]) => {
-                        const field = field_name as keyof User;
-                        const oldValue = user[field];
-                        const translatedFieldName = FIELD_TRANSLATIONS[field_name] || field_name;
-                        
-                        return {
-                            field_name: translatedFieldName,
-                            old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
-                            new_value: String(new_value)
-                        };
-                    });
-
-                await this.batchRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
+            if (updatedUserWithAvatar.role === "DOCTOR") {
+                const changes = this.collectDoctorChanges(user, data);
+                await this.batchRepository.createBatchWithChangesUser(
+                    Number(updatedUserWithAvatar.id),
+                    changes
+                );
                 await this.userRepository.save(user.setSentChanges());
                 result = user;
             } else {
                 result = await this.userRepository.save(updatedUserWithAvatar);
             }
 
-            if (result) {
-                return res.status(200).json({ success: true, message: 'Изменения сохранены', user: result });
-            } else {
-                return res.status(404).json({ success: false, message: 'Ошибка при сохранении изменений', user: null });
-            }
+            return res.status(200).json({
+                success: true,
+                message: "Изменения сохранены",
+                user: result,
+            });
         } catch (e: any) {
-            return next(ApiError.internal(e.message));
+            return next(ApiError.internal("Неизвестная ошибка"));
         }
     }
 
@@ -520,7 +454,7 @@ export default class UserController {
 
             res.status(204).send();
         } catch (error) {
-            next(ApiError.internal('Ошибка при удалении пользователя'));
+            return next(ApiError.internal('Ошибка при удалении пользователя'));
         }
     }
 
@@ -549,7 +483,7 @@ export default class UserController {
             }
             await this.authService.blockAccount(Number(userId));
             return res.status(200).json({ success: true, message: 'Аккаунт заблокирован' })
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
@@ -574,10 +508,10 @@ export default class UserController {
             const { userId } = req.body;
             const img = req.files?.img;
             if (!img || Array.isArray(img)) {
-                throw new Error('Файл не загружен или загружено несколько файлов');
+                return next(ApiError.badRequest('Файл не загружен или загружено несколько файлов'));
             }
             const userUpdate = await this.userRepository.uploadAvatar(Number(userId), img);
-            console.log("user ", userUpdate);
+
             return res.status(200).json({
                 img: userUpdate.img,
                 surname: userUpdate.surname,
@@ -598,6 +532,7 @@ export default class UserController {
         try {
             const { userId } = req.body;
             const userDelete = await this.userRepository.deleteAvatar(Number(userId));
+
             return res.status(200).json({
                 img: userDelete.img,
                 surname: userDelete.surname,
@@ -615,20 +550,101 @@ export default class UserController {
     }
 
     async changeRole(req: Request, res: Response, next: NextFunction) {
-        const { userId, newRole } = req.body;
-        const user = await this.userRepository.findById(Number(userId));
-        if(!user) {
-            return next(ApiError.badRequest('Пользователь не найден'));
-        }
+        try {
+            const { userId, newRole } = req.body;
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
 
-        if(newRole !== "PATIENT" && newRole !== "DOCTOR" && newRole !== "ADMIN") {
-            return next(ApiError.badRequest('Неизвестная роль'));
+            if (newRole !== "PATIENT" && newRole !== "DOCTOR" && newRole !== "ADMIN") {
+                return next(ApiError.badRequest('Неизвестная роль'));
+            }
+
+            await this.userRepository.save(user.setRole(newRole));
+            return res.status(200).json({ success: true, message: `Роль пользователя была изменена на ${newRole}` });
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
         }
-        await this.userRepository.save(user.setRole(newRole));
-        return res.status(200).json({success: true, message: `Роль пользователя была изменена на ${newRole}`});
+    }
+
+    private renderHtmlPage(message: string, isSuccess: boolean): string {
+        const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
+        const color = isSuccess ? 'green' : 'red';
+        const clientUrl = process.env.CLIENT_URL;
+
+        return `
+            <!DOCTYPE html>
+            <html lang="ru">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${title}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        text-align: center;
+                        padding: 50px;
+                    }
+                    h1 {
+                        color: ${color};
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
+                    .btn {
+                        display: inline-block;
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background-color: ${isSuccess ? '#4CAF50' : '#f44336'};
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        transition: background-color 0.3s;
+                    }
+                    .btn:hover {
+                        background-color: ${isSuccess ? '#45a049' : '#d32f2f'};
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>${title}</h1>
+                    <p>${message}</p>
+                    <a href="${clientUrl}/personal" class="btn">Перейти в личный кабинет</a>
+                </div>
+            </body>
+            </html>
+            `;
+    }
+
+    private collectDoctorChanges(user: User, data: Partial<User>) {
+        const allowedFields: (keyof User)[] = [
+            "name",
+            "surname",
+            "patronymic",
+            "gender",
+            "dateBirth",
+        ];
+
+        return Object.entries(data)
+            .filter(([field]) => allowedFields.includes(field as keyof User))
+            .map(([field, newValue]) => {
+                const oldValue = user[field as keyof User];
+                const translatedFieldName = FIELD_TRANSLATIONS[field] || field;
+
+                return {
+                    field_name: translatedFieldName,
+                    old_value:
+                        oldValue !== undefined && oldValue !== null
+                            ? String(oldValue)
+                            : null,
+                    new_value: String(newValue),
+                };
+            });
     }
 }
-
 
 const FIELD_TRANSLATIONS: Record<string, string> = {
     name: 'Имя',

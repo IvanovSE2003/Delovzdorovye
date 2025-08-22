@@ -9,7 +9,7 @@ export default interface regData {
     gender: string,
     dateBirth: Date,
     timeZone: number,
-    specialization: string,
+    specializations: string[],
     experienceYears: number
     diploma: string,
     license: string,

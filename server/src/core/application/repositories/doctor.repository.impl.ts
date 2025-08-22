@@ -2,7 +2,7 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
 import TimeSlot from '../../domain/entities/timeSlot.entity.js';
 
@@ -285,20 +285,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return timeSlots.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
     }
 
-    private mapToDomainTimeSlot(slotModel: any, scheduleDate: Date): TimeSlot {
-        const dateTime = new Date(scheduleDate);
-        const [hours, minutes] = slotModel.time.split(':');
-        dateTime.setHours(parseInt(hours), parseInt(minutes));
-
-        return new TimeSlot(
-            slotModel.id,
-            slotModel.time,
-            dateTime,
-            slotModel.is_available,
-            slotModel.doctors_schedule_id
-        );
-    }
-
     private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[]; user?: any }): Doctor {
         const specializations = doctorModel.specializations
             ? doctorModel.specializations.map(spec => spec.name)
@@ -330,7 +316,3 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         };
     }
 }
-
-// interface DoctorWithUser extends Omit<Doctor, 'activate'> {
-//     isActivated: boolean; 
-// }

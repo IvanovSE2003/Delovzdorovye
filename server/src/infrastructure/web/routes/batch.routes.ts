@@ -9,7 +9,7 @@ router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, 
 
 router.get('/get-all-user', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getAllUser(req, res, next));
 
-router.post('/all', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getAll(req, res, next))
+router.post('/all', (req: Request, res: Response, next: NextFunction) => batchController.getAll(req, res, next))
 router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getOne(req, res, next));
 
 export default router;

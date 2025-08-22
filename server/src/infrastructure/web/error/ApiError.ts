@@ -2,7 +2,6 @@ class ApiError extends Error {
     public status: number;  
     public message: string;
     public success: boolean;
-    public originalError?: Error;
 
     constructor(status: number, success: boolean, message: string) {
         super()

@@ -14,14 +14,7 @@ export default class Batch {
     ) {}
 
     setStatus(status: string) {
-        return new Batch(
-            this.id,
-            status,
-            this.rejection_reason,
-            this.is_urgent,
-            this.field_name,
-            this.old_value,
-            this.new_value
-        )
+        this.status = status;
+        return this;
     }
 }

@@ -28,9 +28,9 @@ export default class DoctorScheduleController {
 
             // относительно базы знаний по временным поясам сделать расчет времени для пользователя, который получает данное расписание
             
-            res.status(200).json(schedule);
+            return res.status(200).json(schedule);
         } catch(e: any) {
-            next(ApiError.badRequest(e.message));
+            return next(ApiError.internal(e.message));
         }
     }
 }

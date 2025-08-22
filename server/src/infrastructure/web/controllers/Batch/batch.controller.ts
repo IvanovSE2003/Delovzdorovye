@@ -16,15 +16,15 @@ export default class BatchController {
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const batch = await this.batchRepository.findById(Number(id));
 
-            if(!batch) {
+            if (!batch) {
                 return next(ApiError.badRequest('Изменение не найдено'));
             }
 
             return res.status(200).json(batch);
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
@@ -34,8 +34,8 @@ export default class BatchController {
             const limit = req.body.limit || 10;
             const page = req.body.page || 1;
             const batches = await this.batchRepository.findAll(Number(page), Number(limit));
-            
-            if(!batches || batches.batches.length === 0) {
+
+            if (!batches || batches.batches.length === 0) {
                 return next(ApiError.badRequest('Изменения не найдены'));
             }
 
@@ -54,7 +54,7 @@ export default class BatchController {
                 totalCount: batches.totalCount,
                 totalPage: batches.totalPage
             });
-        } catch(e: any) {
+        } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
     }
@@ -64,93 +64,69 @@ export default class BatchController {
             const { id } = req.params;
 
             const batch = await this.batchRepository.findById(Number(id));
-            
             if (!batch) {
-                return next(ApiError.badRequest('Изменение не найдено'));
+                return next(ApiError.badRequest("Изменение не найдено"));
             }
 
             const user = await this.userRepository.findById(batch.userId || 0);
             if (!user) {
-                return next(ApiError.badRequest('Пользователь не найден'));
+                return next(ApiError.badRequest("Пользователь не найден"));
             }
 
-            const doctorFields = ['Специализация', 'Опыт работы', 'Диплом', 'Лицензия'];
-            const isDoctorField = doctorFields.includes(batch.field_name);
+            const doctorFieldMap: Record<string, (doctor: Doctor, value: string) => void> = {
+                "Специализации": (doctor, value) => {
+                    doctor.specializations = value.split(",").map(s => s.trim());
+                },
+                "Опыт работы": (doctor, value) => (doctor.experienceYears = parseInt(value)),
+                "Диплом": (doctor, value) => (doctor.diploma = value),
+                "Лицензия": (doctor, value) => (doctor.license = value),
+            };
 
-            if (isDoctorField) {
+            const userFieldMap: Record<string, (user: User, value: string) => void> = {
+                "Имя": (u, v) => (u.name = v),
+                "Фамилия": (u, v) => (u.surname = v),
+                "Отчество": (u, v) => (u.patronymic = v),
+                "Пол": (u, v) => {
+                    u.gender = v;
+                    if (u.img === "man.png" && v === "Женщина") u.img = "girl.png";
+                    else if (u.img === "girl.png" && v !== "Женщина") u.img = "man.png";
+                },
+                "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
+            };
+
+            if (batch.field_name in doctorFieldMap) {
                 const doctor = await this.doctorRepository.findByUserId(user.id);
                 if (!doctor) {
-                    return next(ApiError.badRequest('Доктор не найден'));
+                    return next(ApiError.badRequest("Доктор не найден"));
                 }
 
-                const updates: Partial<Doctor> = {};
-                switch (batch.field_name) {
-                    case 'Специализация':
-                        updates.specialization = batch.new_value;
-                        break;
-                    case 'Опыт работы':
-                        updates.experienceYears = parseInt(batch.new_value);
-                        break;
-                    case 'Диплом':
-                        updates.diploma = batch.new_value;
-                        break;
-                    case 'Лицензия':
-                        updates.license = batch.new_value;
-                        break;
-                }
-
-                Object.assign(doctor, updates);
+                doctorFieldMap[batch.field_name](doctor, batch.new_value);
                 await this.doctorRepository.update(doctor);
-            } else {
-                const updates: Partial<User> = {};
-                switch (batch.field_name) {
-                    case 'Имя':
-                        updates.name = batch.new_value;
-                        break;
-                    case 'Фамилия':
-                        updates.surname = batch.new_value;
-                        break;
-                    case 'Отчество':
-                        updates.patronymic = batch.new_value;
-                        break;
-                    case 'Пол':
-                        updates.gender = batch.new_value;
-                        console.log(user.img);
-                        if(updates.gender === 'Женщина') {
-                            user.img === 'man.png' ? updates.img = 'girl.png' : updates.img = user.img
-                        } else {
-                            user.img === 'girl.png' ? updates.img = 'man.png' : updates.img = user.img
-                        }
-                        console.log(user.img);
-                        break;
-                    case 'Дата рождения':
-                        updates.dateBirth = new Date(batch.new_value);
-                        break;
-                }
-
-                Object.assign(user, updates);
+            } else if (batch.field_name in userFieldMap) {
+                userFieldMap[batch.field_name](user, batch.new_value);
                 await this.userRepository.update(user);
+            } else {
+                return next(ApiError.badRequest("Недопустимое поле для изменения"));
             }
 
             await this.batchRepository.delete(batch.id);
 
-
-            return res.status(200).json({ 
-                success: true, 
-                message: 'Изменение успешно подтверждено и применено' 
+            return res.status(200).json({
+                success: true,
+                message: "Изменение успешно подтверждено и применено",
             });
-        } catch(e: any) {
-            return next(ApiError.badRequest(e.message));
+        } catch (e: any) {
+            return next(ApiError.badRequest("Неизвестная ошибка"));
         }
     }
 
     async reject(req: Request, res: Response, next: NextFunction) {
         try {
-            const {id} = req.params;
-            const {rejection_reason} = req.body;
+            const { id } = req.params;
+            const { rejection_reason } = req.body;
 
             const batch = await this.batchRepository.findById(Number(id));
-                
+
             if (!batch) {
                 return next(ApiError.badRequest('Изменение не найдено'));
             }
@@ -159,11 +135,11 @@ export default class BatchController {
             console.log(rejection_reason);
 
             await this.batchRepository.delete(batch.id);
-            return res.status(200).json({ 
-                success: true, 
-                message: 'Изменение успешно отменено и сообщение отправлено' 
+            return res.status(200).json({
+                success: true,
+                message: 'Изменение успешно отменено и сообщение отправлено'
             });
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
@@ -171,7 +147,7 @@ export default class BatchController {
     async getAllUser(req: Request, res: Response, next: NextFunction) {
         try {
             const users = await this.userRepository.getAll();
-            
+
             if (!users || users.length === 0) {
                 return res.status(404).json({ message: 'Пользователи не найдены' });
             }
@@ -200,7 +176,7 @@ export default class BatchController {
                     phone: user.phone,
                     gender: user.gender,
                     email: user.email,
-                    specialization: null,
+                    specializations: null,
                     diploma: null,
                     license: null,
                     isBlocked: user.isBlocked
@@ -209,7 +185,7 @@ export default class BatchController {
                 if (user.role === 'DOCTOR') {
                     const doctorInfo = doctorMap.get(user.id);
                     if (doctorInfo) {
-                        userData.specialization = doctorInfo.specialization || null;
+                        userData.specializations = doctorInfo.specializations || null;
                         userData.diploma = doctorInfo.diploma || null;
                         userData.license = doctorInfo.license || null;
                     }
@@ -220,7 +196,7 @@ export default class BatchController {
 
             return res.status(200).json(response);
         } catch (e: any) {
-            next(ApiError.badRequest(e.message)); 
+            next(ApiError.badRequest(e.message));
         }
     }
 }
