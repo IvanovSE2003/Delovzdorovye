@@ -19,7 +19,6 @@ export default class BatchRepositoryImpl implements BatchRepository {
         return batches;
     }
 
-
     async findAll(page: number, limit: number): Promise<{ batches: Batch[]; totalCount: number; totalPage: number; }> {
         const offset = (page - 1) * limit;
         const { count, rows } = await ModerationBatchModel.findAndCountAll({

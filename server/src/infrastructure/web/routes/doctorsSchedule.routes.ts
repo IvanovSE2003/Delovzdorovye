@@ -3,6 +3,6 @@ import scheduleController from "../controllers/DoctorSchedule/doctorSchedule.con
 
 const router = Router(); 
 
-router.get('/:doctorId', (req: Request<{doctorId: string}>, res: Response, next: NextFunction) => {scheduleController.getByDoctor(req, res, next); });
+router.get('/:userId', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.getByDoctor(req, res, next));
 
 export default router;
