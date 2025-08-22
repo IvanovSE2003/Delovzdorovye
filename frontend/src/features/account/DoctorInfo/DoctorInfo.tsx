@@ -11,6 +11,7 @@ const DoctorInfo = () => {
     const [specialization, setSpecialization] = useState<string>('');
     const [experienceYears, setExperienceYears] = useState<number>(0);
     const [diplomaFile, setDiplomaFile] = useState<string | null>(null);
+    const [diplomaFileName, setDiplomaFileName] = useState<string>("");
     const [licenseFile, setLicenseFile] = useState<string | null>(null);
 
     const getDoctorInfo = async () => {
@@ -25,7 +26,7 @@ const DoctorInfo = () => {
         console.log({
             specialization,
             experienceYears,
-            diplomaFile,
+            diplomaFileName,
             licenseFile,
         });
         setEdit(false);
@@ -40,12 +41,14 @@ const DoctorInfo = () => {
                 const result = event.target?.result as string;
                 if (type === 'diploma') {
                     setDiplomaFile(result);
+                    setDiplomaFileName(file.name);
                 } else {
                     setLicenseFile(result);
+                    setDiplomaFileName(file.name);
                 }
             };
 
-            reader.readAsDataURL(file); // Конвертируем в base64
+            reader.readAsDataURL(file);
         }
     };
 
@@ -63,7 +66,10 @@ const DoctorInfo = () => {
 
     return (
         <div className='doctor-info'>
-            {edit && <h1>Редактирование данных</h1>}
+            <h1 className="doctor-info__title">
+                {edit ? "Редактирование данных" : "Карточка специалиста"}
+            </h1>
+            {!edit && (<div className="doctor-info__subtitle">Полная профессиональная информация</div>)}
 
             <div className='doctor-info__content'>
                 {edit ? (
@@ -91,11 +97,17 @@ const DoctorInfo = () => {
                             <div className="file-upload">
                                 {diplomaFile && (
                                     <div className="file-info">
-                                        <span className="file-info__name">Файл загружен (<a href={`${URL}/${diplomaFile}`} target="_blank">{diplomaFile}</a>)</span>
+                                        <span className="file-info__name">
+                                            Файл загружен (
+                                            <a href={`${URL}/${diplomaFileName}`} target="_blank">
+                                                {diplomaFileName.length > 20 ? `${diplomaFileName.substring(0, 20)}...` : diplomaFileName}
+                                            </a>
+                                            )
+                                        </span>
                                     </div>
                                 )}
                                 <div className="file-upload__buttons">
-                                    <label className="file-upload__label">
+                                    <label className="my-button">
                                         Выберите файл
                                         <input
                                             type="file"
@@ -105,7 +117,7 @@ const DoctorInfo = () => {
                                         />
                                     </label>
                                     <button
-                                        className="file-remove-button"
+                                        className="neg-button"
                                         onClick={() => handleRemoveFile('diploma')}
                                     >
                                         Удалить файл
@@ -123,7 +135,7 @@ const DoctorInfo = () => {
                                     </div>
                                 )}
                                 <div className="file-upload__buttons">
-                                    <label className="file-upload__label">
+                                    <label className="my-button">
                                         Выберите файл
                                         <input
                                             type="file"
@@ -133,7 +145,7 @@ const DoctorInfo = () => {
                                         />
                                     </label>
                                     <button
-                                        className="file-remove-button"
+                                        className="neg-button"
                                         onClick={() => handleRemoveFile('license')}
                                     >
                                         Удалить файл
@@ -147,8 +159,8 @@ const DoctorInfo = () => {
                         <span><strong>Специализация: </strong> {specialization} </span>
                         <span><strong>Опыт работы в годах: </strong> {experienceYears} </span>
                         <span><strong>Диплом о профильном образовании: </strong>
-                            {diplomaFile ? (
-                                <span className="file-info__name"><a href={`${URL}/${diplomaFile}`} target="_blank">{diplomaFile}</a></span>
+                            {diplomaFileName ? (
+                                <span className="file-info__name"><a href={`${URL}/${diplomaFileName}`} target="_blank">{diplomaFileName}</a></span>
                             ) : (
                                 'Файл не загружен'
                             )}
@@ -164,12 +176,31 @@ const DoctorInfo = () => {
                 )}
             </div>
 
-            <button
-                className='auth__button'
-                onClick={edit ? saveChange : () => setEdit(true)}
-            >
-                {edit ? 'Сохранить' : 'Редактировать'}
-            </button>
+            {edit
+                ?
+                <div>
+                    <button
+                        className='my-button width100'
+                        onClick={saveChange}
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        className='neg-button width100'
+                        onClick={() => setEdit(false)}
+                    >
+                        Отмена
+                    </button>
+                </div>
+                :
+                <button
+                    className='my-button width100'
+                    onClick={() => setEdit(true)}
+                >
+                    Редактировать
+                </button>
+            }
+
         </div>
     );
 };

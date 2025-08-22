@@ -1,8 +1,27 @@
 import AccountLayout from "../AccountLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Select from 'react-select';
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ru } from "date-fns/locale";
 
 const Main: React.FC = () => {
     const [record, setRecord] = useState<boolean>(false);
+    const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
+    const options = [
+        { value: '1', label: 'Хроническая усталость' },
+        { value: '2', label: 'Нарушение сна и бессонница' },
+        { value: '3', label: 'Нехватка энергии в течение дня' },
+        { value: '4', label: 'Отсутствие мотивации' }
+    ];
+
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+
+    useEffect(() => {
+        console.log(selectedProblems)
+    }, []);
 
     return (
         <AccountLayout>
@@ -17,22 +36,33 @@ const Main: React.FC = () => {
                             X
                         </button>
 
-                        <select className="record-modal__problems" defaultValue="" name="promblems" id="problems">
-                            <option value="">Выберите одну или несколько проблем</option>
-                            <option value="1">Хроническая усталость</option>
-                            <option value="2">Нарушение сна и бессонница</option>
-                            <option value="3">Нехватка энергии в течении дня</option>
-                            <option value="4">Отсутствие мотивации</option>
-                        </select>
+                        <Select
+                            isMulti
+                            options={options}
+                            placeholder="Выберите одну или несколько проблем"
+                            onChange={(selected) => setSelectedProblems(selected.map(opt => opt.value))}
+                        />
 
                         <p className="record-modal__title-date">Выберите удобные дату и время: </p>
 
                         <div className="record-modal__date-time">
-                            <div className="celendary">
-                                Календарь
+                            <div className="celendary-block">
+                                <DatePicker
+                                    selected={selectedDate}
+                                    onChange={(date: Date | null) => {
+                                        setSelectedDate(date || new Date()); 
+                                    }}
+                                    inline
+                                    locale={ru}
+                                    dateFormat="dd.MM.yyyy"
+                                    minDate={new Date()}
+                                    todayButton="Сегодня"
+                                    popperClassName="large-datepicker"
+                                    calendarClassName="large-datepicker"
+                                />
                             </div>
 
-                            <div className="time">
+                            <div className="time-block">
                                 Время
                             </div>
                         </div>

@@ -5,7 +5,8 @@
     margin: 1rem auto;
     padding: 1rem 2rem;
     border-radius: 10px;
-    background-color: $profile-color;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
     box-sizing: border-box;
     text-align: center;
 
@@ -18,6 +19,18 @@
         flex-direction: column;
         gap: 13px;
         font-size: 1.2rem;
+    }
+
+    &__title {
+        font-size: 2rem;
+        font-weight: bolder;
+    }
+
+    &__subtitle {
+        font-size: 1.3rem;
+        margin-top: -15px;
+        margin-bottom: 3rem;
+        font-weight: 600;
     }
 }
 
@@ -76,22 +89,5 @@
     &__size {
         color: $primary-color;
         margin-left: 8px;
-    }
-}
-
-.form-group {
-    margin-bottom: 16px;
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-    }
-
-    input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
     }
 }

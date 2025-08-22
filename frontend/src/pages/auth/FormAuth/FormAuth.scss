@@ -103,6 +103,15 @@
     font-size: 14px;
   }
 
+  &__specializations {
+    .react-select__control {
+      padding: 0.5rem 1rem;
+      background-color: $light-color;
+      border: none;
+      border-radius: 10px;
+    }
+  }
+
   &resend-button {
     background: none;
     border: none;
@@ -176,6 +185,16 @@ h3 {
   &:hover {
     box-shadow: 0 0 10px $shadow-color;
     transform: scale(1.02);
+  }
+
+  &__blocked {
+    filter: grayscale(80%);
+
+    &:hover {
+      box-shadow: none;
+      transform: none;
+      cursor: no-drop;
+    }
   }
 
   img {

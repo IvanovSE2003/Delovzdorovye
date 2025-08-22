@@ -18,7 +18,7 @@ const Slider: React.FC = () => {
                   – сервис онлайн-консультаций по решению проблем со здоровьем.
                 </h3>
               </div>
-              <div className="slider__button">
+              <div className="my-button">
                 <Link to={RouteNames.LOGIN}>
                     Записаться на консультацию
                 </Link>

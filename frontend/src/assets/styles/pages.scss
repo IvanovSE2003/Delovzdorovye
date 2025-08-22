@@ -85,3 +85,43 @@
     }
   }
 }
+
+// Кнопки
+.my-button,
+.neg-button {
+  width: max-content;
+  padding: 0.8rem 1.5rem;
+  margin: 0.4rem 0;
+  border: none;
+  border-radius: 10px;
+  background-color: $button-color;
+  transition: all 0.3s ease-in-out;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+
+  &.width100 {
+    width: 100%;
+  }
+
+  a {
+    color: white;
+    font-size: 1.3rem;
+    &:hover {
+      color: white;
+    }
+  }
+
+  &:hover {
+    background-color: $button-color-hover;
+    transform: scale(1.01);
+    cursor: pointer;
+  }
+}
+
+.neg-button {
+  background-color: $red-color;
+  &:hover {
+    background-color: $red-color-hover;
+  }
+}

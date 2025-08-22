@@ -15,7 +15,7 @@ const UserProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [QRcode, setQRcode] = useState<boolean>(false);
   const [QRtoken, setQRtoken] = useState<string>("Тут должен быть токен");
-  const [anonym, setAnonym] = useState<boolean>(false);
+  const [anonym, setAnonym] = useState<boolean>(store.user.isAnonymous);
 
   const [formData, setFormData] = useState<IUserDataProfile>({
     img: store.user.img,
@@ -27,7 +27,7 @@ const UserProfile: React.FC = () => {
     dateBirth: store.user.dateBirth,
     phone: store.user.phone,
     email: store.user.email,
-    isAnonymous: false,
+    isAnonymous: store.user.isAnonymous,
   });
 
   const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,8 +72,8 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    console.log(formData);
     // Если хоть одно поле пустое и нет флага "аноним", то ошибка
+    console.log(formData);
     await store.updateUserData(formData, store.user.id);
     setIsEditing(false);
   };
@@ -115,17 +115,17 @@ const UserProfile: React.FC = () => {
   };
 
   useEffect(() => {
-    anonym
+    store.user.isAnonymous
       ? setFormData(prev => ({
         ...prev,
         name: "",
         surname: "",
         patronymic: "",
-        anonym: anonym
+        isAnonymous: anonym
       }))
       : setFormData(prev => ({
         ...prev,
-        anonym: anonym
+        isAnonymous: anonym
       }));
   }, [anonym])
 
@@ -157,15 +157,20 @@ const UserProfile: React.FC = () => {
           <div className="user-profile__info">
             {isEditing ? (
               <div className="user-profile__edit-form">
-                <div className="anonym-block">
-                  <input
-                    type="checkbox"
-                    name="anonym"
-                    value="anonym"
-                    onClick={() => { setAnonym(prev => !prev) }}
-                  />
-                  <span>Анонимный пользователь</span>
-                </div>
+                <h2 className="user-profile__title">Режим редактирования профиля</h2>
+                {store.user.role === "PATIENT" && (
+                  <div className="anonym-block">
+                    <input
+                      type="checkbox"
+                      name="anonym"
+                      value="anonym"
+                      defaultChecked={anonym}
+                      onClick={() => { setAnonym(prev => !prev) }}
+                    />
+                    <span>Анонимный пользователь</span>
+                  </div>
+                )}
+
 
                 {!anonym && (
                   <>
@@ -269,10 +274,13 @@ const UserProfile: React.FC = () => {
             ) : (
               <>
                 <div>
-                  {(!store.user.name && !store.user.surname && !store.user.patronymic)
-                    ? <div className="user-profile__fio">Анонимный пользователь</div>
-                    : <div className="user-profile__fio">{store.user?.surname} {store.user?.name} {store.user?.patronymic}</div>
-                  }
+                  <div className="user-profile__fio">
+                    {anonym
+                      ? 'Анонимный пользователь'
+                      : <>{store.user?.surname} {store.user?.name} {store.user?.patronymic}</>
+                    }
+                  </div>
+
                   <div className='user-profile__role'>
                     {getRoleName()}
                   </div>
@@ -290,19 +298,19 @@ const UserProfile: React.FC = () => {
             <div className="user-profile__buttons">
               {isEditing ? (
                 <>
-                  <button className="button" onClick={handleSave}>Сохранить</button>
-                  <button className="button" onClick={() => setIsEditing(false)}>Отмена</button>
+                  <button className="my-button width100" onClick={handleSave}>Сохранить</button>
+                  <button className="neg-button width100" onClick={() => setIsEditing(false)}>Отмена</button>
                 </>
               ) : (
                 <>
-                  <button className="button" onClick={() => setIsEditing(true)}>Редактировать</button>
-                  <button className="button" onClick={Logout}>Выйти из аккаунта</button>
+                  <button className="my-button width100" onClick={() => setIsEditing(true)}>Редактировать</button>
+                  <button className="neg-button width100" onClick={Logout}>Выйти из аккаунта</button>
                 </>
               )}
             </div>
           </div>
         </div>
-        <div className="warms">
+        <div className="user-profile__warns">
           {!store.user.isActivatedSMS && (
             <div className="user-profile__error-block">
               <span>Вход доступен только по электронной почте. Код подтверждения приходит на почту, а не в Telegram. Если хотите использовать Telegram для входа, то можете

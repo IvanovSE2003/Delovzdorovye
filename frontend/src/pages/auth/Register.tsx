@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import "./FormAuth/FormAuth.scss";
 import { Context } from "../../main";
 import { motion, AnimatePresence } from "framer-motion";
+import Select from 'react-select';
 
 import doctor from "../../assets/images/doctor.png"
 import patient from "../../assets/images/patient.png"
@@ -16,6 +17,7 @@ import { useNavigate } from "react-router";
 import type { FormAuthProps, RegistrationData, Role, Gender } from "../../models/Auth";
 import { RouteNames } from "../../routes";
 import { TimeZoneLabels } from "../../models/TimeZones";
+import $api, { API_URL } from "../../http";
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -30,6 +32,11 @@ interface DoctorDetails {
   license: File;
 }
 
+interface SelectOption {
+  value: number;
+  label: string;
+}
+
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
 
@@ -39,6 +46,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
   const [anonym, setAnonym] = useState<boolean>(false);
+  const [options, setOptions] = useState<SelectOption[]>([]);
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
   const [stylePhone, setStylePhone] = useState<string>(""); // стиль для ввода телефона
@@ -47,6 +55,22 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Стираю ошибку при изменении шага 
   useEffect(() => {
     setError("");
+    if (step === 3) {
+      $api.get(`${API_URL}/specialization/all`)
+        .then(response => {
+          const formattedOptions = response.data.map((opt: { id: number; name: string }) => ({
+            value: opt.id,
+            label: opt.name
+          }));
+          setOptions(formattedOptions);
+        })
+        .catch(error => {
+          if (error.response) {
+            console.error('Ошибка сервера:', error.response.status);
+            setError("Ошибка при получении специализаций!");
+          }
+        });
+    }
   }, [step])
 
   // Проверка на сущ. пользователя по почте
@@ -88,11 +112,19 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
+
   // Проверка что введены все обязательные поля
   const checkAllData = () => {
-    return userDetails.email && userDetails.phone
-      && userDetails.gender && userDetails.date_birth
-      && userDetails.time_zone;
+    if (anonym) {
+      return userDetails.email && userDetails.phone
+        && userDetails.gender && userDetails.date_birth
+        && userDetails.time_zone;
+    } else {
+      return userDetails.email && userDetails.phone
+        && userDetails.gender && userDetails.date_birth
+        && userDetails.time_zone && userDetails.name
+        && userDetails.surname && userDetails.patronymic;
+    }
   }
 
   // Завершение первого этапа 
@@ -102,7 +134,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
         setStep(2);
         setError("");
       } else {
-        setError("Заполните все обязательные поля! Они обозначены *")
+        setError("Заполните все обязательные поля!")
         return;
       }
     }
@@ -120,10 +152,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
 
-    if (Object.values(userDetails).some((value) => !value || value.trim() === "")) {
+    if (Object.values(userDetails).some((value) => !value)) {
       setError("Все поля должны быть заполнены!");
       return;
     }
+
+
 
     setError("");
     store.registration(userDetails);
@@ -133,11 +167,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Вернуться на предыдущий шаг
   const handleBack = () => {
     setError("");
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      if (userDetails.role === "PATIENT" && step === 4) setStep(step - 2);
+      else setStep(step - 1);
+    }
   };
 
   // Добавить что-то к данным пользователя
-  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | Gender | Role): void => {
+  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | boolean | Gender | Role): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -157,6 +194,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     console.log('Нажатие на ссылку');
   };
 
+  const anonymSet = (value: boolean) => {
+    setAnonym(value);
+    handleUserDetailsChange("isAnonymous", value);
+  }
+
+  const setSelectedSpecializations = (value: any) => {
+    console.log(value);
+  }
 
   return (
     <div className="auth__container">
@@ -164,7 +209,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       <div className="auth__progress">
         <div
           className="auth__progress-bar"
-          style={{ width: `${(step / 3) * 100}%` }}
+          style={{ width: `${(step / 4) * 100}%` }}
         />
       </div>
 
@@ -184,7 +229,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 type="checkbox"
                 name="anonym"
                 value="anonym"
-                onClick={() => setAnonym(prev => !prev)}
+                defaultChecked={anonym}
+                onClick={e => anonymSet(e.target.checked)}
               />
               <span>Анонимная регистрация</span>
             </div>
@@ -219,7 +265,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
             <MyInput
               id="email"
-              label="Электронная почта *"
+              label="Электронная почта"
               value={userDetails.email}
               onChange={(value) => handleUserDetailsChange("email", value)}
               className={styleEmail}
@@ -228,7 +274,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
             <MyInput
               id="phone"
-              label="Телефон *"
+              label="Телефон"
               value={userDetails.phone}
               maxLength={11}
               onChange={(value) => handleUserDetailsChange("phone", value)}
@@ -246,7 +292,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   checked={userDetails.gender === "Мужчина"}
                   onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
                 />
-                <label htmlFor="male">Мужчина *</label>
+                <label htmlFor="male">Мужчина</label>
               </div>
 
               <div className="auth__radio-btn">
@@ -258,14 +304,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   checked={userDetails.gender === "Женщина"}
                   onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
                 />
-                <label htmlFor="female">Женщина *</label>
+                <label htmlFor="female">Женщина</label>
               </div>
             </div>
 
             <MyInput
               type="date"
               id="date_birth"
-              label="Дата рождения *"
+              label="Дата рождения"
               value={userDetails.date_birth}
               onChange={(value) => handleUserDetailsChange("date_birth", value)}
               required
@@ -274,7 +320,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             <MySelect
               value={userDetails.time_zone}
               onChange={(value) => handleUserDetailsChange("time_zone", value)}
-              label="Часовой пояс *"
+              label="Часовой пояс"
               defaultValue=""
               required
             >
@@ -306,19 +352,32 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
           >
             <div className="role-selection auth__form">
               <div className="role-selection__cards">
-                <div
-                  className="role-card role-card_doctor"
-                  onClick={() => {
-                    handleUserDetailsChange("role", "DOCTOR");
-                    setStep(3);
-                  }}
-                >
-                  <img className="role-card__icon" src={doctor} alt="doctor" />
-                  <h3 className="role-card__title">Доктор</h3>
-                  <p className="role-card__description">
-                    Я медицинский специалист и хочу помогать пациентам
-                  </p>
-                </div>
+                {anonym
+                  ?
+                  <div
+                    className="role-card role-card__blocked"
+                  >
+                    <img className="role-card__icon" src={doctor} alt="doctor" />
+                    <h3 className="role-card__title">Доктор</h3>
+                    <p className="role-card__description">
+                      Доктор не может быть анонимным пользователем
+                    </p>
+                  </div>
+                  :
+                  <div
+                    className="role-card role-card_doctor"
+                    onClick={() => {
+                      handleUserDetailsChange("role", "DOCTOR");
+                      setStep(3);
+                    }}
+                  >
+                    <img className="role-card__icon" src={doctor} alt="doctor" />
+                    <h3 className="role-card__title">Доктор</h3>
+                    <p className="role-card__description">
+                      Я медицинский специалист и хочу помогать пациентам
+                    </p>
+                  </div>
+                }
 
                 <div
                   className="role-card role-card_patient"
@@ -353,12 +412,17 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             transition={{ duration: 0.3 }}
             className="auth__form"
           >
-            <MyInput
-              id="specialization"
-              label="Специализация"
-              value={doctorDetails.specialization}
-              onChange={(value) => handleDoctorDetailsChange("specialization", value)}
-              required
+
+            <Select
+              isMulti
+              options={options}
+              placeholder="Выберите одну или несколько специализаций"
+              onChange={(selected) => setSelectedSpecializations(selected)}
+              className="auth__specializations"
+              classNamePrefix="react-select"
+              noOptionsMessage={() => "Специализации не найдены"}
+              loadingMessage={() => "Загрузка..."}
+              id="specializations"
             />
 
             <MyInput

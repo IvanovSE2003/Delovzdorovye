@@ -69,6 +69,7 @@ export type RegistrationData = {
     date_birth: string;
     gender: Gender;
     role: Role;
+    isAnonymous: boolean;
 };
 
 export type FormAuthProps = {
