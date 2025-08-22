@@ -413,14 +413,16 @@ export default class UserController {
                 gender: data.gender ?? user.gender,
             });
 
-            const avatar =
-                data.img && data.img !== user.img
+            const avatar = updatedUser.isAnonymous
+                ? (updatedUser.gender === "Женщина" ? "girl.png" : "man.png")
+                : (data.img && data.img !== user.img
                     ? data.img
-                    : user.img === "man.png" || user.img === "girl.png"
-                        ? updatedUser.gender === "Женщина"
-                            ? "girl.png"
-                            : "man.png"
-                        : user.img;
+                    : (user.img === "man.png" || user.img === "girl.png"
+                        ? (updatedUser.gender === "Женщина" ? "girl.png" : "man.png")
+                        : user.img
+                    )
+                );
+
 
             const updatedUserWithAvatar = updatedUser.updateAvatar(avatar);
             let result: User;
