@@ -135,7 +135,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     userAvatar: domainDoctor.userAvatar,
                     userGender: domainDoctor.userGender
                 };
-            }),
+            }) as any,
             totalCount,
             totalPages
         };

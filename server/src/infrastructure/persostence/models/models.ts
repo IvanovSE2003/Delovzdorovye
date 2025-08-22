@@ -104,7 +104,7 @@ const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     experience_years: {type: DataType.INTEGER},
     diploma: {type: DataType.STRING,  allowNull: true},
     license: {type: DataType.STRING,  allowNull: true},
-    activate: {type: DataType.BOOLEAN, defaultValue: false}
+    isActivated: {type: DataType.BOOLEAN, defaultValue: false}
 });
 
 const SpecializationModel = sequelize.define<SpecializationModelInterface>('specialization', {

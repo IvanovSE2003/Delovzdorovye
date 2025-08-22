@@ -11,6 +11,14 @@ export default class SpecializationsRepositoryImpl implements SpecializationRepo
         return specializations.map((s) => this.mapToDomainSpecializations(s.get() as SpecializationModelInterface));
     }
 
+    async findOrCreate(name: string): Promise<Specialization> {
+        const [specModel] = await SpecializationModel.findOrCreate({
+            where: { name },
+            defaults: { name }
+        });
+        return this.mapToDomainSpecializations(specModel.get() as SpecializationModelInterface);
+    }
+
     private mapToDomainSpecializations(specializationModel: SpecializationModelInterface) {
         return new Specialization(
             specializationModel.id,

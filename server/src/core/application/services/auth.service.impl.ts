@@ -13,6 +13,8 @@ import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
 import regData from "../../../infrastructure/web/types/reqData.type.js";
+import SpecializationRepository from "../../domain/repositories/specializations.repository.js";
+import models from "../../../infrastructure/persostence/models/models.js";
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -23,15 +25,11 @@ export class AuthServiceImpl implements AuthService {
         private readonly mailService: MailService,
         private readonly smsService: SmsService,
         private readonly twoFactorService: TwoFactorService,
-        private readonly telegramService: TelegramService
+        private readonly telegramService: TelegramService,
+        private readonly specializationRepository: SpecializationRepository
     ) { }
 
     async register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-        const exists = await this.userRepository.checkUserExists(data.email, data.phone);
-        if (exists) {
-            throw new Error("Пользователь с таким email или телефоном уже существует");
-        }
-
         const activationLink = v4();
         const defaultImg = data.gender === "Женщина" ? "girl.png" : "man.png";
 
@@ -96,17 +94,39 @@ export class AuthServiceImpl implements AuthService {
                 break;
 
             case "DOCTOR":
-                await this.doctorRepository.create(
-                    new Doctor(
-                        0,
-                        data.experienceYears,
-                        data.diploma,
-                        data.license,
-                        false,
-                        data.specializations,
-                        savedUser.id
-                    )
-                );
+                let specializations: string[] = [];
+                if (typeof data.specializations === "string") {
+                    try {
+                        specializations = JSON.parse(data.specializations);
+                    } catch {
+                        specializations = [data.specializations];
+                    }
+                } else if (Array.isArray(data.specializations)) {
+                    specializations = data.specializations;
+                }
+
+                const savedDoctorModel = await models.DoctorModel.create({
+                    experience_years: data.experienceYears,
+                    diploma: data.diploma,
+                    license: data.license,
+                    isActivated: false,
+                    userId: savedUser.id
+                });
+
+                if (specializations.length > 0) {
+                    const specializationModels = await Promise.all(
+                        specializations.map(async (name) => {
+                            const [specModel] = await models.SpecializationModel.findOrCreate({
+                                where: { name },
+                                defaults: { name }
+                            });
+                            return specModel; 
+                        })
+                    );
+
+                    await savedDoctorModel.setSpecializations(specializationModels);
+                }
+
                 break;
         }
 

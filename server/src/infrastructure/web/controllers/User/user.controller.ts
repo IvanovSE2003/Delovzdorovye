@@ -38,6 +38,11 @@ export default class UserController {
                 isAnonymous,
             } = req.body;
 
+            const exists = await this.userRepository.checkUserExists(email, phone);
+            if (exists) {
+                return next(ApiError.badRequest("Пользователь с таким email или телефоном уже существует"));
+            }
+
             const saveFile = async (file?: UploadedFile) => file ? await this.fileService.saveFile(file) : null;
 
             const diploma = await saveFile(req.files?.diploma as UploadedFile) || "";

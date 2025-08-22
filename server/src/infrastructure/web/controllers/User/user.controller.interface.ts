@@ -10,6 +10,7 @@ import DoctorRepositoryImpl from "../../../../core/application/repositories/doct
 import TelegramServiceStart from "../../../../telegram/startTelegramBot.js";
 import FileServiceImpt from "../../../../core/application/services/file.service.impl.js";
 import BatchRepositoryImpl from "../../../../core/application/repositories/batch.repository.impl.js";
+import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 
 const userRepository = new UserRepositoryImpl();
 const batchRepository = new BatchRepositoryImpl();
@@ -20,8 +21,9 @@ const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as strin
 const mailService = new MailServiceImpl();
 const SmsService = new SmsServiceImpl(TelegramServiceStart, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
+const SpecializationRepository = new SpecializationsRepositoryImpl();
 
-const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart);
+const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
 const userController = new UserController(authService, userRepository, tokenService, fileService, batchRepository);
 
 export default userController;

@@ -1,3 +1,5 @@
+import SpecializationRepository from "../repositories/specializations.repository.js";
+
 export default class Doctor {
     constructor(
         public id: number,
@@ -12,5 +14,5 @@ export default class Doctor {
         public userPatronymic?: string,
         public userAvatar?: string,
         public userGender?: string
-    ) {}
+    ) { }
 }
