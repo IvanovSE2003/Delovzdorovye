@@ -405,6 +405,7 @@ export default class UserController {
                 name: data.name ?? user.name,
                 surname: data.surname ?? user.surname,
                 patronymic: data.patronymic ?? user.patronymic,
+                isAnonymous: data.isAnonymous ?? user.isAnonymous,
                 email: data.email ?? user.email,
                 phone: data.phone ?? user.phone,
                 timeZone: data.timeZone ?? user.timeZone,
