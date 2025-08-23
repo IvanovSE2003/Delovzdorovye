@@ -70,6 +70,10 @@ export type RegistrationData = {
     gender: Gender;
     role: Role;
     isAnonymous: boolean;
+    specializations?: string[];
+    experienceYears?: number;
+    diploma?: File;
+    license?: File;
 };
 
 export type FormAuthProps = {

@@ -15,7 +15,7 @@ interface BaseInputProps {
 
 interface TextInputProps extends BaseInputProps {
   type?: InputType;
-  value: string;
+  value: string|undefined;
   onChange: (value: string) => void;
   maxLength?: number;
 }

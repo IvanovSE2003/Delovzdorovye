@@ -9,6 +9,7 @@ import PinCodeInput from "../../components/UI/PinCodeInput/PinCodeInput";
 import type { FormAuthProps } from "../../models/Auth";
 import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../routes";
+import Loader from "../../components/UI/Loader/Loader";
 
 const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const { store } = useContext(Context);
@@ -123,6 +124,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setIsResending(false);
     }
   };
+
+  if(store.loading) return <Loader/>
 
   return (
     <div className="auth__container">

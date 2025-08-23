@@ -3,6 +3,8 @@ import "./FormAuth/FormAuth.scss";
 import { Context } from "../../main";
 import MyInput from "../../components/UI/MyInput/MyInput";
 import type { FormAuthProps } from "../../models/Auth";
+import { observer } from "mobx-react-lite";
+import Loader from "../../components/UI/Loader/Loader";
 
 const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
     const [email, setEmail] = useState<string>("");
@@ -37,6 +39,8 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
             console.error("Ошибка:", err);
         }
     };
+
+    if(store.loading) return <Loader/>
 
     return (
         <>
@@ -75,4 +79,4 @@ const Recover: React.FC<FormAuthProps> = ({ setState, setError }) => {
     );
 };
 
-export default Recover;
+export default observer(Recover);

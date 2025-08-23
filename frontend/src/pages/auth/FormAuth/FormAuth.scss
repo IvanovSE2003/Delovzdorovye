@@ -105,14 +105,15 @@
 
   &__specializations {
     .react-select__control {
-      padding: 0.5rem 1rem;
+      padding: 0.8rem 0.5rem;
       background-color: $light-color;
+      color: $gray-color;
       border: none;
       border-radius: 10px;
     }
   }
 
-  &resend-button {
+  &__resend-button {
     background: none;
     border: none;
     color: #2a5885;
