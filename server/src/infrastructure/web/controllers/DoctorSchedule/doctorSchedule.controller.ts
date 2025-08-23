@@ -79,7 +79,8 @@ export default class DoctorScheduleController {
 
     async createTimeSlot(req: Request, res: Response, next: NextFunction) {
         try {
-            const { time, isAvailable, scheduleId } = req.body;
+            const { time, scheduleId } = req.body;
+            const isAvailable = false;
             const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
             if (!schedule) {
                 return next(ApiError.badRequest('Расписание не найдено'));
