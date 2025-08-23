@@ -17,8 +17,9 @@ export interface IUser {
     role: Role;
     isActivated: boolean;
     isActivatedSMS: boolean;
-    activationLink: string;
     isAnonymous: boolean;
+    isBlocked: boolean;
+    activationLink: string;
     sentChanges: boolean;
     img: string;
 }

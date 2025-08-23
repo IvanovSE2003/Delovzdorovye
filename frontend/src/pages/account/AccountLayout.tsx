@@ -5,6 +5,7 @@ import RightPanel from '../../features/account/RightPanel/RightPanel';
 import SideBar from '../../components/UI/SideBar/SideBar';
 import ActivatedEmail from '../auth/ActivatedEmail';
 import Loader from '../../components/UI/Loader/Loader';
+import BlockedAccount from './BlockedAccount';
 
 interface AccountLayoutProps {
   children: React.ReactNode;
@@ -25,13 +26,11 @@ const AccountLayout:React.FC<AccountLayoutProps> = ({ children }) => {
     checkActivation();
   }, [store.user.isActivated]);
 
-  if (isLoading) {
-    return <Loader/>;
-  }
+  if(store.user.isBlocked) return <BlockedAccount/>
 
-  if (!active) {
-    return <ActivatedEmail />;
-  }
+  if (isLoading) return <Loader/>;
+
+  if (!active) return <ActivatedEmail />;
 
   return (
     <div className="account__main">

@@ -11,7 +11,8 @@ import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import BatchService from "../services/BatchService";
 import DoctorService, { type DoctorResponse } from "../services/DoctorService";
-import { menuItemsAdmin, menuItemsDoctor, menuItemsPatient } from "../routes";
+import { menuItemsAdmin, menuItemsDoctor, menuItemsPatient, RouteNames } from "../routes";
+import { useNavigate } from "react-router";
 
 interface ImenuItems {
     path: string;
@@ -135,6 +136,9 @@ export default class Store {
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 this.setError(error.response?.data?.message || "Ошибка при выходе!")
+            } finally {
+                const navigate = useNavigate();
+                navigate(RouteNames.MAIN);
             }
         });
     }
