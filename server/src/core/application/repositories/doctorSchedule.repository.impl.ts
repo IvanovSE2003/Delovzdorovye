@@ -4,15 +4,17 @@ import DoctorSchedule from '../../domain/entities/doctorSchedule.entity.js';
 import { DoctorScheduleModelInterface, IDoctorScheduleCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctorSchedule.model.js';
 import TimeSlotsArray from '../../../infrastructure/web/types/timeSlot.type.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
+import TimeSlot from '../../domain/entities/timeSlot.entity.js';
+import { ITimeSlotCreationAttributes, TimeSlotmModelInterface } from '../../../infrastructure/persostence/models/interfaces/timeSlot.model.js';
 
-const { DoctorsSchedule, TimeSlot } = models;
+const { DoctorsSchedule } = models;
 
 export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
     async findByDoctorId(doctorId: number): Promise<DoctorSchedule[] | null> {
         const schedules = await DoctorsSchedule.findAll({
             where: { doctorId },
             include: [{
-                model: TimeSlot,
+                model: models.TimeSlot,
                 as: 'time_slots',
                 foreignKey: 'schedule_id'
             }]
@@ -21,11 +23,10 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         return schedules.map(schedule => this.mapToDomainSchedule(schedule));
     }
 
-
     async findById(id: number): Promise<DoctorSchedule | null> {
         const schedule = await DoctorsSchedule.findByPk(id, {
             include: [{
-                model: TimeSlot,
+                model: models.TimeSlot,
                 as: 'time_slots',
                 foreignKey: 'schedule_id'
             }]
@@ -36,6 +37,11 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
     async create(schedule: DoctorSchedule): Promise<DoctorSchedule> {
         const createdSchedule = await DoctorsSchedule.create(this.mapToPersistence(schedule));
         return this.mapToDomainSchedule(createdSchedule);
+    }
+
+    async createTimeSlot(timeSlot: TimeSlot): Promise<TimeSlot> {
+        const timeSlotCreated = await models.TimeSlot.create(this.mapToPersistenceTimeSlot(timeSlot));
+        return this.mapToDomainTimeSlot(timeSlotCreated);
     }
 
     async update(schedule: DoctorSchedule): Promise<DoctorSchedule> {
@@ -51,9 +57,37 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
     }
 
     async delete(id: number): Promise<void> {
-        const deletedCount = await DoctorsSchedule.destroy({ where: { id } });
+        const transaction = await sequelize.transaction();
+        try {
+
+            await models.TimeSlot.destroy({
+                where: { doctorsScheduleId: id },
+                transaction
+            });
+
+            const deletedCount = await DoctorsSchedule.destroy({
+                where: { id },
+                transaction
+            });
+
+            if (deletedCount === 0) {
+                throw new Error('Расписание не найдено');
+            }
+
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    async deleteTimeSlot(id: number): Promise<void> {
+        const deletedCount = await models.TimeSlot.destroy({
+            where: { id },
+        });
+
         if (deletedCount === 0) {
-            throw new Error('Расписание не найдено');
+            throw new Error('Ячейка вермени для удаления не найдена');
         }
     }
 
@@ -64,10 +98,11 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             const createdSchedule = await DoctorsSchedule.create(this.mapToPersistence(schedule), { transaction });
 
             if (time_slots.length > 0) {
-                await TimeSlot.bulkCreate(
+                await models.TimeSlot.bulkCreate(
                     time_slots.map(slot => ({
                         ...slot,
-                        doctorScheduleId: createdSchedule.id
+                        doctorScheduleId: createdSchedule.id,
+                        isAvailable: false
                     })),
                     { transaction }
                 );
@@ -105,6 +140,21 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             time_start: schedule.time_start,
             time_end: schedule.time_end,
             doctorId: schedule.doctorId
+        };
+    }
+
+    private mapToDomainTimeSlot(timeSlotModel: TimeSlotmModelInterface): TimeSlot {
+        return new TimeSlot(
+            timeSlotModel.id,
+            timeSlotModel.time,
+            timeSlotModel.isAvailable
+        );
+    }
+
+    private mapToPersistenceTimeSlot(timeSlot: TimeSlot): ITimeSlotCreationAttributes {
+        return {
+            time: timeSlot.time,
+            isAvailable: timeSlot.isAvailable
         };
     }
 }

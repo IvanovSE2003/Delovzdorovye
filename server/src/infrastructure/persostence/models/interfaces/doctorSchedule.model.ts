@@ -3,7 +3,7 @@ type Time = `${number}:${number}`;
 
 interface IDoctorScheduleAttributes {
     id: number;
-    date: Date;
+    date: string;
     day_weekly: string;
     time_start: Time;
     time_end: Time;

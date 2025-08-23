@@ -8,6 +8,7 @@ import { TokenModelInterface } from './interfaces/token.model.js'
 import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.js'
 import { BatchModelInterface } from './interfaces/batch.model.js'
 import { SpecializationModelInterface } from './interfaces/specializations.model.js'
+import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -140,10 +141,10 @@ const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_
     time_end: {type: DataType.TIME, defaultValue: "20:00"},
 })
 
-const TimeSlot = sequelize.define('time_slot', {
+const TimeSlot = sequelize.define<TimeSlotmModelInterface>('time_slot', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     time: { type: DataType.TIME },
-    is_available: { type: DataType.BOOLEAN, defaultValue: true } 
+    isAvailable: { type: DataType.BOOLEAN, defaultValue: true } 
 });
 
 const Transaction = sequelize.define('transaction', {
@@ -162,8 +163,6 @@ const ModerationBatchModel = sequelize.define<BatchModelInterface>('moderation_b
     old_value: { type: DataType.TEXT, allowNull: true },
     new_value: { type: DataType.TEXT, allowNull: false }
 });
-
-
 
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
