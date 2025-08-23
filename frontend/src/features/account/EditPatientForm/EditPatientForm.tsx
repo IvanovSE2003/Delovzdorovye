@@ -16,31 +16,26 @@ interface EditPatientFormProps {
 }
 
 const EditPatientForm: React.FC<EditPatientFormProps> = ({ patientData, onSave, onCancel }) => {
-    // Состояния с явным указанием типов
     const [surgeries, setSurgeries] = useState<Surgery[]>(patientData.medicalData.surgeries);
     const [allergies, setAllergies] = useState<Allergy[]>(patientData.medicalData.allergies);
     const [medications, setMedications] = useState<Medication[]>(patientData.medicalData.medications);
     const [examinations, setExaminations] = useState<Examination[]>(patientData.medicalData.examinations);
     const [analyses, setAnalyses] = useState<Analysis[]>(patientData.medicalData.analyses);
 
-    // Создание новой записи с правильным типом
     const addNewSurgery = () => {
         const newSurgery: Surgery = {
-            id: Date.now(), // или generateId() если id должен быть string
+            id: Date.now(),
             year: 0,
             description: ''
         };
         setSurgeries([...surgeries, newSurgery]);
     };
 
-    // Обработчик изменений с правильными типами
     const handleSurgeryChange = (id: number, field: keyof Surgery, value: string) => {
         setSurgeries(surgeries.map(s =>
             s.id === id ? { ...s, [field]: value } : s
         ));
     };
-
-    // Аналогичные функции для других типов данных...
 
     const handleSave = () => {
         const updatedData: PatientData = {
@@ -56,7 +51,6 @@ const EditPatientForm: React.FC<EditPatientFormProps> = ({ patientData, onSave, 
         onSave(updatedData);
     };
 
-    // Обработчик удаления записи
     const deleteRecord = (type: keyof PatientData['medicalData'], id: string) => {
         switch (type) {
             case 'surgeries':

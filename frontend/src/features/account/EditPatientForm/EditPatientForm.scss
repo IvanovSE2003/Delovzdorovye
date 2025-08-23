@@ -26,28 +26,28 @@
     border-radius: 5px;
   }
 
-  &__group {
-    margin-bottom: 10px;
+  // &__group {
+  //   margin-bottom: 10px;
 
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
+  //   label {
+  //     display: block;
+  //     margin-bottom: 5px;
+  //     font-weight: bold;
+  //   }
 
-    input,
-    textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      box-sizing: border-box;
-      border-radius: 4px;
-    }
+  //   input,
+  //   textarea {
+  //     width: 100%;
+  //     padding: 8px;
+  //     border: 1px solid #ddd;
+  //     box-sizing: border-box;
+  //     border-radius: 4px;
+  //   }
 
-    textarea {
-      min-height: 60px;
-    }
-  }
+  //   textarea {
+  //     min-height: 60px;
+  //   }
+  // }
 
   &__add {
     width: max-content;

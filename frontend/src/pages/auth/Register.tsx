@@ -161,9 +161,9 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
 
     setError("");
-    console.log(userDetails)
-    // store.registration(userDetails);
-    // if (store.isAuth) navigate(RouteNames.PERSONAL)
+    // console.log(userDetails)
+    store.registration(userDetails);
+    if (store.isAuth) navigate(RouteNames.PERSONAL)
   };
 
   const handleBack = () => {
@@ -225,7 +225,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 name="anonym"
                 value="anonym"
                 defaultChecked={anonym}
-                onClick={e => anonymSet(e.target.checked)}
+                onClick={e => anonymSet((e.target as HTMLInputElement).checked)}
               />
               <span>Анонимная регистрация</span>
             </div>

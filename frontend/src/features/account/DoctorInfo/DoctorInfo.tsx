@@ -156,22 +156,74 @@ const DoctorInfo = () => {
                     </>
                 ) : (
                     <>
-                        <span><strong>Специализация: </strong> {specialization} </span>
-                        <span><strong>Опыт работы в годах: </strong> {experienceYears} </span>
-                        <span><strong>Диплом о профильном образовании: </strong>
-                            {diplomaFileName ? (
-                                <span className="file-info__name"><a href={`${URL}/${diplomaFileName}`} target="_blank">{diplomaFileName}</a></span>
-                            ) : (
-                                'Файл не загружен'
-                            )}
-                        </span>
-                        <span><strong>Лицензия: </strong>
-                            {licenseFile ? (
-                                <span className="file-info__name"><a href={`${URL}/${licenseFile}`} target="_blank">{licenseFile}</a></span>
-                            ) : (
-                                'Файл не загружен'
-                            )}
-                        </span>
+                        <div className="medical-section">
+                            <div className="section-header">
+                                <div className="section-icon">💼</div>
+                                <h2 className="section-title">Специализации</h2>
+                            </div>
+                            <div className="record">
+                                {specialization
+                                    ?
+                                    <div className="record-details">
+                                        <div className="detail-item">
+                                            <span className="detail-label">{specialization}</span>
+                                        </div>
+                                    </div>
+                                    :
+                                    <div className="record-not-data">Данных нет</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div className="medical-section">
+                            <div className="section-header">
+                                <div className="section-icon">⚒️</div>
+                                <h2 className="section-title">Опыт работы в годах</h2>
+                            </div>
+                            <div className="record">
+                                <div className="record-details">
+                                    <div className="detail-item">
+                                        <span className="detail-label">{experienceYears}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="medical-section">
+                            <div className="section-header">
+                                <div className="section-icon">📜</div>
+                                <h2 className="section-title">Диплом</h2>
+                            </div>
+                            <div className="record">
+                                <div className="record-details">
+                                    <div className="detail-item">
+                                        {diplomaFileName ? (
+                                            <span className="detail-label"><a href={`${URL}/${diplomaFileName}`} target="_blank">{diplomaFileName}</a></span>
+                                        ) : (
+                                            'Файл не загружен'
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="medical-section">
+                            <div className="section-header">
+                                <div className="section-icon">📋</div>
+                                <h2 className="section-title">Лицензия</h2>
+                            </div>
+                            <div className="record">
+                                <div className="record-details">
+                                    <div className="detail-item">
+                                        {licenseFile ? (
+                                            <span className="detail-label"><a href={`${URL}/${licenseFile}`} target="_blank">{licenseFile}</a></span>
+                                        ) : (
+                                            'Файл не загружен'
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </>
                 )}
             </div>
