@@ -5,11 +5,7 @@ import { RouteNames } from '../../../routes';
 import logo from '../../../../public/logo.svg';
 
 const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
-  const location = useLocation();
-
-  console.log(location.pathname)
-  console.log(menuItems[0].path)
-  
+  const location = useLocation();  
   return (
     <div className={`sidebar ${className}`}>
       <Link to={RouteNames.MAIN}>

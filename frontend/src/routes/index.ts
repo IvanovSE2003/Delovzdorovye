@@ -11,7 +11,7 @@ import MainPat from "../pages/account/patient/Main";
 import SpecialistsPat from "../pages/account/patient/Specialists";
 
 import ConsultationsDoc from "../pages/account/doctor/Consultations";
-import TimeSheet from "../pages/account/doctor/TimeSheet";
+import TimeSheet from "../pages/account/doctor/TimeSheet/TimeSheet";
 import Help from "../pages/account/doctor/Help";
 import Finance from "../pages/account/doctor/Finance";
 

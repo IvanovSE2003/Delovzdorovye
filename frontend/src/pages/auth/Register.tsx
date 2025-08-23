@@ -18,19 +18,13 @@ import type { FormAuthProps, RegistrationData, Role, Gender } from "../../models
 import { RouteNames } from "../../routes";
 import { TimeZoneLabels } from "../../models/TimeZones";
 import $api, { API_URL } from "../../http";
+import Loader from "../../components/UI/Loader/Loader";
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
   center: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -30 }
 };
-
-interface DoctorDetails {
-  specialization: string;
-  experienceYears: string;
-  diploma: File;
-  license: File;
-}
 
 interface SelectOption {
   value: number;
@@ -42,11 +36,15 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   const [disabled, setDisable] = useState<boolean>(true);
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
-  const [doctorDetails, setDoctorDetails] = useState<DoctorDetails>({} as DoctorDetails);
   const [step, setStep] = useState<number>(1); // Шаги регистрации
-  const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повтор пин-кода
-  const [anonym, setAnonym] = useState<boolean>(false);
-  const [options, setOptions] = useState<SelectOption[]>([]);
+  const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повторный пин-код
+  const [anonym, setAnonym] = useState<boolean>(false); // Анонимный пользователь
+  const [options, setOptions] = useState<SelectOption[]>([]); // Специализации для селекта
+
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [experienceYears, setExperienceYears] = useState<number>();
+  const [diploma, setDiploma] = useState<File>();
+  const [license, setLicense] = useState<File>();
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
   const [stylePhone, setStylePhone] = useState<string>(""); // стиль для ввода телефона
@@ -152,19 +150,22 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
 
-    if (Object.values(userDetails).some((value) => !value)) {
-      setError("Все поля должны быть заполнены!");
-      return;
+    if (userDetails.role === 'DOCTOR') {
+      setUserDetails((prev) => ({
+        ...prev,
+        specializations,
+        experienceYears,
+        diploma,
+        license
+      }));
     }
 
-
-
     setError("");
-    store.registration(userDetails);
-    if (store.isAuth) navigate(RouteNames.PERSONAL)
+    console.log(userDetails)
+    // store.registration(userDetails);
+    // if (store.isAuth) navigate(RouteNames.PERSONAL)
   };
 
-  // Вернуться на предыдущий шаг
   const handleBack = () => {
     setError("");
     if (step > 1) {
@@ -176,10 +177,6 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Добавить что-то к данным пользователя
   const handleUserDetailsChange = (field: keyof RegistrationData, value: string | boolean | Gender | Role): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleDoctorDetailsChange = (field: keyof DoctorDetails, value: string | File): void => {
-    setDoctorDetails((prev) => ({ ...prev, [field]: value }));
   };
 
   // Измененить состояние пин-кода
@@ -199,9 +196,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     handleUserDetailsChange("isAnonymous", value);
   }
 
-  const setSelectedSpecializations = (value: any) => {
-    console.log(value);
-  }
+  if(store.loading) return <Loader/>
 
   return (
     <div className="auth__container">
@@ -416,8 +411,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             <Select
               isMulti
               options={options}
-              placeholder="Выберите одну или несколько специализаций"
-              onChange={(selected) => setSelectedSpecializations(selected)}
+              placeholder="Специализации"
+              onChange={(selected) => setSpecializations(selected.map((s: SelectOption) => s.label))}
               className="auth__specializations"
               classNamePrefix="react-select"
               noOptionsMessage={() => "Специализации не найдены"}
@@ -429,8 +424,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               id="experienceYears"
               label="Опыт работы"
               type="number"
-              value={doctorDetails.experienceYears}
-              onChange={(value) => handleDoctorDetailsChange("experienceYears", value)}
+              value={experienceYears?.toString()}
+              onChange={(value) => setExperienceYears(Number(value))}
               required
             />
 
@@ -439,7 +434,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               type="file"
               accept=".pdf"
               label="Диплом"
-              onChange={(file) => handleDoctorDetailsChange("diploma", file)}
+              onChange={(file) => setDiploma(file)}
               required
             />
 
@@ -448,7 +443,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               type="file"
               accept=".pdf"
               label="Лицензия"
-              onChange={(file) => handleDoctorDetailsChange("license", file)}
+              onChange={(file) => setLicense(file)}
               required
             />
 

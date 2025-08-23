@@ -23,6 +23,7 @@ export default class Store {
     isAuth = false;
     error = "";
     menuItems = [] as ImenuItems[];
+    loading = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -53,86 +54,107 @@ export default class Store {
 
     setMenuItems(role: Role) {
         role === 'ADMIN' && (this.menuItems = menuItemsAdmin);
-        role === 'DOCTOR'&& (this.menuItems = menuItemsDoctor);
+        role === 'DOCTOR' && (this.menuItems = menuItemsDoctor);
         role === 'PATIENT' && (this.menuItems = menuItemsPatient);
+    }
+
+    setLoading(bool: boolean) {
+        this.loading = bool;
+    }
+
+    async withLoading<T>(asyncFunction: () => Promise<T>): Promise<T> {
+        this.setLoading(true);
+        try {
+            return await asyncFunction();
+        } finally {
+            this.setLoading(false);
+        }
     }
 
     // Первый этап входа
     async login(data: LoginData): Promise<LoginResponse> {
-        try {
-            const response = await AuthService.login(data);
-            localStorage.setItem('tempToken', response.data.tempToken);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при входе!";
-            this.setError(errorMessage);
-            return {success: false, message: this.error, tempToken: ""}
-        }
+        return this.withLoading(async () => {
+            try {
+                const response = await AuthService.login(data);
+                localStorage.setItem('tempToken', response.data.tempToken);
+                return response.data;
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                const errorMessage = error.response?.data?.message || "Ошибка при входе!";
+                this.setError(errorMessage);
+                return { success: false, message: this.error, tempToken: "" }
+            }
+        });
     }
 
     // Второй этап входа
-    async completeTwoFactor(tempToken: string|null, code: string): Promise<void> {
-        try {
-            const response = await AuthService.completeTwoFactor(tempToken, code);
-            localStorage.removeItem('tempToken');
-            localStorage.setItem('accessToken', response.data.accessToken);
-            this.setAuth(true);
-            this.setMenuItems(response.data.user.role);
-            this.setUser(response.data.user);
-        } catch(e) {
-            const error = e as AxiosError<{ message: string }>;
-            const errorMessage = error.response?.data?.message || "Ошибка при входе!";
-            this.setError(errorMessage);
-            console.log(errorMessage);
-        }
+    async completeTwoFactor(tempToken: string | null, code: string): Promise<void> {
+        return this.withLoading(async () => {
+            try {
+                const response = await AuthService.completeTwoFactor(tempToken, code);
+                localStorage.removeItem('tempToken');
+                localStorage.setItem('accessToken', response.data.accessToken);
+                this.setAuth(true);
+                this.setMenuItems(response.data.user.role);
+                this.setUser(response.data.user);
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                const errorMessage = error.response?.data?.message || "Ошибка при входе!";
+                this.setError(errorMessage);
+                console.log(errorMessage);
+            }
+        });
     }
 
     // Регистрация
     async registration(data: RegistrationData): Promise<void> {
-        try {
-            this.setError("");
-            const response = await AuthService.registration(data);
-            localStorage.setItem('token', response.data.accessToken);
-            this.setMenuItems(response.data.user.role);
-            this.setAuth(true);
-            this.setUser(response.data.user);
-        } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message || "Ошибка при регистрации!");
-        }
+        return this.withLoading(async () => {
+            try {
+                this.setError("");
+                const response = await AuthService.registration(data);
+                localStorage.setItem('token', response.data.accessToken);
+                this.setMenuItems(response.data.user.role);
+                this.setAuth(true);
+                this.setUser(response.data.user);
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                this.setError(error.response?.data?.message || "Ошибка при регистрации!");
+            }
+        });
     }
 
     // Выход
     async logout(): Promise<void> {
-        console.log('logout')
-        try {
-            await AuthService.logout();
-            localStorage.removeItem('token');
-            this.setAuth(false);
-            this.setUser({} as IUser);
-            this.setError("");
-        } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            this.setError(error.response?.data?.message || "Ошибка при выходе!")
-        }
+        return this.withLoading(async () => {
+            try {
+                await AuthService.logout();
+                localStorage.removeItem('token');
+                this.setAuth(false);
+                this.setUser({} as IUser);
+                this.setError("");
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                this.setError(error.response?.data?.message || "Ошибка при выходе!")
+            }
+        });
     }
 
     // Проверка авторизации пользователя
     async checkAuth(): Promise<void> {
-        console.log('checkAuth')
-        try {
-            const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, { withCredentials: true });
-            localStorage.setItem('token', response.data.accessToken);
-            this.setAuth(true);
-            this.setMenuItems(response.data.user.role);
-            this.setUser(response.data.user);
-        } catch (e) {
-            const error = e as AxiosError<{ message: string }>;
-            localStorage.removeItem('token');
-            this.setError(error.response?.data?.message || "Ошибка аунтификациий!")
-            this.setAuth(false);
-        }
+        return this.withLoading(async () => {
+            try {
+                const response = await axios.get<AuthResponse>(`${API_URL}/user/refresh`, { withCredentials: true });
+                localStorage.setItem('token', response.data.accessToken);
+                this.setAuth(true);
+                this.setMenuItems(response.data.user.role);
+                this.setUser(response.data.user);
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                localStorage.removeItem('token');
+                this.setError(error.response?.data?.message || "Ошибка аунтификациий!")
+                this.setAuth(false);
+            }
+        });
     }
 
     // Проверка существания пользователя по телефону или почте
@@ -217,21 +239,21 @@ export default class Store {
 
 
     // Отравка кода на телефон\почту
-    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<{message: string}> {
+    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<{ message: string }> {
         try {
             this.setError("");
             const response = await AuthService.twoFactorSend(method, creditial);
-            if(response.data.message) this.setError(response.data.message)
+            if (response.data.message) this.setError(response.data.message)
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отправке кода!");
-            return {message: this.error}
+            return { message: this.error }
         }
     }
 
     // Проверка кода почты для входа 
-    async checkVarifyCode(code: string, creditial: string): Promise<TypeResponse & {userId: number| null}> {
+    async checkVarifyCode(code: string, creditial: string): Promise<TypeResponse & { userId: number | null }> {
         try {
             this.setError("");
             const response = await AuthService.checkVarifyCode(code, creditial);
@@ -276,7 +298,7 @@ export default class Store {
         try {
             const response = await UserService.uploadAvatar(formData);
             this.setUserProfile(response.data);
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при загрузке фото!");
         }
@@ -287,7 +309,7 @@ export default class Store {
         try {
             const response = await UserService.removeAvatar(id);
             this.setUserProfile(response.data);
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
         }
@@ -299,9 +321,9 @@ export default class Store {
         try {
             const response = await BatchService.getBatchAll(limit, page);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при удалении фото!"); 
+            this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
         }
     }
 
@@ -310,10 +332,10 @@ export default class Store {
         try {
             const response = await BatchService.confirmChange(id);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при подтверждении изменений!");
-            return {success: false, message: this.error};
+            return { success: false, message: this.error };
         }
     }
 
@@ -322,10 +344,10 @@ export default class Store {
         try {
             const response = await BatchService.rejectChange(id, message);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
-            return {success: false, message: this.error};
+            return { success: false, message: this.error };
         }
     }
 
@@ -335,7 +357,7 @@ export default class Store {
         try {
             const response = await BatchService.getUsersAll();
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получении пользователей!");
             return [];
@@ -347,10 +369,10 @@ export default class Store {
         try {
             const response = await UserService.blockUser(id);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при блокировки пользователя!");
-            return {success: false, message: this.error};
+            return { success: false, message: this.error };
         }
     }
 
@@ -359,10 +381,10 @@ export default class Store {
         try {
             const response = await UserService.unblockUser(id);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка разблокировки пользователя!");
-            return {success: false, message: this.error};
+            return { success: false, message: this.error };
         }
     }
 
@@ -371,10 +393,10 @@ export default class Store {
         try {
             const response = await UserService.changeRoleUser(id, newRole);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при изменении роли пользователя!");
-            return {success: false, message: this.error};
+            return { success: false, message: this.error };
         }
     }
 
@@ -384,7 +406,7 @@ export default class Store {
         try {
             const response = await DoctorService.getDoctorInfo(id);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получении информации о докторе");
             return {} as DoctorResponse;
