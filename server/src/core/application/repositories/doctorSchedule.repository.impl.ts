@@ -118,8 +118,9 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
 
     private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & { time_slots?: any[] }): DoctorSchedule {
         const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({
+            id: slot.id,
             time: slot.time,
-            is_available: slot.is_available
+            is_available: slot.isAvailable
         }));
 
         return new DoctorSchedule(
@@ -153,6 +154,7 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
 
     private mapToPersistenceTimeSlot(timeSlot: TimeSlot): ITimeSlotCreationAttributes {
         return {
+            id: timeSlot.id,
             time: timeSlot.time,
             isAvailable: timeSlot.isAvailable
         };
