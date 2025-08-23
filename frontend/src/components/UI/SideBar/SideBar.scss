@@ -6,6 +6,9 @@
   padding: 10px 0 10px;
 
   &__logo {
+    a {
+      display: block;
+    }
     padding: 1rem 0;
     margin-bottom: 1rem;
     width: 100%;

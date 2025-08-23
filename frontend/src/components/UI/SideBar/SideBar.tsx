@@ -5,18 +5,19 @@ import { RouteNames } from '../../../routes';
 import logo from '../../../../public/logo.svg';
 
 const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
-  const location = useLocation();  
+  const location = useLocation();
   return (
     <div className={`sidebar ${className}`}>
-      <Link to={RouteNames.MAIN}>
-        <img className='sidebar__logo' src={logo} alt="logo" />
-      </Link>
+      <div className="sidebar__logo">
+        <Link to={RouteNames.MAIN}>
+          <img src={logo} alt="logo" />
+        </Link>
+      </div>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {menuItems?.map((item, index) => (
-            <li key={index} className={`sidebar__menu-item ${
-              location.pathname === item.path ? 'sidebar__menu-item--active' : ''
-            }`}>
+            <li key={index} className={`sidebar__menu-item ${location.pathname === item.path ? 'sidebar__menu-item--active' : ''
+              }`}>
               <Link
                 to={item.path}
                 className="sidebar__link"
