@@ -5,20 +5,22 @@ import { DoctorScheduleModelInterface, IDoctorScheduleCreationAttributes } from 
 import TimeSlotsArray from '../../../infrastructure/web/types/timeSlot.type.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
 
-const {DoctorsSchedule, TimeSlot} = models;
+const { DoctorsSchedule, TimeSlot } = models;
 
 export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
-    async findByDoctorId(doctorId: number): Promise<DoctorSchedule | null> {
-        const schedule = await DoctorsSchedule.findOne({
-            where: {doctorId},
+    async findByDoctorId(doctorId: number): Promise<DoctorSchedule[] | null> {
+        const schedules = await DoctorsSchedule.findAll({
+            where: { doctorId },
             include: [{
                 model: TimeSlot,
                 as: 'time_slots',
                 foreignKey: 'schedule_id'
             }]
         });
-        return schedule ? this.mapToDomainSchedule(schedule) : null;
+
+        return schedules.map(schedule => this.mapToDomainSchedule(schedule));
     }
+
 
     async findById(id: number): Promise<DoctorSchedule | null> {
         const schedule = await DoctorsSchedule.findByPk(id, {
@@ -38,18 +40,18 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
 
     async update(schedule: DoctorSchedule): Promise<DoctorSchedule> {
         const [updatedCount] = await DoctorsSchedule.update(this.mapToPersistence(schedule), {
-            where: {id: schedule.id}
+            where: { id: schedule.id }
         });
-        
+
         if (updatedCount === 0) {
             throw new Error('Расписание не найдено');
         }
-        
+
         return this.findById(schedule.id) as Promise<DoctorSchedule>;
     }
 
     async delete(id: number): Promise<void> {
-        const deletedCount = await DoctorsSchedule.destroy({where: {id}});
+        const deletedCount = await DoctorsSchedule.destroy({ where: { id } });
         if (deletedCount === 0) {
             throw new Error('Расписание не найдено');
         }
@@ -57,20 +59,20 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
 
     async createWithTimeSlots(schedule: DoctorSchedule, time_slots: TimeSlotsArray): Promise<DoctorSchedule> {
         const transaction = await sequelize.transaction();
-        
+
         try {
-            const createdSchedule = await DoctorsSchedule.create(this.mapToPersistence(schedule), {transaction});
-            
+            const createdSchedule = await DoctorsSchedule.create(this.mapToPersistence(schedule), { transaction });
+
             if (time_slots.length > 0) {
                 await TimeSlot.bulkCreate(
                     time_slots.map(slot => ({
                         ...slot,
                         doctorScheduleId: createdSchedule.id
                     })),
-                    {transaction}
+                    { transaction }
                 );
             }
-            
+
             await transaction.commit();
             return this.findById(createdSchedule.id) as Promise<DoctorSchedule>;
         } catch (error) {
@@ -79,12 +81,12 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         }
     }
 
-    private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & {time_slots?: any[]}): DoctorSchedule {
+    private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & { time_slots?: any[] }): DoctorSchedule {
         const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({
             time: slot.time,
             is_available: slot.is_available
         }));
-        
+
         return new DoctorSchedule(
             scheduleModel.id,
             scheduleModel.date,
