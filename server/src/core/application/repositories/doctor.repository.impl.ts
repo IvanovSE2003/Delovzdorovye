@@ -271,7 +271,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 const timeSlot = new TimeSlot(
                     slot.id,
                     slot.time,
-                    scheduleDate,
                     slot.is_available,
                     slot.consultationId,
                     slot.patientId,
@@ -282,7 +281,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             }
         }
 
-        return timeSlots.sort((a, b) => a.datetime.getTime() - b.datetime.getTime());
+        return timeSlots;
     }
 
     private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[]; user?: any }): Doctor {

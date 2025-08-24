@@ -53,53 +53,6 @@ const PatientModel = sequelize.define<PatientModelInterface>('patient', {
     activate: { type: DataType.BOOLEAN, defaultValue: true }
 });
 
-// Хронические заболевания
-const ChronicDiseaseModel = sequelize.define('chronic_disease', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataType.STRING }
-});
-
-// Операции
-const SurgeryModel = sequelize.define('surgery', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    year: { type: DataType.INTEGER },
-    description: { type: DataType.TEXT }
-});
-
-// Аллергии
-const AllergyModel = sequelize.define('allergy', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    type: { type: DataType.STRING }, 
-    description: { type: DataType.TEXT }
-});
-
-// Регулярные лекарства
-const MedicationModel = sequelize.define('medication', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataType.STRING },
-    dosage: { type: DataType.STRING }
-});
-
-// Анализы
-const AnalysisModel = sequelize.define('analysis', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataType.STRING },
-    file: { type: DataType.STRING } 
-});
-
-// Исследования
-const ExaminationModel = sequelize.define('examination', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataType.STRING },
-    file: { type: DataType.STRING } 
-});
-
-// Наследственные заболевания
-const HereditaryDiseaseModel = sequelize.define('hereditary_disease', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataType.STRING }
-});
-
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     experience_years: {type: DataType.INTEGER},
@@ -194,27 +147,6 @@ DoctorsSchedule.belongsTo(DoctorModel)
 UserModel.hasOne(TokenModel)
 TokenModel.belongsTo(UserModel)
 
-PatientModel.hasMany(ChronicDiseaseModel);
-ChronicDiseaseModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(SurgeryModel);
-SurgeryModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(AllergyModel);
-AllergyModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(MedicationModel);
-MedicationModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(AnalysisModel);
-AnalysisModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(ExaminationModel);
-ExaminationModel.belongsTo(PatientModel);
-
-PatientModel.hasMany(HereditaryDiseaseModel);
-HereditaryDiseaseModel.belongsTo(PatientModel);
-
 DoctorsSchedule.hasMany(TimeSlot);
 TimeSlot.belongsTo(DoctorsSchedule);
 
@@ -243,13 +175,6 @@ export default {
     DoctorsSchedule,
     TokenModel,
     UserTelegramModel,
-    ChronicDiseaseModel,
-    SurgeryModel,
-    AllergyModel,
-    MedicationModel,
-    AnalysisModel,
-    ExaminationModel,
-    HereditaryDiseaseModel,
     TimeSlot,
     ModerationBatchModel,
     SpecializationModel,

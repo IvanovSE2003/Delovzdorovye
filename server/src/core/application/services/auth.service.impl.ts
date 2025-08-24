@@ -80,17 +80,7 @@ export class AuthServiceImpl implements AuthService {
 
         switch (data.role) {
             case "PATIENT":
-                await this.patientRepository.create(
-                    new Patient(0, false, savedUser.id, {
-                        chronicDiseases: [{ name: "" }],
-                        surgeries: [{ year: new Date().getFullYear(), description: "" }],
-                        allergies: [{ type: "", description: "" }],
-                        medications: [{ name: "", dosage: "" }],
-                        analyses: [{ name: "", file: "" }],
-                        examinations: [{ name: "", file: "" }],
-                        hereditaryDiseases: [{ name: "" }],
-                    })
-                );
+                await this.patientRepository.create(new Patient(0, false, savedUser.id));
                 break;
 
             case "DOCTOR":

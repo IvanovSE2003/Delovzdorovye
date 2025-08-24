@@ -17,7 +17,7 @@ export default class MailServiceImpl implements MailService {
     }
 
     async sendActivationEmail(to: string, activationLink: string): Promise<void> {
-        const activationUrl = `${process.env.API_URL}api/user/activate/${activationLink}`;
+        const activationUrl = `${process.env.API_URL}/api/user/activate/${activationLink}`;
         
         try {
             await this.transporter.sendMail({
