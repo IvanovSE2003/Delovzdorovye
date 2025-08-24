@@ -19,6 +19,9 @@ import { RouteNames } from "../../routes";
 import { TimeZoneLabels } from "../../models/TimeZones";
 import $api, { API_URL } from "../../http";
 import Loader from "../../components/UI/Loader/Loader";
+import MyInputTel from "../../components/UI/MyInput/MyInputTel";
+import MyInputDate from "../../components/UI/MyInput/MyInputDate";
+import MyInputFile from "../../components/UI/MyInput/MyInputFile";
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -42,7 +45,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [options, setOptions] = useState<SelectOption[]>([]); // Специализации для селекта
 
   const [specializations, setSpecializations] = useState<string[]>([]);
-  const [experienceYears, setExperienceYears] = useState<number>();
+  const [experienceYears, setExperienceYears] = useState<number>(0);
   const [diploma, setDiploma] = useState<File>();
   const [license, setLicense] = useState<File>();
 
@@ -121,7 +124,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return userDetails.email && userDetails.phone
         && userDetails.gender && userDetails.date_birth
         && userDetails.time_zone && userDetails.name
-        && userDetails.surname && userDetails.patronymic;
+        && userDetails.surname;
     }
   }
 
@@ -196,7 +199,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     handleUserDetailsChange("isAnonymous", value);
   }
 
-  if(store.loading) return <Loader/>
+  if (store.loading) return <Loader />
 
   return (
     <div className="auth__container">
@@ -250,7 +253,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
                 <MyInput
                   id="patronymic"
-                  label="Отчество"
+                  label="Отчество (Если есть)"
                   value={userDetails.patronymic}
                   onChange={(value) => handleUserDetailsChange("patronymic", value)}
                   required
@@ -267,13 +270,10 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               required
             />
 
-            <MyInput
+            <MyInputTel
               id="phone"
-              label="Телефон"
               value={userDetails.phone}
-              maxLength={11}
               onChange={(value) => handleUserDetailsChange("phone", value)}
-              className={stylePhone}
               required
             />
 
@@ -303,13 +303,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               </div>
             </div>
 
-            <MyInput
-              type="date"
-              id="date_birth"
-              label="Дата рождения"
+            <MyInputDate
+              id="date-birth"
+              label="День рождения"
+              placeholder="гггг.мм.дд"
               value={userDetails.date_birth}
               onChange={(value) => handleUserDetailsChange("date_birth", value)}
-              required
             />
 
             <MySelect
@@ -351,6 +350,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   ?
                   <div
                     className="role-card role-card__blocked"
+                    title="Доктор не может быть анонимным пользователем"
                   >
                     <img className="role-card__icon" src={doctor} alt="doctor" />
                     <h3 className="role-card__title">Доктор</h3>
@@ -384,7 +384,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   <img className="role-card__icon" src={patient} alt="patient" />
                   <h3 className="role-card__title">Пациент</h3>
                   <p className="role-card__description">
-                    Я ищу медицинскую помощь или консультацию
+                    Я ищу медицинскую консультацию
                   </p>
                 </div>
               </div>
@@ -429,18 +429,16 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               required
             />
 
-            <MyInput
+            <MyInputFile
               id="diploma"
-              type="file"
               accept=".pdf"
               label="Диплом"
               onChange={(file) => setDiploma(file)}
               required
             />
 
-            <MyInput
+            <MyInputFile
               id="license"
-              type="file"
               accept=".pdf"
               label="Лицензия"
               onChange={(file) => setLicense(file)}

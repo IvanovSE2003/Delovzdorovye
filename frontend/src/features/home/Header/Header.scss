@@ -8,6 +8,7 @@
     position: relative;
     height: 130px;
     display: flex;
+    gap: 40%;
 
     &__logo {
         height: 50px;
@@ -15,7 +16,7 @@
 
     &__nav {
         background-color: $nav-color;
-        justify-content: space-around;
+        justify-content: center;
         align-items: center;
         padding: 10px 20px;
         border-radius: 10px;
@@ -27,7 +28,7 @@
         gap: 20px;
 
         a {
-            font-size: 18px;
+            font-size: 1.45rem;
 
             &:hover {
                 color: $primary-color;

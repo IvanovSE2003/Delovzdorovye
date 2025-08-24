@@ -39,7 +39,47 @@
       top: 0;
       transform: translateY(-50%);
       font-size: 12px;
-      color: #4285f4;
+      color: $primary-color;
     }
+  }
+}
+
+// Дата рождения и номер телефона
+.my-input-td {
+  &__input {
+    width: 100%;
+    padding: 20px 15px;
+    border-radius: 10px;
+    background-color: $light-color;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__input-group {
+    position: relative;
+
+    label {
+      position: absolute;
+      left: 10px;
+      top: 0;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 12px;
+      color: $primary-color;
+    }
+  }
+
+  &__invalid {
+    color: $red-color;
+    border: 1px solid rgba(255, 0, 0, 0.242);
+  }
+
+  &__error {
+    color: $red-color;
+    font-size: 12px;
+    margin-top: 4px;
+    margin-left: 5px;
   }
 }

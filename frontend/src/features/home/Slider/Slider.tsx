@@ -8,24 +8,20 @@ import AnimatedBlock from '../../../components/AnimatedBlock';
 const Slider: React.FC = () => {
   return (
     <AnimatePresence mode="wait">
-      <div className="slider container">
-        <div className="container__box">
-          <AnimatedBlock>
-            <div className="slider__content">
-              <div className="slider__text">
-                <h3>
-                  «Дело в здоровье» <br />
-                  – сервис онлайн-консультаций по решению проблем со здоровьем.
-                </h3>
-              </div>
-              <div className="my-button">
-                <Link to={RouteNames.LOGIN}>
-                    Записаться на консультацию
-                </Link>
-              </div>
-            </div>
-          </AnimatedBlock>
-        </div>
+      <div className="slider">
+        <AnimatedBlock className="slider__content">
+          <div className="slider__text">
+            <h3>
+              «Дело в здоровье» <br />
+              – сервис онлайн-консультаций по решению проблем со здоровьем.
+            </h3>
+          </div>
+          <div className="my-button">
+            <Link to={RouteNames.LOGIN}>
+              Записаться на консультацию
+            </Link>
+          </div>
+        </AnimatedBlock>
       </div>
     </AnimatePresence >
   );

@@ -1,75 +1,54 @@
-import { useState, useCallback } from "react";
+import React, { useState } from "react";
 import "./MyInput.scss";
 
-type InputType = "text" | "email" | "password" | "number" | "tel" | "url" | "date";
-type FileInputType = "file";
+type InputType = "text" | "email" | "password" | "number" | "tel" | "url";
 
-interface BaseInputProps {
+interface MyInputProps {
   id: string;
   label: string;
+  type?: InputType;
+  value: string;
+  onChange: (value: string) => void;
   required?: boolean;
   placeholder?: string;
   className?: string;
+  maxLength?: number;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
-interface TextInputProps extends BaseInputProps {
-  type?: InputType;
-  value: string|undefined;
-  onChange: (value: string) => void;
-  maxLength?: number;
-}
-
-interface FileInputProps extends BaseInputProps {
-  type: FileInputType;
-  value?: never; // Запрещаем value для файлов
-  onChange: (file: File) => void;
-  accept?: string;
-}
-
-type MyInputProps = TextInputProps | FileInputProps;
-
-const MyInput: React.FC<MyInputProps> = (props) => {
+const MyInput: React.FC<MyInputProps> = ({
+  id,
+  label,
+  type = "text",
+  value,
+  onChange,
+  required,
+  placeholder,
+  className,
+  maxLength,
+  onBlur,
+}) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [fileName, setFileName] = useState("");
-
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (props.type === "file") {
-        const file = e.target.files?.[0];
-        if (file) {
-          setFileName(file.name);
-          props.onChange(file);
-        }
-      } else {
-        props.onChange(e.target.value);
-      }
-    },
-    [props]
-  );
-
-  const handleFocus = useCallback(() => setIsFocused(true), []);
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    setIsFocused(false);
-    props.onBlur?.(e);
-  }, [props]);
 
   return (
     <div className={`auth__input-group ${isFocused ? "focused" : ""}`}>
       <input
-        className={`auth__input ${props.className || ""}`}
-        type={props.type || "text"}
-        id={props.id}
-        value={props.type === "file" ? undefined : props.value}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        maxLength={props.type === "file" ? undefined : props.maxLength}
-        required={props.required}
-        placeholder={props.placeholder || " "}
-        accept={props.type === "file" ? props.accept : undefined}
+        id={id}
+        type={type}
+        className={`auth__input ${className || ""}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={(e) => {
+          setIsFocused(false);
+          onBlur?.(e);
+        }}
+        title={label}
+        required={required}
+        placeholder={placeholder || " "}
+        maxLength={maxLength}
       />
-      <label htmlFor={props.id}>{props.label}</label>
+      <label htmlFor={id}>{label}</label>
     </div>
   );
 };

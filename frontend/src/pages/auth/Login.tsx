@@ -10,6 +10,7 @@ import type { FormAuthProps } from "../../models/Auth";
 import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../routes";
 import Loader from "../../components/UI/Loader/Loader";
+import MyInputTel from "../../components/UI/MyInput/MyInputTel";
 
 const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const { store } = useContext(Context);
@@ -65,9 +66,10 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
         return;
       }
     } else {
-      const correctPhone = /^8\d{10}$/.test(emailOrphone);
+      const phoneDigits = emailOrphone.replace(/\D/g, "");
+      const correctPhone = phoneDigits.length === 11 && (phoneDigits.startsWith('7') || phoneDigits.startsWith('8'));
       if (!correctPhone) {
-        setError("Введите корректный номер телефона (8XXXXXXXXXX)");
+        setError("Введите корректный номер телефона (+7 XXX XXX XX XX)");
         return;
       }
     }
@@ -94,7 +96,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
     await store.completeTwoFactor(localStorage.getItem('tempToken'), code);
-    if(localStorage.getItem("Token")) navigate(RouteNames.PERSONAL);
+    if (localStorage.getItem("Token")) navigate(RouteNames.PERSONAL);
   };
 
   // Переключение почта/телефон
@@ -125,7 +127,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   };
 
-  if(store.loading) return <Loader/>
+  if (store.loading) return <Loader />
 
   return (
     <div className="auth__container">
@@ -148,15 +150,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
             className="auth__form"
           >
             {method === "SMS" ? (
-              <MyInput
-                type="tel"
+              <MyInputTel
                 id="phone"
                 label="Номер телефона"
                 value={emailOrphone}
                 onChange={setEmailOrPhone}
-                maxLength={11}
                 required
               />
+
             ) : (
               <MyInput
                 type="email"
@@ -167,6 +168,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 required
               />
             )}
+
+
 
             <button onClick={checkContact} className="auth__button">
               Продолжить

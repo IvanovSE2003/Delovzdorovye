@@ -3,7 +3,6 @@ import { Context } from '../../main';
 import { observer } from 'mobx-react-lite';
 import RightPanel from '../../features/account/RightPanel/RightPanel';
 import SideBar from '../../components/UI/SideBar/SideBar';
-import ActivatedEmail from '../auth/ActivatedEmail';
 import Loader from '../../components/UI/Loader/Loader';
 import BlockedAccount from './BlockedAccount';
 
@@ -14,12 +13,10 @@ interface AccountLayoutProps {
 const AccountLayout:React.FC<AccountLayoutProps> = ({ children }) => {
   const { store } = useContext(Context);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [active, setActive] = useState<boolean>(false);
 
   useEffect(() => {
     const checkActivation = async () => {
       await store.checkAuth();
-      setActive(store.user.isActivated);
       setIsLoading(false);
     };
     
@@ -29,8 +26,6 @@ const AccountLayout:React.FC<AccountLayoutProps> = ({ children }) => {
   if(store.user.isBlocked) return <BlockedAccount/>
 
   if (isLoading) return <Loader/>;
-
-  if (!active) return <ActivatedEmail />;
 
   return (
     <div className="account__main">
