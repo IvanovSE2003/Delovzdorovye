@@ -25,7 +25,7 @@ router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) 
 router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next));
 router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next));
 
-router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
+// router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
 router.post('/activateLinkTg/:userId', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
 router.post('/request-pin-reset', (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));

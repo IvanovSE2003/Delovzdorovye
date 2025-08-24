@@ -1,6 +1,6 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUserDataProfile, IUser } from "../models/Auth";
+import type { IUserDataProfile, IUser, IAdminDataProfile } from "../models/Auth";
 import type { TypeResponse } from '../models/response/DefaultResponse';
 import type { TypeResponseToken } from '../models/response/TokenResponse';
 import type { PatientData } from '../models/PatientData';
@@ -23,7 +23,7 @@ export default class UserService {
     }
 
     // Изменение данные о пользователе
-    static updateUserData(data: IUserDataProfile, id: number): Promise<AxiosResponse<TypeResponse & {user: IUser}>> {
+    static updateUserData(data: IUserDataProfile|IAdminDataProfile, id: number): Promise<AxiosResponse<TypeResponse & {user: IUser}>> {
         return $api.put<TypeResponse & {user: IUser}>(`/user/${id}`, { data });
     }
 

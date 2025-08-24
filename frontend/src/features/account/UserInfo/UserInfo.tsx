@@ -4,14 +4,14 @@ interface ProfileViewProps {
   user: {
     surname: string;
     name: string;
-    patronymic: string;
+    patronymic?: string;
     role: string;
     gender: string;
     dateBirth: string;
     phone: string;
     email: string;
   };
-  anonym: boolean;
+  anonym?: boolean;
   getRoleName: () => string;
   getFormatDate: (date: string) => string;
   getFormatPhone: (phone: string) => string;
@@ -19,7 +19,7 @@ interface ProfileViewProps {
 
 const UserInfo: React.FC<ProfileViewProps> = ({
   user,
-  anonym,
+  anonym=false,
   getRoleName,
   getFormatDate,
   getFormatPhone

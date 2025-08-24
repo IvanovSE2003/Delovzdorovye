@@ -47,9 +47,10 @@ const Specialists: React.FC = () => {
                             <div className="profile__fio"> {doctor.userSurname} {doctor.userName} {doctor.userPatronymic} </div>
 
                             <div className="profile__main-info">
-                                <span><span className="label">{doctor.specializations.length > 1? "Специализации" : "Специализация"}: </span> {doctor.specializations.join(', ')} </span>
-                                <span><span className="label">Диплом: </span><a href={`${URL}/${doctor.diploma}`}>Документ</a></span>
-                                <span><span className="label">Лицензия: </span><a href={`${URL}/${doctor.license}`}>Документ</a></span>
+                                <span><span className="label">{doctor.specializations.length > 1 ? "Специализации" : "Специализация"}: </span> {doctor.specializations.join(', ')} </span>
+                                {/* <span><span className="label">Опыт работы: </span>{doctor.experienceYears}</span> */}
+                                <span><span className="label">Диплом: </span><a target="_blank" href={`${URL}/${doctor.diploma}`}>Документ</a></span>
+                                <span><span className="label">Лицензия: </span><a target="_blank" href={`${URL}/${doctor.license}`}>Документ</a></span>
                                 {/* <span><span className="label">Часовой пояс:</span>{doctor.timeZone}</span> */}
                             </div>
 

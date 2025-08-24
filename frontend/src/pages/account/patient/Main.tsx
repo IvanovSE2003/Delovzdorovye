@@ -40,6 +40,7 @@ const Main: React.FC = () => {
                             isMulti
                             options={options}
                             placeholder="Выберите одну или несколько проблем"
+                            className="record-modal__select-problems"
                             onChange={(selected) => setSelectedProblems(selected.map(opt => opt.value))}
                         />
 
@@ -50,7 +51,7 @@ const Main: React.FC = () => {
                                 <DatePicker
                                     selected={selectedDate}
                                     onChange={(date: Date | null) => {
-                                        setSelectedDate(date || new Date()); 
+                                        setSelectedDate(date || new Date());
                                     }}
                                     inline
                                     locale={ru}
@@ -92,12 +93,20 @@ const Main: React.FC = () => {
 
                     <div className="main__nearest__block">
                         <span>Сегодня, 15:30 - 16:30</span>
-                        <div><strong>Специалист: </strong><a href="\">Анна Петрова</a></div>
+                        <div
+                            className="main__nearest__specialist"
+                        >
+                            <strong>Специалист: </strong><a href="\">Анна Петрова</a>
+                        </div>
                     </div>
 
                     <div className="main__nearest__block">
                         <span>Завтра, 10:00 - 11:00</span>
-                        <div><strong>Специалист: </strong><a href="\">Мария Иванова</a></div>
+                        <div
+                            className="main__nearest__specialist"
+                        >
+                            <strong>Специалист: </strong><a href="\">Мария Иванова</a>
+                        </div>
                     </div>
 
                 </div>

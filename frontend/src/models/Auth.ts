@@ -6,7 +6,7 @@ export interface IUser {
     id: number;
     name: string;
     surname: string;
-    patronymic: string;
+    patronymic?: string;
     email: string;
     phone: string;
     pin_code: number;
@@ -29,7 +29,7 @@ export interface IUserDataProfile {
     role: Role;
     name: string;
     surname: string;
-    patronymic: string;
+    patronymic?: string;
     gender: Gender;
     dateBirth: string;
     phone: string;
@@ -37,12 +37,23 @@ export interface IUserDataProfile {
     isAnonymous: boolean;
 }
 
+export interface IAdminDataProfile {
+  role: Role;
+  name: string;
+  surname: string;
+  patronymic?: string;
+  gender: Gender;
+  dateBirth: string;
+  phone: string;
+  email: string;
+}
+
 export interface User {
   id: number;
   role: string;
   name: string;
   surname: string;
-  patronymic: string;
+  patronymic?: string;
   img: string;
   gender: string;
   phone: string;

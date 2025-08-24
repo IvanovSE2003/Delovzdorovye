@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { IUser, IUserDataProfile, LoginData, RegistrationData, Role, User } from "../models/Auth";
+import type { IAdminDataProfile, IUser, IUserDataProfile, LoginData, RegistrationData, Role, User } from "../models/Auth";
 import type { TypeResponse } from "../models/response/DefaultResponse";
 import type { TypeResponseToken } from "../models/response/TokenResponse";
 import AuthService from "../services/AuthService";
@@ -200,7 +200,7 @@ export default class Store {
     }
 
     // Изменение данных пользователя
-    async updateUserData(data: IUserDataProfile, id: number): Promise<TypeResponse> {
+    async updateUserData(data: IUserDataProfile|IAdminDataProfile, id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.updateUserData(data, id);
             this.setUser(response.data.user);

@@ -1,9 +1,9 @@
-import UserProfile from '../../features/account/MyProfile/MyProfile';
+import MyProfile from '../../features/account/MyProfile/MyProfile';
 
 const PatientPage = () => {
   return (
     <>
-      <UserProfile />
+      <MyProfile />
     </>
   );
 };

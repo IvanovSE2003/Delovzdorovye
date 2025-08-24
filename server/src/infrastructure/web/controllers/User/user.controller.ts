@@ -496,20 +496,20 @@ export default class UserController {
         }
     }
 
-    async sendActivationEmail(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { email } = req.body;
-            const user = await this.userRepository.findByEmail(email);
+    // async sendActivationEmail(req: Request, res: Response, next: NextFunction) {
+    //     try {
+    //         const { email } = req.body;
+    //         const user = await this.userRepository.findByEmail(email);
 
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'Пользователь не найден' });
-            }
-            await this.authService.sendActivationEmail(email, user.activationLink);
-            return res.status(200).json({ success: true, message: 'Код отправлен на почту' });
-        } catch (e: any) {
-            return next(ApiError.badRequest('Ошибка при отправке ссылки активации по почте'));
-        }
-    }
+    //         if (!user) {
+    //             return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+    //         }
+    //         await this.authService.sendActivationEmail(email, user.activationLink);
+    //         return res.status(200).json({ success: true, message: 'Код отправлен на почту' });
+    //     } catch (e: any) {
+    //         return next(ApiError.badRequest('Ошибка при отправке ссылки активации по почте'));
+    //     }
+    // }
 
     async uploadAvatar(req: Request, res: Response, next: NextFunction) {
         try {

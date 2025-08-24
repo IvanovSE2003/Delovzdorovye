@@ -80,9 +80,8 @@ export class AuthServiceImpl implements AuthService {
 
         switch (data.role) {
             case "PATIENT":
-                await this.patientRepository.create(new Patient(0, false, savedUser.id));
+                await this.patientRepository.create(new Patient(0, false, savedUser.id) );
                 break;
-
             case "DOCTOR":
                 let specializations: string[] = [];
                 if (typeof data.specializations === "string") {
@@ -120,7 +119,7 @@ export class AuthServiceImpl implements AuthService {
                 break;
         }
 
-        await this.mailService.sendActivationEmail(data.email, activationLink);
+        // await this.mailService.sendActivationEmail(data.email, activationLink);
 
         const tokens = await this.tokenService.generateTokens({
             id: savedUser.id,
@@ -136,7 +135,6 @@ export class AuthServiceImpl implements AuthService {
             refreshToken: tokens.refreshToken,
         };
     }
-
 
     async logout(refreshToken: string): Promise<void> {
         if (!refreshToken) {
