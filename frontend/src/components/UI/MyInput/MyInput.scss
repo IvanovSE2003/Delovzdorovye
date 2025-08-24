@@ -55,6 +55,14 @@
     &:focus {
       outline: none;
     }
+
+    &.valid {
+      color: green;
+    }
+
+    &.invalid {
+      color: red;
+    }
   }
 
   &__input-group {

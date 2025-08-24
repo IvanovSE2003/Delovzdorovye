@@ -96,7 +96,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Проверка на сущ. пользвоателя по телефону
   useEffect(() => {
-    if (userDetails?.phone?.length === 11) {
+    if (userDetails?.phone?.length === 18) {
       const checkAuth = async () => {
         const isAuth = await store.checkUser(userDetails.phone);
         if (isAuth.success) {
@@ -142,12 +142,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }
 
   // Завершение третьего этапа
-  const handleStep3 = () => {
+  const handleStep3 = (): void => {
     setStep(4);
   }
 
   // Завершение четвертого этапов
-  const registration = (): void => {
+  const registration = async (): Promise<void> => {
     if (replyPinCode !== userDetails.pin_code) {
       setError("Пин-коды не совпадают!");
       return;
@@ -164,12 +164,11 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
 
     setError("");
-    // console.log(userDetails)
-    store.registration(userDetails);
+    await store.registration(userDetails);
     if (store.isAuth) navigate(RouteNames.PERSONAL)
   };
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     setError("");
     if (step > 1) {
       if (userDetails.role === "PATIENT" && step === 4) setStep(step - 2);
@@ -274,6 +273,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               id="phone"
               value={userDetails.phone}
               onChange={(value) => handleUserDetailsChange("phone", value)}
+              className={stylePhone}
               required
             />
 

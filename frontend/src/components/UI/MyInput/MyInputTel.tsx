@@ -74,14 +74,15 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   }, []);
 
   return (
-    <div className={`my-input-td__input-group ${className}`}>
+    <div className={`my-input-td__input-group`}>
       <input
         type="tel"
         id={id}
+        autoComplete="billing mobile tel"
         value={value}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        className={`my-input-td__input ${isError ? 'my-input-rd__invalid' : ''}`}
+        className={`my-input-td__input ${className} ${isError ? 'my-input-rd__invalid' : ''}`}
         placeholder="+7 (___) ___ __ __"
         maxLength={18}
         title={label}

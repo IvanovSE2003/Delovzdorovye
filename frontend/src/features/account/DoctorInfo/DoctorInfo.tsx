@@ -16,9 +16,10 @@ const DoctorInfo = () => {
 
     const getDoctorInfo = async () => {
         const data = await store.getDoctorInfo(store.user.id);
+        console.log(data);
         setSpecialization(data.specialization);
         setExperienceYears(data.experienceYears);
-        setDiplomaFile(data.diploma);
+        setDiplomaFileName(data.diploma);
         setLicenseFile(data.license);
     };
 
@@ -162,16 +163,15 @@ const DoctorInfo = () => {
                                 <h2 className="section-title">Специализации</h2>
                             </div>
                             <div className="record">
-                                {specialization
-                                    ?
-                                    <div className="record-details">
-                                        <div className="detail-item">
+                                <div className="record-details">
+                                    <div className="detail-item">
+                                        {specialization ? (
                                             <span className="detail-label">{specialization}</span>
-                                        </div>
+                                        ) : (
+                                            <div className="detail-label">Нет данных</div>
+                                        )}
                                     </div>
-                                    :
-                                    <div className="record-not-data">Данных нет</div>
-                                }
+                                </div>
                             </div>
                         </div>
 
@@ -183,7 +183,11 @@ const DoctorInfo = () => {
                             <div className="record">
                                 <div className="record-details">
                                     <div className="detail-item">
-                                        <span className="detail-label">{experienceYears}</span>
+                                        {experienceYears ? (
+                                            <span className="detail-label">{experienceYears}</span>
+                                        ) : (
+                                            <span className="detail-label">Нет данных</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -198,9 +202,9 @@ const DoctorInfo = () => {
                                 <div className="record-details">
                                     <div className="detail-item">
                                         {diplomaFileName ? (
-                                            <span className="detail-label"><a href={`${URL}/${diplomaFileName}`} target="_blank">{diplomaFileName}</a></span>
+                                            <span className="detail-label"><a href={`${URL}/${diplomaFileName}`} target="_blank">Документ</a></span>
                                         ) : (
-                                            'Файл не загружен'
+                                            <span className='detail-label'>Файл не загружен</span>
                                         )}
                                     </div>
                                 </div>
@@ -216,7 +220,7 @@ const DoctorInfo = () => {
                                 <div className="record-details">
                                     <div className="detail-item">
                                         {licenseFile ? (
-                                            <span className="detail-label"><a href={`${URL}/${licenseFile}`} target="_blank">{licenseFile}</a></span>
+                                            <span className="detail-label"><a href={`${URL}/${licenseFile}`} target="_blank">Документ</a></span>
                                         ) : (
                                             'Файл не загружен'
                                         )}
