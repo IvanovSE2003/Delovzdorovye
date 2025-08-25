@@ -24,6 +24,6 @@ const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, proce
 const SpecializationRepository = new SpecializationsRepositoryImpl();
 
 const authService = new AuthServiceImpl(userRepository, patientRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
-const userController = new UserController(authService, userRepository, tokenService, fileService, batchRepository);
+const userController = new UserController(authService, userRepository, tokenService, fileService, batchRepository, doctorRepository);
 
 export default userController;

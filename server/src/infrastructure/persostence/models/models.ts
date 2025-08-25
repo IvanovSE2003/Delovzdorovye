@@ -21,7 +21,7 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     pin_code: {type: DataType.INTEGER, allowNull: false},
     time_zone: {type: DataType.INTEGER, allowNull: false},
     date_birth: {type: DataType.DATEONLY, allowNull: true},
-    gender: {type: DataType.STRING, allowNull: false},   
+    gender: {type: DataType.STRING, allowNull: true},   
     isActivated: {type: DataType.BOOLEAN, defaultValue: false},
     isActivatedSMS: {type: DataType.BOOLEAN, defaultValue: false},
     activationLink: {type: DataType.STRING, allowNull: true},

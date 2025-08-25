@@ -15,6 +15,7 @@ import jwt from 'jsonwebtoken'
 import regData from "../../../infrastructure/web/types/reqData.type.js";
 import SpecializationRepository from "../../domain/repositories/specializations.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
+import formatDate from "../../../infrastructure/web/function/formatDate.js";
 
 export class AuthServiceImpl implements AuthService {
     constructor(
@@ -31,7 +32,8 @@ export class AuthServiceImpl implements AuthService {
 
     async register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }> {
         const activationLink = v4();
-        const defaultImg = data.gender === "Женщина" ? "girl.png" : "man.png";
+
+
 
         const baseUserData = {
             id: 0,
@@ -39,48 +41,80 @@ export class AuthServiceImpl implements AuthService {
             phone: data.phone,
             pinCode: data.pinCode,
             timeZone: data.timeZone,
-            dateBirth: data.dateBirth,
+            dateBirth: null,
             gender: data.gender,
             isActivated: false,
             isBanned: false,
             activationLink,
-            avatar: defaultImg,
-            role: data.role,
+            avatar: data.gender ? data.gender === "Женщина" ? "girl.png" : "man.png" : "man.png",
+            role: "PATIENT",
             isAnonymous: data.isAnonymous,
         };
 
-        const user = new User(
-            baseUserData.id,
-            data.isAnonymous ? "" : data.name,
-            data.isAnonymous ? "" : data.surname,
-            data.isAnonymous ? "" : data.patronymic,
-            baseUserData.email,
-            baseUserData.phone,
-            baseUserData.pinCode,
-            baseUserData.timeZone,
-            baseUserData.dateBirth,
-            baseUserData.gender,
-            baseUserData.isActivated,
-            baseUserData.isBanned,
-            baseUserData.activationLink,
-            baseUserData.avatar,
-            baseUserData.role,
-            null,
-            null,
-            null,
-            null,
-            0,
-            false,
-            null,
-            false,
-            baseUserData.isAnonymous
-        );
+        let user;
+        if (baseUserData.isAnonymous) {
+            user = new User(
+                baseUserData.id,
+                "",
+                "",
+                "",
+                baseUserData.email,
+                baseUserData.phone,
+                baseUserData.pinCode,
+                baseUserData.timeZone,
+                null,
+                null,
+                baseUserData.isActivated,
+                baseUserData.isBanned,
+                baseUserData.activationLink,
+                baseUserData.avatar,
+                "PATIENT",
+                null,
+                null,
+                null,
+                null,
+                0,
+                false,
+                null,
+                false,
+                baseUserData.isAnonymous
+            );
+        } else {
+            const formattedDateBirth = formatDate(data.dateBirth.toString());
+            user = new User(
+                baseUserData.id,
+                data.name,
+                data.surname,
+                data.patronymic,
+                baseUserData.email,
+                baseUserData.phone,
+                baseUserData.pinCode,
+                baseUserData.timeZone,
+                formattedDateBirth as unknown as Date,
+                baseUserData.gender,
+                baseUserData.isActivated,
+                baseUserData.isBanned,
+                baseUserData.activationLink,
+                baseUserData.avatar,
+                "PATIENT",
+                null,
+                null,
+                null,
+                null,
+                0,
+                false,
+                null,
+                false,
+                baseUserData.isAnonymous
+            );
+        }
+
 
         const savedUser = await this.userRepository.save(user);
 
         switch (data.role) {
             case "PATIENT":
-                await this.patientRepository.create(new Patient(0, false, savedUser.id) );
+                await this.patientRepository.create(new Patient(0, false, savedUser.id));
                 break;
             case "DOCTOR":
                 let specializations: string[] = [];
@@ -109,7 +143,7 @@ export class AuthServiceImpl implements AuthService {
                                 where: { name },
                                 defaults: { name }
                             });
-                            return specModel; 
+                            return specModel;
                         })
                     );
 
@@ -118,8 +152,6 @@ export class AuthServiceImpl implements AuthService {
 
                 break;
         }
-
-        // await this.mailService.sendActivationEmail(data.email, activationLink);
 
         const tokens = await this.tokenService.generateTokens({
             id: savedUser.id,

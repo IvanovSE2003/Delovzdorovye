@@ -2,15 +2,15 @@ import { Model, Optional } from 'sequelize';
 
 interface IUserAttributes {
     id: number;
-    name: string;
-    surname: string;
-    patronymic: string;
+    name: string | null;
+    surname: string | null;
+    patronymic: string | null;
     email: string;
     phone: string;
     pin_code: number;
     time_zone: number;
-    date_birth: Date;
-    gender: string;
+    date_birth: Date | null;
+    gender: string | null;
     isActivated: boolean;
     isActivatedSMS: boolean;
     activationLink: string;

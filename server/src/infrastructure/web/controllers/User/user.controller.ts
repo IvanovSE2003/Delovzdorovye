@@ -10,6 +10,8 @@ import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import dataResult from "../../types/dataResultAuth.js";
+import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
+import Batch from "../../../../core/domain/entities/batch.entity.js";
 
 export default class UserController {
     constructor(
@@ -17,7 +19,8 @@ export default class UserController {
         private readonly userRepository: UserRepository,
         private readonly tokenService: TokenService,
         private readonly fileService: FileService,
-        private readonly batchRepository: BatchRepository
+        private readonly batchRepository: BatchRepository,
+        private readonly doctorRepository: DoctorRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -209,7 +212,7 @@ export default class UserController {
 
     async activate(req: Request, res: Response, next: NextFunction) {
         try {
-            const {activationLink, email} = req.query;
+            const { activationLink, email } = req.query;
 
             if (!activationLink || !email) {
                 return next(ApiError.badRequest("Некорректная ссылка активации или данные почты"));
@@ -396,6 +399,8 @@ export default class UserController {
             const { id } = req.params;
             const { data } = req.body;
 
+            // if(data.)
+
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest("Пользователь не найден"));
@@ -512,31 +517,70 @@ export default class UserController {
         }
     }
 
-    async uploadAvatar(req: Request, res: Response, next: NextFunction) {
+    async uploadAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { userId } = req.body;
             const img = req.files?.img;
-            if (!img || Array.isArray(img)) {
-                return next(ApiError.badRequest('Файл не загружен или загружено несколько файлов'));
-            }
-            const userUpdate = await this.userRepository.uploadAvatar(Number(userId), img);
 
-            return res.status(200).json({
-                img: userUpdate.img,
-                surname: userUpdate.surname,
-                name: userUpdate.name,
-                patronymic: userUpdate.patronymic,
-                gender: userUpdate.gender,
-                dateBirth: userUpdate.dateBirth,
-                timeZone: userUpdate.timeZone,
-                phone: userUpdate.phone,
-                email: userUpdate.email
-            });
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
+            // Валидация входных данных
+            if (!userId) {
+                return next(ApiError.badRequest('ID пользователя обязателен'));
+            }
+
+            const numericUserId = Number(userId);
+            const user = await this.userRepository.findById(numericUserId);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            if (!img) {
+                return next(ApiError.badRequest('Файл не загружен'));
+            }
+
+            if (Array.isArray(img)) {
+                return next(ApiError.badRequest('Загружено несколько файлов'));
+            }
+
+            let updatedUser;
+            if (user.role === 'DOCTOR') {
+                const result = await this.userRepository.uploadAvatar(numericUserId, img);
+
+                const batch = new Batch(
+                    0,
+                    'pending', 
+                    '',
+                    false,
+                    'Изображение',
+                    user.img,
+                    result.img
+                );
+
+                await this.batchRepository.create(batch);
+                await this.userRepository.save(user.setSentChanges(true));
+                updatedUser = user;
+            } else {
+                updatedUser = await this.userRepository.uploadAvatar(numericUserId, img);
+            }
+
+            const responseData = {
+                img: updatedUser.img,
+                surname: updatedUser.surname,
+                name: updatedUser.name,
+                patronymic: updatedUser.patronymic,
+                gender: updatedUser.gender,
+                dateBirth: updatedUser.dateBirth,
+                timeZone: updatedUser.timeZone,
+                phone: updatedUser.phone,
+                email: updatedUser.email
+            };
+
+            res.status(200).json(responseData);
+
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+            return next(ApiError.badRequest(errorMessage));
         }
     }
-
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
