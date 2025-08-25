@@ -35,7 +35,6 @@ export default class DoctorController {
             };
 
             const result = await this.doctorRepository.findAll(page, limit, filters);
-
             return res.status(200).json({
                 success: true,
                 data: result.doctors,

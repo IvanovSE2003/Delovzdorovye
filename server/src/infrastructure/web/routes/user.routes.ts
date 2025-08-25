@@ -15,7 +15,6 @@ router.post('/complete-two-factor', (req: Request, res: Response, next: NextFunc
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
 router.get('/auth', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
 
-router.get('/activate/:link', (req: Request, res: Response, next: NextFunction) => userController.activate(req, res, next));
 router.get('/refresh', (req: Request, res: Response, next: NextFunction) => userController.refresh(req, res, next));
 
 router.post('/check', (req: Request, res: Response, next: NextFunction) => userController.checkUser(req, res, next));
@@ -25,7 +24,10 @@ router.post('/twoFactorSend', (req: Request, res: Response, next: NextFunction) 
 router.post('/checkVarifyCode', (req: Request, res: Response, next: NextFunction) => userController.checkVarifyCode(req, res, next));
 router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFunction) => userController.sendLoginNotification(req, res, next));
 
-// router.post('/sendActivationEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
+router.get('/activate', (req: Request, res: Response, next: NextFunction) => userController.activate(req, res, next));
+router.post('/sendChangeEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
+// router.post('/sendChangePhone',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
+
 router.post('/activateLinkTg/:userId', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 
 router.post('/request-pin-reset', (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));

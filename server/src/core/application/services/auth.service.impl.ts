@@ -183,25 +183,6 @@ export class AuthServiceImpl implements AuthService {
         };
     }
 
-    async activate(activationLink: string, userId: number): Promise<boolean> {
-        const user = await this.userRepository.findByActivationLink(activationLink);
-        if (!user) {
-            return false;
-        }
-
-        if (user.id !== userId) {
-            return false;
-        }
-
-        if (user.isActivated) {
-            return true;
-        }
-
-        user.isActivated = true;
-        await this.userRepository.save(user);
-        return true;
-    }
-
     async generateTelegramLinkToken(userId: number): Promise<string> {
         return await this.telegramService.generateLinkToken(userId);
     }
@@ -450,5 +431,9 @@ export class AuthServiceImpl implements AuthService {
 
     async sendActivationEmail(email: string, activationLink: string) {
         await this.mailService.sendActivationEmail(email, activationLink);
+    }
+
+    async sendActivationPhone(email: string, token: string): Promise<void> {
+        await this.mailService.sendActivationPhone(email, token);
     }
 }

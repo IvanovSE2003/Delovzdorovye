@@ -93,6 +93,10 @@ export default class User {
         return this;
     }
 
+    updateEmail(email: string) {
+        this.email = email;
+        return this;
+    }
 
     cloneWithChanges(changes: Partial<User>): User {
         return new User(

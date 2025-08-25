@@ -17,13 +17,13 @@ export default class MailServiceImpl implements MailService {
     }
 
     async sendActivationEmail(to: string, activationLink: string): Promise<void> {
-        const activationUrl = `${process.env.API_URL}/api/user/activate/${activationLink}`;
+        const activationUrl = `${process.env.API_URL_CLOUD}/api/user/activate?activationLink=${activationLink}&email=${to}`;
         
         try {
             await this.transporter.sendMail({
                 from: `"Медицинский сервис Дело в здоровье" <${process.env.SMTP_USER}>`,
                 to,
-                subject: 'Активация аккаунта',
+                subject: 'Активация почты',
                 text: `Для активации перейдите по ссылке: ${activationUrl}`,
                 html: this.getActivationEmailHtml(activationUrl)
             });
@@ -34,7 +34,7 @@ export default class MailServiceImpl implements MailService {
     }
 
     async sendPinCodeResetEmail(to: string, resetToken: string): Promise<void> {
-        const resetUrl = `${process.env.CLIENT_URL}/pinCode-reset/${resetToken}`;
+        const resetUrl = `${process.env.CLIENT_URL_CLOUD}/pinCode-reset/${resetToken}`;
         
         try {
             await this.transporter.sendMail({
@@ -62,6 +62,23 @@ export default class MailServiceImpl implements MailService {
         } catch (error) {
             console.error('Ошибка отправки кода 2FA:', error);
             throw new Error('Ошибка отправки кода подтверждения');
+        }
+    }
+
+    async sendActivationPhone(to: string, code: string): Promise<void> {
+        const activationUrl = `t.me/sendMedOnlineBot`;
+        
+        try {
+            await this.transporter.sendMail({
+                from: `"Медицинский сервис Дело в здоровье" <${process.env.SMTP_USER}>`,
+                to,
+                subject: 'Активация аккаунта',
+                text: `Для активации перейдите в телеграм бот по ссылке: ${activationUrl}`,
+                html: this.getActivationEmailHtmlBot(activationUrl, code)
+            });
+        } catch (error) {
+            console.error('Ошибка отправки письма активации:', error);
+            throw new Error('Ошибка отправки активационного письма');
         }
     }
 
@@ -124,19 +141,32 @@ export default class MailServiceImpl implements MailService {
         return `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h1 style="color: #2563eb;">Добро пожаловать!</h1>
-                <p>Для завершения регистрации перейдите по ссылке:</p>
+                <p>Для смены почтового ящика перейдите по ссылке:</p>
                 <a href="${activationUrl}" 
                     style="display: inline-block; padding: 12px 24px; 
                     background-color: #2563eb; color: white; 
                     text-decoration: none; border-radius: 4px; margin: 20px 0;">
-                    Активировать аккаунт
+                    Активировать почту
                 </a>
-                <p>Или скопируйте ссылку в браузер:</p>
-                <p style="word-break: break-all;">${activationUrl}</p>
-                <p><b>Если вы не регистрировались, проигнорируйте это письмо.</b></p>
+                <p><b>Если вы не запрашивали смену почтового ящика, проигнорируйте это письмо.</b></p>
                 <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
                     С уважением,<br>Команда Дело в здоровье
                 </p>
+            </div>
+        `;
+    }
+
+    private getActivationEmailHtmlBot(activationUrl: string, code: string): string {
+        return `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #2563eb;">Здравствуйте!</h1>
+                <h3>Для подтверждения вашего номера напишите боту сообщение <b>/link ${code}</b></h3>
+                <a href="${activationUrl}" 
+                    style="display: inline-block; padding: 12px 24px; 
+                    background-color: #2563eb; color: white; 
+                    text-decoration: none; border-radius: 4px; margin: 20px 0;">
+                    Перейти в бота
+                </a>
             </div>
         `;
     }

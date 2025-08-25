@@ -9,7 +9,6 @@ export default interface AuthService {
 
     logout(refreshToken: string): Promise<void>;
     refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;
-    activate(activationLink: string, userId: number): Promise<boolean>;
 
     sendTwoFactorCode(creditial: string, method: string): Promise<void>;
     verifyTwoFactorCode(userId: number, code: string): Promise<boolean>;
@@ -24,4 +23,5 @@ export default interface AuthService {
     unblockAccount(userId: number): Promise<void>;
     blockAccount(userId: number): Promise<void>;
     sendActivationEmail(email: string, activationLink: string): Promise<void>;
+    sendActivationPhone(email: string, token: string): Promise<void>;
 }

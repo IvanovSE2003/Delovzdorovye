@@ -9,6 +9,7 @@ import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.
 import { BatchModelInterface } from './interfaces/batch.model.js'
 import { SpecializationModelInterface } from './interfaces/specializations.model.js'
 import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
+import { ProblemModelInterface } from './interfaces/problem.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -72,7 +73,7 @@ const RatingModel = sequelize.define('rating', {
     comment: {type: DataType.TEXT, allowNull: true}
 });
 
-const ProblemModel = sequelize.define('problem', {
+const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: DataType.STRING}
 })

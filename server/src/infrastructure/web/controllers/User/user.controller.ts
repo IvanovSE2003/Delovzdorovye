@@ -209,30 +209,26 @@ export default class UserController {
 
     async activate(req: Request, res: Response, next: NextFunction) {
         try {
-            const activationLink = req.params.link;
+            const {activationLink, email} = req.query;
 
-            if (!activationLink) {
-                return res.status(400).send(this.renderHtmlPage("Некорректная ссылка активации", false));
+            if (!activationLink || !email) {
+                return next(ApiError.badRequest("Некорректная ссылка активации или данные почты"));
             }
 
-            const user = await this.userRepository.findByActivationLink(activationLink);
+            const user = await this.userRepository.findByActivationLink(activationLink.toString());
             if (!user) {
-                return res.status(404).send(this.renderHtmlPage("Пользователь не найден", false));
+                return next(ApiError.badRequest('Пользователь не найден'));
             }
 
-            if (user.isActivated) {
-                return res.status(200).send(this.renderHtmlPage("Аккаунт уже был активирован ранее", true));
+            if (user.isBlocked) {
+                return next(ApiError.badRequest('Аккаут заблокирован'));
             }
 
-            const isActivated = await this.authService.activate(activationLink, user.id);
-            if (!isActivated) {
-                return res.status(500).send(this.renderHtmlPage("Ошибка при активации аккаунта", false));
-            }
+            await this.userRepository.save(user.activate().updateEmail(email.toString()));
 
-            await this.userRepository.save(user.activate());
             return res.status(200).send(this.renderHtmlPage("Аккаунт успешно активирован", true));
         } catch (e: any) {
-            return next(ApiError.badRequest("Неизвестная ошибка"));
+            return next(ApiError.internal(e.message));
         }
     }
 
@@ -356,14 +352,18 @@ export default class UserController {
     async linkTelegram(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.params;
-            if (!userId) {
-                return next(ApiError.badRequest('Пользователь не авторизован'));
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
             }
 
             const token = await this.authService.generateTelegramLinkToken(Number(userId));
+            await this.authService.sendActivationPhone(user.email, token);
 
             return res.json({
                 success: true,
+                message: `Сообщение для подключения телефона отправлен на почту ${user.email}`,
                 token
             });
         } catch (e: any) {
@@ -496,20 +496,21 @@ export default class UserController {
         }
     }
 
-    // async sendActivationEmail(req: Request, res: Response, next: NextFunction) {
-    //     try {
-    //         const { email } = req.body;
-    //         const user = await this.userRepository.findByEmail(email);
+    async sendActivationEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email } = req.body;
+            const user = await this.userRepository.findByEmail(email);
 
-    //         if (!user) {
-    //             return res.status(404).json({ success: false, message: 'Пользователь не найден' });
-    //         }
-    //         await this.authService.sendActivationEmail(email, user.activationLink);
-    //         return res.status(200).json({ success: true, message: 'Код отправлен на почту' });
-    //     } catch (e: any) {
-    //         return next(ApiError.badRequest('Ошибка при отправке ссылки активации по почте'));
-    //     }
-    // }
+            if (!user) {
+                return next(ApiError.badRequest(`Пользователь с почтой "${email}" уже существует`))
+            }
+
+            await this.authService.sendActivationEmail(email, user.activationLink);
+            return res.status(200).json({ success: true, message: 'Инструкция отправлена на почту' });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
 
     async uploadAvatar(req: Request, res: Response, next: NextFunction) {
         try {
@@ -579,7 +580,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL;
+        const clientUrl = process.env.CLIENT_URL_CLOUD;
 
         return `
             <!DOCTYPE html>

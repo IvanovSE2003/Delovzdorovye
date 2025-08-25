@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AuthResponse } from '../models/response/AuthResponse';
 
-export const URL = 'http://localhost:5000'
+export const URL = 'https://hectically-mindful-poacher.cloudpub.ru'
 export const API_URL = `${URL}/api`
 
 const $api = axios.create({

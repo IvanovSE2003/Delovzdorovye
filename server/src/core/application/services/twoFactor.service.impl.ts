@@ -18,7 +18,6 @@ export default class TwoFactorServiceImpl implements TwoFactorService {
         if (method === 'EMAIL') {
             await this.mailService.sendTwoFactorCode(user.email, code);
         } else if (method === 'SMS') {
-            console.log(method)
             await this.smsService.sendVerificationCode(user.phone, code);
         }
     }
