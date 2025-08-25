@@ -363,7 +363,7 @@ export default class UserController {
 
             return res.json({
                 success: true,
-                message: `Сообщение для подключения телефона отправлен на почту ${user.email}`,
+                message: `Сообщение для подключения телефона отправлено на почту ${user.email}`,
                 token
             });
         } catch (e: any) {
@@ -580,7 +580,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL_CLOUD;
+        const clientUrl = process.env.CLIENT_URL;
 
         return `
             <!DOCTYPE html>

@@ -14,7 +14,7 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 app.use(cors({
-    origin: "https://lithely-truthful-polecat.cloudpub.ru",
+    origin: process.env.CLIENT_URL as string,
     credentials: true 
 }));
 app.use(express.json());
