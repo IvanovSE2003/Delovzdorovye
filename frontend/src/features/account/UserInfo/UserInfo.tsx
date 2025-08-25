@@ -18,7 +18,7 @@ interface ProfileViewProps {
 
 const UserInfo: React.FC<ProfileViewProps> = ({
   user,
-  anonym=false,
+  anonym = false,
   getFormatDate,
   getFormatPhone
 }) => {
@@ -35,8 +35,12 @@ const UserInfo: React.FC<ProfileViewProps> = ({
       </div>
 
       <div className="user-profile__main-info">
-        <span><span className="label">Пол:</span> {user.gender}</span>
-        <span><span className="label">Дата рождения:</span> {getFormatDate(user.dateBirth)}</span>
+        {!anonym && (
+          <>
+            <span><span className="label">Пол:</span> {user.gender}</span>
+            <span><span className="label">Дата рождения:</span> {getFormatDate(user.dateBirth)}</span>
+          </>
+        )}
         <span><span className="label">Номер телефона:</span> {getFormatPhone(user.phone)}</span>
         <span><span className="label">E-mail:</span> {user.email}</span>
       </div>

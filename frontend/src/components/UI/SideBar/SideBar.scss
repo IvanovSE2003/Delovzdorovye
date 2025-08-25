@@ -21,6 +21,10 @@
     padding: 20px 20px 20px 8px;
     border-left: solid 15px $button-color;
     border-radius: 10px;
+
+    a {
+      font-weight: normal;
+    }
   }
 
   &__menu {

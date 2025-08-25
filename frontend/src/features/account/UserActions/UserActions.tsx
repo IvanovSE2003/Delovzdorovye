@@ -1,3 +1,5 @@
+import { observer } from "mobx-react-lite";
+
 interface ProfileActionsProps {
   isEditing: boolean;
   onSave: () => void;
@@ -30,4 +32,4 @@ const UserActions: React.FC<ProfileActionsProps> = ({
   );
 };
 
-export default UserActions;
+export default observer(UserActions);

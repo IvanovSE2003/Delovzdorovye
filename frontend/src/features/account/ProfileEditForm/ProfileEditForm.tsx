@@ -1,3 +1,4 @@
+import { observer } from "mobx-react-lite";
 import type { Gender, IUserDataProfile } from "../../../models/Auth.js";
 import './ProfileEditForm.scss';
 
@@ -19,7 +20,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   onAnonymChange
 }) => {
   return (
-    <div className="edit-form">     
+    <div className="edit-form">
       {userRole === "PATIENT" && (
         <div className="edit-form__anonym">
           <input
@@ -67,46 +68,48 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
               title="Отчество"
             />
           </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
+            <div className="auth__radio-btn">
+              <input
+                id="male"
+                type="radio"
+                name="gender"
+                value="мужчина"
+                checked={formData.gender === "Мужчина"}
+                title="Пол"
+                onChange={() => onGenderChange("Мужчина")}
+              />
+              <label htmlFor="male">Мужчина</label>
+            </div>
+
+            <div className="auth__radio-btn">
+              <input
+                id="female"
+                type="radio"
+                name="gender"
+                value="женщина"
+                title="Пол"
+                checked={formData.gender === "Женщина"}
+                onChange={() => onGenderChange("Женщина")}
+              />
+              <label htmlFor="female">Женщина</label>
+            </div>
+          </div>
+
+          <div className="edit-form__group">
+            <input
+              type="date"
+              name="dateBirth"
+              title="Дата рождения"
+              placeholder="дд.мм.гггг"
+              value={formData.dateBirth}
+              onChange={onInputChange}
+            />
+          </div>
+
         </>
       )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', margin: '4px 0' }}>
-        <div className="auth__radio-btn">
-          <input
-            id="male"
-            type="radio"
-            name="gender"
-            value="мужчина"
-            checked={formData.gender === "Мужчина"}
-            title="Пол"
-            onChange={() => onGenderChange("Мужчина")}
-          />
-          <label htmlFor="male">Мужчина</label>
-        </div>
-
-        <div className="auth__radio-btn">
-          <input
-            id="female"
-            type="radio"
-            name="gender"
-            value="женщина"
-            title="Пол"
-            checked={formData.gender === "Женщина"}
-            onChange={() => onGenderChange("Женщина")}
-          />
-          <label htmlFor="female">Женщина</label>
-        </div>
-      </div>
-
-      <div className="edit-form__group">
-        <input
-          type="date"
-          name="dateBirth"
-          title="Дата рождения"
-          value={formData.dateBirth}
-          onChange={onInputChange}
-        />
-      </div>
 
       <div className="edit-form__group">
         <input
@@ -135,4 +138,4 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
   );
 };
 
-export default ProfileEditForm;
+export default observer(ProfileEditForm);

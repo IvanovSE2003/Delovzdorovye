@@ -38,7 +38,7 @@ const AdminPage = () => {
             <div className="user-profile__info">
                 <UserInfo
                     user={store.user}
-                    getRoleName={getRoleName}
+                    anonym={store.user.isAnonymous}
                     getFormatDate={GetFormatDate}
                     getFormatPhone={GetFormatPhone}
                 />

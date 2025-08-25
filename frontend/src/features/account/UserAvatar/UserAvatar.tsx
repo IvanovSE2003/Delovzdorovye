@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { URL } from "../../../http/index.js";
 import "./UserAvatar.scss";
+import { observer } from "mobx-react-lite";
 
 interface UserAvatarProps {
   img: string;
@@ -16,6 +18,10 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   onAddPhoto,
   onRemovePhoto
 }) => {
+  useEffect(() => {
+    console.log(img)
+  }, [img]);
+
   return (
     <div className="user-profile__avatar-content">
       <div className="user-profile__avatar">
@@ -40,4 +46,4 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   );
 };
 
-export default UserAvatar;
+export default observer(UserAvatar);

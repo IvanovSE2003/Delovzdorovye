@@ -1,7 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Context } from "../../../../main";
 import Loader from "../../../../components/UI/Loader/Loader";
 import { observer } from "mobx-react-lite";
+import './ProfileWarnings.scss'
 
 const ProfileWarnings: React.FC = () => {
     const { store } = useContext(Context);
@@ -13,18 +14,21 @@ const ProfileWarnings: React.FC = () => {
         setMessage(data.message);
     };
 
-    if(store.loading) return <Loader/>
+    if (store.loading) return <Loader />
 
     return (
         <>
-            
+
             <div className="user-profile__warns">
                 {!store.user.isActivatedSMS && (
                     <div className="user-profile__error-block">
-                        <span>
-                            {message ? message : ""}<br/>
-                            Для подлючения аккаунта к телеграмм-боту необходимо <a onClick={getMessage}>получить инструкцию на почту.</a> 
-                        </span>
+                        {message
+                            ? (
+                                <div className="user-profile__message">{message}</div>
+                            ) : (
+                                <span>Для подключения аккаунта к Telegram-боту <a onClick={getMessage}>получите инструкцию</a>  по email.</span>
+                            )
+                        }
                     </div>
                 )}
 
