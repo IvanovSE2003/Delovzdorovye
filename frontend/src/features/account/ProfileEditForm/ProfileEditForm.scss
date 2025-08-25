@@ -40,6 +40,16 @@
                 cursor: no-drop;
             }
         }
+
+        &__error {
+            color: $red-color;
+            font-size: 0.8rem;
+            margin-left: 0.3rem;
+        }
+
+        &__input-error {
+            color: $red-color;
+        }
     }
 
 }

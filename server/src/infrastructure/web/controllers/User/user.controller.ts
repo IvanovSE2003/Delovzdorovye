@@ -619,7 +619,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL;
+        const clientUrl = process.env.CLIENT_URL_CLOUD;
 
         return `
             <!DOCTYPE html>

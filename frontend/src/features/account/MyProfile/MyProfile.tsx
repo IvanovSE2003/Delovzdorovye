@@ -72,6 +72,10 @@ const MyProfile: React.FC = () => {
     }));
   };
 
+  const handleDateChange = (date: string) => {
+    setFormData(prev => ({ ...prev, dateBirth: date }))
+  }
+
   const handleSave = async () => {
     // Если хоть одно поле пустое и нет флага "аноним", то ошибка
     console.log(formData);
@@ -138,6 +142,7 @@ const MyProfile: React.FC = () => {
                 userRole={store.user.role}
                 onInputChange={handleInputChange}
                 onGenderChange={handleGenderChange}
+                onDateChange={handleDateChange}
                 onAnonymChange={() => setAnonym(prev => !prev)}
               />
             ) : (
