@@ -22,6 +22,7 @@ import Loader from "../../components/UI/Loader/Loader";
 import MyInputTel from "../../components/UI/MyInput/MyInputTel";
 import MyInputDate from "../../components/UI/MyInput/MyInputDate";
 import MyInputFile from "../../components/UI/MyInput/MyInputFile";
+import FilePreview from "../../components/UI/MyInput/FilePreview";
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -46,8 +47,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   const [specializations, setSpecializations] = useState<string[]>([]);
   const [experienceYears, setExperienceYears] = useState<number>(0);
-  const [diploma, setDiploma] = useState<File>();
-  const [license, setLicense] = useState<File>();
+  const [diplomas, setDiplomas] = useState<File[]>([]);
+  const [licenses, setLicenses] = useState<File[]>([]);
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
   const [stylePhone, setStylePhone] = useState<string>(""); // стиль для ввода телефона
@@ -113,6 +114,24 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
+  useEffect(() => {
+    console.log(userDetails)
+  }, [userDetails])
+
+
+  const handleFileChange = (file: File | null, type: "DIPLOMA" | "LICENSE") => {
+    if (file) {
+      type === "DIPLOMA"
+        ? setDiplomas(prev => [...prev, file])
+        : setLicenses(prev => [...prev, file]);
+    }
+  };
+
+  const handleRemoveFile = (index: number, type: "DIPLOMA" | "LICENSE") => {
+    type === "DIPLOMA"
+      ? setDiplomas(prev => prev.filter((_, i) => i !== index))
+      : setLicenses(prev => prev.filter((_, i) => i !== index))
+  };
 
   // Проверка что введены все обязательные поля
   const checkAllData = () => {
@@ -158,8 +177,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
         ...prev,
         specializations,
         experienceYears,
-        diploma,
-        license
+        diplomas,
+        licenses,
       }));
     }
 
@@ -196,6 +215,10 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const anonymSet = (value: boolean) => {
     setAnonym(value);
     handleUserDetailsChange("isAnonymous", value);
+  }
+
+  const doFormatDate = (value: string) => {
+    return value.replace(/\./g, '-');
   }
 
   if (store.loading) return <Loader />
@@ -308,7 +331,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               label="День рождения"
               placeholder="гггг.мм.дд"
               value={userDetails.date_birth}
-              onChange={(value) => handleUserDetailsChange("date_birth", value)}
+              onChange={(value) => handleUserDetailsChange("date_birth", doFormatDate(value))}
             />
 
             <MySelect
@@ -408,17 +431,21 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
             className="auth__form"
           >
 
-            <Select
-              isMulti
-              options={options}
-              placeholder="Специализации"
-              onChange={(selected) => setSpecializations(selected.map((s: SelectOption) => s.label))}
-              className="auth__specializations"
-              classNamePrefix="react-select"
-              noOptionsMessage={() => "Специализации не найдены"}
-              loadingMessage={() => "Загрузка..."}
-              id="specializations"
-            />
+            <div className="my-input-td__input-group">
+              <Select
+                isMulti
+                options={options}
+                placeholder="Выберите"
+                onChange={(selected) => setSpecializations(selected.map((s: SelectOption) => s.label))}
+                className="auth__specializations"
+                classNamePrefix="react-select"
+                noOptionsMessage={() => "Специализации не найдены"}
+                loadingMessage={() => "Загрузка..."}
+                id="specializations"
+              />
+              <label htmlFor="specializations">Специализации</label>
+            </div>
+
 
             <MyInput
               id="experienceYears"
@@ -429,21 +456,37 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               required
             />
 
-            <MyInputFile
-              id="diploma"
-              accept=".pdf"
-              label="Диплом"
-              onChange={(file) => setDiploma(file)}
-              required
-            />
+            <div>
+              <MyInputFile
+                id="document-upload"
+                label="Перетащите файлы или нажмите для выбора"
+                onChange={(file) => handleFileChange(file, "DIPLOMA")}
+                accept=".pdf"
+                multiple={true}
+              />
 
-            <MyInputFile
-              id="license"
-              accept=".pdf"
-              label="Лицензия"
-              onChange={(file) => setLicense(file)}
-              required
-            />
+              <FilePreview
+                files={diplomas}
+                type="DIPLOMA"
+                onRemove={handleRemoveFile}
+              />
+            </div>
+
+            <div>
+              <MyInputFile
+                id="document-upload"
+                label="Перетащите файлы или нажмите для выбора"
+                onChange={(file) => handleFileChange(file, "LICENSE")}
+                accept=".pdf,"
+                multiple={true}
+              />
+
+              <FilePreview
+                files={licenses}
+                type="LICENSE"
+                onRemove={handleRemoveFile}
+              />
+            </div>
 
             <button
               className="auth__button"

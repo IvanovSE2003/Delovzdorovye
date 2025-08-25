@@ -1,44 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./MyInput.scss";
 
 interface FileInputProps {
   id: string;
   label: string;
-  onChange: (file: File) => void;
+  onChange: (file: File | null) => void;
   required?: boolean;
   accept?: string;
   className?: string;
+  multiple?: boolean;
 }
 
 const MyInputFile: React.FC<FileInputProps> = ({
   id,
   label,
   onChange,
-  required,
+  required = false,
   accept,
-  className,
+  className = "",
+  multiple = false,
 }) => {
   const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      onChange(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileList = Array.from(files);
+      setFileName(
+        multiple 
+          ? `Выбрано файлов: ${files.length}` 
+          : files[0].name
+      );
+      onChange(multiple ? files[0] : fileList[0]);
+    } else {
+      setFileName("");
+      onChange(null);
+    }
+  };
+
+  const handleClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
   return (
-    <div className="auth__input-group">
+    <div className={`file-input ${className}`}>
       <input
         id={id}
+        ref={fileInputRef}
         type="file"
-        className={`auth__input ${className || ""}`}
+        className="file-input__input"
         onChange={handleChange}
         required={required}
         accept={accept}
+        multiple={multiple}
       />
-      <label htmlFor={id}>{fileName || label}</label>
+      
+      <div className="file-input__container" onClick={handleClick}>
+        <div className="file-input__button">Выбрать файлы</div>
+        <div className="file-input__text">
+          {label}
+        </div>
+      </div>
     </div>
   );
 };

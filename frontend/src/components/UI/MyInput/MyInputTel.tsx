@@ -74,7 +74,7 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   }, []);
 
   return (
-    <div className={`my-input-td__input-group`}>
+    <div className='my-input-td__input-group'>
       <input
         type="tel"
         id={id}

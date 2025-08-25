@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 import AnimatedBlock from '../../../components/AnimatedBlock';
+import { useContext } from 'react';
+import { Context } from '../../../main';
 
 const Slider: React.FC = () => {
+  const { store } = useContext(Context);
+
   return (
     <AnimatePresence mode="wait">
       <div className="slider">
@@ -17,7 +21,7 @@ const Slider: React.FC = () => {
             </h3>
           </div>
           <div className="my-button">
-            <Link to={RouteNames.LOGIN}>
+            <Link to={store.isAuth ? RouteNames.MAINPAT : RouteNames.LOGIN}>
               Записаться на консультацию
             </Link>
           </div>

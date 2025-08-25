@@ -91,3 +91,138 @@
     margin-left: 5px;
   }
 }
+
+// Файлы
+.file-input {
+  width: 100%;
+  margin-bottom: 20px;
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  &__container {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    overflow: hidden;
+    background: $light-color;
+    cursor: pointer;
+
+    &:hover {   
+      .file-input__button {
+        transform: scale(1.03);
+      }
+    }
+
+    &:focus-within {
+      outline: 2px solid #6c5ce7;
+      outline-offset: 2px;
+    }
+  }
+
+  &__button {
+    padding: 20px;
+    background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+    color: white;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    white-space: nowrap;
+  }
+
+  &__text {
+    padding: 20px 15px;
+    color: $text-color;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--error {
+    .file-input__container {
+      border-color: #e74c3c;
+    }
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    
+    .file-input__container {
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Превьюшка для файлов
+.file-preview {
+  margin-top: 15px;
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+  }
+
+  &__item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background: white;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__icon {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f2f6;
+    font-size: 36px;
+  }
+
+  &__name {
+    padding: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: $red-color;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    font-size: 13px;
+
+    &:hover {
+      background: $red-color-hover;
+    }
+  }
+
+  @media (max-width: 600px) {
+    &__list {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+  }
+}

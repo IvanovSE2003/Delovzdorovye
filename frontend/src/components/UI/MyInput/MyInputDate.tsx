@@ -44,7 +44,7 @@ const DateInput: React.FC<MyInputDateProps> = ({
                 date.getDate() === day;
 
             if (!isValid) {
-                setError("Некорректная дата");
+                setError("Некорректная дата (формат год.месяц.день)");
             } else if (date > today) {
                 setError("Дата не может быть в будущем :)");
             } else {

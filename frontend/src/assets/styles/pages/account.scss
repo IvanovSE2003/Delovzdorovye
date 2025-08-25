@@ -348,6 +348,7 @@
 }
 
 .record-modal {
+  max-width: 850px;
   width: 50%;
   position: absolute;
   padding: 1.5rem 2rem;
@@ -355,7 +356,9 @@
   border-radius: 10px;
 
   &__select-problems {
-    .css--menu {
+
+    // Блок со списком элементов (проблем)
+    .css-1nmdiq5-menu {
       z-index: 1000 !important;
     }
   }
@@ -395,6 +398,8 @@
 
   &__date-time {
     display: grid;
+    align-items: center;
+    justify-items: center;
     grid-template-columns: 1fr 1fr;
     margin-bottom: 1.5rem;
     gap: 20px;
@@ -439,6 +444,29 @@
         font-size: 1.2rem;
       }
     }
+  }
+
+  .other-problem-input label {
+    display: block;
+    margin: 1rem 0;
+    color: white;
+    font-weight: bold;
+    font-size: 1.3rem;
+  }
+
+  .other-problem-input textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+
+  .other-problem-input textarea:focus {
+    outline: none;
+    border-color: $primary-color;
   }
 
   &__button {

@@ -1,7 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import type { IAdminDataProfile, IUser, IUserDataProfile, LoginData, RegistrationData, Role, User } from "../models/Auth";
 import type { TypeResponse } from "../models/response/DefaultResponse";
-import type { TypeResponseToken } from "../models/response/TokenResponse";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 import type { AxiosError } from "axios";
@@ -285,14 +284,14 @@ export default class Store {
 
 
     // Получить токен для активации телеграмм-бота
-    async getTokenTg(id: number): Promise<TypeResponseToken> {
+    async getTokenTg(id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.getTokenTg(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получение токена!");
-            return { success: false, token: this.error }
+            return { success: false, message: this.error }
         }
     }
 

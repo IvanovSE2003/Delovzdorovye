@@ -9,19 +9,45 @@ import { ru } from "date-fns/locale";
 const Main: React.FC = () => {
     const [record, setRecord] = useState<boolean>(false);
     const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
+    const [otherProblemText, setOtherProblemText] = useState<string>("");
+    const [showOtherProblemInput, setShowOtherProblemInput] = useState<boolean>(false);
+    
     const options = [
         { value: '1', label: 'Хроническая усталость' },
         { value: '2', label: 'Нарушение сна и бессонница' },
         { value: '3', label: 'Нехватка энергии в течение дня' },
-        { value: '4', label: 'Отсутствие мотивации' }
+        { value: '4', label: 'Отсутствие мотивации' },
+        { value: '5', label: 'Пищевая зависимость' },
+        { value: '6', label: 'Последствия малоподвижного образа жизни' },
+        { value: '7', label: 'Тревожность' },
+        { value: '8', label: 'Снижение концентрации' },
+        { value: '9', label: 'Другая проблема' }
     ];
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+    // Обработчик изменения выбора в Select
+    const handleProblemChange = (selectedOptions: any) => {
+        const selectedValues = selectedOptions ? selectedOptions.map((opt: { value: any; })=> opt.value) : [];
+        setSelectedProblems(selectedValues);
+        
+        // Проверяем, выбрана ли "Другая проблема"
+        const hasOtherProblem = selectedValues.includes('9');
+        setShowOtherProblemInput(hasOtherProblem);
+        
+        // Если "Другая проблема" не выбрана, очищаем текст
+        if (!hasOtherProblem) {
+            setOtherProblemText("");
+        }
+    };
 
     useEffect(() => {
-        console.log(selectedProblems)
-    }, []);
+        console.log(selectedProblems);
+    }, [selectedProblems]);
+
+    useEffect(() => {
+        console.log(selectedDate)
+    }, [selectedDate])
 
     return (
         <AccountLayout>
@@ -41,8 +67,21 @@ const Main: React.FC = () => {
                             options={options}
                             placeholder="Выберите одну или несколько проблем"
                             className="record-modal__select-problems"
-                            onChange={(selected) => setSelectedProblems(selected.map(opt => opt.value))}
+                            onChange={handleProblemChange}
                         />
+
+                        {showOtherProblemInput && (
+                            <div className="other-problem-input">
+                                <label htmlFor="otherProblem">Опишите вашу проблему:</label>
+                                <textarea
+                                    id="otherProblem"
+                                    value={otherProblemText}
+                                    onChange={(e) => setOtherProblemText(e.target.value)}
+                                    placeholder="Подробно опишите вашу проблему..."
+                                    rows={4}
+                                />
+                            </div>
+                        )}
 
                         <p className="record-modal__title-date">Выберите удобные дату и время: </p>
 

@@ -104,12 +104,24 @@
   }
 
   &__specializations {
+    // Стили для импортного селетка со специализациями
     .react-select__control {
       padding: 0.8rem 0.5rem;
       background-color: $light-color;
       color: $gray-color;
       border: none;
       border-radius: 10px;
+      border-color: #ccc !important;
+      box-shadow: none !important;
+    }
+
+    .react-select__control--is-focused {
+      border-color: #ccc !important;
+      box-shadow: none !important;
+    }
+
+    .react-select__control:hover {
+      border-color: #ccc !important;
     }
   }
 
