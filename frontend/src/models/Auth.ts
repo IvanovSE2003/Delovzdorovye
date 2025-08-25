@@ -77,7 +77,7 @@ export type RegistrationData = {
     email: string;
     phone: string;
     pin_code: string;
-    time_zone: string;
+    time_zone: number;
     date_birth: string;
     gender: Gender;
     role: Role;

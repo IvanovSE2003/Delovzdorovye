@@ -6,15 +6,17 @@ interface AgreeCheckBoxProps {
   agreementText?: string;
   linkText?: string;
   onLinkClick?: () => void;
+  defaultChecked?: boolean;
 }
 
 const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
   onAgreementChange,
   agreementText = 'Я согласен с условиями пользовательского соглашения и даю согласие на обработку персональных данных',
   linkText = ' условиями пользовательского соглашения',
-  onLinkClick
+  onLinkClick,
+  defaultChecked = true
 }) => {
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(defaultChecked);
 
   const handleCheckboxChange = () => {
     const newValue = !isChecked;
@@ -38,6 +40,7 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
           onKeyDown={handleKeyDown}
           role="checkbox"
           aria-checked={isChecked}
+          tabIndex={0}
         />
         
         <div className="agreement__text">
@@ -46,6 +49,7 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
             className="agreement__link" 
             onClick={onLinkClick}
             role="button"
+            tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();

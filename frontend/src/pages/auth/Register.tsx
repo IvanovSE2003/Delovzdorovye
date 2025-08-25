@@ -13,7 +13,7 @@ import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router";
 import type { FormAuthProps, RegistrationData, Role, Gender } from "../../models/Auth";
 import { RouteNames } from "../../routes";
-import { TimeZoneLabels } from "../../models/TimeZones";
+import { getTimeZoneLabel, ITimeZones, TimeZoneLabels } from "../../models/TimeZones";
 import $api, { API_URL } from "../../http";
 import Loader from "../../components/UI/Loader/Loader";
 import MyInputTel from "../../components/UI/MyInput/MyInputTel";
@@ -34,17 +34,17 @@ interface SelectOption {
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
 
-  const [disabled, setDisable] = useState<boolean>(true);
+  const [disabled, setDisable] = useState<boolean>(false);
   const [userDetails, setUserDetails] = useState<RegistrationData>({} as RegistrationData);
   const [step, setStep] = useState<number>(1); // Шаги регистрации
   const [replyPinCode, setReplyPinCode] = useState<string>(""); // Повторный пин-код
   const [anonym, setAnonym] = useState<boolean>(false); // Анонимный пользователь
   const [options, setOptions] = useState<SelectOption[]>([]); // Специализации для селекта
 
-  const [specializations, setSpecializations] = useState<string[]>([]);
-  const [experienceYears, setExperienceYears] = useState<number>(0);
-  const [diplomas, setDiplomas] = useState<File[]>([]);
-  const [licenses, setLicenses] = useState<File[]>([]);
+  // const [specializations, setSpecializations] = useState<string[]>([]);
+  // const [experienceYears, setExperienceYears] = useState<number>(0);
+  // const [diplomas, setDiplomas] = useState<File[]>([]);
+  // const [licenses, setLicenses] = useState<File[]>([]);
 
   const [styleEmail, setStyleEmail] = useState<string>(""); // Стиль для ввода почты
   const [stylePhone, setStylePhone] = useState<string>(""); // стиль для ввода телефона
@@ -110,6 +110,9 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
+  useEffect(() => {
+    console.log(userDetails);
+  }, [userDetails.date_birth])
 
   // const handleFileChange = (file: File | null, type: "DIPLOMA" | "LICENSE") => {
   //   if (file) {
@@ -128,7 +131,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Проверка что введены все обязательные поля
   const checkAllData = () => {
     if (anonym) {
-      return userDetails.email && userDetails.phone;
+      return userDetails.email && userDetails.phone && userDetails.time_zone;
     } else {
       return userDetails.email && userDetails.phone
         && userDetails.gender && userDetails.date_birth
@@ -164,7 +167,57 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     return age;
   };
 
-  // Завершение четвертого этапов
+  async function detectUserTimeZone(): Promise<ITimeZones> {
+    try {
+      // Получаем текущую временную зону браузера
+      const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // Преобразуем в смещение относительно UTC (в часах)
+      const now = new Date();
+      const utcOffset = -now.getTimezoneOffset() / 60; // в часах
+
+      // Определяем российский часовой пояс на основе смещения
+      return getRussianTimeZoneByOffset(utcOffset);
+    } catch (error) {
+      console.error('Ошибка определения часового пояса:', error);
+      // Возвращаем Москву по умолчанию
+      return ITimeZones.MOSCOW;
+    }
+  }
+
+  // Функция для преобразования смещения UTC в российский часовой пояс
+  function getRussianTimeZoneByOffset(utcOffset: number): ITimeZones {
+    // Российские часовые пояса и их смещения относительно UTC
+    const russianTimeZones = {
+      [ITimeZones.KALININGRAD]: 2,      // UTC+2
+      [ITimeZones.MOSCOW]: 3,           // UTC+3
+      [ITimeZones.SAMARA]: 4,           // UTC+4
+      [ITimeZones.EKATERINBURG]: 5,     // UTC+5
+      [ITimeZones.OMSK]: 6,             // UTC+6
+      [ITimeZones.KRASNOYARSK]: 7,      // UTC+7
+      [ITimeZones.IRKUTSK]: 8,          // UTC+8
+      [ITimeZones.YAKUTSK]: 9,          // UTC+9
+      [ITimeZones.VLADIVOSTOK]: 10,     // UTC+10
+      [ITimeZones.MAGADAN]: 11,         // UTC+11
+      [ITimeZones.KAMCHATKA]: 12        // UTC+12
+    };
+
+    // Находим наиболее подходящий часовой пояс
+    let closestZone = ITimeZones.MOSCOW;
+    let smallestDiff = Math.abs(russianTimeZones[ITimeZones.MOSCOW] - utcOffset);
+
+    for (const [zone, offset] of Object.entries(russianTimeZones)) {
+      const diff = Math.abs(offset - utcOffset);
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
+        closestZone = parseInt(zone) as ITimeZones;
+      }
+    }
+
+    return closestZone;
+  }
+
+  // Завершение регистрации
   const registration = async (): Promise<void> => {
     if (userDetails.date_birth && !anonym) {
       const age = calculateAge(userDetails.date_birth);
@@ -179,33 +232,36 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
 
-    if (userDetails.role === 'DOCTOR') {
-      setUserDetails((prev) => ({
-        ...prev,
-        date_birth: doFormatDate(userDetails.date_birth),
-        specializations,
-        experienceYears,
-        diplomas,
-        licenses,
-      }));
-    }
+    try {
+      const detectedTimeZone = await detectUserTimeZone();
+      const formattedDateBirth = doFormatDate(userDetails.date_birth);
 
-    setError("");
-    await store.registration(userDetails);
-    if (store.isAuth) navigate(RouteNames.PERSONAL)
+      const updatedUserDetails = {
+        ...userDetails,
+        time_zone: detectedTimeZone,
+        date_birth: formattedDateBirth
+      };
+
+      setError("");
+
+
+      await store.registration(updatedUserDetails);
+      if (store.isAuth) navigate(RouteNames.PERSONAL);
+      
+    } catch (error) {
+      console.error('Ошибка при регистрации:', error);
+      setError("Произошла ошибка при регистрации");
+    }
   };
 
   // Возвращение на один этап
   const handleBack = (): void => {
     setError("");
-    if (step > 1) {
-      if (userDetails.role === "PATIENT" && step === 4) setStep(step - 2);
-      else setStep(step - 1);
-    }
+    setStep(step - 1);
   };
 
   // Добавить что-то к данным пользователя
-  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | boolean | Gender | Role): void => {
+  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | boolean | number | Gender | Role): void => {
     setUserDetails((prev) => ({ ...prev, [field]: value }));
   };
 
