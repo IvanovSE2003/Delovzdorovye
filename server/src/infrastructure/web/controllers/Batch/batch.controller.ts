@@ -83,6 +83,7 @@ export default class BatchController {
             };
 
             const userFieldMap: Record<string, (user: User, value: string) => void> = {
+                "Изображение": (u, v) => (u.img = v),
                 "Имя": (u, v) => (u.name = v),
                 "Фамилия": (u, v) => (u.surname = v),
                 "Отчество": (u, v) => (u.patronymic = v),

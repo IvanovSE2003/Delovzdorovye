@@ -6,7 +6,7 @@ export default interface UserShortInfoDto {
     patronymic: string | null;
     img: string;
     phone: string;
-    gender: string;
+    gender: string | null;
     email: string;
     specializations?: string[] | null;
     diploma?: string | null;
