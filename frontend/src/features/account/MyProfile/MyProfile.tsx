@@ -96,15 +96,6 @@ const MyProfile: React.FC = () => {
     navigate(RouteNames.MAIN);
   };
 
-  const getRoleName = () => {
-    const Role = store.user.role;
-    switch (Role) {
-      case "PATIENT": return 'Пациент';
-      case "DOCTOR": return 'Специалист';
-      default: return 'Администратор';
-    }
-  };
-
   useEffect(() => {
     store.user.isAnonymous
       ? setFormData(prev => ({
@@ -119,6 +110,10 @@ const MyProfile: React.FC = () => {
         isAnonymous: anonym
       }));
   }, [anonym])
+
+  useEffect(() => {
+    console.log(formData)
+  }, [formData]);
 
   if (store.loading) return <Loader />
 
@@ -149,7 +144,6 @@ const MyProfile: React.FC = () => {
               <UserInfo
                 user={store.user}
                 anonym={anonym}
-                getRoleName={getRoleName}
                 getFormatDate={GetFormatDate}
                 getFormatPhone={GetFormatPhone}
               />

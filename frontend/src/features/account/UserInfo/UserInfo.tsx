@@ -12,7 +12,6 @@ interface ProfileViewProps {
     email: string;
   };
   anonym?: boolean;
-  getRoleName: () => string;
   getFormatDate: (date: string) => string;
   getFormatPhone: (phone: string) => string;
 }
@@ -20,7 +19,6 @@ interface ProfileViewProps {
 const UserInfo: React.FC<ProfileViewProps> = ({
   user,
   anonym=false,
-  getRoleName,
   getFormatDate,
   getFormatPhone
 }) => {
@@ -34,9 +32,6 @@ const UserInfo: React.FC<ProfileViewProps> = ({
           }
         </div>
 
-        <div className='user-profile__role'>
-          {getRoleName()}
-        </div>
       </div>
 
       <div className="user-profile__main-info">

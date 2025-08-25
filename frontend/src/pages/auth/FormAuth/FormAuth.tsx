@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import Register from '../Register';
+import Register from '../Register/Register';
 import Login from '../Login';
-import Recover from '../Recover';
 import "./FormAuth.scss"
 import { observer } from 'mobx-react-lite';
 
@@ -27,10 +26,6 @@ const FormAuth: React.FC = () => {
 
             {state === "register" && (
                 <Register setState={setState} setError={setError}/>
-            )}
-
-            {state === "recover" && (
-                <Recover setState={setState} setError={setError}/>
             )}
         </>
     )

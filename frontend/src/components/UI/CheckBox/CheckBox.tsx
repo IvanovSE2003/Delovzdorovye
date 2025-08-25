@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './CheckBox.scss'
 
 interface AgreeCheckBoxProps {
+  id: string,
   onAgreementChange?: (isChecked: boolean) => void;
   agreementText?: string;
   linkText?: string;
@@ -10,6 +11,7 @@ interface AgreeCheckBoxProps {
 }
 
 const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
+  id,
   onAgreementChange,
   agreementText = 'Я согласен с условиями пользовательского соглашения и даю согласие на обработку персональных данных',
   linkText = ' условиями пользовательского соглашения',
@@ -35,6 +37,7 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
     <div className="agreement">
       <div className="agreement__container">
         <div
+          id={id}
           className={`agreement__custom-checkbox ${isChecked ? 'checked' : ''}`}
           onClick={handleCheckboxChange}
           onKeyDown={handleKeyDown}

@@ -1,7 +1,6 @@
 import type React from "react";
 import LoginPage from '../pages/auth/LoginPage'
 import HomePage from "../pages/HomePage";
-import RecoverPinPage from "../pages/auth/RecoverPinPage"
 import Account from "../pages/account/Account";
 import UsefulInfo from "../pages/account/patient/UsefulInfo";
 
@@ -86,7 +85,6 @@ export const publicRoutes = [
     // Общие машруты для всех неавторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },
-    { path: RouteNames.RESET, element: RecoverPinPage },
     { path: RouteNames.PROFILE, element: Profile},
 ]
 
@@ -94,7 +92,6 @@ export const privateRoutes: ProtectedRoute[] = [
     // Общие маршруты для всех авторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.PERSONAL, element: Account },
-    { path: RouteNames.RESET, element: RecoverPinPage },
     { path: RouteNames.PROFILE, element: Profile},
     { path: RouteNames.BELL, element: Bell},
     

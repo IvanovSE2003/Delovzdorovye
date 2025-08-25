@@ -196,12 +196,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
               <button className="auth__button" onClick={handleBack}>
                 Назад
               </button>
-              <a
-                onClick={() => setState("recover")}
-                className="auth__toggle-button"
-              >
-                Забыл пин-код
-              </a>
             </div>
           </motion.div>
         )}

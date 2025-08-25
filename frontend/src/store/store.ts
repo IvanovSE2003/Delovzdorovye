@@ -21,7 +21,7 @@ interface ImenuItems {
 export default class Store {
     user = {} as IUser;
     isAuth = false;
-    error =  "";
+    error = "";
     menuItems = [] as ImenuItems[];
     loading = false;
 
@@ -164,16 +164,18 @@ export default class Store {
 
     // Проверка существания пользователя по телефону или почте
     async checkUser(creditial: string): Promise<TypeResponse> {
-        console.log('checkUser')
-        try {
-            this.setError("");
-            const response = await UserService.CheckUser(creditial);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при проверки пользователя!");
-            return { success: false, message: this.error };
-        }
+        return this.withLoading(async () => {
+            console.log('checkUser')
+            try {
+                this.setError("");
+                const response = await UserService.CheckUser(creditial);
+                return response.data;
+            } catch (e) {
+                const error = e as AxiosError<TypeResponse>;
+                this.setError(error.response?.data?.message || "Ошибка при проверки пользователя!");
+                return { success: false, message: this.error };
+            }
+        });
     }
 
     // Получение данные пациента
@@ -201,7 +203,7 @@ export default class Store {
     }
 
     // Изменение данных пользователя
-    async updateUserData(data: IUserDataProfile|IAdminDataProfile, id: number): Promise<TypeResponse> {
+    async updateUserData(data: IUserDataProfile | IAdminDataProfile, id: number): Promise<TypeResponse> {
         try {
             const response = await UserService.updateUserData(data, id);
             this.setUser(response.data.user);

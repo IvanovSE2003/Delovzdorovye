@@ -57,7 +57,6 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   }, [formatPhoneNumber, onChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Разрешаем: backspace, delete, tab, escape, enter
     if ([46, 8, 9, 27, 13].includes(e.keyCode) || 
         // Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
         (e.keyCode === 65 && e.ctrlKey === true) || 
@@ -81,7 +80,7 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
         value={value}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
-        className={`my-input-td__input ${className} ${isError ? 'my-input-rd__invalid' : ''}`}
+        className={`my-input-td__input ${className} ${isError ? 'my-input-td__invalid' : ''}`}
         placeholder="+7 (___) ___ __ __"
         maxLength={18}
         title={label}
