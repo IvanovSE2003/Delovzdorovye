@@ -131,13 +131,6 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   return (
     <div className="auth__container">
-      <div className="auth__progress">
-        <div
-          className="auth__progress-bar"
-          style={{ width: `${(step / 3) * 100}%` }}
-        />
-      </div>
-
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div

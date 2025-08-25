@@ -13,10 +13,6 @@ const ProfileWarnings: React.FC = () => {
         setMessage(data.message);
     };
 
-    useEffect(() => {
-        getMessage();
-    }, [store.user.isActivatedSMS])
-
     if(store.loading) return <Loader/>
 
     return (
@@ -26,7 +22,7 @@ const ProfileWarnings: React.FC = () => {
                 {!store.user.isActivatedSMS && (
                     <div className="user-profile__error-block">
                         <span>
-                            {message ? message : ""}
+                            {message ? message : ""}<br/>
                             Для подлючения аккаунта к телеграмм-боту необходимо <a onClick={getMessage}>получить инструкцию на почту.</a> 
                         </span>
                     </div>
