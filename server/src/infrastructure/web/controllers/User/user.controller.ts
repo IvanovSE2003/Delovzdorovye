@@ -522,11 +522,6 @@ export default class UserController {
             const { userId } = req.body;
             const img = req.files?.img;
 
-            // Валидация входных данных
-            if (!userId) {
-                return next(ApiError.badRequest('ID пользователя обязателен'));
-            }
-
             const numericUserId = Number(userId);
             const user = await this.userRepository.findById(numericUserId);
             if (!user) {
@@ -548,16 +543,16 @@ export default class UserController {
                 const batch = new Batch(
                     0,
                     'pending', 
-                    '',
+                    ' ',
                     false,
                     'Изображение',
                     user.img,
-                    result.img
+                    result.img,
+                    user.id
                 );
 
                 await this.batchRepository.create(batch);
-                await this.userRepository.save(user.setSentChanges(true));
-                updatedUser = user;
+                updatedUser = await this.userRepository.save(user.setSentChanges(true));
             } else {
                 updatedUser = await this.userRepository.uploadAvatar(numericUserId, img);
             }
