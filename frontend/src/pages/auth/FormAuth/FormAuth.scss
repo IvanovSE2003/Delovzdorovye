@@ -51,7 +51,9 @@
         background-color: $button-color-hover;
         cursor: pointer;
       }
+    }
 
+    &.step1{
       &:disabled {
         background-color: #cccccc;
         color: #666666;

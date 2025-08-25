@@ -1,4 +1,3 @@
-// components/UI/MyInput/MyInputTel.tsx
 import { useState, useCallback } from 'react';
 import './MyInput.scss'; 
 

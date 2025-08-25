@@ -21,7 +21,7 @@ interface ImenuItems {
 export default class Store {
     user = {} as IUser;
     isAuth = false;
-    error = "";
+    error =  "";
     menuItems = [] as ImenuItems[];
     loading = false;
 
@@ -154,7 +154,9 @@ export default class Store {
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 localStorage.removeItem('token');
-                this.setError(error.response?.data?.message || "Ошибка аунтификациий!")
+                const errorMessage = error.response?.data?.message || "";
+                this.setError(errorMessage);
+                console.log(errorMessage);
                 this.setAuth(false);
             }
         });
@@ -294,7 +296,6 @@ export default class Store {
             return { success: false, message: this.error }
         }
     }
-
 
     // Загрузить аватар пользователя
     async uploadAvatar(formData: FormData): Promise<void> {

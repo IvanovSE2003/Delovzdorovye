@@ -21,11 +21,13 @@ const ProfileWarnings: React.FC = () => {
 
     return (
         <>
+            
             <div className="user-profile__warns">
-                {!store.user.isActivatedSMS && message && (
+                {!store.user.isActivatedSMS && (
                     <div className="user-profile__error-block">
                         <span>
-                            { message }
+                            {message ? message : ""}
+                            Для подлючения аккаунта к телеграмм-боту необходимо <a onClick={getMessage}>получить инструкцию на почту.</a> 
                         </span>
                     </div>
                 )}

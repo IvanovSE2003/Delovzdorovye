@@ -10,7 +10,7 @@ interface MyInputDateProps {
     className?: string;
 }
 
-const DateInput: React.FC<MyInputDateProps> = ({
+const MyInputDate: React.FC<MyInputDateProps> = ({
     id,
     label,
     value,
@@ -23,20 +23,34 @@ const DateInput: React.FC<MyInputDateProps> = ({
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let raw = e.target.value.replace(/\D/g, '');
+        let formatted = '';
 
-        if (raw.length > 4 && raw.length <= 6) {
-            raw = raw.substring(0, 4) + '.' + raw.substring(4);
-        } else if (raw.length > 6) {
-            raw = raw.substring(0, 4) + '.' + raw.substring(4, 6) + '.' + raw.substring(6, 8);
+        // Форматирование ввода: ДД.ММ.ГГГГ
+        if (raw.length > 0) {
+            formatted = raw.substring(0, 2);
+            if (raw.length > 2) {
+                formatted += '.' + raw.substring(2, 4);
+            }
+            if (raw.length > 4) {
+                formatted += '.' + raw.substring(4, 8);
+            }
         }
 
-        // Валидация
-        if (/^\d{4}\.\d{2}\.\d{2}$/.test(raw)) {
-            const [year, month, day] = raw.split('.').map(Number);
+        // Валидация при полной дате
+        if (/^\d{2}\.\d{2}\.\d{4}$/.test(formatted)) {
+            const [day, month, year] = formatted.split('.').map(Number);
             const date = new Date(year, month - 1, day);
 
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // сравниваем только даты без времени
+            today.setHours(0, 0, 0, 0);
+
+            const minDate = new Date();
+            minDate.setFullYear(today.getFullYear() - 18);
+            minDate.setHours(0, 0, 0, 0);
+
+            const maxDate = new Date();
+            maxDate.setFullYear(today.getFullYear() - 100);
+            maxDate.setHours(0, 0, 0, 0);
 
             const isValid =
                 date.getFullYear() === year &&
@@ -44,9 +58,13 @@ const DateInput: React.FC<MyInputDateProps> = ({
                 date.getDate() === day;
 
             if (!isValid) {
-                setError("Некорректная дата (формат год.месяц.день)");
+                setError("Некорректная дата (формат день.месяц.год)");
             } else if (date > today) {
-                setError("Дата не может быть в будущем :)");
+                setError("Дата рождения не может быть в будущем :)");
+            } else if (date > minDate) {
+                setError("Возраст должен быть не менее 18 лет");
+            } else if (date < maxDate) {
+                setError("Возраст не может быть более 100 лет");
             } else {
                 setError(null);
             }
@@ -54,7 +72,7 @@ const DateInput: React.FC<MyInputDateProps> = ({
             setError(null);
         }
 
-        onChange(raw);
+        onChange(formatted);
     };
 
     return (
@@ -69,7 +87,7 @@ const DateInput: React.FC<MyInputDateProps> = ({
                 maxLength={10}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={placeholder}
+                placeholder={placeholder || "дд.мм.гггг"}
             />
             <label htmlFor={id}>{label}</label>
             {error && <span className="my-input-td__error">{error}</span>}
@@ -77,4 +95,4 @@ const DateInput: React.FC<MyInputDateProps> = ({
     );
 }
 
-export default DateInput;
+export default MyInputDate;

@@ -4,9 +4,6 @@ import { Context } from "../../main";
 import { motion, AnimatePresence } from "framer-motion";
 import Select from 'react-select';
 
-import doctor from "../../assets/images/doctor.png"
-import patient from "../../assets/images/patient.png"
-
 import MyInput from "../../components/UI/MyInput/MyInput";
 import MySelect from "../../components/UI/MySelect/MySelect";
 import PinCodeInput from "../../components/UI/PinCodeInput/PinCodeInput";
@@ -21,8 +18,7 @@ import $api, { API_URL } from "../../http";
 import Loader from "../../components/UI/Loader/Loader";
 import MyInputTel from "../../components/UI/MyInput/MyInputTel";
 import MyInputDate from "../../components/UI/MyInput/MyInputDate";
-import MyInputFile from "../../components/UI/MyInput/MyInputFile";
-import FilePreview from "../../components/UI/MyInput/FilePreview";
+import MyInputEmail from "../../components/UI/MyInput/MyInputEmail";
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -57,22 +53,22 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Стираю ошибку при изменении шага 
   useEffect(() => {
     setError("");
-    if (step === 3) {
-      $api.get(`${API_URL}/specialization/all`)
-        .then(response => {
-          const formattedOptions = response.data.map((opt: { id: number; name: string }) => ({
-            value: opt.id,
-            label: opt.name
-          }));
-          setOptions(formattedOptions);
-        })
-        .catch(error => {
-          if (error.response) {
-            console.error('Ошибка сервера:', error.response.status);
-            setError("Ошибка при получении специализаций!");
-          }
-        });
-    }
+    // if (step === 3) {
+    //   $api.get(`${API_URL}/specialization/all`)
+    //     .then(response => {
+    //       const formattedOptions = response.data.map((opt: { id: number; name: string }) => ({
+    //         value: opt.id,
+    //         label: opt.name
+    //       }));
+    //       setOptions(formattedOptions);
+    //     })
+    //     .catch(error => {
+    //       if (error.response) {
+    //         console.error('Ошибка сервера:', error.response.status);
+    //         setError("Ошибка при получении специализаций!");
+    //       }
+    //     });
+    // }
   }, [step])
 
   // Проверка на сущ. пользователя по почте
@@ -114,31 +110,25 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [userDetails?.phone]);
 
-  useEffect(() => {
-    console.log(userDetails)
-  }, [userDetails])
 
+  // const handleFileChange = (file: File | null, type: "DIPLOMA" | "LICENSE") => {
+  //   if (file) {
+  //     type === "DIPLOMA"
+  //       ? setDiplomas(prev => [...prev, file])
+  //       : setLicenses(prev => [...prev, file]);
+  //   }
+  // };
 
-  const handleFileChange = (file: File | null, type: "DIPLOMA" | "LICENSE") => {
-    if (file) {
-      type === "DIPLOMA"
-        ? setDiplomas(prev => [...prev, file])
-        : setLicenses(prev => [...prev, file]);
-    }
-  };
-
-  const handleRemoveFile = (index: number, type: "DIPLOMA" | "LICENSE") => {
-    type === "DIPLOMA"
-      ? setDiplomas(prev => prev.filter((_, i) => i !== index))
-      : setLicenses(prev => prev.filter((_, i) => i !== index))
-  };
+  // const handleRemoveFile = (index: number, type: "DIPLOMA" | "LICENSE") => {
+  //   type === "DIPLOMA"
+  //     ? setDiplomas(prev => prev.filter((_, i) => i !== index))
+  //     : setLicenses(prev => prev.filter((_, i) => i !== index))
+  // };
 
   // Проверка что введены все обязательные поля
   const checkAllData = () => {
     if (anonym) {
-      return userDetails.email && userDetails.phone
-        && userDetails.gender && userDetails.date_birth
-        && userDetails.time_zone;
+      return userDetails.email && userDetails.phone;
     } else {
       return userDetails.email && userDetails.phone
         && userDetails.gender && userDetails.date_birth
@@ -149,24 +139,41 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Завершение первого этапа 
   const handleStep1 = (): void => {
+    if (checkAllData()) {
+      setError("Заполните все обязательные поля!");
+      // Подчеркнуть красным обязательные поля
+      return;
+    }
+
     if (styleEmail == 'valid' && stylePhone == 'valid') {
-      if (checkAllData()) {
-        setStep(2);
-        setError("");
-      } else {
-        setError("Заполните все обязательные поля!")
-        return;
-      }
+      setStep(2);
+      setError("");
     }
   }
 
-  // Завершение третьего этапа
-  const handleStep3 = (): void => {
-    setStep(4);
-  }
+  const calculateAge = (birthDate: string): number => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+
+    return age;
+  };
 
   // Завершение четвертого этапов
   const registration = async (): Promise<void> => {
+    if (userDetails.date_birth && !anonym) {
+      const age = calculateAge(userDetails.date_birth);
+      if (age < 18 || age > 100) {
+        setError("Возраст должен быть от 18 до 100 лет");
+        return;
+      }
+    }
+
     if (replyPinCode !== userDetails.pin_code) {
       setError("Пин-коды не совпадают!");
       return;
@@ -175,6 +182,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (userDetails.role === 'DOCTOR') {
       setUserDetails((prev) => ({
         ...prev,
+        date_birth: doFormatDate(userDetails.date_birth),
         specializations,
         experienceYears,
         diplomas,
@@ -187,6 +195,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (store.isAuth) navigate(RouteNames.PERSONAL)
   };
 
+  // Возвращение на один этап
   const handleBack = (): void => {
     setError("");
     if (step > 1) {
@@ -226,12 +235,12 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   return (
     <div className="auth__container">
 
-      <div className="auth__progress">
+      {/* <div className="auth__progress">
         <div
           className="auth__progress-bar"
-          style={{ width: `${(step / 4) * 100}%` }}
+          style={{ width: `${(step / 2) * 100}%` }}
         />
-      </div>
+      </div> */}
 
       <AnimatePresence mode="wait">
         {step === 1 && (
@@ -283,15 +292,6 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               </>
             )}
 
-            <MyInput
-              id="email"
-              label="Электронная почта"
-              value={userDetails.email}
-              onChange={(value) => handleUserDetailsChange("email", value)}
-              className={styleEmail}
-              required
-            />
-
             <MyInputTel
               id="phone"
               value={userDetails.phone}
@@ -300,41 +300,54 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               required
             />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              <div className="auth__radio-btn">
-                <input
-                  id="male"
-                  type="radio"
-                  name="male"
-                  value="Мужчина"
-                  checked={userDetails.gender === "Мужчина"}
-                  onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
-                />
-                <label htmlFor="male">Мужчина</label>
-              </div>
-
-              <div className="auth__radio-btn">
-                <input
-                  id="female"
-                  type="radio"
-                  name="female"
-                  value="Женщина"
-                  checked={userDetails.gender === "Женщина"}
-                  onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
-                />
-                <label htmlFor="female">Женщина</label>
-              </div>
-            </div>
-
-            <MyInputDate
-              id="date-birth"
-              label="День рождения"
-              placeholder="гггг.мм.дд"
-              value={userDetails.date_birth}
-              onChange={(value) => handleUserDetailsChange("date_birth", doFormatDate(value))}
+            <MyInputEmail
+              id="email"
+              value={userDetails.email}
+              onChange={(value) => handleUserDetailsChange("email", value)}
+              className={styleEmail}
+              label="Электронная почта"
+              placeholder="your@email.com"
             />
 
-            <MySelect
+
+            {!anonym && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  <div className="auth__radio-btn">
+                    <input
+                      id="male"
+                      type="radio"
+                      name="male"
+                      value="Мужчина"
+                      checked={userDetails.gender === "Мужчина"}
+                      onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
+                    />
+                    <label htmlFor="male">Мужчина</label>
+                  </div>
+
+                  <div className="auth__radio-btn">
+                    <input
+                      id="female"
+                      type="radio"
+                      name="female"
+                      value="Женщина"
+                      checked={userDetails.gender === "Женщина"}
+                      onChange={(e) => handleUserDetailsChange("gender", e.target.value)}
+                    />
+                    <label htmlFor="female">Женщина</label>
+                  </div>
+                </div>
+
+                <MyInputDate
+                  id="date-birth"
+                  label="Дата рождения"
+                  value={userDetails.date_birth}
+                  onChange={(value) => handleUserDetailsChange("date_birth", value)}
+                />
+              </>
+            )}
+
+            {/* <MySelect
               value={userDetails.time_zone}
               onChange={(value) => handleUserDetailsChange("time_zone", value)}
               label="Часовой пояс"
@@ -347,9 +360,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                   {label}
                 </option>
               ))}
-            </MySelect>
+            </MySelect> */}
 
-            <button className="auth__button" onClick={handleStep1}>
+            <CheckBox
+              onAgreementChange={handleAgreementChange}
+              onLinkClick={handleLinkClick}
+            />
+
+            <button className="auth__button step1" onClick={handleStep1} disabled={disabled}>
               Продолжить
             </button>
             <a onClick={() => setState("login")} className="auth__toggle-button">
@@ -358,69 +376,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
           </motion.div>
         )}
 
-        {step === 2 && (
-          <motion.div
-            key="step2"
-            initial="enter"
-            animate="center"
-            exit="exit"
-            variants={stepVariants}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="role-selection auth__form">
-              <div className="role-selection__cards">
-                {anonym
-                  ?
-                  <div
-                    className="role-card role-card__blocked"
-                    title="Доктор не может быть анонимным пользователем"
-                  >
-                    <img className="role-card__icon" src={doctor} alt="doctor" />
-                    <h3 className="role-card__title">Доктор</h3>
-                    <p className="role-card__description">
-                      Доктор не может быть анонимным пользователем
-                    </p>
-                  </div>
-                  :
-                  <div
-                    className="role-card role-card_doctor"
-                    onClick={() => {
-                      handleUserDetailsChange("role", "DOCTOR");
-                      setStep(3);
-                    }}
-                  >
-                    <img className="role-card__icon" src={doctor} alt="doctor" />
-                    <h3 className="role-card__title">Доктор</h3>
-                    <p className="role-card__description">
-                      Я медицинский специалист и хочу помогать пациентам
-                    </p>
-                  </div>
-                }
-
-                <div
-                  className="role-card role-card_patient"
-                  onClick={() => {
-                    handleUserDetailsChange("role", "PATIENT");
-                    setStep(4);
-                  }}
-                >
-                  <img className="role-card__icon" src={patient} alt="patient" />
-                  <h3 className="role-card__title">Пациент</h3>
-                  <p className="role-card__description">
-                    Я ищу медицинскую консультацию
-                  </p>
-                </div>
-              </div>
-
-              <button onClick={handleBack} className="auth__button">
-                Назад
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-
-        {step === 3 && (
+        {/* {step === 2 && (
           <motion.div
             key="step3"
             initial="enter"
@@ -502,17 +458,24 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
               Назад
             </button>
           </motion.div>
-        )}
+        )} */}
 
-        {step === 4 && (
+        {step === 2 && (
           <motion.div
-            key="step4"
+            key="step2"
             initial="enter"
             animate="center"
             exit="exit"
             variants={stepVariants}
             transition={{ duration: 0.3 }}
           >
+            <div className="solutions__warn">
+              <span>
+                PIN-код нужен для безопасности ваших данных. Если вы забудете PIN-код, то потребуется пройти регистрацию повторно.
+              </span>
+            </div>
+            <br />
+
             <div className="auth__form">
               <h2>Придумайте пин-код</h2>
               <PinCodeInput
@@ -526,12 +489,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
                 countNumber={4}
               />
 
-              <CheckBox
-                onAgreementChange={handleAgreementChange}
-                onLinkClick={handleLinkClick}
-              />
-
-              <button onClick={registration} className="auth__button__final" disabled={disabled}>
+              <button onClick={registration} className="auth__button__final">
                 Завершить регистрацию
               </button>
 
