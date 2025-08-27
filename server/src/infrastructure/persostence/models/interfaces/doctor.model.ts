@@ -5,8 +5,8 @@ import { UserModelInterface } from './user.model.js';
 interface IDoctortAttributes {
     id: number;
     experience_years: number;
-    diploma: string;
-    license: string;
+    // diploma: string;
+    // license: string;
     isActivated: boolean;
     userId?: number;
 }

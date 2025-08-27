@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
 import TimeSlot from '../../domain/entities/timeSlot.entity.js';
 
-const { UserModel, DoctorModel, SpecializationModel } = models;
+const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
 
 export default class DoctorRepositoryImpl implements DoctorRepository {
 
@@ -15,8 +15,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [
                 {
                     model: SpecializationModel,
-                    through: { attributes: [] }, // Не включаем атрибуты связующей таблицы
-                    attributes: ['name'] // Загружаем только названия
+                    through: { attributes: ['diploma', 'license'] }, // Теперь включаем атрибуты связующей таблицы
+                    attributes: ['name']
                 }
             ]
         });
@@ -30,7 +30,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [
                 {
                     model: SpecializationModel,
-                    through: { attributes: [] },
+                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['name']
                 }
             ]
@@ -108,7 +108,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 },
                 {
                     model: SpecializationModel,
-                    through: { attributes: [] },
+                    through: { attributes: ['diploma', 'license'] }, // Включаем атрибуты связующей таблицы
                     attributes: ['name'],
                     where: filters?.specialization ? { name: filters.specialization } : {}
                 }
@@ -119,23 +119,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         });
 
         return {
-            doctors: doctors.map(doctor => {
-                const domainDoctor = this.mapToDomainDoctor(doctor);
-                return {
-                    id: domainDoctor.id,
-                    experienceYears: domainDoctor.experienceYears,
-                    diploma: domainDoctor.diploma,
-                    license: domainDoctor.license,
-                    isActivated: domainDoctor.isActivated,
-                    specializations: domainDoctor.specializations,
-                    userId: domainDoctor.userId,
-                    userName: domainDoctor.userName,
-                    userSurname: domainDoctor.userSurname,
-                    userPatronymic: domainDoctor.userPatronymic,
-                    userAvatar: domainDoctor.userAvatar,
-                    userGender: domainDoctor.userGender
-                };
-            }) as any,
+            doctors: doctors.map(doctor => this.mapToDomainDoctor(doctor)),
             totalCount,
             totalPages
         };
@@ -147,7 +131,14 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 userId: {
                     [Op.in]: userIds
                 }
-            }
+            },
+            include: [
+                {
+                    model: SpecializationModel,
+                    through: { attributes: ['diploma', 'license'] },
+                    attributes: ['name']
+                }
+            ]
         });
 
         return doctors.map(doctor => this.mapToDomainDoctor(doctor));
@@ -161,6 +152,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         const transaction = await sequelize.transaction();
 
         try {
+            // Обновляем основные данные доктора
             const [affectedCount, updatedDoctors] = await DoctorModel.update(
                 this.mapToPersistence(doctor),
                 {
@@ -175,23 +167,49 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             }
 
             const updatedDoctor = updatedDoctors[0] as DoctorModelInterface;
+            const specializationUpdates = [];
+            for (let i = 0; i < doctor.specializations.length; i++) {
+                const specName = doctor.specializations[i];
+                const diploma = doctor.diplomas[i] || null;
+                const license = doctor.licenses[i] || null;
 
-            const specializationInstances = [];
-            for (const specName of doctor.specializations) {
                 const [spec] = await SpecializationModel.findOrCreate({
                     where: { name: specName },
                     transaction
                 });
-                specializationInstances.push(spec);
+
+                specializationUpdates.push(
+                    DoctorSpecialization.upsert({
+                        doctorId: doctor.id,
+                        specializationId: spec.id,
+                        diploma,
+                        license
+                    }, { transaction })
+                );
             }
 
-            await updatedDoctor.setSpecializations(specializationInstances, { transaction });
+            await Promise.all(specializationUpdates);
+
+            const currentSpecializations = await SpecializationModel.findAll({
+                where: { name: { [Op.in]: doctor.specializations } },
+                transaction
+            });
+
+            const currentSpecIds = currentSpecializations.map(spec => spec.id);
+            await DoctorSpecialization.destroy({
+                where: {
+                    doctorId: doctor.id,
+                    specializationId: { [Op.notIn]: currentSpecIds }
+                },
+                transaction
+            });
+
             await transaction.commit();
 
             const fullDoctor = await DoctorModel.findByPk(doctor.id, {
                 include: [{
                     model: SpecializationModel,
-                    through: { attributes: [] },
+                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['name']
                 }]
             });
@@ -213,22 +231,35 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 { transaction }
             );
 
-            const specializationInstances = [];
-            for (const specName of doctor.specializations) {
+            const specializationCreates = [];
+            for (let i = 0; i < doctor.specializations.length; i++) {
+                const specName = doctor.specializations[i];
+                const diploma = doctor.diplomas[i] || null;
+                const license = doctor.licenses[i] || null;
+
                 const [spec] = await SpecializationModel.findOrCreate({
                     where: { name: specName },
                     transaction
                 });
-                specializationInstances.push(spec);
+
+                specializationCreates.push(
+                    DoctorSpecialization.create({
+                        doctorId: createdDoctor.id,
+                        specializationId: spec.id,
+                        diploma,
+                        license
+                    }, { transaction })
+                );
+                console.log(specializationCreates);
             }
 
-            await createdDoctor.setSpecializations(specializationInstances, { transaction });
+            await Promise.all(specializationCreates);
             await transaction.commit();
 
             const fullDoctor = await DoctorModel.findByPk(createdDoctor.id, {
                 include: [{
                     model: SpecializationModel,
-                    through: { attributes: [] },
+                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['name']
                 }]
             });
@@ -242,7 +273,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async getTimeSlots(doctorId: number): Promise<TimeSlot[]> {
-
         const doctorSchedules = await models.DoctorsSchedule.findAll({
             where: {
                 doctorId: doctorId
@@ -257,9 +287,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         const timeSlots: TimeSlot[] = [];
 
         for (const schedule of doctorSchedules) {
-
             for (const slot of (schedule as any).time_slots || []) {
-
                 const scheduleDate = new Date(schedule.date);
                 const [hours, minutes] = slot.time.split(':').map(Number);
                 scheduleDate.setHours(hours, minutes, 0, 0);
@@ -285,15 +313,23 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[]; user?: any }): Doctor {
-        const specializations = doctorModel.specializations
-            ? doctorModel.specializations.map(spec => spec.name)
-            : [];
+        const specializations: string[] = [];
+        const diplomas: string[] = [];
+        const licenses: string[] = [];
+
+        if (doctorModel.specializations) {
+            doctorModel.specializations.forEach(spec => {
+                specializations.push(spec.name);
+                diplomas.push(spec.doctor_specializations?.diploma || '');
+                licenses.push(spec.doctor_specializations?.license || '');
+            });
+        }
 
         return new Doctor(
             doctorModel.id,
             doctorModel.experience_years,
-            doctorModel.diploma,
-            doctorModel.license,
+            diplomas,
+            licenses,
             doctorModel.isActivated,
             specializations,
             doctorModel.userId,
@@ -308,8 +344,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
         return {
             experience_years: doctor.experienceYears,
-            diploma: doctor.diploma,
-            license: doctor.license,
             isActivated: doctor.isActivated,
             userId: doctor.userId
         };

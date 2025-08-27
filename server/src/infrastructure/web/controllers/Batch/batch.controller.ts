@@ -78,8 +78,8 @@ export default class BatchController {
                     doctor.specializations = value.split(",").map(s => s.trim());
                 },
                 "Опыт работы": (doctor, value) => (doctor.experienceYears = parseInt(value)),
-                "Диплом": (doctor, value) => (doctor.diploma = value),
-                "Лицензия": (doctor, value) => (doctor.license = value),
+                // "Диплом": (doctor, value) => (doctor.diploma = value),
+                // "Лицензия": (doctor, value) => (doctor.license = value),
             };
 
             const userFieldMap: Record<string, (user: User, value: string) => void> = {
@@ -193,8 +193,8 @@ export default class BatchController {
                     const doctorInfo = doctorMap.get(user.id);
                     if (doctorInfo) {
                         userData.specializations = doctorInfo.specializations || null;
-                        userData.diploma = doctorInfo.diploma || null;
-                        userData.license = doctorInfo.license || null;
+                        // userData.diploma = doctorInfo.diploma || null;
+                        // userData.license = doctorInfo.license || null;
                     }
                 }
 

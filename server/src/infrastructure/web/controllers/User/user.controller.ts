@@ -187,7 +187,8 @@ export default class UserController {
     async checkUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { creditial } = req.body;
-            const user = await this.userRepository.findByEmailOrPhone(creditial) as User;
+            const creditialLow = creditial.toLowerCase();
+            const user = await this.userRepository.findByEmailOrPhone(creditialLow) as User;
             if (!user) {
                 return next(ApiError.badRequest('Такого пользователя не существует'));
             }
@@ -611,7 +612,7 @@ export default class UserController {
             }
 
             if(newRole === 'DOCTOR') {
-                const doctor = await this.doctorRepository.create(new Doctor(0, 0, "", "", true, [], user.id));
+                const doctor = await this.doctorRepository.create(new Doctor(0, 0, [], [], true, [], user.id));
                 if(!doctor) {
                     return next(ApiError.internal('Ошибка изменения пользователя на роль специалиста'));
                 }

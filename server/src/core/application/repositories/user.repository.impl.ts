@@ -44,7 +44,8 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async findByDoctorId(doctorId: number): Promise<User | null> {
-        const user = await UserModel.findOne({where: { doctorId }});
+        const doctor = await models.DoctorModel.findByPk(doctorId);
+        const user = await UserModel.findOne({where: { id: doctor?.userId }});
         return user ? this.mapToDomainUser(user): null;
     }
 

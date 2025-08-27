@@ -66,27 +66,53 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { data } = req.body as { data: Partial<Doctor> };
+            const { data: dataString } = req.body as { data: string };
 
-            const doctor = await this.doctorRepository.findById(Number(id));
+            let data: Partial<Doctor>;
+            try {
+                data = JSON.parse(dataString);
+            } catch (parseError) {
+                return next(ApiError.badRequest("Неверный формат данных"));
+            }
+
+            const doctorId = Number(id);
+            const doctor = await this.doctorRepository.findById(doctorId);
             if (!doctor) {
                 return next(ApiError.badRequest("Доктор не найден"));
             }
 
-            const fileFields: (keyof Doctor)[] = ["diploma", "license"];
+            if (!data.diplomas) data.diplomas = [];
+            if (!data.licenses) data.licenses = [];
+
+            const fileFields = ["diplomas", "licenses"] as const;
+            const fileProcessingPromises: Promise<void>[] = [];
+
             for (const field of fileFields) {
-                const file = req.files?.[field] as UploadedFile | undefined;
-                if (file) {
-                    const fileName = await this.fileService.saveFile(file);
-                    data[field] = fileName as any; 
+                const files = req.files?.[field] as UploadedFile[] | UploadedFile | undefined;
+
+                if (files) {
+                    const fileArray = Array.isArray(files) ? files : [files];
+
+                    for (const file of fileArray) {
+                        const processFile = async () => {
+                            try {
+                                const fileName = await this.fileService.saveFile(file);
+                                data[field]!.push(fileName);
+                            } catch (error) {
+                                console.error(`Ошибка обработки файла для поля ${field}:`, error);
+                            }
+                        };
+                        fileProcessingPromises.push(processFile());
+                    }
                 }
             }
 
+            await Promise.all(fileProcessingPromises);
+
             const allowedFields: (keyof Doctor)[] = [
-                "specializations",
                 "experienceYears",
-                "diploma",
-                "license",
+                "diplomas",
+                "licenses"
             ];
 
             const changes = Object.entries(data)
@@ -94,14 +120,29 @@ export default class DoctorController {
                 .map(([field, newValue]) => {
                     const key = field as keyof Doctor;
                     const oldValue = doctor[key];
+
+                    let formattedOldValue = oldValue;
+                    let formattedNewValue = newValue;
+
+                    if (Array.isArray(oldValue) && Array.isArray(newValue)) {
+                        formattedOldValue = oldValue.join(', ');
+                        formattedNewValue = newValue.join(', ');
+                    } else if (Array.isArray(oldValue)) {
+                        formattedOldValue = oldValue.join(', ');
+                        formattedNewValue = String(newValue);
+                    } else if (Array.isArray(newValue)) {
+                        formattedOldValue = String(oldValue);
+                        formattedNewValue = newValue.join(', ');
+                    }
+
                     return {
                         field_name: FIELD_TRANSLATIONS[field] || field,
-                        old_value: oldValue != null ? String(oldValue) : null,
-                        new_value: String(newValue),
+                        old_value: formattedOldValue != null ? String(formattedOldValue) : null,
+                        new_value: String(formattedNewValue),
                     };
                 });
 
-            if (!changes.length) {
+            if (changes.length === 0) {
                 return next(ApiError.badRequest("Нет допустимых полей для изменения"));
             }
 
@@ -115,7 +156,9 @@ export default class DoctorController {
             return res.json({
                 success: true,
                 message: "Изменения отправлены на модерацию",
+                changesCount: changes.length
             });
+
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -139,8 +182,8 @@ export default class DoctorController {
 }
 
 const FIELD_TRANSLATIONS: Record<string, string> = {
-    specialization: 'Специализация',
+    specializations: 'Специализации',
     experienceYears: 'Опыт работы',
-    diploma: 'Диплом',
-    license: 'Лицензия',
+    diplomas: 'Дипломы',
+    licenses: 'Лицензии',
 };

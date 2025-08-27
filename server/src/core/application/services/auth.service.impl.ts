@@ -30,7 +30,7 @@ export class AuthServiceImpl implements AuthService {
 
         const baseUserData = {
             id: 0,
-            email: data.email,
+            email: (data.email).toLowerCase(),
             phone: data.phone,
             pinCode: data.pinCode,
             timeZone: data.timeZone,
@@ -182,7 +182,8 @@ export class AuthServiceImpl implements AuthService {
         tempToken?: string;
     }> {
         try {
-            const user = await this.userRepository.findByEmailOrPhone(credential) as User;
+            const credentialLow = credential.toLowerCase();
+            const user = await this.userRepository.findByEmailOrPhone(credentialLow) as User;
             if (!user) {
                 throw new Error("Пользователь не найден");
             }
