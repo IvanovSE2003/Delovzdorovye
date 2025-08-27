@@ -30,11 +30,11 @@ const sequelize = new Sequelize(
 
 sequelize.authenticate()
     .then(() => {
-        console.log('✅ Подключение к PostgreSQL установлено');
+        console.log('Подключение к PostgreSQL установлено');
     })
     .catch((err: Error) => {
-        console.error('❌ Ошибка подключения к PostgreSQL:', err.message);
-        process.exit(1); // Завершаем процесс при ошибке
+        console.error('Ошибка подключения к PostgreSQL:', err.message);
+        process.exit(1);
     });
 
 export default sequelize

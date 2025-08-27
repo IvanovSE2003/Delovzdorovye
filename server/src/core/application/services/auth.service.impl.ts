@@ -1,26 +1,21 @@
 import AuthService from "../../domain/services/auth.service.js";
 import UserRepository from "../../domain/repositories/user.repository.js";
 import TokenService from "../../domain/services/token.service.js";
-import PatientRepository from "../../domain/repositories/patient.repository.js";
 import DoctorRepository from "../../domain/repositories/doctor.repository.js";
 import MailService from "../../domain/services/mail.service.js";
 import SmsService from "../../domain/services/sms.service.js";
 import TelegramService from "../../domain/services/telegram.service.js";
 import User from "../../domain/entities/user.entity.js";
-import Patient from "../../domain/entities/patient.entity.js";
-import Doctor from "../../domain/entities/doctor.entity.js";
 import { v4 } from "uuid";
 import TwoFactorService from "../../domain/services/twoFactor.service.js";
 import jwt from 'jsonwebtoken'
 import regData from "../../../infrastructure/web/types/reqData.type.js";
 import SpecializationRepository from "../../domain/repositories/specializations.repository.js";
-import models from "../../../infrastructure/persostence/models/models.js";
 import formatDate from "../../../infrastructure/web/function/formatDate.js";
 
 export class AuthServiceImpl implements AuthService {
     constructor(
         private readonly userRepository: UserRepository,
-        private readonly patientRepository: PatientRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly tokenService: TokenService,
         private readonly mailService: MailService,
@@ -32,8 +27,6 @@ export class AuthServiceImpl implements AuthService {
 
     async register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }> {
         const activationLink = v4();
-
-
 
         const baseUserData = {
             id: 0,
@@ -109,50 +102,7 @@ export class AuthServiceImpl implements AuthService {
             );
         }
 
-
         const savedUser = await this.userRepository.save(user);
-
-        switch (data.role) {
-            case "PATIENT":
-                await this.patientRepository.create(new Patient(0, false, savedUser.id));
-                break;
-            case "DOCTOR":
-                let specializations: string[] = [];
-                if (typeof data.specializations === "string") {
-                    try {
-                        specializations = JSON.parse(data.specializations);
-                    } catch {
-                        specializations = [data.specializations];
-                    }
-                } else if (Array.isArray(data.specializations)) {
-                    specializations = data.specializations;
-                }
-
-                const savedDoctorModel = await models.DoctorModel.create({
-                    experience_years: data.experienceYears,
-                    diploma: data.diploma,
-                    license: data.license,
-                    isActivated: false,
-                    userId: savedUser.id
-                });
-
-                if (specializations.length > 0) {
-                    const specializationModels = await Promise.all(
-                        specializations.map(async (name) => {
-                            const [specModel] = await models.SpecializationModel.findOrCreate({
-                                where: { name },
-                                defaults: { name }
-                            });
-                            return specModel;
-                        })
-                    );
-
-                    await savedDoctorModel.setSpecializations(specializationModels);
-                }
-
-                break;
-        }
-
         const tokens = await this.tokenService.generateTokens({
             id: savedUser.id,
             email: savedUser.email,

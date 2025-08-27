@@ -12,6 +12,7 @@ import BatchRepository from "../../../../core/domain/repositories/batch.reposito
 import dataResult from "../../types/dataResultAuth.js";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import Batch from "../../../../core/domain/entities/batch.entity.js";
+import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 
 export default class UserController {
     constructor(
@@ -609,6 +610,13 @@ export default class UserController {
                 return next(ApiError.badRequest('Неизвестная роль'));
             }
 
+            if(newRole === 'DOCTOR') {
+                const doctor = await this.doctorRepository.create(new Doctor(0, 0, "", "", true, [], user.id));
+                if(!doctor) {
+                    return next(ApiError.internal('Ошибка изменения пользователя на роль специалиста'));
+                }
+            }
+
             await this.userRepository.save(user.setRole(newRole));
             return res.status(200).json({ success: true, message: `Роль пользователя была изменена на ${newRole}` });
         } catch (e: any) {
@@ -619,7 +627,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL_CLOUD;
+        const clientUrl = process.env.CLIENT_URL;
 
         return `
             <!DOCTYPE html>

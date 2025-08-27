@@ -136,9 +136,9 @@ export default class BatchRepositoryImpl implements BatchRepository {
         );
 
         if (batchModel.user) {
-            batch.userName = batchModel.user.name;
-            batch.userSurname = batchModel.user.surname;
-            batch.userPatronymic = batchModel.user.patronymic;
+            batch.userName = batchModel.user.name?? "";
+            batch.userSurname = batchModel.user.surname?? "";
+            batch.userPatronymic = batchModel.user.patronymic?? "";
         }
 
         return batch;

@@ -1,7 +1,6 @@
 import sequelize from '../db/db.js'
 import { DataType } from 'sequelize-typescript'
 import { UserModelInterface } from "../models/interfaces/user.model.js"
-import {PatientModelInterface} from './interfaces/patient.model.js'
 import { TelegramModelInterface } from './interfaces/telegram.model.js'
 import { DoctorModelInterface } from './interfaces/doctor.model.js'
 import { TokenModelInterface } from './interfaces/token.model.js'
@@ -48,11 +47,6 @@ const TokenModel = sequelize.define<TokenModelInterface>('token', {
     userId: {type: DataType.INTEGER},
     refreshToken: {type: DataType.TEXT, allowNull: false}
 })
-
-const PatientModel = sequelize.define<PatientModelInterface>('patient', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    activate: { type: DataType.BOOLEAN, defaultValue: true }
-});
 
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: {type: DataType.INTEGER, primaryKey: true, autoIncrement: true},
@@ -124,9 +118,6 @@ ModerationBatchModel.belongsTo(UserModel);
 UserModel.hasOne(DoctorModel)
 DoctorModel.belongsTo(UserModel)
 
-UserModel.hasOne(PatientModel)
-PatientModel.belongsTo(UserModel)
-
 UserModel.hasOne(Transaction)
 Transaction.belongsTo(UserModel)
 
@@ -135,9 +126,6 @@ UserTelegramModel.belongsTo(UserModel)
 
 Consultation.hasOne(Transaction)
 Transaction.belongsTo(Consultation)
-
-PatientModel.hasOne(Consultation)
-Consultation.belongsTo(PatientModel)
 
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
@@ -160,9 +148,6 @@ ProblemModel.belongsToMany(Consultation, { through: 'consultation_problems' });
 Consultation.hasOne(RatingModel);
 RatingModel.belongsTo(Consultation);
 
-PatientModel.hasMany(RatingModel);
-RatingModel.belongsTo(PatientModel);
-
 DoctorModel.hasMany(RatingModel);
 RatingModel.belongsTo(DoctorModel);
 
@@ -170,7 +155,6 @@ RatingModel.belongsTo(DoctorModel);
 export default {
     UserModel,
     DoctorModel,
-    PatientModel,
     Transaction,
     Consultation,
     DoctorsSchedule,

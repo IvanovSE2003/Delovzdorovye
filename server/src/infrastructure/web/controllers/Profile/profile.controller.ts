@@ -1,14 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
-import PatientRepository from "../../../../core/domain/repositories/patient.repository.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import ApiError from "../../error/ApiError.js";
 import calculateAge from "../../function/calcAge.js";
+import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 
 export default class ProfileController {
     constructor(
         public readonly userRepository: UserRepository,
-        public readonly patientRepository: PatientRepository,
         public readonly doctorRepository: DoctorRepository
     ) { }
 
@@ -26,10 +25,7 @@ export default class ProfileController {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
-            const [patient, doctor] = await Promise.all([
-                user.role === 'PATIENT' ? this.patientRepository.findByUserId(user.id) : null,
-                user.role === 'DOCTOR' ? this.doctorRepository.findByUserId(user.id) : null
-            ]);
+            const doctor = await this.doctorRepository.findByUserId(user.id);
 
             const baseData = {
                 id: user.id,
