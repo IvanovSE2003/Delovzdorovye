@@ -29,11 +29,12 @@ export default class ProfileController {
 
             const baseData = {
                 id: user.id,
-                avatar: user.img,
+                img: user.img,
                 name: user.name,
                 surname: user.surname,
                 patronymic: user.patronymic,
-                role: user.role
+                role: user.role,
+                isAnonymous: user.isAnonymous
             };
 
             const age = user.dateBirth ? calculateAge(user.dateBirth) : 0;
@@ -49,7 +50,7 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        license: doctor?.license,
+                        license: doctor?.licenses,
                         specializations: doctor?.specializations
                     },
                     default: baseData
@@ -63,7 +64,7 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        diploma: doctor?.diploma,
+                        diploma: doctor?.diplomas,
                         specializations: doctor?.specializations
                     },
                     default: baseData
@@ -78,8 +79,8 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        diploma: doctor?.diploma,
-                        license: doctor?.license,
+                        diploma: doctor?.diplomas,
+                        license: doctor?.licenses,
                         specializations: doctor?.specializations
                     },
                     default: {

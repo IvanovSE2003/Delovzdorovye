@@ -22,7 +22,12 @@ export default class ConsultationController {
         }
     }
 
-    async findDateForProblem(req: Request, res: Response, next : NextFunction) {
-        
+    async findDateForProblem(req: Request, res: Response, next: NextFunction) {
+        try {
+            // const { problems } = req.body as string[];
+
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
     }
 }
