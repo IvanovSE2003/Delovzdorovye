@@ -10,9 +10,7 @@ import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import BatchService from "../services/BatchService";
 import DoctorService, { type DoctorResponse } from "../services/DoctorService";
-import { RouteNames } from "../routes";
-import { useNavigate } from "react-router";
-import { menuConfig } from "../routes/config";
+import { menuConfig } from "../routes/index";
 
 interface ImenuItems {
     path: string;
@@ -101,6 +99,7 @@ export default class Store {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data?.message || "Ошибка при входе!";
                 this.setError(errorMessage);
+
                 return {success: false};
             }
         });

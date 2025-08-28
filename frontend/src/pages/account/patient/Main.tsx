@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
 import TimeSlots from "../../../features/account/TimeSlots/TimeSlots";
+import $api, { API_URL } from "../../../http";
 
 const Main: React.FC = () => {
     const [record, setRecord] = useState<boolean>(false);
@@ -36,7 +37,7 @@ const Main: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     // Обработчик изменения выбора в Select
-    const handleProblemChange = (selectedOptions: any) => {
+    const handleProblemChange = async (selectedOptions: any) => {
         const selectedValues = selectedOptions ? selectedOptions.map((opt: { value: any; }) => opt.value) : [];
         setSelectedProblems(selectedValues);
 
@@ -48,6 +49,9 @@ const Main: React.FC = () => {
         if (!hasOtherProblem) {
             setOtherProblemText("");
         }
+
+        const data = await $api.post(`${API_URL}/consultation/findDay`, {problems: selectedProblems})
+        // console.log(data.slots);
     };
 
     useEffect(() => {
