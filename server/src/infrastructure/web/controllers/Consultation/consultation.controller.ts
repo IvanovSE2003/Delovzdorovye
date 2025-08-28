@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import { Op } from "sequelize";
+import Consultation from "../../../../core/domain/entities/consultations.entity.js";
 
 export default class ConsultationController {
     constructor(
@@ -154,6 +155,15 @@ export default class ConsultationController {
 
             return res.json({ slots: availableSlots });
         } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async appointment(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {date, time, otherProblem, problems, userId} = req.body;
+
+        } catch(e: any) {
             return next(ApiError.internal(e.message));
         }
     }

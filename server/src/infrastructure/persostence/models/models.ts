@@ -9,6 +9,7 @@ import { BatchModelInterface } from './interfaces/batch.model.js'
 import { SpecializationModelInterface } from './interfaces/specializations.model.js'
 import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
 import { ProblemModelInterface } from './interfaces/problem.model.js'
+import { ConsultationModelInterface } from './interfaces/consultation.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -70,7 +71,7 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     name: { type: DataType.STRING }
 })
 
-const Consultation = sequelize.define('consultation', {
+const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultation_status: { type: DataType.STRING },
     payment_status: { type: DataType.STRING },
@@ -140,6 +141,9 @@ Transaction.belongsTo(Consultation)
 
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
+
+UserModel.hasOne(Consultation);
+Consultation.belongsTo(UserModel);
 
 DoctorModel.hasMany(DoctorsSchedule, { foreignKey: "doctorId" });
 DoctorsSchedule.belongsTo(DoctorModel, { foreignKey: "doctorId" });
