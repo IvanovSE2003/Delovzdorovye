@@ -7,6 +7,14 @@ export default interface UserRepository {
     findByEmail(email: string): Promise<User | null>;
     findByPhone(phone: string): Promise<User | null>;
     findByDoctorId(doctorId: number): Promise<User | null>;
+    findAll(page: number,limit: number, filters?: {
+                role?: string;
+            }
+        ): Promise<{
+            users: User[];
+            totalCount: number;
+            totalPages: number;
+        }> 
     create(user: User): Promise<User>;
     update(user: User): Promise<User>;
     delete(id: number): Promise<void>;

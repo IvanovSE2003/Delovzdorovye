@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
-import {UserModelInterface, IUserCreationAttributes} from '../../../infrastructure/persostence/models/interfaces/user.model.js';
+import { UserModelInterface, IUserCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/user.model.js';
 import { v4 } from 'uuid';
 import path from 'path';
 import { dirname } from 'path';
@@ -13,7 +13,7 @@ import fs from 'fs/promises';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const {UserModel} = models;
+const { UserModel } = models;
 
 export default class UserRepositoryImpl implements UserRepository {
     async findByEmailOrPhone(credential: string): Promise<User | null> {
@@ -45,8 +45,45 @@ export default class UserRepositoryImpl implements UserRepository {
 
     async findByDoctorId(doctorId: number): Promise<User | null> {
         const doctor = await models.DoctorModel.findByPk(doctorId);
-        const user = await UserModel.findOne({where: { id: doctor?.userId }});
-        return user ? this.mapToDomainUser(user): null;
+        const user = await UserModel.findOne({ where: { id: doctor?.userId } });
+        return user ? this.mapToDomainUser(user) : null;
+    }
+
+    async findAll(
+        page: number = 1,
+        limit: number = 10,
+        filters?: {
+            role?: string;
+        }
+    ): Promise<{
+        users: User[];
+        totalCount: number;
+        totalPages: number;
+    }> {
+        const where: any = {};
+
+        if (filters?.role) {
+            where.role = filters.role;
+        }
+
+        const totalCount = await UserModel.count({
+            where
+        });
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        const users = await UserModel.findAll({
+            where,
+            limit,
+            offset: (page - 1) * limit,
+            order: [['id', 'ASC']]
+        });
+
+        return {
+            users: users.map(user => this.mapToDomainUser(user)),
+            totalCount,
+            totalPages
+        };
     }
 
     async create(user: User): Promise<User> {
@@ -55,7 +92,7 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async update(user: User): Promise<User> {
-        const [affectedCount, affectedRows] = await UserModel.update(this.mapToPersistence(user),{ where: { id: user.id }, returning: true });
+        const [affectedCount, affectedRows] = await UserModel.update(this.mapToPersistence(user), { where: { id: user.id }, returning: true });
         if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
             throw new Error('Пользователь не был обновлен');
         }
@@ -96,8 +133,8 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async findByResetToken(resetToken: string): Promise<User | null> {
-        const user = await UserModel.findOne({ 
-            where: { 
+        const user = await UserModel.findOne({
+            where: {
                 resetToken,
                 resetTokenExpires: { [Op.gt]: new Date() }
             }
@@ -106,11 +143,11 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async uploadAvatar(userId: number, img: UploadedFile): Promise<User> {
-        const ext = path.extname(img.name); 
+        const ext = path.extname(img.name);
         const fileName = v4() + ext;
-        const filePath = path.resolve(__dirname, '..', '..', '..', '..','static', fileName);
-        
-        await img.mv(filePath); 
+        const filePath = path.resolve(__dirname, '..', '..', '..', '..', 'static', fileName);
+
+        await img.mv(filePath);
 
         const user = await this.findById(userId);
         if (!user) {
@@ -120,7 +157,7 @@ export default class UserRepositoryImpl implements UserRepository {
         if (user.img !== 'man.png' && user.img !== 'girl.png') {
             const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
             try {
-                await fs.unlink(oldAvatarPath); 
+                await fs.unlink(oldAvatarPath);
             } catch (err) {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
@@ -137,10 +174,10 @@ export default class UserRepositoryImpl implements UserRepository {
 
         let userDelete;
 
-        if (user.img !== 'man.png' && user.img !== 'girl.png')  {
+        if (user.img !== 'man.png' && user.img !== 'girl.png') {
             const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
             try {
-                await fs.unlink(oldAvatarPath); 
+                await fs.unlink(oldAvatarPath);
             } catch (err) {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
@@ -149,7 +186,7 @@ export default class UserRepositoryImpl implements UserRepository {
         }
 
 
-        if(user.gender === 'Женщина') {
+        if (user.gender === 'Женщина') {
             userDelete = await this.save(user.updateAvatar("girl.png"));
         } else {
             userDelete = await this.save(user.updateAvatar("man.png"));
@@ -184,7 +221,7 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.twoFactorCodeExpires,
             userModel.resetToken,
             userModel.resetTokenExpires,
-            userModel.pinAttempts, 
+            userModel.pinAttempts,
             userModel.isBlocked,
             userModel.blockedUntil,
             userModel.sentChanges,

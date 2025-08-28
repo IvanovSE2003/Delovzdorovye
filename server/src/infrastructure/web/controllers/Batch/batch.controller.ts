@@ -12,7 +12,7 @@ export default class BatchController {
         private readonly batchRepository: BatchRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly userRepository: UserRepository
-    ) {}
+    ) { }
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
@@ -113,7 +113,7 @@ export default class BatchController {
             await this.batchRepository.delete(batch.id);
 
             const batches = await this.batchRepository.findAllByUserId(user.id);
-            if(batches.length === 0) {
+            if (batches.length === 0) {
                 await this.userRepository.save(user.setSentChanges(false));
             }
 
@@ -204,6 +204,31 @@ export default class BatchController {
             return res.status(200).json(response);
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async getUserConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { page, limit } = req.body;
+
+            const result = await this.userRepository.findAll(page, limit, {role: "PATIENT"});
+
+            if (!result || !result.users || result.users.length === 0) {
+                return next(ApiError.badRequest('Пользователи не найдены'));
+            }
+
+            return res.status(200).json({
+                users: result.users.map(user => ({
+                    name: user.name,
+                    surname: user.surname,
+                    patronymic: user.patronymic,
+                    phone: user.phone
+                })),
+                totalCount: result.totalCount,
+                totalPages: result.totalPages
+            });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 }

@@ -406,34 +406,49 @@ export default class UserController {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
 
-            if(data.isAnonymous === false && (data.name === '' || data.surname === "" || data.patronymic === "" || data.dateBirth === null || data.gender === null)) {
-                return next(ApiError.badRequest('Не заполнены обязательные поля'));
+            if (data.isAnonymous === false) {
+                const requiredFields = ['name', 'surname', 'patronymic', 'dateBirth', 'gender'];
+                const missingFields = requiredFields.filter(field =>
+                    data[field] === null || data[field] === undefined || data[field] === ''
+                );
+
+                if (missingFields.length > 0) {
+                    return next(ApiError.badRequest('Не заполнены обязательные поля'));
+                }
             }
 
-            const updatedUser = user.cloneWithChanges({
-                name: data.name ?? user.name,
-                surname: data.surname ?? user.surname,
-                patronymic: data.patronymic ?? user.patronymic,
+            const userData = {
+                name: data.isAnonymous ? '' : (data.name ?? user.name),
+                surname: data.isAnonymous ? '' : (data.surname ?? user.surname),
+                patronymic: data.isAnonymous ? '' : (data.patronymic ?? user.patronymic),
+                dateBirth: data.isAnonymous ? null : (data.dateBirth ?? user.dateBirth),
+                gender: data.isAnonymous ? null : (data.gender ?? user.gender),
                 isAnonymous: data.isAnonymous ?? user.isAnonymous,
                 email: data.email ?? user.email,
                 phone: data.phone ?? user.phone,
                 timeZone: data.timeZone ?? user.timeZone,
-                dateBirth: data.isAnonymous ? data.dateBirth ?? user.dateBirth : null,
-                gender: data.isAnonymous ? data.gender ?? user.gender : null,
-            });
+            };
 
-            const avatar = updatedUser.isAnonymous
-                ? (updatedUser.gender === "Женщина" ? "girl.png" : "man.png")
-                : (data.img && data.img !== user.img
-                    ? data.img
-                    : (user.img === "man.png" || user.img === "girl.png"
-                        ? (updatedUser.gender === "Женщина" ? "girl.png" : "man.png")
-                        : user.img
-                    )
-                );
+            const updatedUser = user.cloneWithChanges(userData);
 
+            let avatar: string;
+            if (updatedUser.isAnonymous) {
+                avatar = updatedUser.gender === "Женщина" ? "girl.png" : "man.png";
+            } else {
+                if (data.img && data.img !== user.img) {
+                    avatar = data.img;
+                } else {
+                    const isDefaultAvatar = user.img === "man.png" || user.img === "girl.png";
+                    if (isDefaultAvatar && updatedUser.gender) {
+                        avatar = updatedUser.gender === "Женщина" ? "girl.png" : "man.png";
+                    } else {
+                        avatar = user.img;
+                    }
+                }
+            }
 
             const updatedUserWithAvatar = updatedUser.updateAvatar(avatar);
+
             let result: User;
 
             if (updatedUserWithAvatar.role === "DOCTOR") {
@@ -454,6 +469,7 @@ export default class UserController {
                 user: result,
             });
         } catch (e: any) {
+            console.error('Update error:', e);
             return next(ApiError.internal("Неизвестная ошибка"));
         }
     }
@@ -546,7 +562,7 @@ export default class UserController {
 
                 const batch = new Batch(
                     0,
-                    'pending', 
+                    'pending',
                     ' ',
                     false,
                     'Изображение',
@@ -613,9 +629,9 @@ export default class UserController {
                 return next(ApiError.badRequest('Неизвестная роль'));
             }
 
-            if(newRole === 'DOCTOR') {
+            if (newRole === 'DOCTOR') {
                 const doctor = await this.doctorRepository.create(new Doctor(0, 0, [], [], true, [], user.id));
-                if(!doctor) {
+                if (!doctor) {
                     return next(ApiError.internal('Ошибка изменения пользователя на роль специалиста'));
                 }
             }
