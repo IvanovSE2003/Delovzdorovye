@@ -1,4 +1,5 @@
 import { Model, Optional } from 'sequelize';
+import { SpecializationModelInterface } from './specializations.model.js';
 
 interface IProblemAttributes {
     id: number;
@@ -6,4 +7,6 @@ interface IProblemAttributes {
 }
 
 export interface IProblemCreationAttributes extends Optional<IProblemAttributes, 'id'> {}
-export interface ProblemModelInterface extends Model<IProblemAttributes, IProblemCreationAttributes>, IProblemAttributes {}
+export interface ProblemModelInterface extends Model<IProblemAttributes, IProblemCreationAttributes>, IProblemAttributes {
+    specializations?: SpecializationModelInterface[];
+}

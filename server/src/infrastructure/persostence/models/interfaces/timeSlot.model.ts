@@ -10,4 +10,6 @@ interface ITimeSlotAttributes {
 }
 
 export interface ITimeSlotCreationAttributes extends Optional<ITimeSlotAttributes, 'id'> { }
-export interface TimeSlotmModelInterface extends Model<ITimeSlotAttributes, ITimeSlotCreationAttributes>, ITimeSlotAttributes { }
+export interface TimeSlotmModelInterface extends Model<ITimeSlotAttributes, ITimeSlotCreationAttributes>, ITimeSlotAttributes {
+    time_slots?: TimeSlotmModelInterface[];
+}

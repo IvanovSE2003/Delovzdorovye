@@ -4,6 +4,8 @@ import consultationController from "../controllers/Consultation/consultation.con
 
 const router: Router = Router(); 
 
-router.get('problem/all', (req: Request, res: Response, next: NextFunction) => consultationController.findProblmesAll(req, res, next));
+router.post('/findDay', (req: Request, res: Response, next: NextFunction) => consultationController.findDateForProblem(req, res, next));
+router.post('/findTimeSlot', (req: Request, res: Response, next: NextFunction) => consultationController.findTimeSlotForDateProblem(req, res, next));
+router.get('/problem/all', (req: Request, res: Response, next: NextFunction) => consultationController.findProblmesAll(req, res, next));
 
 export default router;
