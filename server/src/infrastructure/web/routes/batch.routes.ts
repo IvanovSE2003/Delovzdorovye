@@ -13,4 +13,6 @@ router.post('/all', (req: Request, res: Response, next: NextFunction) => batchCo
 router.post('/userConsult/all', (req: Request, res: Response, next: NextFunction) => batchController.getUserConsultation(req, res, next));
 router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getOne(req, res, next));
 
+router.post('consultation/all', (req: Request, res: Response, next: NextFunction) => batchController.getConsultaions(req, res, next))
+
 export default router;

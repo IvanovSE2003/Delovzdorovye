@@ -7,6 +7,8 @@ interface IConsultationAttributes {
     other_problem: string;
     recommendations: string;
     duration: number;
+    score: number | null;
+    comment: string | null;
     doctorId?: number;
     userId?: number;
 }

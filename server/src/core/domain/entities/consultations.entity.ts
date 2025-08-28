@@ -6,6 +6,8 @@ export default class Consultation {
         public other_problem: string,
         public recommendations: string,
         public duration: number,
+        public score: number | null,
+        public comment: string | null,
         public userId?: number,
         public doctorId?: number,
         public time_slot_id?: number,
@@ -24,7 +26,7 @@ export default class Consultation {
     }
 
     isExpired(): boolean {
-        return this.reservation_expires_at 
+        return this.reservation_expires_at
             ? new Date() > this.reservation_expires_at
             : false;
     }

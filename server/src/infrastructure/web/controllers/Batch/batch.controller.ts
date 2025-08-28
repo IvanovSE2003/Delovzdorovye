@@ -6,12 +6,14 @@ import UserRepository from '../../../../core/domain/repositories/user.repository
 import Doctor from '../../../../core/domain/entities/doctor.entity.js';
 import User from '../../../../core/domain/entities/user.entity.js';
 import UserShortInfoDto from '../../types/UserShortInfoDto.js';
+import ConsultationRepository from '../../../../core/domain/repositories/consultation.repository.js';
 
 export default class BatchController {
     constructor(
         private readonly batchRepository: BatchRepository,
         private readonly doctorRepository: DoctorRepository,
-        private readonly userRepository: UserRepository
+        private readonly userRepository: UserRepository,
+        private readonly consultationRepository: ConsultationRepository
     ) { }
 
     async getOne(req: Request, res: Response, next: NextFunction) {
@@ -211,7 +213,7 @@ export default class BatchController {
         try {
             const { page, limit } = req.body;
 
-            const result = await this.userRepository.findAll(page, limit, {role: "PATIENT"});
+            const result = await this.userRepository.findAll(page, limit, { role: "PATIENT" });
 
             if (!result || !result.users || result.users.length === 0) {
                 return next(ApiError.badRequest('Пользователи не найдены'));
@@ -228,6 +230,20 @@ export default class BatchController {
                 totalCount: result.totalCount,
                 totalPages: result.totalPages
             });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async getConsultaions(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { page, limit } = req.body;
+            const result = await this.consultationRepository.findAll(page, limit);
+            if (!result) {
+                return next(ApiError.badRequest('Консультации не найдены'));
+            }
+
+            return res.status(200).json(result);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

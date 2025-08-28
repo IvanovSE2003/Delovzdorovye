@@ -60,12 +60,6 @@ const SpecializationModel = sequelize.define<SpecializationModelInterface>('spec
     name: { type: DataType.STRING }
 });
 
-const RatingModel = sequelize.define('rating', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    score: { type: DataType.INTEGER },
-    comment: { type: DataType.TEXT, allowNull: true }
-});
-
 const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataType.STRING }
@@ -74,10 +68,12 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
 const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultation_status: { type: DataType.STRING },
-    payment_status: { type: DataType.STRING },
-    other_problem: { type: DataType.TEXT, allowNull: true },
+    payment_status: { type: DataType.STRING }, // pending,  confirmed, in_progress, completed - завершена, cancelled - отменена , rescheduled - перенесена
+    other_problem: { type: DataType.TEXT, allowNull: true }, // pending, paid, refunded - возвращено, cancelled - отменено
     recommendations: { type: DataType.STRING },
-    duration: { type: DataType.INTEGER, allowNull: true }
+    duration: { type: DataType.INTEGER, allowNull: true },
+    score: { type: DataType.INTEGER, allowNull: true},
+    comment: { type: DataType.TEXT, allowNull: true }
 })
 
 const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
@@ -160,13 +156,6 @@ SpecializationModel.belongsToMany(DoctorModel, { through: DoctorSpecialization }
 Consultation.belongsToMany(ProblemModel, { through: 'consultation_problems' });
 ProblemModel.belongsToMany(Consultation, { through: 'consultation_problems' });
 
-Consultation.hasOne(RatingModel);
-RatingModel.belongsTo(Consultation);
-
-DoctorModel.hasMany(RatingModel);
-RatingModel.belongsTo(DoctorModel);
-
-
 export default {
     UserModel,
     DoctorModel,
@@ -178,7 +167,6 @@ export default {
     TimeSlot,
     ModerationBatchModel,
     SpecializationModel,
-    RatingModel,
     ProblemModel,
     DoctorSpecialization,
     ProblemSpecialization

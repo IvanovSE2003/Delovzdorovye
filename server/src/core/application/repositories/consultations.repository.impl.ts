@@ -1,4 +1,5 @@
 import { ConsultationModelInterface, IConsultaitionCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/consultation.model.js";
+import models from "../../../infrastructure/persostence/models/models.js";
 import Consultation from "../../domain/entities/consultations.entity.js";
 import ConsultationRepository from "../../domain/repositories/consultation.repository.js";
 
@@ -11,6 +12,53 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         throw "";
     }
 
+    async findAll(page: number, limit: number, filters?: {
+        payment_status?: string;
+        consultation_status?: string;
+        userId?: number;
+    }
+    ): Promise<{
+        consultations: Consultation[];
+        totalCount: number;
+        totalPages: number;
+    }> {
+        const where: any = {};
+
+        if (filters?.payment_status) {
+            where.payment_status = filters.payment_status;
+        }
+        
+        if (filters?.payment_status) {
+            where.consultation_status = filters.consultation_status;
+        }
+
+        if(filters?.userId) {
+            where.userId = filters.userId;
+        }
+
+        const totalCount = await models.Consultation.count({
+            where
+        });
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        const consultations = await models.Consultation.findAll({
+            where,
+            include: [
+
+            ],
+            limit,
+            offset: (page - 1) * limit,
+            order: [['id', 'ASC']]
+        });
+
+        return {
+            consultations: consultations.map(consultation => this.mapToDomainConsultation(consultation)),
+            totalCount,
+            totalPages
+        };
+    }
+
     async create(consultationData: Partial<Consultation>): Promise<Consultation> {
         throw "";
     }
@@ -19,14 +67,16 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         throw "";
     }
 
-    private mapToDomainProblem(consultModel: ConsultationModelInterface) {
+    private mapToDomainConsultation(consultModel: ConsultationModelInterface) {
         return new Consultation(
             consultModel.id,
             consultModel.consultation_status,
             consultModel.payment_status,
             consultModel.other_problem,
             consultModel.recommendations,
-            consultModel.duration
+            consultModel.duration,
+            consultModel.score,
+            consultModel.comment
         );
     }
 
@@ -36,7 +86,9 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             payment_status: consult.payment_status,
             other_problem: consult.other_problem,
             recommendations: consult.recommendations,
-            duration: consult.duration
+            duration: consult.duration,
+            score: consult.score,
+            comment: consult.comment
         };
     }
 }
