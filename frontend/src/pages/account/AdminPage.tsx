@@ -4,6 +4,7 @@ import UserInfo from "../../features/account/UserInfo/UserInfo";
 import { useNavigate } from "react-router";
 import { RouteNames } from "../../routes";
 import '../../features/account/MyProfile/MyProfile.scss';
+import { observer } from "mobx-react-lite";
 
 
 const AdminPage = () => {
@@ -54,4 +55,4 @@ const AdminPage = () => {
     )
 }
 
-export default AdminPage;
+export default observer(AdminPage);

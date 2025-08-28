@@ -3,7 +3,6 @@ import { createRoot, type Container } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 
 import './assets/styles/index.scss'
-import './assets/styles/normalize.scss'
 
 import App from './App.tsx'
 import Store from './store/store.ts'

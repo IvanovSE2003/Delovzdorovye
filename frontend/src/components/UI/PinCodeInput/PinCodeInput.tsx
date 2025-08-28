@@ -3,7 +3,7 @@ import "./PinCodeInput.scss";
 
 interface PinCodeInputProps {
     onLogin: (pin: string) => void;
-    focus: boolean;
+    focus?: boolean;
     countNumber: number;
 }
 

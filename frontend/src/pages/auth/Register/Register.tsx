@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { lazy, Suspense, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import "../FormAuth/FormAuth.scss";
 import { Context } from "../../../main";
 import { AnimatePresence } from "framer-motion";
@@ -10,8 +10,8 @@ import { RouteNames } from "../../../routes";
 import { ITimeZones } from "../../../models/TimeZones";
 import Loader from "../../../components/UI/Loader/Loader";
 
-import Step1Form from "./Step1";
-import Step2Form from "./Step2";
+const Step1Form = lazy(() => import("./Step1"));
+const Step2Form = lazy(() => import("./Step2"));
 
 const stepVariants = {
   enter: { opacity: 0, x: 30 },
@@ -158,7 +158,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [hasRequiredFields, setError, userDetails.phone, userDetails.email, store]);
 
   // Завершение регистрации
-  const registration = useCallback(async (): Promise<void> => {
+  const handleStep2 = useCallback(async (): Promise<void> => {
     if (userDetails.date_birth && !anonym) {
       const age = calculateAge(userDetails.date_birth);
       if (age < 18 || age > 100) {
@@ -232,35 +232,36 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   return (
     <div className="auth__container">
-      <AnimatePresence mode="wait">
-        {step === 1 && (
-          <Step1Form
-            step={step}
-            anonym={anonym}
-            anonymSet={anonymSet}
-            userDetails={userDetails}
-            handleUserDetailsChange={handleUserDetailsChange}
-            setIsCheck={setIsCheck}
-            handleLinkClick={handleLinkClick}
-            handleStep1={handleStep1}
-            disabled={disabled}
-            setState={setState}
-            stepVariants={stepVariants}
-          />
-        )}
+      <Suspense fallback={<Loader />}>
+        <AnimatePresence mode="wait">
+          {step === 1 && (
+            <Step1Form
+              step={step}
+              anonym={anonym}
+              anonymSet={anonymSet}
+              userDetails={userDetails}
+              handleUserDetailsChange={handleUserDetailsChange}
+              setIsCheck={setIsCheck}
+              handleLinkClick={handleLinkClick}
+              handleStep1={handleStep1}
+              disabled={disabled}
+              setState={setState}
+              stepVariants={stepVariants}
+            />
+          )}
 
-        {step === 2 && (
-          <Step2Form
-            step={step}
-            stepVariants={stepVariants}
-            SetPinCode={SetPinCode}
-            setReplyPinCode={setReplyPinCode}
-            registration={registration}
-            handleBack={handleBack}
-          />
-        )}
-
-      </AnimatePresence>
+          {step === 2 && (
+            <Step2Form
+              step={step}
+              stepVariants={stepVariants}
+              SetPinCode={SetPinCode}
+              setReplyPinCode={setReplyPinCode}
+              registration={handleStep2}
+              handleBack={handleBack}
+            />
+          )}
+        </AnimatePresence>
+      </Suspense>
     </div>
   );
 

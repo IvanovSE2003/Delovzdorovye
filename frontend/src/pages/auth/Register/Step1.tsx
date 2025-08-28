@@ -5,6 +5,7 @@ import MyInputEmail from "../../../components/UI/MyInput/MyInputEmail";
 import MyInputDate from "../../../components/UI/MyInput/MyInputDate";
 import CheckBox from "../../../components/UI/CheckBox/CheckBox";
 import type { Gender, RegistrationData, Role } from "../../../models/Auth";
+import { useState } from "react";
 
 interface Step1FormProps {
     step: number;
@@ -37,6 +38,17 @@ const Step1Form: React.FC<Step1FormProps> = ({
     setState,
     stepVariants,
 }) => {
+    const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
+    const [isErrorDate, setIsErrorDate] = useState<boolean>(false);
+    const [isErrorTel, setIsErrorTel] = useState<boolean>(false);
+
+    // useEffect(() => {
+    //     console.clear();
+    //     console.log("Ошибка почты: ", isErrorEmail);
+    //     console.log("Ошибка даты рождения: ", isErrorDate);
+    //     console.log("Ошибка номера телефона: ", isErrorTel);
+    // }, [isErrorEmail, isErrorDate, isErrorTel]);
+
     return (
         <motion.div
             key={step}
@@ -47,16 +59,16 @@ const Step1Form: React.FC<Step1FormProps> = ({
             transition={{ duration: 0.2 }}
             className="auth__form"
         >
-            <div className="anonym-block">
-                <input
-                    type="checkbox"
-                    id="anonym"
-                    name="anonym"
-                    checked={anonym}
-                    onChange={e => anonymSet(e.target.checked)}
-                />
-                <label htmlFor="anonym">Анонимная регистрация</label>
+            <div className={`auth__anonym-btn ${anonym ? "active" : ""}`}>
+                <label
+                    htmlFor="anonym"
+                    onClick={() => anonymSet(!anonym)}
+                >
+                    Анонимная регистрация
+                </label>
             </div>
+
+
 
             {!anonym && (
                 <>
@@ -90,6 +102,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
             <MyInputTel
                 id="phone"
                 value={userDetails.phone || ""}
+                getIsError={setIsErrorTel}
                 onChange={(value) => handleUserDetailsChange("phone", value)}
                 className={`${!userDetails.phone ? "required-field" : ""}`}
                 required
@@ -98,6 +111,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
             <MyInputEmail
                 id="email"
                 value={userDetails.email || ""}
+                getIsError={setIsErrorEmail}
                 onChange={(value) => handleUserDetailsChange("email", value)}
                 className={`${!userDetails.email ? "required-field" : ""}`}
                 label="Электронная почта"
@@ -147,6 +161,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
                         id="date-birth"
                         label="Дата рождения"
                         value={userDetails.date_birth || ""}
+                        isError={setIsErrorDate}
                         onChange={(value) => handleUserDetailsChange("date_birth", value)}
                         className={!userDetails.date_birth ? "required-field" : ""}
                     />
@@ -158,7 +173,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
             <button
                 className="auth__button step1"
                 onClick={handleStep1}
-                disabled={disabled}
+                disabled={disabled || isErrorEmail || isErrorTel || isErrorDate}
                 type="button"
             >
                 Продолжить

@@ -2,7 +2,6 @@ import $api from '../http'
 import type { AxiosResponse } from "axios";
 import type { IUserDataProfile, IUser, IAdminDataProfile } from "../models/Auth";
 import type { TypeResponse } from '../models/response/DefaultResponse';
-import type { TypeResponseToken } from '../models/response/TokenResponse';
 import type { PatientData } from '../models/PatientData';
 
 export default class UserService {
@@ -32,8 +31,8 @@ export default class UserService {
         return $api.post<TypeResponse>('user/sendActivationEmail', { email });
     }
 
-    static getTokenTg(id: number): Promise<AxiosResponse<TypeResponseToken>> {
-        return $api.post<TypeResponseToken>(`user/activateLinkTg/${id}`)
+    static getTokenTg(id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`user/activateLinkTg/${id}`)
     }
 
     static uploadAvatar(formData: FormData): Promise<AxiosResponse<IUserDataProfile>> {

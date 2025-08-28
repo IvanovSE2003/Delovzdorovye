@@ -5,7 +5,9 @@ import { observer } from "mobx-react-lite";
 import AccountLayout from "../AccountLayout";
 import type { Batch } from "../../../models/IBatch";
 
-const Specialists:React.FC = () => {
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'];
+
+const Specialists: React.FC = () => {
     const { store } = useContext(Context);
 
     const [message, setMessage] = useState<string>("");
@@ -15,6 +17,18 @@ const Specialists:React.FC = () => {
     const [isClosing, setIsClosing] = useState<boolean>(false);
     const [rejectReason, setRejectReason] = useState<string>("");
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
+
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
+
+    const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
+        setPreviewImage(`${URL}/${imgPath}`);
+        setPreviewPosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleImageLeave = () => {
+        setPreviewImage(null);
+    };
 
     const getBatchAll = async () => {
         try {
@@ -33,16 +47,38 @@ const Specialists:React.FC = () => {
         return fileExtensions.some(ext => value.toLowerCase().endsWith(ext));
     }
 
+    const isImage = (filename: string) => {
+        return IMAGE_EXTENSIONS.some(ext =>
+            filename.toLowerCase().endsWith(ext)
+        );
+    };
+
     const renderValue = (value: string) => {
         if (isFile(value)) {
+            const fileUrl = `${URL}/${value}`;
+
+            if (isImage(value)) {
+                return (
+                    <a
+                        href={`${URL}/${value}`}
+                        onMouseEnter={(e) => handleImageHover(e, value)}
+                        onMouseLeave={handleImageLeave}
+                        onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
+                    >
+                        Документ
+                    </a>
+                );
+            }
+
             return (
-                <a href={`${URL}/${value}`} target="_blank" rel="noopener noreferrer">
+                <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                     {value}
                 </a>
             );
         }
+
         return value;
-    }
+    };
 
     const confirm = async (id: number) => {
         try {
@@ -121,6 +157,17 @@ const Specialists:React.FC = () => {
             {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="admin-page">
+                {previewImage && (
+                    <div
+                        className="image-preview"
+                        style={{
+                            left: `${previewPosition.x + 20}px`,
+                            top: `${previewPosition.y + 20}px`,
+                        }}
+                    >
+                        <img src={previewImage} alt="Preview" />
+                    </div>
+                )}
                 <table className="admin-page__table">
                     <thead>
                         <tr>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './MyInput.scss'; 
 
 interface MyInputEmailProps {
@@ -9,6 +9,7 @@ interface MyInputEmailProps {
   className?: string;
   label?: string;
   placeholder?: string;
+  getIsError?: (value: boolean) => void;
 }
 
 const MyInputEmail: React.FC<MyInputEmailProps> = ({
@@ -18,7 +19,8 @@ const MyInputEmail: React.FC<MyInputEmailProps> = ({
   required = false,
   className = '',
   label = "Email",
-  placeholder = "example@mail.ru"
+  placeholder = "example@mail.ru",
+  getIsError = (_value=false) => {}
 }) => {
   const [isError, setIsError] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
@@ -34,7 +36,6 @@ const MyInputEmail: React.FC<MyInputEmailProps> = ({
     const inputValue = e.target.value;
     onChange(inputValue);
     
-    // Валидируем только если поле было тронуто или содержит значение
     if (isTouched || inputValue.length > 0) {
       setIsError(inputValue.length > 0 && !validateEmail(inputValue));
     }
@@ -45,12 +46,9 @@ const MyInputEmail: React.FC<MyInputEmailProps> = ({
     setIsError(value.length > 0 && !validateEmail(value));
   }, [value, validateEmail]);
 
-  const handleFocus = useCallback(() => {
-    // Сбрасываем ошибку при фокусе, чтобы не мешать пользователю вводить
-    if (isError) {
-      setIsError(false);
-    }
-  }, [isError]);
+  useEffect(() => {
+    getIsError(isError);
+  }, [isError])
 
   return (
     <div className='my-input-td__input-group'>
@@ -61,7 +59,6 @@ const MyInputEmail: React.FC<MyInputEmailProps> = ({
         value={value}
         onChange={handleInputChange}
         onBlur={handleBlur}
-        onFocus={handleFocus}
         className={`my-input-td__input ${className} ${isError ? 'my-input-td__invalid' : ''}`}
         placeholder={placeholder}
         title={label}

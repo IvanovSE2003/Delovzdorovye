@@ -4,7 +4,7 @@ import "./MyInput.scss";
 interface FileInputProps {
   id: string;
   label: string;
-  onChange: (file: File | null) => void;
+  onChange: (files: File[]) => void; // теперь всегда массив
   required?: boolean;
   accept?: string;
   className?: string;
@@ -28,21 +28,17 @@ const MyInputFile: React.FC<FileInputProps> = ({
     if (files && files.length > 0) {
       const fileList = Array.from(files);
       setFileName(
-        multiple 
-          ? `Выбрано файлов: ${files.length}` 
-          : files[0].name
+        multiple ? `Выбрано файлов: ${files.length}` : files[0].name
       );
-      onChange(multiple ? files[0] : fileList[0]);
+      onChange(multiple ? fileList : [fileList[0]]);
     } else {
       setFileName("");
-      onChange(null);
+      onChange([]); // возвращаем пустой массив
     }
   };
 
   const handleClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   return (
@@ -57,12 +53,10 @@ const MyInputFile: React.FC<FileInputProps> = ({
         accept={accept}
         multiple={multiple}
       />
-      
+
       <div className="file-input__container" onClick={handleClick}>
         <div className="file-input__button">Выбрать файлы</div>
-        <div className="file-input__text">
-          {label}
-        </div>
+        <div className="file-input__text">{label}</div>
       </div>
     </div>
   );

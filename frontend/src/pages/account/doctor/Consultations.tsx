@@ -1,9 +1,8 @@
-import { menuItemsDoctor } from "../../../routes";
 import AccountLayout from "../AccountLayout";
 
 const Consultations = () => {
     return (
-        <AccountLayout menuItems={menuItemsDoctor}>
+        <AccountLayout>
             <div>
                 Consultations
             </div>

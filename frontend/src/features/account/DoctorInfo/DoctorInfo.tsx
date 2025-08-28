@@ -3,6 +3,12 @@ import './DoctorInfo.scss';
 import { Context } from '../../../main';
 import { observer } from 'mobx-react-lite';
 import { URL } from '../../../http';
+import MyInputFile from '../../../components/UI/MyInput/MyInputFile';
+import FilePreview from '../../../components/UI/MyInput/FilePreview';
+import MyInput from '../../../components/UI/MyInput/MyInput';
+import Select from 'react-select';
+
+type FileType = 'DIPLOMA' | 'LICENSE';
 
 const DoctorInfo = () => {
     const { store } = useContext(Context);
@@ -10,150 +16,105 @@ const DoctorInfo = () => {
     const [edit, setEdit] = useState<boolean>(false);
     const [specialization, setSpecialization] = useState<string>('');
     const [experienceYears, setExperienceYears] = useState<number>(0);
-    const [diplomaFile, setDiplomaFile] = useState<string | null>(null);
-    const [diplomaFileName, setDiplomaFileName] = useState<string>("");
-    const [licenseFile, setLicenseFile] = useState<string | null>(null);
+
+    const [diplomas, setDiplomas] = useState<File[]>([]);
+    const [licenses, setLicenses] = useState<File[]>([]);
+
+    const [diplomaFileNames, setDiplomaFileNames] = useState<string[]>([]);
+    const [licenseFileNames, setLicenseFileNames] = useState<string[]>([]);
 
     const getDoctorInfo = async () => {
         const data = await store.getDoctorInfo(store.user.id);
-        console.log(data);
-        setSpecialization(data.specialization);
-        setExperienceYears(data.experienceYears);
-        setDiplomaFileName(data.diploma);
-        setLicenseFile(data.license);
+        setSpecialization(data.specialization || '');
+        setExperienceYears(data.experienceYears || 0);
+        setDiplomaFileNames(data.diploma ? [data.diploma] : []);
+        setLicenseFileNames(data.license ? [data.license] : []);
     };
 
     const saveChange = () => {
         console.log({
             specialization,
             experienceYears,
-            diplomaFileName,
-            licenseFile,
+            diplomas,
+            licenses,
         });
         setEdit(false);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'diploma' | 'license') => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                const result = event.target?.result as string;
-                if (type === 'diploma') {
-                    setDiplomaFile(result);
-                    setDiplomaFileName(file.name);
-                } else {
-                    setLicenseFile(result);
-                    setDiplomaFileName(file.name);
-                }
-            };
-
-            reader.readAsDataURL(file);
-        }
+    const handleFileChange = (files: File[], type: FileType) => {
+        if (type === 'DIPLOMA') setDiplomas([...diplomas, ...files]);
+        else setLicenses([...licenses, ...files]);
     };
 
-    const handleRemoveFile = (type: 'diploma' | 'license') => {
-        if (type === 'diploma') {
-            setDiplomaFile(null);
-        } else {
-            setLicenseFile(null);
-        }
+    const handleRemoveFile = (index: number, type: FileType) => {
+        if (type === 'DIPLOMA') setDiplomas(diplomas.filter((_, i) => i !== index));
+        else setLicenses(licenses.filter((_, i) => i !== index));
     };
 
     useEffect(() => {
         getDoctorInfo();
     }, []);
 
+    const options = [
+        {value: '1', label: "Специализия 1"},
+    ]
+
     return (
         <div className='doctor-info'>
             <h1 className="doctor-info__title">
-                {edit ? "Редактирование данных" : "Карточка специалиста"}
+                {edit ? "Редактирование" : "Карточка специалиста"}
             </h1>
-            {!edit && (<div className="doctor-info__subtitle">Полная профессиональная информация</div>)}
+            <div className="doctor-info__subtitle">
+                {edit ? "Полной профессиональной информации" : "Полная профессиональная информация"}
+            </div>
 
             <div className='doctor-info__content'>
                 {edit ? (
                     <>
-                        <div className="form-group">
-                            <label><strong>Специализация:</strong></label>
-                            <input
-                                type="text"
-                                value={specialization}
-                                onChange={(e) => setSpecialization(e.target.value)}
+                        {/* <Select
+                            isMulti
+                            options={options}
+                            placeholder="Выберите специализации"
+                            onChange={}
+                        />
+
+                        <MyInput
+                            id="expirenceYears"
+                            label="Опыт работы в годах"
+                            value={}
+                            onChange={}
+                            required
+                        />
+
+                        <div>
+                            <MyInputFile
+                                id="diploma-upload"
+                                label="Перетащите файлы или нажмите для выбора"
+                                onChange={(files) => handleFileChange(files, 'DIPLOMA')}
+                                accept=".pdf"
+                                multiple
+                            />
+                            <FilePreview
+                                files={diplomas}
+                                type="DIPLOMA"
+                                onRemove={handleRemoveFile}
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label><strong>Опыт работы:</strong></label>
-                            <input
-                                type="number"
-                                value={experienceYears}
-                                onChange={(e) => setExperienceYears(Number(e.target.value))}
+                        <div>
+                            <MyInputFile
+                                id="license-upload"
+                                label="Перетащите файлы или нажмите для выбора"
+                                onChange={(files) => handleFileChange(files, 'LICENSE')}
+                                accept=".pdf"
+                                multiple
                             />
-                        </div>
-
-                        <div className="form-group">
-                            <label><strong>Диплом о профильном образовании:</strong></label>
-                            <div className="file-upload">
-                                {diplomaFile && (
-                                    <div className="file-info">
-                                        <span className="file-info__name">
-                                            Файл загружен (
-                                            <a href={`${URL}/${diplomaFileName}`} target="_blank">
-                                                {diplomaFileName.length > 20 ? `${diplomaFileName.substring(0, 20)}...` : diplomaFileName}
-                                            </a>
-                                            )
-                                        </span>
-                                    </div>
-                                )}
-                                <div className="file-upload__buttons">
-                                    <label className="my-button">
-                                        Выберите файл
-                                        <input
-                                            type="file"
-                                            className="file-upload__input"
-                                            onChange={(e) => handleFileChange(e, 'diploma')}
-                                            accept=".pdf"
-                                        />
-                                    </label>
-                                    <button
-                                        className="neg-button"
-                                        onClick={() => handleRemoveFile('diploma')}
-                                    >
-                                        Удалить файл
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label><strong>Лицензия:</strong></label>
-                            <div className="file-upload">
-                                {licenseFile && (
-                                    <div className="file-info">
-                                        <span className="file-info__name">Файл загружен (<a href={`${URL}/${licenseFile}`} target="_blank">{licenseFile}</a>)</span>
-                                    </div>
-                                )}
-                                <div className="file-upload__buttons">
-                                    <label className="my-button">
-                                        Выберите файл
-                                        <input
-                                            type="file"
-                                            className="file-upload__input"
-                                            onChange={(e) => handleFileChange(e, 'license')}
-                                            accept=".pdf"
-                                        />
-                                    </label>
-                                    <button
-                                        className="neg-button"
-                                        onClick={() => handleRemoveFile('license')}
-                                    >
-                                        Удалить файл
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            <FilePreview
+                                files={licenses}
+                                type="LICENSE"
+                                onRemove={handleRemoveFile}
+                            />
+                        </div> */}
                     </>
                 ) : (
                     <>
@@ -168,7 +129,7 @@ const DoctorInfo = () => {
                                         {specialization ? (
                                             <span className="detail-label">{specialization}</span>
                                         ) : (
-                                            <div className="detail-label">Нет данных</div>
+                                            <span className="detail-label">Нет данных</span>
                                         )}
                                     </div>
                                 </div>
@@ -198,17 +159,21 @@ const DoctorInfo = () => {
                                 <div className="section-icon">📜</div>
                                 <h2 className="section-title">Диплом</h2>
                             </div>
-                            <div className="record">
-                                <div className="record-details">
-                                    <div className="detail-item">
-                                        {diplomaFileName ? (
-                                            <span className="detail-label"><a href={`${URL}/${diplomaFileName}`} target="_blank">Документ</a></span>
-                                        ) : (
-                                            <span className='detail-label'>Файл не загружен</span>
-                                        )}
+                            {diplomas.length > 0 ? (
+                                diplomas.map((file, index) => (
+                                    <div key={file.name} className="record">
+                                        <span className="detail-label">
+                                            <a href={`${URL}/${file.name}`} target="_blank" rel="noopener noreferrer">
+                                                {`Документ №${index + 1}`}
+                                            </a>
+                                        </span>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="detail-item">
+                                    <span className="detail-label">Файл не загружен</span>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <div className="medical-section">
@@ -216,47 +181,36 @@ const DoctorInfo = () => {
                                 <div className="section-icon">📋</div>
                                 <h2 className="section-title">Лицензия</h2>
                             </div>
-                            <div className="record">
-                                <div className="record-details">
-                                    <div className="detail-item">
-                                        {licenseFile ? (
-                                            <span className="detail-label"><a href={`${URL}/${licenseFile}`} target="_blank">Документ</a></span>
-                                        ) : (
-                                            'Файл не загружен'
-                                        )}
+                            {licenses.length > 0 ? (
+                                licenses.map((file, index) => (
+                                    <div key={file.name} className="record">
+                                        <span className="detail-label">
+                                            <a href={`${URL}/${file.name}`} target="_blank" rel="noopener noreferrer">
+                                                {`Документ №${index + 1}`}
+                                            </a>
+                                        </span>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="detail-item">
+                                    <span className="detail-label">Файл не загружен</span>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </>
                 )}
             </div>
 
-            {edit
-                ?
-                <div>
-                    <button
-                        className='my-button width100'
-                        onClick={saveChange}
-                    >
-                        Сохранить
-                    </button>
-                    <button
-                        className='neg-button width100'
-                        onClick={() => setEdit(false)}
-                    >
-                        Отмена
-                    </button>
-                </div>
-                :
-                <button
-                    className='my-button width100'
-                    onClick={() => setEdit(true)}
-                >
-                    Редактировать
-                </button>
-            }
-
+            <div>
+                {edit ? (
+                    <>
+                        <button className='my-button width100' onClick={saveChange}>Сохранить</button>
+                        <button className='neg-button width100' onClick={() => setEdit(false)}>Отмена</button>
+                    </>
+                ) : (
+                    <button className='my-button width100' onClick={() => setEdit(true)}>Редактировать</button>
+                )}
+            </div>
         </div>
     );
 };

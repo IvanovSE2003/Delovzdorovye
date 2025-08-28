@@ -53,7 +53,7 @@
       }
     }
 
-    &.step1{
+    &.step1 {
       &:disabled {
         background-color: #cccccc;
         color: #666666;
@@ -61,6 +61,30 @@
       }
     }
   }
+
+  &__anonym-btn  {
+    label {
+      display: inline-block;
+      text-align: center;
+      cursor: pointer;
+      width: 100%;
+      line-height: 34px;
+      background-color: $light-color;
+      color: #999;
+      border-radius: 6px;
+      user-select: none;
+
+      &:hover {
+        color: #525252;
+      }
+    }
+
+    &.active label{
+      background: $button-gradient;
+      color: white;
+    }
+  }
+
 
   &__radio-btn {
     display: inline-block;
@@ -90,7 +114,7 @@
 
     /* Checked */
     input[type=radio]:checked+label {
-      background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+      background: $button-gradient;
       color: white;
     }
   }
@@ -106,7 +130,6 @@
   }
 
   &__specializations {
-    // Стили для импортного селетка со специализациями
     .react-select__control {
       padding: 0.8rem 0.5rem;
       background-color: $light-color;

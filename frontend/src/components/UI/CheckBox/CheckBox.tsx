@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CheckBox.scss'
+import { URL } from '../../../http';
 
 interface AgreeCheckBoxProps {
   id: string,
@@ -60,7 +61,7 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
               }
             }}
           >
-            {` ${linkText}`}
+            <a target="_blank" href={`${URL}/terms.pdf`}>{linkText}</a>
           </span>
           {agreementText.split(linkText)[1]}
         </div>

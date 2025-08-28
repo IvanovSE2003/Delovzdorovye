@@ -91,7 +91,13 @@ const Users = () => {
 
           <tbody className="users__table-body">
             {users ? users.map((user) => (
-              <tr key={user.phone} className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}`}>
+              <tr
+                key={user.phone}
+                className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}
+                  ${user.role==='PATIENT' && "users__row-patient"}
+                  ${user.role==='DOCTOR' && "users__row-doctor"}
+                  ${user.role==='ADMIN' && "users__row-admin"}`}
+              >
                 <td>
                   {user.role === "ADMIN" && "Админ"}
                   {user.role === "DOCTOR" && "Доктор"}

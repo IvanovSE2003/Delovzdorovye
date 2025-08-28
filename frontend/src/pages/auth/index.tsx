@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import logo from '../../../public/logo.svg';
 import FormAuth from "./FormAuth/FormAuth";
 
-const RegisterPage = () => {
+const LoginPage = () => {
     return (
         <div className='auth__window'>
             <div className='auth__left'>
@@ -23,4 +23,4 @@ const RegisterPage = () => {
     )
 }
 
-export default RegisterPage;
+export default LoginPage;

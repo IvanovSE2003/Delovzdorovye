@@ -1,26 +1,37 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Loader from "../../components/UI/Loader/Loader";
-import { API_URL, URL } from "../../http";
+import $api, { URL } from "../../http";
 import type { IUserDataProfile } from "../../models/Auth";
 import AccountLayout from "./AccountLayout";
 import { useParams } from "react-router";
+import { Context } from "../../main";
+import { observer } from "mobx-react-lite";
 
 const Profile = () => {
     const { id } = useParams();
+    const { store } = useContext(Context);
     const [profile, setProfile] = useState<IUserDataProfile | null>(null)
 
+    const getDataProfile = async () => {
+        if (!store.user?.id) return; 
+        const { data } = await $api.post(`/profile/${id}`, { linkerId: store.user.id });
+        console.log(data);
+        setProfile(data);
+    }
+
     useEffect(() => {
-        fetch(`${API_URL}/profile/${id}`)
-            .then(res => res.json())
-            .then(setProfile);
-    }, [id]);
+        if (store.user?.id) {
+            getDataProfile();
+        }
+    }, [id, store.user.id]);
+
 
     const GetFormatDate = (date: string) => {
-        return date.split('-').reverse().join('.');
+        return date?.split('-').reverse().join('.');
     };
 
     const GetFormatPhone = (phone: string) => {
-        return phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
+        return phone?.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
     };
 
     if (!profile) return <Loader />
@@ -57,4 +68,4 @@ const Profile = () => {
     )
 }
 
-export default Profile;
+export default observer(Profile);

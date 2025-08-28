@@ -5,13 +5,14 @@ import Select from 'react-select';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
+import TimeSlots from "../../../features/account/TimeSlots/TimeSlots";
 
 const Main: React.FC = () => {
     const [record, setRecord] = useState<boolean>(false);
     const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
     const [otherProblemText, setOtherProblemText] = useState<string>("");
     const [showOtherProblemInput, setShowOtherProblemInput] = useState<boolean>(false);
-    
+
     const options = [
         { value: '1', label: 'Хроническая усталость' },
         { value: '2', label: 'Нарушение сна и бессонница' },
@@ -24,17 +25,25 @@ const Main: React.FC = () => {
         { value: '9', label: 'Другая проблема' }
     ];
 
+    const [selected, setSelected] = useState<string | null>(null);
+
+    const times = [
+        "09:00", "09:30", "10:00", "10:30",
+        "12:00", "12:30", "13:00", "13:30",
+        "15:00", "16:00", "18:00", "19:30"
+    ];
+
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
     // Обработчик изменения выбора в Select
     const handleProblemChange = (selectedOptions: any) => {
-        const selectedValues = selectedOptions ? selectedOptions.map((opt: { value: any; })=> opt.value) : [];
+        const selectedValues = selectedOptions ? selectedOptions.map((opt: { value: any; }) => opt.value) : [];
         setSelectedProblems(selectedValues);
-        
+
         // Проверяем, выбрана ли "Другая проблема"
         const hasOtherProblem = selectedValues.includes('9');
         setShowOtherProblemInput(hasOtherProblem);
-        
+
         // Если "Другая проблема" не выбрана, очищаем текст
         if (!hasOtherProblem) {
             setOtherProblemText("");
@@ -103,7 +112,10 @@ const Main: React.FC = () => {
                             </div>
 
                             <div className="time-block">
-                                Время
+                                <div>
+                                    <TimeSlots times={times} onSelect={setSelected} />
+                                    <p>Вы выбрали: {selected}</p>
+                                </div>
                             </div>
                         </div>
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './MyInput.scss'; 
 
 interface MyInputTelProps {
@@ -8,6 +8,7 @@ interface MyInputTelProps {
   required?: boolean;
   className?: string;
   label?:string;
+  getIsError?: (value: boolean) => void;
 }
 
 const MyInputTel: React.FC<MyInputTelProps> = ({
@@ -16,7 +17,8 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   id = 'phone',
   required = false,
   className = '',
-  label="Номер телефона"
+  label="Номер телефона",
+  getIsError=(_value=false) => {}
 }) => {
   const [isError, setIsError] = useState(false);
 
@@ -70,6 +72,10 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
     }
     e.preventDefault();
   }, []);
+
+  useEffect(() => {
+    getIsError(isError);
+  }, [isError])
 
   return (
     <div className='my-input-td__input-group'>

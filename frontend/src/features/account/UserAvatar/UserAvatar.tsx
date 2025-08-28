@@ -34,7 +34,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             <input
               id="avatar-upload"
               type="file"
-              accept="image/*"
+              accept=".png,.jpeg,.jpg"
               style={{ display: 'none' }}
               onChange={onAddPhoto}
             />

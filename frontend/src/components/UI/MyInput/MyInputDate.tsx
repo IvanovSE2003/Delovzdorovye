@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './MyInput.scss'
 
 interface MyInputDateProps {
@@ -8,6 +8,7 @@ interface MyInputDateProps {
     onChange: (value: string) => void;
     placeholder?:string;
     className?: string;
+    isError?: (value: boolean) => void;
 }
 
 const MyInputDate: React.FC<MyInputDateProps> = ({
@@ -16,7 +17,8 @@ const MyInputDate: React.FC<MyInputDateProps> = ({
     value,
     onChange,
     placeholder="",
-    className = ""
+    className = "",
+    isError = (_value=false) => {},
 }) => {
     const [isFocused, setIsFocused] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -74,6 +76,10 @@ const MyInputDate: React.FC<MyInputDateProps> = ({
 
         onChange(formatted);
     };
+
+    useEffect(() => {
+        error ? isError(true) : isError(false);
+    }, [error]);
 
     return (
         <div className={`my-input-td__input-group ${isFocused ? "focused" : ""}`}>
