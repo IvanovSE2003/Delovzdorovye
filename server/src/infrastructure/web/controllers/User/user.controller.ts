@@ -401,23 +401,21 @@ export default class UserController {
             const { id } = req.params;
             const { data } = req.body;
 
-            // if(data.)
-
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
 
             const updatedUser = user.cloneWithChanges({
-                name: data.name ?? user.name,
-                surname: data.surname ?? user.surname,
-                patronymic: data.patronymic ?? user.patronymic,
+                name: data.isAnonymous ? data.name ?? user.name : "",
+                surname: data.isAnonymous ? data.surname ?? user.surname : "",
+                patronymic: data.isAnonymous ? data.patronymic ?? user.patronymic : "",
                 isAnonymous: data.isAnonymous ?? user.isAnonymous,
                 email: data.email ?? user.email,
                 phone: data.phone ?? user.phone,
                 timeZone: data.timeZone ?? user.timeZone,
-                dateBirth: data.dateBirth ?? user.dateBirth,
-                gender: data.gender ?? user.gender,
+                dateBirth: data.isAnonymous ? data.dateBirth ?? user.dateBirth : null,
+                gender: data.isAnonymous ? data.gender ?? user.gender : null,
             });
 
             const avatar = updatedUser.isAnonymous
