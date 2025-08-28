@@ -1,12 +1,12 @@
 import { Model, Optional } from 'sequelize';
 import { SpecializationModelInterface } from './specializations.model.js';
 import { UserModelInterface } from './user.model.js'; 
+import { DoctorScheduleModelInterface } from './doctorSchedule.model.js';
 
 interface IDoctortAttributes {
     id: number;
     experience_years: number;
-    // diploma: string;
-    // license: string;
+    competencies?: number[];
     isActivated: boolean;
     userId?: number;
 }
@@ -14,6 +14,7 @@ interface IDoctortAttributes {
 export interface IDoctorCreationAttributes extends Optional<IDoctortAttributes, 'id'> {}
 
 export interface DoctorModelInterface extends Model<IDoctortAttributes, IDoctorCreationAttributes>, IDoctortAttributes {
+
     getSpecializations: () => Promise<SpecializationModelInterface[]>;
     setSpecializations: (specializations: SpecializationModelInterface[], options?: any) => Promise<void>;
     addSpecialization: (specialization: SpecializationModelInterface, options?: any) => Promise<void>;
@@ -26,4 +27,5 @@ export interface DoctorModelInterface extends Model<IDoctortAttributes, IDoctorC
     
     user?: UserModelInterface;
     specializations?: SpecializationModelInterface[];
+    doctors_schedules: DoctorScheduleModelInterface[];
 }

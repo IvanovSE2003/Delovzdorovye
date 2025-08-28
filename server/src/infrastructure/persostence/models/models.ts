@@ -51,8 +51,6 @@ const TokenModel = sequelize.define<TokenModelInterface>('token', {
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     experience_years: { type: DataType.INTEGER },
-    // diploma: {type: DataType.STRING,  allowNull: true},
-    // license: {type: DataType.STRING,  allowNull: true},
     isActivated: { type: DataType.BOOLEAN, defaultValue: false }
 });
 
@@ -118,6 +116,13 @@ const DoctorSpecialization = sequelize.define('doctor_specializations', {
     license: { type: DataType.STRING, allowNull: true }
 });
 
+const ProblemSpecialization = sequelize.define('problem_specializations', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
+});
+
+ProblemModel.belongsToMany(SpecializationModel, { through: ProblemSpecialization });
+SpecializationModel.belongsToMany(ProblemModel, { through: ProblemSpecialization });
+
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
 
@@ -136,14 +141,14 @@ Transaction.belongsTo(Consultation)
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
 
-DoctorModel.hasOne(DoctorsSchedule)
-DoctorsSchedule.belongsTo(DoctorModel)
+DoctorModel.hasMany(DoctorsSchedule, { foreignKey: "doctorId" });
+DoctorsSchedule.belongsTo(DoctorModel, { foreignKey: "doctorId" });
 
 UserModel.hasOne(TokenModel)
 TokenModel.belongsTo(UserModel)
 
-DoctorsSchedule.hasMany(TimeSlot);
-TimeSlot.belongsTo(DoctorsSchedule);
+DoctorsSchedule.hasMany(TimeSlot, { foreignKey: "doctorsScheduleId" });
+TimeSlot.belongsTo(DoctorsSchedule, { foreignKey: "doctorsScheduleId" });
 
 DoctorModel.belongsToMany(SpecializationModel, { through: DoctorSpecialization });
 SpecializationModel.belongsToMany(DoctorModel, { through: DoctorSpecialization });
@@ -171,5 +176,6 @@ export default {
     SpecializationModel,
     RatingModel,
     ProblemModel,
-    DoctorSpecialization
+    DoctorSpecialization,
+    ProblemSpecialization
 }
