@@ -87,7 +87,7 @@ export default class Store {
     }
 
     // Второй этап входа
-    async completeTwoFactor(tempToken: string | null, code: string): Promise<void> {
+    async completeTwoFactor(tempToken: string | null, code: string): Promise<{success: boolean}> {
         return this.withLoading(async () => {
             try {
                 const response = await AuthService.completeTwoFactor(tempToken, code);
@@ -96,11 +96,12 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
+                return {success: true};
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data?.message || "Ошибка при входе!";
                 this.setError(errorMessage);
-                console.log(errorMessage);
+                return {success: false};
             }
         });
     }
@@ -134,9 +135,6 @@ export default class Store {
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 this.setError(error.response?.data?.message || "Ошибка при выходе!")
-            } finally {
-                const navigate = useNavigate();
-                navigate(RouteNames.MAIN);
             }
         });
     }
@@ -155,7 +153,6 @@ export default class Store {
                 localStorage.removeItem('token');
                 const errorMessage = error.response?.data?.message || "";
                 this.setError(errorMessage);
-                console.log(errorMessage);
                 this.setAuth(false);
             }
         });

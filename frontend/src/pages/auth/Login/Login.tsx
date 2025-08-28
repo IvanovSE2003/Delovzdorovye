@@ -97,8 +97,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setError("Введите код!");
       return;
     }
-    await store.completeTwoFactor(localStorage.getItem('tempToken'), code);
-    if (localStorage.getItem("Token")) navigate(RouteNames.PERSONAL);
+    const data = await store.completeTwoFactor(localStorage.getItem('tempToken'), code);
+    data.success && navigate(RouteNames.PERSONAL);
   };
 
   // Переключение почта/телефон
