@@ -406,10 +406,14 @@ export default class UserController {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
 
+            if(data.isAnonymous === false && (data.name === '' || data.surname === "" || data.patronymic === "" || data.dateBirth === null || data.gender === null)) {
+                return next(ApiError.badRequest('Не заполнены обязательные поля'));
+            }
+
             const updatedUser = user.cloneWithChanges({
-                name: data.isAnonymous ? data.name ?? user.name : "",
-                surname: data.isAnonymous ? data.surname ?? user.surname : "",
-                patronymic: data.isAnonymous ? data.patronymic ?? user.patronymic : "",
+                name: data.name ?? user.name,
+                surname: data.surname ?? user.surname,
+                patronymic: data.patronymic ?? user.patronymic,
                 isAnonymous: data.isAnonymous ?? user.isAnonymous,
                 email: data.email ?? user.email,
                 phone: data.phone ?? user.phone,
