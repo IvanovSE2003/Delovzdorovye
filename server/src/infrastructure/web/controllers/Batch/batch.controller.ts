@@ -219,6 +219,7 @@ export default class BatchController {
 
             return res.status(200).json({
                 users: result.users.map(user => ({
+                    id: user.id,
                     name: user.name,
                     surname: user.surname,
                     patronymic: user.patronymic,
