@@ -9,7 +9,8 @@ import { Op } from "sequelize";
 
 export default class ConsultationRepositoryImpl implements ConsultationRepository {
     async findById(id: number): Promise<Consultation | null> {
-        throw "";
+        const consultation = await models.Consultation.findByPk(id);
+        return consultation ? this.mapToDomainConsultation(consultation) : null;
     }
 
     async findAll(page: number, limit: number, filters?: {

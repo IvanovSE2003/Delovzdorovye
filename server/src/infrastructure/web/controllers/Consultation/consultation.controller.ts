@@ -153,24 +153,50 @@ export default class ConsultationController {
 
     async getTimeLeft(req: Request, res: Response, next: NextFunction) {
         try {
-            const { consultationId } = req.params;
-            const consultation = await this.consultationRepository.findById(Number(consultationId));
+            const { id } = req.params;
+            console.log(id)
 
-            if (!consultation || !consultation.reservation_expires_at) {
+            if (!id || isNaN(Number(id))) {
+                return next(ApiError.badRequest('Неверный ID консультации'));
+            }
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+            console.log(consultation)
+
+            if (!consultation) {
                 return next(ApiError.badRequest('Консультация не найдена'));
             }
 
+            if (!consultation.reservation_expires_at) {
+                return next(ApiError.badRequest('Время истечения не установлено'));
+            }
+
             const timeLeft = consultation.reservation_expires_at.getTime() - Date.now();
+            const isExpired = timeLeft <= 0;
 
             return res.status(200).json({
-                consultationId: consultation.id,
-                timeLeft: Math.max(0, timeLeft),
-                expiresAt: consultation.reservation_expires_at,
-                isExpired: timeLeft <= 0
+                success: true,
+                data: {
+                    consultationId: consultation.id,
+                    timeLeft: Math.max(0, timeLeft),
+                    formattedTime: this.formatTime(timeLeft),
+                    expiresAt: consultation.reservation_expires_at,
+                    isExpired,
+                    paymentStatus: consultation.payment_status,
+                    consultationStatus: consultation.consultation_status
+                }
             });
         } catch (e: any) {
-            return next(ApiError.internal(e.message));
+            console.error('Error in getTimeLeft:', e);
+            return next(ApiError.internal('Ошибка при получении времени'));
         }
+    }
+
+    private formatTime(ms: number): string {
+        if (ms <= 0) return '00:00';
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
     async findSpecialistAll(req: Request, res: Response, next: NextFunction) {
@@ -180,7 +206,7 @@ export default class ConsultationController {
 
             const formattedDoctors = result.doctors.map(doctor => ({
                 value: doctor.id,
-                label: `${doctor.userSurname} ${doctor.userName} ${doctor.userPatronymic}`.trim() 
+                label: `${doctor.userSurname} ${doctor.userName} ${doctor.userPatronymic}`.trim()
             }));
 
             return res.status(200).json(formattedDoctors);

@@ -4,18 +4,21 @@ import TimerService from '../../domain/services/timer.service';
 import ConsultationRepository from '../../domain/repositories/consultation.repository';
 import TimeSlotRepository from '../../domain/repositories/timeSlot.repository';
 
-export default class TimerServiceImpl implements TimerService{
+export default class TimerServiceImpl implements TimerService {
     private timers = new Map<number, NodeJS.Timeout>();
-    
+    private io?: Server
     constructor(
         private consultationRepository: ConsultationRepository,
         private timeSlotRepository: TimeSlotRepository,
-        private io?: Server
-    ) {}
+    ) { }
+
+    setIo(io: Server) {
+        this.io = io;
+    }
 
     startTimer(consultationId: number, expiresAt: Date) {
         const timeLeft = expiresAt.getTime() - Date.now();
-        
+
         if (timeLeft <= 0) {
             this.cancelConsultation(consultationId);
             return;
@@ -29,6 +32,17 @@ export default class TimerServiceImpl implements TimerService{
         this.timers.set(consultationId, timer);
 
         this.sendTimeUpdate(consultationId, timeLeft);
+
+        const interval = setInterval(() => {
+            const currentTimeLeft = expiresAt.getTime() - Date.now();
+            if (currentTimeLeft <= 0) {
+                clearInterval(interval);
+                return;
+            }
+            this.sendTimeUpdate(consultationId, currentTimeLeft);
+        }, 1000);
+
+        this.intervals.set(consultationId, interval);
     }
 
     private sendTimeUpdate(consultationId: number, timeLeft: number) {
@@ -75,6 +89,12 @@ export default class TimerServiceImpl implements TimerService{
             clearTimeout(timer);
             this.timers.delete(consultationId);
         }
+
+        const interval = this.intervals.get(consultationId);
+        if (interval) {
+            clearInterval(interval);
+            this.intervals.delete(consultationId);
+        }
     }
 
     async restoreTimers() {
@@ -90,4 +110,6 @@ export default class TimerServiceImpl implements TimerService{
             }
         }
     }
+
+    private intervals = new Map<number, NodeJS.Timeout>();
 }
