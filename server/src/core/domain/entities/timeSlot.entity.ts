@@ -7,4 +7,9 @@ export default class TimeSlot {
         public patientId?: number,
         public doctorsScheduleId?: number
     ) {}
+
+    setAvailable(flag: boolean) {
+        this.isAvailable = flag;
+        return this;
+    }
 }

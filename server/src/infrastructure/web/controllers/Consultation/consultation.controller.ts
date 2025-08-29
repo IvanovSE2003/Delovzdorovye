@@ -7,6 +7,7 @@ import Consultation from "../../../../core/domain/entities/consultation.entity.j
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
+import TimerService from "../../../../core/domain/services/timer.service.js";
 
 export default class ConsultationController {
     constructor(
@@ -14,7 +15,8 @@ export default class ConsultationController {
         private readonly consultationRepository: ConsultationRepository,
         private readonly userRepository: UserRepository,
         private readonly doctorReposiotry: DoctorRepository,
-        private readonly timeSlotRepository: TimeSlotRepository
+        private readonly timeSlotRepository: TimeSlotRepository,
+        private readonly timerService: TimerService
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
@@ -30,6 +32,19 @@ export default class ConsultationController {
             }));
 
             return res.status(200).json(formattedProblems);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async findAllConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { page, limit, filters } = req.body;
+            const consultations = await this.consultationRepository.findAll(page, limit, filters);
+            if (!consultations) {
+                return next(ApiError.badRequest('Консультации не найдены'));
+            }
+            return res.status(200).json(consultations);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -104,7 +119,7 @@ export default class ConsultationController {
 
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { date, time, other_problem, problems, userId } = req.body;
+            const { date, time, problems, userId } = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
@@ -128,7 +143,47 @@ export default class ConsultationController {
 
             const consultation = await this.consultationRepository.create(new Consultation(0, "pending", "pending", null, null, 30, null, null, reservationExpiresAt, user.id, doctor.id, timeSlot.id));
 
+            await this.timeSlotRepository.save(timeSlot.setAvailable(false));
+            this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async getTimeLeft(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { consultationId } = req.params;
+            const consultation = await this.consultationRepository.findById(Number(consultationId));
+
+            if (!consultation || !consultation.reservation_expires_at) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            const timeLeft = consultation.reservation_expires_at.getTime() - Date.now();
+
+            return res.status(200).json({
+                consultationId: consultation.id,
+                timeLeft: Math.max(0, timeLeft),
+                expiresAt: consultation.reservation_expires_at,
+                isExpired: timeLeft <= 0
+            });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async findSpecialistAll(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { page, limit, filters } = req.body;
+            const result = await this.doctorReposiotry.findAll(page, limit, filters);
+
+            const formattedDoctors = result.doctors.map(doctor => ({
+                value: doctor.id,
+                label: `${doctor.userSurname} ${doctor.userName} ${doctor.userPatronymic}`.trim() 
+            }));
+
+            return res.status(200).json(formattedDoctors);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

@@ -33,6 +33,14 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return this.mapToDomainTimeSlot(doctorSchedule.time_slots[0]);
     }
 
+    async findById(id: number): Promise<TimeSlot | null> {
+        const timeSlot = await models.TimeSlot.findByPk(id);
+        if (!timeSlot) {
+            return null;
+        }
+        return this.mapToDomainTimeSlot(timeSlot);
+    }
+
     async save(timeSlot: TimeSlot): Promise<TimeSlot> {
         return timeSlot.id ? await this.update(timeSlot) : await this.create(timeSlot);
     }

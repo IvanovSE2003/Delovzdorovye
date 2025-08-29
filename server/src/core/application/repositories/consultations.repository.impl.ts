@@ -12,10 +12,6 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         throw "";
     }
 
-    async findByUserId(userId: number): Promise<Consultation[]> {
-        throw "";
-    }
-
     async findAll(page: number, limit: number, filters?: {
         payment_status?: string;
         consultation_status?: string;
@@ -28,15 +24,15 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
     }> {
         const where: any = {};
 
-        if (filters?.payment_status) {
+        if (filters?.payment_status !== undefined && filters?.payment_status !== null) {
             where.payment_status = filters.payment_status;
         }
 
-        if (filters?.payment_status) {
+        if (filters?.consultation_status !== undefined && filters?.consultation_status !== null) {
             where.consultation_status = filters.consultation_status;
         }
 
-        if (filters?.userId) {
+        if (filters?.userId !== undefined && filters?.userId !== null) {
             where.userId = filters.userId;
         }
 

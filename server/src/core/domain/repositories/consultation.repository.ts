@@ -2,7 +2,6 @@ import Consultation from "../entities/consultation.entity.js";
 
 export default interface ConsultationRepository {
     findById(id: number): Promise<Consultation | null>;
-    findByUserId(userId: number): Promise<Consultation[]>;
     findAll(page: number, limit: number, filters?: {
         payment_status?: string;
         consultation_status?: string;
