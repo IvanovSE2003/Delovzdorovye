@@ -2,9 +2,12 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
-import { Op } from 'sequelize';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
 import TimeSlot from '../../domain/entities/timeSlot.entity.js';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import { Op } from "sequelize";
 
 const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
 
@@ -142,6 +145,99 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         });
 
         return doctors.map(doctor => this.mapToDomainDoctor(doctor));
+    }
+
+    async findByDateTimeForProblems(date: string, time: string, problems: number[]): Promise<Doctor> {
+        let specializationIds: number[] = [];
+
+        if (problems.length > 0) {
+            const problemEntities = await models.ProblemModel.findAll({
+                where: { id: problems },
+                include: [{ model: models.SpecializationModel, through: { attributes: [] } }]
+            });
+
+            if (!problemEntities || problemEntities.length === 0) {
+                throw new Error("Проблемы не найдены");
+            }
+
+            specializationIds = [
+                ...new Set(problemEntities.flatMap(p => p.specializations?.map(s => s.id) || []))
+            ];
+
+            if (specializationIds.length === 0) {
+                throw new Error("Нет подходящих специализаций для указанных проблем");
+            }
+        }
+
+        const targetDate = new Date(date);
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const doctors = await DoctorModel.findAll({
+            include: [
+                {
+                    model: models.UserModel,
+                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender'],
+                    required: true
+                },
+                {
+                    model: models.SpecializationModel,
+                    attributes: ['name'],
+                    through: {
+                        attributes: ['diploma', 'license']
+                    },
+                    where: problems.length > 0 ? { id: specializationIds } : undefined,
+                    required: problems.length > 0
+                },
+                {
+                    model: models.DoctorsSchedule,
+                    where: {
+                        date: { [Op.between]: [startOfDay, endOfDay] },
+                    },
+                    include: [{
+                        model: models.TimeSlot,
+                        where: {
+                            time: time,
+                            isAvailable: true
+                        },
+                        required: true
+                    }],
+                    required: true
+                }
+            ],
+            where: {
+                isActivated: true
+            }
+        });
+
+        if (doctors.length === 0) {
+            throw new Error('Нет доступных врачей на указанные дату и время');
+        }
+
+        if (problems.length === 0) {
+            return this.mapToDomainDoctor(doctors[0] as DoctorModelInterface & { specializations?: any[]; user?: any });
+        }
+
+        let bestDoctor = doctors[0];
+        let maxSpecializationMatch = 0;
+
+        for (const doctor of doctors) {
+            if (doctor.specializations) {
+                const doctorSpecializationIds = doctor.specializations.map(s => s.id);
+                const matchingCount = specializationIds.filter(id =>
+                    doctorSpecializationIds.includes(id)
+                ).length;
+
+                if (matchingCount > maxSpecializationMatch) {
+                    maxSpecializationMatch = matchingCount;
+                    bestDoctor = doctor;
+                }
+            }
+        }
+
+        return this.mapToDomainDoctor(bestDoctor as DoctorModelInterface & { specializations?: any[]; user?: any });
     }
 
     async update(doctor: Doctor): Promise<Doctor> {

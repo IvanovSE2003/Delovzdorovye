@@ -3,26 +3,33 @@ import ProblemRepository from "../../../../core/domain/repositories/problem.repo
 import ApiError from "../../error/ApiError.js";
 import ConsultationRepository from "../../../../core/domain/repositories/consultation.repository.js";
 import models from "../../../persostence/models/models.js";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import timezone from "dayjs/plugin/timezone.js";
-import { Op } from "sequelize";
-import Consultation from "../../../../core/domain/entities/consultations.entity.js";
+import Consultation from "../../../../core/domain/entities/consultation.entity.js";
+import UserRepository from "../../../../core/domain/repositories/user.repository.js";
+import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
+import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
 
 export default class ConsultationController {
     constructor(
         private readonly problemRepository: ProblemRepository,
-        private readonly consultationRepository: ConsultationRepository
+        private readonly consultationRepository: ConsultationRepository,
+        private readonly userRepository: UserRepository,
+        private readonly doctorReposiotry: DoctorRepository,
+        private readonly timeSlotRepository: TimeSlotRepository
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
         try {
             const problems = await this.problemRepository.findAll();
-            if (!problems) {
+            if (!problems || problems.length === 0) {
                 return next(ApiError.badRequest('Проблемы не найдены'));
             }
 
-            return res.status(200).json(problems);
+            const formattedProblems = problems.map(problem => ({
+                value: problem.id,
+                label: problem.name
+            }));
+
+            return res.status(200).json(formattedProblems);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -83,71 +90,7 @@ export default class ConsultationController {
         try {
             const { problems, date } = req.body as { problems: number[], date: string };
 
-            const problemEntities = await models.ProblemModel.findAll({
-                where: { id: problems },
-                include: [{ model: models.SpecializationModel, through: { attributes: [] } }]
-            });
-
-            if (!problemEntities || problemEntities.length === 0) {
-                return next(ApiError.badRequest("Проблемы не найдены"));
-            }
-
-            const specializationIds = [
-                ...new Set(problemEntities.flatMap(p => p.specializations?.map(s => s.id) || []))
-            ];
-
-            if (specializationIds.length === 0) {
-                return next(ApiError.badRequest("Нет подходящих специалистов"));
-            }
-
-            const doctors = await models.DoctorModel.findAll({
-                include: [
-                    {
-                        model: models.SpecializationModel,
-                        where: { id: specializationIds },
-                        required: true
-                    }
-                ]
-            });
-
-            if (!doctors || doctors.length === 0) {
-                return next(ApiError.badRequest("Нет подходящих специалистов"));
-            }
-
-            const doctorIds = doctors.map(doc => doc.id);
-
-            dayjs.extend(utc);
-            dayjs.extend(timezone);
-
-            const startOfDay = dayjs(date).tz("Europe/Moscow").startOf("day").toDate();
-            const endOfDay = dayjs(date).tz("Europe/Moscow").endOf("day").toDate();
-
-            const schedules = await models.DoctorsSchedule.findAll({
-                where: {
-                    date: { [Op.between]: [startOfDay, endOfDay] },
-                    doctorId: doctorIds
-                },
-                attributes: ["id"]
-            });
-
-
-            const scheduleIds = schedules.map(s => s.id);
-            console.log(scheduleIds)
-
-            if (scheduleIds.length === 0) {
-                return next(ApiError.badRequest("Нет доступных слотов у подходящих врачей в эту дату"));
-            }
-
-            const timeSlots = await models.TimeSlot.findAll({
-                where: {
-                    doctorsScheduleId: scheduleIds,
-                    isAvailable: true
-                },
-                order: [["time", "ASC"]],
-                attributes: ["time"]
-            });
-
-            const availableSlots = [...new Set(timeSlots.map(slot => slot.time))];
+            const availableSlots = await this.consultationRepository.findTimeSlotForDateProblem(problems, date);
 
             if (availableSlots.length === 0) {
                 return next(ApiError.badRequest("Нет доступных слотов у подходящих врачей в эту дату"));
@@ -161,9 +104,32 @@ export default class ConsultationController {
 
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
-            const {date, time, otherProblem, problems, userId} = req.body;
+            const { date, time, other_problem, problems, userId } = req.body;
 
-        } catch(e: any) {
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не нейден'));
+            }
+
+            const doctor = await this.doctorReposiotry.findByDateTimeForProblems(date, time, problems);
+
+            if (!doctor) {
+                return next(ApiError.badRequest('Нет доступных врачей на указанные дату и время'));
+            }
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctor.id, date);
+
+            if (!timeSlot) {
+                return next(ApiError.badRequest('Временная ячейка не найдена'));
+            }
+
+            const reservationExpiresAt = new Date();
+            reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
+
+            const consultation = await this.consultationRepository.create(new Consultation(0, "pending", "pending", null, null, 30, null, null, reservationExpiresAt, user.id, doctor.id, timeSlot.id));
+
+            return res.status(200).json(consultation);
+        } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }

@@ -3,26 +3,25 @@ export default class Consultation {
         public id: number,
         public consultation_status: string,
         public payment_status: string,
-        public other_problem: string,
-        public recommendations: string,
+        public other_problem: string| null,
+        public recommendations: string | null,
         public duration: number,
         public score: number | null,
         public comment: string | null,
+        public reservation_expires_at: Date | null,
         public userId?: number,
         public doctorId?: number,
-        public time_slot_id?: number,
-        public created_at?: Date,
-        public updated_at?: Date,
-        public reservation_expires_at?: Date
+        public timeSlotId?: number,
     ) { }
 
-    isReserved(): boolean {
-        return this.consultation_status === 'reserved' &&
-            this.payment_status === 'pending';
+    setPayStatus(status: string) {
+        this.payment_status = status;
+        return this;
     }
 
-    isPaid(): boolean {
-        return this.payment_status === 'paid';
+    setConsultStatus(status: string) {
+        this.consultation_status = status;
+        return this;
     }
 
     isExpired(): boolean {

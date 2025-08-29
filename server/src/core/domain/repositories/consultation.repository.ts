@@ -1,7 +1,4 @@
-
-import TimeSlot from "../entities/timeSlot.entity.js";
-import Problem from "../entities/problem.entity.js";
-import Consultation from "../entities/consultations.entity.js";
+import Consultation from "../entities/consultation.entity.js";
 
 export default interface ConsultationRepository {
     findById(id: number): Promise<Consultation | null>;
@@ -16,7 +13,8 @@ export default interface ConsultationRepository {
         totalCount: number;
         totalPages: number;
     }>
-    create(consultationData: Partial<Consultation>): Promise<Consultation>;
+    findTimeSlotForDateProblem(problems: number[], date: string): Promise<string[]>;
+    create(consultationData: Consultation): Promise<Consultation>;
     update(id: number, consultationData: Partial<Consultation>): Promise<Consultation>;
 
 

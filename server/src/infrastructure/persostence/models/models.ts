@@ -70,10 +70,11 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
     consultation_status: { type: DataType.STRING },
     payment_status: { type: DataType.STRING }, // pending,  confirmed, in_progress, completed - завершена, cancelled - отменена , rescheduled - перенесена
     other_problem: { type: DataType.TEXT, allowNull: true }, // pending, paid, refunded - возвращено, cancelled - отменено
-    recommendations: { type: DataType.STRING },
+    recommendations: { type: DataType.STRING, allowNull: true},
     duration: { type: DataType.INTEGER, allowNull: true },
     score: { type: DataType.INTEGER, allowNull: true},
-    comment: { type: DataType.TEXT, allowNull: true }
+    comment: { type: DataType.TEXT, allowNull: true },
+    reservation_expires_at: {type: DataType.DATE, allowNull: true}
 })
 
 const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
@@ -137,6 +138,9 @@ Transaction.belongsTo(Consultation)
 
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
+
+TimeSlot.hasOne(Consultation)
+Consultation.belongsTo(TimeSlot)
 
 UserModel.hasOne(Consultation);
 Consultation.belongsTo(UserModel);

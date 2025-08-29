@@ -4,13 +4,15 @@ interface IConsultationAttributes {
     id: number;
     consultation_status: string;
     payment_status: string;
-    other_problem: string;
-    recommendations: string;
+    other_problem: string | null;
+    recommendations: string | null;
     duration: number;
     score: number | null;
     comment: string | null;
+    reservation_expires_at: Date | null;
     doctorId?: number;
     userId?: number;
+    timeSlotId?: number;
 }
 
 export interface IConsultaitionCreationAttributes extends Optional<IConsultationAttributes, 'id'> { }
