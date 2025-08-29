@@ -4,20 +4,40 @@ import type { User } from "../../../models/Auth";
 import { URL } from "../../../http";
 import { observer } from "mobx-react-lite";
 import AccountLayout from "../AccountLayout";
+import SearchInput from "../../../components/UI/Search/Search"; 
 
 const Users = () => {
   const { store } = useContext(Context);
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
 
+  // Получение всех пользователей при активации этой вкладки
   useEffect(() => {
     getAllUsers();
-  }, [])
+  }, []);
 
+  // Фильтрация пользователей по поисковому запросу
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredUsers(users);
+    } else {
+      const filtered = users.filter(user =>
+        `${user.name || ''} ${user.surname || ''} ${user.patronymic || ''}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchTerm, users]);
+
+  // Получение всех пользователей
   const getAllUsers = async () => {
     const data = await store.getUsersAll();
     setUsers(data);
+    setFilteredUsers(data);
   }
 
   const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
@@ -60,6 +80,15 @@ const Users = () => {
     <AccountLayout>
       <h1 className="tab">Профили</h1>
       <div className="admin-page">
+
+        <div className="admin-page__search">
+          <SearchInput
+            placeholder="Поиск по имени, фамилии и отчеству пользователя"
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
+        </div>
+
         {previewImage && (
           <div
             className="image-preview"
@@ -90,7 +119,7 @@ const Users = () => {
           </thead>
 
           <tbody className="users__table-body">
-            {users ? users.map((user) => (
+            {filteredUsers.length > 0 ? filteredUsers.map((user) => (
               <tr
                 key={user.phone}
                 className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}
@@ -146,7 +175,9 @@ const Users = () => {
               </tr>
             )) : (
               <tr>
-                <td colSpan={10}>Нет данных</td>
+                <td colSpan={11}>
+                  {searchTerm ? "Пользователи не найдены" : "Нет данных"}
+                </td>
               </tr>
             )}
           </tbody>

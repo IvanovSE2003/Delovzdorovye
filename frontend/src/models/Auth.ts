@@ -35,6 +35,7 @@ export interface IUserDataProfile {
     phone: string;
     email: string;
     isAnonymous: boolean;
+    age?: number;
 }
 
 export interface IAdminDataProfile {

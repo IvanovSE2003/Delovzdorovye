@@ -1,0 +1,116 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+.makeconsultation {
+  padding: 0 30px;
+
+  &__title {
+    font-size: 2rem;
+    font-weight: bolder;
+    margin-bottom: 20px;
+    color: black;
+  }
+
+  &__search {
+    margin-bottom: 24px;
+
+    &-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    &-icon {
+      position: absolute;
+      left: 16px;
+      z-index: 1;
+    }
+
+    &-input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      border: 2px solid black;
+      border-radius: 8px;
+      font-size: 16px;
+      position: relative;
+      
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px $shadow-color;
+      }
+      
+      &::placeholder {
+        color: $gray-color;
+      }
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-radius: 8px;
+    background-color: $block-color;
+    box-shadow: 0 1px 3px $shadow-color;
+  }
+
+  &__user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__user-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  &__user-phone {
+    font-size: 1.2rem;
+    color: $gray-color;
+  }
+
+  &__profile-button {
+    padding: 8px 16px;
+    background-color: $red-color-light;
+    border-radius: 7px;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    a {
+        color: white;
+        &:hover {
+            color: white;
+        }
+    }
+    
+    &:hover {
+      background-color: $red-color;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .users-page {
+    padding: 16px;
+    
+    &__user-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    &__profile-button {
+      align-self: flex-end;
+    }
+  }
+}

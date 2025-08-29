@@ -114,14 +114,13 @@
 
   &:hover {
     background-color: $button-color-hover;
-    transform: scale(1.01);
     cursor: pointer;
   }
 }
 
 .neg-button {
-  background-color: $red-color;
+  background-color: $red-color-light;
   &:hover {
-    background-color: $red-color-hover;
+    background-color: $red-color;
   }
 }

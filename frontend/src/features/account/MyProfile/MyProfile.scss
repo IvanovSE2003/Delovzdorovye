@@ -3,10 +3,9 @@
 
 .user-profile {
   background-color: $profile-color;
-  padding: 3rem;
+  padding: 2rem 4rem;
   border-radius: 8px;
   margin: 0 auto;
-  width: 90%;
   box-sizing: border-box;
 
   &__box {
@@ -18,6 +17,7 @@
 
   &__content {
     display: grid;
+    align-items: center;
     grid-template-columns: 1.5fr 2fr;
     gap: 60px;
     font-size: 1.2rem;
@@ -25,26 +25,77 @@
     color: $text-color;
   }
 
-  // &__message,
-  // &__error {
-  //   text-align: center;
-  //   font-size: 1rem;
-  //   font-weight: bold;
-  //   transition: all 0.5s ease;
-  //   margin: 0;
-  // }
+  &__error {
+    color: $red-color;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+  }
 
-  // &__message {
-  //   color: $secondary-color;
-  // }
+  &__fio {
+    font-size: 1.6rem;
+    font-weight: bolder;
+    text-align: left;
+  }
 
-  // &__error {
-  //   color: red;
-  // }
+  &__role {
+    margin: 0;
+    font-size: 1.2rem;
+    color: $doctor-color;
+    margin: 0.4rem 0;
+  }
 
-  &__info {
+  &__main-info {
     display: flex;
     flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .label {
+    font-weight: bold;
+    color: $primary-color;
+  }
+
+  &__avatar-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  &__avatar {
+    max-width: 450px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    p {
+      margin: 0;
+      color: $button-color;
+      cursor: pointer;
+      font-size: 1.1rem;
+
+      &:hover {
+        color: $button-color-hover;
+      }
+    }
   }
 
   &__warns {
@@ -91,44 +142,56 @@
   }
 }
 
-.QRcode {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  &__box {
-    padding: 20px;
-    width: 400px;
-    animation: scaleIn 0.4s ease-out forwards 0.2s;
-    text-align: center;
-
-    img {
-      width: 100%;
-      pointer-events: none;
-      border-radius: 20px;
-    }
-  }
-
-  &__token {
-    font-size: 2rem;
-    margin: 8px 0;
-    color: $primary-color;
+.edit-form {
+  &__anonym {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
     font-weight: bold;
-  }
 
-  &__description {
-    margin: 0 0 5px 0;
-  }
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.95);
-      opacity: 0;
-    }
-
-    to {
-      transform: scale(1);
-      opacity: 1;
+    input {
+      width: 18px;
+      height: 18px;
     }
   }
+
+  &__group {
+    margin: 5px 0;
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      margin: 3px 0;
+      border-radius: 8px;
+      border: none;
+      background-color: $sidebar-color;
+      font-size: 1.1rem;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        background-color: $light-color;
+      }
+
+      &:read-only:hover {
+        background-color: $sidebar-color;
+        cursor: no-drop;
+      }
+    }
+
+    &__error {
+      color: $red-color;
+      font-size: 0.8rem;
+      margin-left: 0.3rem;
+    }
+
+    &__input-error {
+      color: $red-color;
+    }
+  }
+
 }

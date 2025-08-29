@@ -4,7 +4,7 @@ import type { AppRoute } from "../models/IRoute";
 import Account from "../pages/account/Account";
 import Bell from "../pages/account/Bell";
 import LoginPage from "../pages/auth/index";
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/Homepage";
 import SomeProfile from "../pages/account/SomeProfile";
 
 import Finance from "../pages/account/doctor/Finance";

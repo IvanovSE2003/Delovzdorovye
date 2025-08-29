@@ -33,7 +33,9 @@ const AccountLayout:React.FC<AccountLayoutProps> = ({ children }) => {
       <main className='account__content'>
         {children}
       </main>
-      <RightPanel />
+      <RightPanel 
+        role={store.user.role}
+      />
     </div>
   );
 };

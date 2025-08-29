@@ -1,6 +1,6 @@
 import type React from "react";
 import LoginPage from '../pages/auth/index'
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/Homepage";
 import Account from "../pages/account/Account";
 import UsefulInfo from "../pages/account/patient/UsefulInfo";
 
@@ -19,6 +19,9 @@ import Users from '../pages/account/admin/Users';
 
 import Profile from "../pages/account/SomeProfile";
 import Bell from "../pages/account/Bell";
+import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsultation";
+import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations";
+import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations";
 
 export interface IRoute {
     path: string;
@@ -54,8 +57,11 @@ export const RouteNames = {
     FINANCE: '/doctor/finance',
 
     // Пути для админа
-    SPECIALISTS: '/admin/specialists',
     USERS: '/admin/users',
+    SPECIALISTS: '/admin/specialists',
+    MAKECONSULTATION: '/admin/make-consultation',
+    ARCHIVECONSULTATIONS: '/admin/archive-consultation',
+    EDITUSEFULINFO: '/admin/edit-useful-information',
 } as const;
 
 export const menuConfig: Record<string, { path: string; name: string }[]> = {
@@ -75,9 +81,11 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.USEFULINFO, name: "Полезная информация" },
     ],
     ADMIN: [
-        { path: RouteNames.MAIN, name: "Главная" },
-        { path: RouteNames.SPECIALISTS, name: "Специалисты" },
         { path: RouteNames.USERS, name: "Пользователи" },
+        { path: RouteNames.SPECIALISTS, name: "Специалисты" },
+        { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
+        { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
+        { path: RouteNames.EDITUSEFULINFO, name: 'Полезная информация'},
     ],
 };
 
@@ -112,4 +120,7 @@ export const privateRoutes: ProtectedRoute[] = [
     // Маршруты для администраторов
     { path: RouteNames.SPECIALISTS, element: Specialists, roles: ['ADMIN'] },
     { path: RouteNames.USERS, element: Users, roles: ['ADMIN'] },
+    { path: RouteNames.MAKECONSULTATION, element: MakeConsultation, roles: ['ADMIN']},
+    { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN']},
+    { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN']},
 ];

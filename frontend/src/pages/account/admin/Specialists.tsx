@@ -4,6 +4,7 @@ import { URL } from "../../../http";
 import { observer } from "mobx-react-lite";
 import AccountLayout from "../AccountLayout";
 import type { Batch } from "../../../models/IBatch";
+import SearchInput from "../../../components/UI/Search/Search";
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg'];
 
@@ -13,13 +14,28 @@ const Specialists: React.FC = () => {
     const [message, setMessage] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [batches, setBatches] = useState<Batch[]>([]);
+    const [filteredBatches, setFilteredBatches] = useState<Batch[]>([]);
     const [showRejectModal, setShowRejectModal] = useState<boolean>(false);
     const [isClosing, setIsClosing] = useState<boolean>(false);
     const [rejectReason, setRejectReason] = useState<string>("");
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
-
+    const [searchTerm, setSearchTerm] = useState<string>(""); 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
+
+    // Фильтрация батчей по поисковому запросу
+    useEffect(() => {
+        if (searchTerm.trim() === "") {
+            setFilteredBatches(batches);
+        } else {
+            const filtered = batches.filter(batch =>
+                `${batch.userName} ${batch.userSurname} ${batch.userPatronymic || ''}`
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+            );
+            setFilteredBatches(filtered);
+        }
+    }, [searchTerm, batches]);
 
     const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
         setPreviewImage(`${URL}/${imgPath}`);
@@ -35,6 +51,7 @@ const Specialists: React.FC = () => {
             const data = await store.getBatchAll(10, 1);
             if (data && data.batches) {
                 setBatches(data.batches);
+                setFilteredBatches(data.batches);
             }
         } catch (err) {
             setError("Ошибка при загрузке данных");
@@ -54,6 +71,8 @@ const Specialists: React.FC = () => {
     };
 
     const renderValue = (value: string) => {
+        if(value == "") return "Пустое поле";
+
         if (isFile(value)) {
             const fileUrl = `${URL}/${value}`;
 
@@ -87,7 +106,7 @@ const Specialists: React.FC = () => {
             const data = await store.confirmChange(id);
 
             if (data.success) {
-                setMessage(data.message);
+                setMessage(data.message||"");
                 setBatches(prev => prev.map(b =>
                     b.id === id ? { ...b, className: 'removing' } : b
                 ));
@@ -119,7 +138,7 @@ const Specialists: React.FC = () => {
             const data = await store.rejectChange(currentBatchId, rejectReason);
 
             if (data.success) {
-                setMessage(data.message);
+                setMessage(data.message||"");
                 setBatches(prev => prev.map(b =>
                     b.id === currentBatchId ? { ...b, className: 'removing' } : b
                 ));
@@ -157,6 +176,15 @@ const Specialists: React.FC = () => {
             {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="admin-page">
+                {/* Добавляем строку поиска */}
+                <div className="admin-page__search">
+                    <SearchInput
+                        placeholder="Поиск по фамилии, имени, отчеству специалиста"
+                        value={searchTerm}
+                        onChange={setSearchTerm}
+                    />
+                </div>
+
                 {previewImage && (
                     <div
                         className="image-preview"
@@ -179,8 +207,8 @@ const Specialists: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {batches.length > 0 ? (
-                            batches.map((batch) => (
+                        {filteredBatches.length > 0 ? (
+                            filteredBatches.map((batch) => (
                                 <tr key={batch.id}>
                                     <td>
                                         {batch.userName} {batch.userSurname} {batch.userPatronymic}
@@ -208,7 +236,9 @@ const Specialists: React.FC = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={5}>Нет данных</td>
+                                <td colSpan={5}>
+                                    {searchTerm ? "Ничего не найдено" : "Нет данных"}
+                                </td>
                             </tr>
                         )}
                     </tbody>

@@ -1,0 +1,112 @@
+@use '../../../assets/styles/variables.scss' as *;
+
+.user-consultations {
+    padding: 20px;
+    background-color: $profile-color;
+    border-radius: 10px;
+    margin: 10px auto;
+
+    &__title {
+        text-align: center;
+        color: black;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 0;
+    }
+}
+
+.consultation-card {
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin-bottom: 20px;
+    background-color: #fff;
+    max-width: 80%;
+    margin: 20px auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &__time {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid $gray-color;
+    }
+
+    &__date {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: black;
+        margin-right: 12px;
+    }
+
+    &__hours {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: black;
+        padding: 5px 10px;
+        background-color: $block-color;
+        border-radius: 5px;
+    }
+
+    &__info {
+        margin-bottom: 20px;
+    }
+
+    &__specialist,
+    &__symptoms,
+    &__details {
+        margin-bottom: 8px;
+        font-size: 1.4rem;
+        line-height: 1.3;
+        color: $primary-color;
+
+        span {
+            font-weight: 300;
+            color: $gray-color
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    &__button {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            opacity: 0.9;
+        }
+
+        &--transfer {
+            background-color: #e8f4ff;
+            color: #1976d2;
+            border-color: #b3d9ff;
+        }
+
+        &--cancel {
+            background-color: #ffebee;
+            color: #d32f2f;
+            border-color: #ffcdd2;
+        }
+
+        &--repeat {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border-color: #e1bee7;
+        }
+
+        &--edit {
+            background-color: #f1f8e9;
+            color: #689f38;
+            border-color: #dcedc8;
+        }
+    }
+}

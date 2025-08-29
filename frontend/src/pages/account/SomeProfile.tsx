@@ -6,6 +6,10 @@ import AccountLayout from "./AccountLayout";
 import { useParams } from "react-router";
 import { Context } from "../../main";
 import { observer } from "mobx-react-lite";
+import UpcomingConsultations from "../../features/account/UpcomingConsultations/UpcomingConsultations";
+import ArchiveConsultations from "../../features/account/ArchiveConsultations/ArchiveConsultations";
+import UserProfile from "../../features/account/MyProfile/UserProfile";
+import '../../features/account/MyProfile/MyProfile.scss';
 
 const Profile = () => {
     const { id } = useParams();
@@ -13,7 +17,7 @@ const Profile = () => {
     const [profile, setProfile] = useState<IUserDataProfile | null>(null)
 
     const getDataProfile = async () => {
-        if (!store.user?.id) return; 
+        if (!store.user?.id) return;
         const { data } = await $api.post(`/profile/${id}`, { linkerId: store.user.id });
         console.log(data);
         setProfile(data);
@@ -25,45 +29,35 @@ const Profile = () => {
         }
     }, [id, store.user.id]);
 
-
-    const GetFormatDate = (date: string) => {
-        return date?.split('-').reverse().join('.');
-    };
-
-    const GetFormatPhone = (phone: string) => {
-        return phone?.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
-    };
-
     if (!profile) return <Loader />
 
     return (
         <AccountLayout>
-            <div className="profile">
-                <div className="profile__avatar">
-                    <img src={`${URL}/${profile.img}`} alt="avatar-delovzdorovye" />
-                </div>
-
-                <div className="profile__info">
-
-                    <div>
-                        {(!profile.name && !profile.surname && !profile.patronymic)
-                            ? <div className="profile__fio"> Анонимный пользователь </div>
-                            : <div className="profile__fio"> {profile.surname} {profile?.name} {profile?.patronymic} </div>
-                        }
-                        <div className="profile__role">
-                            {profile.role ? profile.role : "Неизвестная роль"}
-                        </div>
+            <div className="user-profile">
+                <div className="user-profile__box">
+                    <div className="user-profile__content">
+                        <UserProfile
+                            profileData={profile}
+                            isButton={false}
+                        />
                     </div>
-
-                    <div className="profile__main-info">
-                        <span><span className="label">Пол:</span> {profile.gender}</span>
-                        <span><span className="label">Дата рождения:</span> {GetFormatDate(profile.dateBirth)}</span>
-                        <span><span className="label">Номер телефона:</span> {GetFormatPhone(profile.phone)}</span>
-                        <span><span className="label">E-mail:</span> {profile.email}</span>
-                    </div>
-
+                    {store.user.role === "ADMIN" && (
+                        <button className="neg-button width100">
+                            Записать на консультацию
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {store.user.role === "ADMIN" && (
+                <>
+                    <UpcomingConsultations
+                        id={store.user.id}
+                    />
+
+                    <ArchiveConsultations />
+                </>
+            )}
         </AccountLayout>
     )
 }

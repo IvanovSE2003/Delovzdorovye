@@ -1,0 +1,112 @@
+@use "../../../assets/styles/variables.scss" as *;
+
+.archive-consultations {
+  padding: 2rem 1rem;
+  margin: 0 auto;
+  background-color: $profile-color;
+  border-radius: 10px;
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    color: black;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.5rem;
+  }
+
+  &__error {
+    color: $red-color;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.archive-consultation-card {
+  border: 2px solid black;
+  width: 90%;
+  margin: 0 auto;
+  border-radius: 10px;
+  padding: 1.5rem 1.2rem;
+  background-color: white;
+  
+  &--archived {
+    background-color: #fafafa;
+    border-color: #e8e8e8;
+  }
+  
+  &__header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid $gray-color;
+    font-size: 1.4rem;
+  }
+  
+  &__info {
+    margin-bottom: 20px;
+  }
+  
+  &__specialist,
+  &__symptoms,
+  &__details {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    color: $gray-color;
+    
+    span {
+      font-weight: bold;
+      color: black;
+    }
+  }
+  
+  &__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  &__button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+    
+    &--repeat {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    &--recommendation {
+      background-color: #e3f2fd;
+      color: #1565c0;
+    }
+  }
+  
+  &__divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 16px -20px -20px;
+    
+    &:last-child {
+      display: none;
+    }
+  }
+}

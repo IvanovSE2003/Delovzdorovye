@@ -1,55 +1,32 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Context } from "../../main";
-import UserInfo from "../../features/account/UserInfo/UserInfo";
-import { useNavigate } from "react-router";
-import { RouteNames } from "../../routes";
 import '../../features/account/MyProfile/MyProfile.scss';
 import { observer } from "mobx-react-lite";
+import UserProfile from "../../features/account/MyProfile/UserProfile";
 
 
 const AdminPage = () => {
-    const navigate = useNavigate();
     const { store } = useContext(Context);
-
-
-    const Logout = async () => {
-        await store.logout();
-        navigate(RouteNames.MAIN);
-    };
-
-    const GetFormatDate = (date: string) => {
-        return date?.split('-').reverse().join('.');
-    };
-
-    const GetFormatPhone = (phone: string) => {
-        return phone?.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, '$1 $2 $3 $4 $5');
-    };
-
-    const getRoleName = () => {
-        const Role = store.user.role;
-        switch (Role) {
-            case "PATIENT": return 'Пациент';
-            case "DOCTOR": return 'Специалист';
-            default: return 'Администратор';
-        }
-    };
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     return (
         <div className="user-profile">
-            <div className="user-profile__info">
-                <UserInfo
-                    user={store.user}
-                    anonym={store.user.isAnonymous}
-                    getFormatDate={GetFormatDate}
-                    getFormatPhone={GetFormatPhone}
-                />
-
-                <button
-                    className="neg-button width100"
-                    onClick={Logout}
-                >
-                    Выйти из аккаунта
-                </button>
+            <div className="user-profile__box">
+                {isEditing ? (
+                    <UserProfile
+                        profileData={store.user}
+                        isAvatar={false}
+                        onEdit={() => setIsEditing(true)}
+                        onLogout={async () => { await store.logout() }}
+                    />
+                ) : (
+                    <UserProfile
+                        profileData={store.user}
+                        isAvatar={false}
+                        onEdit={() => setIsEditing(true)}
+                        onLogout={async () => { await store.logout() }}
+                    />
+                )}
             </div>
         </div>
     )

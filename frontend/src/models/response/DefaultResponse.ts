@@ -1,4 +1,4 @@
 export interface TypeResponse {
-    message: string;
+    message?: string;
     success: boolean;
 }
