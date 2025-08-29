@@ -1,0 +1,72 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+.shift-modal {
+    position: relative;
+    background-color: #266DD3;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+    &__information {
+        padding: 1.5rem 2.5rem;
+        border-radius: 20px;
+        background-color: #F2EFDB;
+        margin: 2dvb auto;
+
+        p {
+            color: #17325e;
+            font-size: 1.4rem;
+            font-weight: bolder;
+            text-align: center;
+            margin: 0;
+        }
+    }
+
+    &__client {
+        text-align: center;
+        font-size: 1.4rem;
+        color: #F0FFBA;
+        margin-bottom: 20px;
+    }
+
+    &__result {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+
+        p {
+            font-size: 1.3rem;
+            margin: 0;
+        }
+    }
+
+    &__submit {
+        background-color: #5A96F6;
+        padding: 0.8rem 2rem;
+        width: 100%;
+        color: white;
+        font-size: 1.4rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.4s ease-in-out;
+
+        &:hover {
+            transform: scale(1.03);
+            cursor: pointer;
+        }
+
+        &:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    }
+}

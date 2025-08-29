@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './UpcomingConsultations.scss';
 import BatchService from '../../../services/BatchService';
+import ShiftModal from '../../../components/UI/Modals/ShiftModal/ShiftModal';
+import type { ConsultationData } from '../../../components/UI/Modals/RecordModal/RecordModal';
+import CancelModal from '../../../components/UI/Modals/CancelModal/CancelModal';
 
 interface UserConsultationsProps {
-    id: number;
+    id: string | undefined;
 }
 
 interface Consultation {
@@ -15,15 +18,29 @@ interface Consultation {
     details: string;
 }
 
-const UserConsultations:React.FC<UserConsultationsProps> = ({ id }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
     const fetchConsultations = () => {
         // const response = BatchService.getAllConsultions(id);
         // console.log(response);
     }
+    const [modalShift, setModalShift] = useState<boolean>(false);
+    const [modalCancel, setModalCancel] = useState<boolean>(false);
 
     useEffect(() => {
         fetchConsultations();
     }, [])
+
+    const handleShiftConsultation = (data: ConsultationData) => {
+        console.log("Данные для записи:", data);
+        // Здесь логика отправки данных на сервер
+        setModalShift(false);
+    };
+
+    const handleCancelConsultation = (reason: string) => {
+        console.log("Данные для записи:", reason);
+        // Здесь логика отправки данных на сервер
+        setModalCancel(false);
+    };
 
     const consultations: Consultation[] = [
         {
@@ -38,6 +55,18 @@ const UserConsultations:React.FC<UserConsultationsProps> = ({ id }) => {
 
     return (
         <div className="user-consultations">
+            <ShiftModal
+                isOpen={modalShift}
+                onClose={() => setModalShift(false)}
+                onRecord={handleShiftConsultation}
+            />
+
+            <CancelModal
+                isOpen={modalCancel}
+                onClose={() => setModalCancel(false)}
+                onRecord={handleCancelConsultation}
+            />
+
             <h2 className='user-consultations__title'>Предстоящие консультации</h2>
 
             {consultations.map(consultation => (
@@ -62,10 +91,16 @@ const UserConsultations:React.FC<UserConsultationsProps> = ({ id }) => {
                     </div>
 
                     <div className="consultation-card__actions">
-                        <button className="consultation-card__button consultation-card__button--transfer">
+                        <button
+                            className="consultation-card__button consultation-card__button--transfer"
+                            onClick={() => setModalShift(true)}
+                        >
                             Перенести
                         </button>
-                        <button className="consultation-card__button consultation-card__button--cancel">
+                        <button
+                            className="consultation-card__button consultation-card__button--cancel"
+                            onClick={() => setModalCancel(true)}
+                        >
                             Отменить
                         </button>
                         <button className="consultation-card__button consultation-card__button--repeat">

@@ -1,4 +1,4 @@
-@use '../../../assets/styles/variables.scss' as *;
+@use '../../../../assets/styles/variables.scss' as *;
 
 .modal {
     position: fixed;
@@ -51,6 +51,11 @@
         }
     }
 
+    &__client {
+        font-size: 1.4rem;
+        color: #F0FFBA;
+    }
+
     &__select-problems {
         margin: 20px 0;
     }
@@ -62,23 +67,23 @@
     &__label {
         display: block;
         margin-bottom: 8px;
-        font-weight: 500;
-        color: #333;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: white;
     }
 
     &__textarea {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
+        padding: 1rem;
         border-radius: 8px;
         resize: vertical;
         font-family: inherit;
-        font-size: 14px;
+        font-size: 1.1rem;
+        box-sizing: border-box;
 
         &:focus {
             outline: none;
             border-color: #4a90e2;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
     }
 
@@ -105,15 +110,15 @@
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
                 min-height: 48px;
-                font-size: 14px;
+                font-size: 1.1rem;
                 transition: all 0.3s ease;
 
                 &:hover {
-                    border-color: #4a90e2;
+                    border-color: $primary-color;
                 }
 
                 &--is-focused {
-                    border-color: #4a90e2;
+                    border-color: $primary-color;
                     box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
                 }
             }

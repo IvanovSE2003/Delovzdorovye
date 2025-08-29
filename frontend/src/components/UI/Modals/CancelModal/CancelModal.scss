@@ -1,0 +1,23 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+.cancel-modal {
+    &__notification {
+        text-align: center;
+        margin: 20px auto;
+        font-size: 1.2rem;
+    }
+
+    &__reason {
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 1rem;
+            color: $gray-color;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            resize: vertical;
+        }
+    }
+}

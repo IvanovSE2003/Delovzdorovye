@@ -1,6 +1,6 @@
 import AccountLayout from "../AccountLayout";
 import { useState } from "react";
-import Modal, { type ConsultationData } from "../../../components/UI/Modal/Modal";
+import Modal, { type ConsultationData } from "../../../components/UI/Modals/RecordModal/RecordModal";
 
 const Main: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

@@ -43,7 +43,7 @@ const ArchiveConsultations: React.FC = () => {
         try {
             setLoading(true);
             // Замените на ваш реальный эндпоинт
-            //   const response = await axios.get<Consultation[]>('https://api.example.com/archive-consultations');
+            //   const response = await axios.get<Consultation[]>('https://api.example.com/user-consultations');
             //   setConsultations(response.data);
         } catch (err) {
             //   setError('Ошибка при загрузке архивных консультаций');
@@ -65,46 +65,47 @@ const ArchiveConsultations: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="archive-consultations">
-                <h2 className="archive-consultations__title">Архив консультаций</h2>
-                <div className="archive-consultations__loading">Загрузка...</div>
+            <div className="user-consultations">
+                <h2 className="user-consultations__title">Архив консультаций</h2>
+                <div className="user-consultations__loading">Загрузка...</div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="archive-consultations">
-                <h2 className="archive-consultations__title">Архив консультаций</h2>
-                <div className="archive-consultations__error">{error}</div>
+            <div className="user-consultations">
+                <h2 className="user-consultations__title">Архив консультаций</h2>
+                <div className="user-consultations__error">{error}</div>
             </div>
         );
     }
 
     return (
-        <div className="archive-consultations">
-            <h2 className="archive-consultations__title">Архив консультаций</h2>
+        <div className="user-consultations">
+            <h2 className="user-consultations__title">Архив консультаций</h2>
 
             {consultations.length === 0 ? (
-                <div className="archive-consultations__empty">Нет архивных консультаций</div>
+                <div className="user-consultations__empty">Нет архивных консультаций</div>
             ) : (
-                <div className="archive-consultations__list">
+                <div className="user-consultations__list">
                     {consultations.map((consultation) => (
-                        <div key={consultation.id} className="archive-consultation-card consultation-card--archived">
-                            <div className="archive-consultation-card__header">
-                                <strong>{consultation.date}, {consultation.time}</strong>
+                        <div key={consultation.id} className="consultation-card">
+                            <div className="consultation-card__time">
+                                <span className="consultation-card__date">{consultation.date}</span>
+                                <span className="consultation-card__hours">{consultation.time}</span>
                             </div>
 
-                            <div className="archive-consultation-card__info">
-                                <div className="archive-consultation-card__specialist">
+                            <div className="consultation-card__info">
+                                <div className="consultation-card__specialist">
                                     Специалист: <span>{consultation.specialist}</span>
                                 </div>
 
-                                <div className="archive-consultation-card__symptoms">
+                                <div className="consultation-card__symptoms">
                                     Симптомы: <span>{consultation.symptoms}</span>
                                 </div>
 
-                                <div className="archive-consultation-card__details">
+                                <div className="consultation-card__details">
                                     Симптомы подробно: <span>{consultation.details}</span>
                                 </div>
                             </div>
