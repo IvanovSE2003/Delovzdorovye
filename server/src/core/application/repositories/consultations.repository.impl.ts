@@ -133,8 +133,26 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         return this.mapToDomainConsultation(createdConsult);
     }
 
-    async update(id: number, consultationData: Partial<Consultation>): Promise<Consultation> {
-        throw "";
+    async update(consult: Consultation): Promise<Consultation> {
+        const existingConsult = await models.Consultation.findByPk(consult.id);
+        if (!existingConsult) {
+            throw new Error(`Консультация с ID ${consult.id} не найдена`);
+        }
+
+        await models.Consultation.update(this.mapToPersistence(consult), {
+            where: { id: consult.id }
+        });
+
+        const updatedConsult = await models.Consultation.findByPk(consult.id);
+        if (!updatedConsult) {
+            throw new Error('Консультация не была обновлена');
+        }
+
+        return this.mapToDomainConsultation(updatedConsult);
+    }
+
+    async save(consult: Consultation): Promise<Consultation> {
+        return consult.id ? await this.update(consult) : await this.create(consult);
     }
 
     private mapToDomainConsultation(consultModel: ConsultationModelInterface) {
@@ -148,6 +166,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             consultModel.score,
             consultModel.comment,
             consultModel.reservation_expires_at,
+            consultModel.reason_cancel,
             consultModel.userId,
             consultModel.doctorId,
             consultModel.timeSlotId
@@ -164,6 +183,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             score: consult.score,
             comment: consult.comment,
             reservation_expires_at: consult.reservation_expires_at,
+            reason_cancel: consult.reason_cancel,
             userId: consult.userId,
             doctorId: consult.doctorId,
             timeSlotId: consult.timeSlotId

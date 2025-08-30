@@ -14,7 +14,8 @@ export default interface ConsultationRepository {
     }>
     findTimeSlotForDateProblem(problems: number[], date: string): Promise<string[]>;
     create(consultationData: Consultation): Promise<Consultation>;
-    update(id: number, consultationData: Partial<Consultation>): Promise<Consultation>;
+    update(consult: Consultation): Promise<Consultation>;
+    save(consult: Consultation): Promise<Consultation> 
 
 
 

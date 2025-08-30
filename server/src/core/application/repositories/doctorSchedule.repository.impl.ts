@@ -127,8 +127,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             scheduleModel.id,
             scheduleModel.date,
             scheduleModel.day_weekly,
-            scheduleModel.time_start,
-            scheduleModel.time_end,
             scheduleModel.doctorId,
             time_slots
         );
@@ -138,8 +136,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         return {
             date: schedule.date,
             day_weekly: schedule.day_weekly,
-            time_start: schedule.time_start,
-            time_end: schedule.time_end,
             doctorId: schedule.doctorId
         };
     }

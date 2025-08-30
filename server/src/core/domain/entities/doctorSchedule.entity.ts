@@ -7,8 +7,6 @@ export default class DoctorSchedule {
         public id: number,
         public date: string,
         public day_weekly: string,
-        public time_start: Time,
-        public time_end: Time,
         public doctorId?: number,
         public timeSlot?: TimeSlotsArray
     ) {}

@@ -5,8 +5,6 @@ interface IDoctorScheduleAttributes {
     id: number;
     date: string;
     day_weekly: string;
-    time_start: Time;
-    time_end: Time;
     doctorId?: number;
 }
 
@@ -23,7 +21,6 @@ export interface DoctorScheduleModelInterface extends Model<IDoctorScheduleAttri
     hasTime_slots?: (timeSlots: any[], options?: any) => Promise<boolean>;
     countTime_slots?: (options?: any) => Promise<number>;
     
-    // Другие методы связей
     getDoctor?: (options?: any) => Promise<any>;
     setDoctor?: (doctor: any, options?: any) => Promise<void>;
 }

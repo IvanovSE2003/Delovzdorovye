@@ -76,7 +76,7 @@ const start = async () => {
     try {
         await sequelize.authenticate();
         await sequelize.sync();
-        await timerService.restoreTimers();
+        // await timerService.restoreTimers();
         server.listen(PORT, () => {
             console.log(`🚀 Сервер запустился на порте: ${PORT}`);
         });

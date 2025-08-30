@@ -65,31 +65,34 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     name: { type: DataType.STRING }
 })
 
-const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    consultation_status: { type: DataType.STRING },
-    payment_status: { type: DataType.STRING }, // pending,  confirmed, in_progress, completed - завершена, cancelled - отменена , rescheduled - перенесена
-    other_problem: { type: DataType.TEXT, allowNull: true }, // pending, paid, refunded - возвращено, cancelled - отменено
-    recommendations: { type: DataType.STRING, allowNull: true},
-    duration: { type: DataType.INTEGER, allowNull: true },
-    score: { type: DataType.INTEGER, allowNull: true},
-    comment: { type: DataType.TEXT, allowNull: true },
-    reservation_expires_at: {type: DataType.DATE, allowNull: true}
-})
-
-const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    date: { type: DataType.DATE },
-    day_weekly: { type: DataType.STRING },
-    time_start: { type: DataType.TIME, defaultValue: "8:00" },
-    time_end: { type: DataType.TIME, defaultValue: "20:00" },
-})
 
 const TimeSlot = sequelize.define<TimeSlotmModelInterface>('time_slot', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     time: { type: DataType.TIME },
     isAvailable: { type: DataType.BOOLEAN, defaultValue: true }
 });
+
+const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    consultation_status: { type: DataType.STRING },
+    payment_status: { type: DataType.STRING },
+    other_problem: { type: DataType.TEXT, allowNull: true },
+    recommendations: { type: DataType.STRING, allowNull: true },
+    duration: { type: DataType.INTEGER, allowNull: true },
+    score: { type: DataType.INTEGER, allowNull: true },
+    comment: { type: DataType.TEXT, allowNull: true },
+    reservation_expires_at: { type: DataType.DATE, allowNull: true },
+    reason_cancel: { type: DataType.TEXT, allowNull: true },
+    doctorId: { type: DataType.INTEGER, allowNull: false, references: { model: DoctorModel, key: 'id' } },
+    userId: { type: DataType.INTEGER, allowNull: false, references: { model: UserModel, key: 'id' } },
+    timeSlotId: { type: DataType.INTEGER, allowNull: false, references: { model: TimeSlot, key: 'id' } }
+})
+
+const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    date: { type: DataType.DATE },
+    day_weekly: { type: DataType.STRING },
+})
 
 const Transaction = sequelize.define('transaction', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -117,6 +120,24 @@ const DoctorSpecialization = sequelize.define('doctor_specializations', {
 const ProblemSpecialization = sequelize.define('problem_specializations', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
 });
+
+
+
+// Таблицы с контентом на сайте
+
+const ContentModel = sequelize.define('content', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    type: { type: DataType.STRING, allowNull: false }, 
+    text_content: { type: DataType.TEXT, allowNull: false }
+});
+
+const ContentWithTitleModel = sequelize.define('content_with_title', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    label: { type: DataType.STRING, allowNull: false }, 
+    text_content: { type: DataType.TEXT, allowNull: false },
+    type: { type: DataType.STRING, allowNull: false }   
+});
+
 
 ProblemModel.belongsToMany(SpecializationModel, { through: ProblemSpecialization });
 SpecializationModel.belongsToMany(ProblemModel, { through: ProblemSpecialization });
@@ -173,5 +194,7 @@ export default {
     SpecializationModel,
     ProblemModel,
     DoctorSpecialization,
-    ProblemSpecialization
+    ProblemSpecialization,
+    ContentModel, 
+    ContentWithTitleModel
 }

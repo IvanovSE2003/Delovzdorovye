@@ -141,7 +141,7 @@ export default class ConsultationController {
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "pending", "pending", null, null, 30, null, null, reservationExpiresAt, user.id, doctor.id, timeSlot.id));
+            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, user.id, doctor.id, timeSlot.id));
 
             await this.timeSlotRepository.save(timeSlot.setAvailable(false));
             this.timerService.startTimer(consultation.id, reservationExpiresAt);
@@ -154,7 +154,6 @@ export default class ConsultationController {
     async getTimeLeft(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            console.log(id)
 
             if (!id || isNaN(Number(id))) {
                 return next(ApiError.badRequest('Неверный ID консультации'));
@@ -210,6 +209,93 @@ export default class ConsultationController {
             }));
 
             return res.status(200).json(formattedDoctors);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async resheduleConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { date, time, userId, doctorId } = req.body;
+
+            const user = await this.userRepository.findById(Number(userId));
+
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctorId, date);
+
+            if (!timeSlot) {
+                return next(ApiError.badRequest('Не свободной ячейки для записи на консультацию'));
+            }
+
+            const updateConsult = await this.consultationRepository.save(consultation.setTimeSlot(timeSlot.id));
+
+            return res.status(200).json(updateConsult);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async cancelConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { reason } = req.body;
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            let updateConsult: Consultation;
+            if (reason) {
+                updateConsult = await this.consultationRepository.save(consultation.setReason(reason).setConsultStatus("ARCHIVE"));
+            } else {
+                updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
+            }
+            return res.status(200).json(updateConsult);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async repeatConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { date, time } = req.body;
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date);
+            if (!timeSlot) {
+                return next(ApiError.badRequest('Временная ячейка занята или найдена'));
+            }
+
+            if(consultation.consultation_status === "UPCOMING") {
+                return next(ApiError.badRequest('Консультация еще не закончилась'));
+            }
+
+            const reservationExpiresAt = new Date();
+            reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
+
+            const newConsultation = await this.consultationRepository.create(
+                new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, consultation.userId, consultation.doctorId, timeSlot.id)
+            );
+
+            res.status(200).json(newConsultation);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
