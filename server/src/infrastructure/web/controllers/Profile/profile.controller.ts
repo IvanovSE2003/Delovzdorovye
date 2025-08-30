@@ -73,7 +73,10 @@ export default class ProfileController {
                     PATIENT: {
                         ...baseData,
                         gender: user.gender,
-                        age
+                        dateBirth: user.dateBirth,
+                        phone: user.phone,
+                        email: user.email,
+                        age,
                     },
                     DOCTOR: {
                         ...baseData,
