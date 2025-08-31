@@ -3,4 +3,9 @@ export default class Problem {
         public id: number,
         public name: string
     ) {}
+
+    setName(name: string) {
+        this.name = name;
+        return this;
+    }
 }

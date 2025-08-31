@@ -8,6 +8,7 @@ import UserRepository from "../../../../core/domain/repositories/user.repository
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
 import TimerService from "../../../../core/domain/services/timer.service.js";
+import Problem from "../../../../core/domain/entities/problem.entity.js";
 
 export default class ConsultationController {
     constructor(
@@ -32,6 +33,53 @@ export default class ConsultationController {
             }));
 
             return res.status(200).json(formattedProblems);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async updateProblem(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { name } = req.body;
+            const problem = await this.problemRepository.findById(Number(id));
+            if (!problem) {
+                return next(ApiError.badRequest('Проблема не найдена'));
+            }
+            const newProblem = await this.problemRepository.save(problem.setName(name));
+
+            return res.status(200).json(newProblem);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async deleteProblem(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+
+            const problem = await this.problemRepository.findById(Number(id));
+            if (!problem) {
+                return next(ApiError.badRequest('Проблема не найдена'));
+            }
+
+            await this.problemRepository.delete(problem.id);
+
+            return res.status(204).send();
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async createProblem(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { name } = req.body;
+            const newProblem = new Problem(0, name);
+            const problemCreated = await this.problemRepository.save(newProblem);
+            if (!problemCreated) {
+                return next(ApiError.internal('Ошибка создания проблемы'));
+            }
+            res.status(200).json(problemCreated);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -71,8 +119,6 @@ export default class ConsultationController {
             const specializationIds = [
                 ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
             ];
-
-            console.log(specializationIds)
 
             if (specializationIds.length === 0) {
                 return next(ApiError.badRequest("Нет подходящих специалистов"));
@@ -284,7 +330,7 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Временная ячейка занята или найдена'));
             }
 
-            if(consultation.consultation_status === "UPCOMING") {
+            if (consultation.consultation_status === "UPCOMING") {
                 return next(ApiError.badRequest('Консультация еще не закончилась'));
             }
 
@@ -296,6 +342,50 @@ export default class ConsultationController {
             );
 
             res.status(200).json(newConsultation);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async findSpecialistForProblem(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { problems } = req.body as { problems: number[] };
+
+            const problemEntities = await models.ProblemModel.findAll({
+                where: { id: problems },
+                include: [
+                    {
+                        model: models.SpecializationModel,
+                        through: { attributes: [] }
+                    }
+                ]
+            });
+
+            if (!problemEntities || problemEntities.length === 0) {
+                return next(ApiError.badRequest("Проблемы не найдены"));
+            }
+
+            const specializationIds = [
+                ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
+            ];
+
+            if (specializationIds.length === 0) {
+                return next(ApiError.badRequest("Нет подходящих специалистов"));
+            }
+
+            const doctors = await models.DoctorModel.findAll({
+                where: {
+                    isActivated: true,
+                },
+                include: [
+                    {
+                        model: models.UserModel,
+                        attributes: ['id', 'name', 'surname', 'patronymic'] 
+                    }
+                ],
+                attributes: ['id'] 
+            });
+            res.status(200).json(doctors);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
