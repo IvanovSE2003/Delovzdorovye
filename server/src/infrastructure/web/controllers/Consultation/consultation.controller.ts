@@ -380,11 +380,20 @@ export default class ConsultationController {
                 include: [
                     {
                         model: models.UserModel,
-                        attributes: ['id', 'name', 'surname', 'patronymic'] 
+                        attributes: ['id', 'name', 'surname', 'patronymic']
+                    },
+                    {
+                        model: models.SpecializationModel,
+                        where: {
+                            id: specializationIds
+                        },
+                        through: { attributes: [] },
+                        required: true 
                     }
                 ],
-                attributes: ['id'] 
+                attributes: ['id', 'experience_years']
             });
+
             res.status(200).json(doctors);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
