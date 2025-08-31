@@ -3,7 +3,7 @@ import { Model, Optional } from 'sequelize';
 interface IConsultationAttributes {
     id: number;
     consultation_status: "UPCOMING" | "ARCHIVE";
-    payment_status: string;
+    payment_status: "PAID" | "PAYMENT" | "NOTPAID";
     other_problem: string | null;
     recommendations: string | null;
     duration: number;

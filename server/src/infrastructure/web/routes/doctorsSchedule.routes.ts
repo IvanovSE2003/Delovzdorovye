@@ -9,4 +9,4 @@ router.delete('/delete/:id', (req: Request<{userId: string}>, res: Response, nex
 router.post('/createTimeSlot', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.createTimeSlot(req, res, next));
 router.delete('/deleteTimeSlot/:id', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.deleteTimeSlot(req, res, next))
 
-export default router;
+export default router

@@ -1,6 +1,7 @@
 // consultation.controller.interface.ts
 import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
+import DoctorScheduleRepositoryImpl from "../../../../core/application/repositories/doctorSchedule.repository.impl.js";
 import ProblemRepositoryImpl from "../../../../core/application/repositories/problem.repository.impl.js";
 import TimeSlotRepositoryImpl from "../../../../core/application/repositories/timeSlot.repository.impl.js";
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
@@ -12,6 +13,7 @@ const consultationRepository = new ConsultationRepositoryImpl();
 const userRepository = new UserRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const timeSlotRepository = new TimeSlotRepositoryImpl();
+const doctorScheduleRepository = new DoctorScheduleRepositoryImpl();
 
 const consultationController = new ConsultationController(
     problemRepository, 
@@ -19,7 +21,8 @@ const consultationController = new ConsultationController(
     userRepository, 
     doctorRepository, 
     timeSlotRepository, 
-    timerService
+    timerService,
+    doctorScheduleRepository
 );
 
 export default consultationController;
