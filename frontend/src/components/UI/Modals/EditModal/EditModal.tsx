@@ -5,12 +5,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
 import TimeSlots from "../../../../features/account/TimeSlots/TimeSlots";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
-import './RecordModal.scss';
+import './EditModal.scss';
 interface ConsultationModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecord: (data: ConsultationData) => void;
-    adminMode?: boolean;
 }
 
 export interface ConsultationData {
@@ -20,10 +19,9 @@ export interface ConsultationData {
     time: string | null;
 }
 
-const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, adminMode = false }) => {
+const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
     const consultationStore = new ConsultationsStore();
     const [otherProblemText, setOtherProblemText] = useState<string>("");
-    // const [showOtherProblemInput, setShowOtherProblemInput] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date>();
@@ -47,7 +45,7 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
 
     useEffect(() => {
         getProblems();
-        adminMode && getSpecialists();
+        getSpecialists();
     }, []);
 
     const times = [
@@ -70,8 +68,8 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
         }
 
         const numericValues = selectedArray.map(option => option.value);
-        const data = await consultationStore.findDays(numericValues);
-        console.log("Ответ: ", data);
+        // const data = await consultationStore.findDays(numericValues);
+        // console.log("Ответ: ", data);
         // setShowOtherProblemInput(hasOtherProblem);
     };
 
@@ -135,11 +133,9 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
             <div className="consultation-modal">
                 <h2 className="consultation-modal__title">Запись на консультацию</h2>
 
-                {adminMode && (
-                    <p className="consultation-modal__client">
-                        Клиент: Иванова Мария Петровна, 8 888 888 88 88
-                    </p>
-                )}
+                <p className="consultation-modal__client">
+                    Клиент: Иванова Мария Петровна, 8 888 888 88 88
+                </p>
 
                 <button
                     className="consultation-modal__close"
@@ -159,35 +155,17 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
                     isOptionDisabled={isOptionDisabled}
                 />
 
-                {adminMode && (
-                    <Select
-                        options={specialists}
-                        // value={'value'}
-                        placeholder="Выберите специалиста"
-                        className="consultation-modal__select-problems"
-                        classNamePrefix="custom-select"
-                        onChange={() => { }}
-                        isClearable={true}
-                    />
-                )}
+                <Select
+                    options={specialists}
+                    // value={'value'}
+                    placeholder="Выберите специалиста"
+                    className="consultation-modal__select-problems"
+                    classNamePrefix="custom-select"
+                    onChange={() => { }}
+                    isClearable={true}
+                />
 
-                {/* {showOtherProblemInput && (
-                    <div className="consultation-modal__other-problem">
-                        <label className="consultation-modal__label" htmlFor="otherProblem">
-                            Опишите вашу проблему:
-                        </label>
-                        <textarea
-                            id="otherProblem"
-                            className="consultation-modal__textarea"
-                            value={otherProblemText}
-                            onChange={(e) => setOtherProblemText(e.target.value)}
-                            placeholder="Подробно опишите вашу проблему..."
-                            rows={4}
-                        />
-                    </div>
-                )} */}
-
-                <p className="consultation-modal__subtitle">Выберите удобные дату и время: </p>
+                <p className="consultation-modal__subtitle">Выберите удобные дату и время в календаре ниже: </p>
 
                 <div className="consultation-modal__date-time">
                     <div className="consultation-modal__calendar">
@@ -216,7 +194,7 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
 
                 <div className="consultation-modal__other-problem">
                     <label className="consultation-modal__label" htmlFor="otherProblem">
-                        Подробная информация о проблеме: 
+                        Подробная информация о проблеме:
                     </label>
                     <textarea
                         id="otherProblem"
@@ -236,11 +214,11 @@ const Modal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, ad
                     className="consultation-modal__submit"
                     onClick={handleSubmit}
                 >
-                    Записаться на консультацию
+                    Сохранить
                 </button>
             </div>
         </div>
     );
 };
 
-export default Modal;
+export default EditModal;

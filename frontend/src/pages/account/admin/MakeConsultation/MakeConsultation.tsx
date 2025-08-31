@@ -55,7 +55,11 @@ const MakeConsultation = () => {
                         <div key={user.id} className="makeconsultation__user-card">
                             <div className="makeconsultation__user-info">
                                 <span className="makeconsultation__user-name">
-                                    {user.surname} {user.name} {user.patronymic}
+                                    {user.name && user.surname && user?.patronymic ? (
+                                        <>{user.surname} {user.name} {user.patronymic}</>
+                                    ) : (
+                                        <>Анонимный пользователь</>
+                                    )}
                                 </span>
                                 <span className="makeconsultation__user-phone">{user.phone}</span>
                             </div>

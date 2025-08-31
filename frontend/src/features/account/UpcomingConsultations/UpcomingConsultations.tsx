@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import './UpcomingConsultations.scss';
-import BatchService from '../../../services/BatchService';
 import ShiftModal from '../../../components/UI/Modals/ShiftModal/ShiftModal';
-import type { ConsultationData } from '../../../components/UI/Modals/RecordModal/RecordModal';
 import CancelModal from '../../../components/UI/Modals/CancelModal/CancelModal';
+import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
+import EditModal, { type ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
+import type { IUserDataProfile } from '../../../models/Auth';
+import ConsultationService from '../../../services/ConsultationService';
 
 interface UserConsultationsProps {
     id: string | undefined;
+    profile: IUserDataProfile;
 }
 
 interface Consultation {
@@ -18,13 +21,15 @@ interface Consultation {
     details: string;
 }
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile}) => {
     const fetchConsultations = () => {
-        // const response = BatchService.getAllConsultions(id);
-        // console.log(response);
+        const response = ConsultationService.getAllConsultions(10, 1, {consultation_status: "UPCOMING"})
+        console.log(response);
     }
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
+    const [modalRepeat, setModalRepeat] = useState<boolean>(false);
+    const [modalEdit, setModalEdit] = useState<boolean>(false);
 
     useEffect(() => {
         fetchConsultations();
@@ -40,6 +45,18 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
         console.log("Данные для записи:", reason);
         // Здесь логика отправки данных на сервер
         setModalCancel(false);
+    };
+
+    const handleRepeatConsultation = (data: ConsultationData) => {
+        console.log("Данные для записи:", data);
+        // Здесь логика отправки данных на сервер
+        setModalRepeat(false);
+    };
+
+    const handleEditConsultation = (data: ConsultationData) => {
+        console.log("Данные для записи:", data);
+        // Здесь логика отправки данных на сервер
+        setModalEdit(false);
     };
 
     const consultations: Consultation[] = [
@@ -59,12 +76,26 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
                 isOpen={modalShift}
                 onClose={() => setModalShift(false)}
                 onRecord={handleShiftConsultation}
+                profileData={profile}
             />
 
             <CancelModal
                 isOpen={modalCancel}
                 onClose={() => setModalCancel(false)}
                 onRecord={handleCancelConsultation}
+            />
+
+            <RepeatModal
+                isOpen={modalRepeat}
+                onClose={() => setModalRepeat(false)}
+                onRecord={handleRepeatConsultation}
+            />
+
+            <EditModal
+                // Надо получать еще уже готовые данные для карточки
+                isOpen={modalEdit}
+                onClose={() => setModalEdit(false)}
+                onRecord={handleEditConsultation}
             />
 
             <h2 className='user-consultations__title'>Предстоящие консультации</h2>
@@ -103,10 +134,17 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
                         >
                             Отменить
                         </button>
-                        <button className="consultation-card__button consultation-card__button--repeat">
+                        <button
+                            className="consultation-card__button consultation-card__button--repeat"
+                            onClick={() => setModalRepeat(true)}
+                        >
                             Повторить
                         </button>
-                        <button className="consultation-card__button consultation-card__button--edit">
+                        <button
+                            // Надо полчить еще уже готовые данные
+                            className="consultation-card__button consultation-card__button--edit"
+                            onClick={() => setModalEdit(true)}
+                        >
                             Редактировать
                         </button>
                     </div>

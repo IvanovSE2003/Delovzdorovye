@@ -1,0 +1,96 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+.archive {
+  &__search {
+    margin-bottom: 20px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__card {
+    background-color: $block-color;
+    border-radius: 8px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  &__time {
+    display: flex;
+    align-items: center;
+  }
+
+  &__date {
+    font-weight: bold;
+    font-size: 1.4rem;
+    color: black;
+    margin-right: 12px;
+  }
+
+  &__hours {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: black;
+    padding: 5px 10px;
+    background-color: $profile-color;
+    border-radius: 5px;
+  }
+
+  &__rating {
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+
+    &--5 {
+      background: #ffcccc;
+      color: #b20000;
+    }
+
+    &--4 {
+      background: #ffe4b5;
+      color: #b26b00;
+    }
+
+    &--3 {
+      background: #fff7cc;
+      color: #7a7000;
+    }
+  }
+
+  &__info {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    line-height: 1.4;
+
+    p {
+      margin: 4px 0;
+    }
+
+    a {
+      color: $primary-color;
+      text-decoration: underline;
+    }
+  }
+
+  &__review {
+    width: 100%;
+    min-height: 100px;
+    padding: 8px;
+    border: 2px solid black;
+    border-radius: 6px;
+    resize: none;
+    font-size: 1.35rem;
+    box-sizing: border-box;
+    margin-top: 20px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}

@@ -20,8 +20,8 @@ import Users from '../pages/account/admin/Users';
 import Profile from "../pages/account/SomeProfile";
 import Bell from "../pages/account/Bell";
 import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsultation";
-import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations";
-import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations";
+import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations/ArchiveConsultations";
+import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
 
 export interface IRoute {
     path: string;

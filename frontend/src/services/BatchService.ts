@@ -10,6 +10,12 @@ interface UserConsult {
     totalPages: number;
 }
 
+interface getUsefulBlock {
+    id: number;
+    header: string;
+    text: string;
+}
+
 
 export default class BatchService {
 
@@ -32,4 +38,12 @@ export default class BatchService {
     static async userConsult(limit=10, page=1): Promise<AxiosResponse<UserConsult>> {
         return $api.post<UserConsult>('/batch/userConsult/all', {limit, page});
     } 
+
+    static async getClientUsefulBlock(limit=10, page=1): Promise<AxiosResponse<getUsefulBlock[]>> {
+        return $api.post<getUsefulBlock[]>('/batch/', {limit, page});
+    }
+
+    static async getSpecialistUsefulBlock(limit=10, page=1): Promise<AxiosResponse<getUsefulBlock[]>> {
+        return $api.post<getUsefulBlock[]>('/batch/', {limit, page});
+    }
 }

@@ -1,6 +1,7 @@
+import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
+import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
 import AccountLayout from "../AccountLayout";
 import { useState } from "react";
-import Modal, { type ConsultationData } from "../../../components/UI/Modals/RecordModal/RecordModal";
 
 const Main: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -13,7 +14,7 @@ const Main: React.FC = () => {
 
     return (
         <AccountLayout>
-            <Modal
+            <UserRecordModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onRecord={handleRecordConsultation}

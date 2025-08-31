@@ -1,22 +1,20 @@
 import DatePicker from 'react-datepicker';
-import './ShiftModal.scss'
+import './RepeatModal.scss'
 import TimeSlots from '../../../../features/account/TimeSlots/TimeSlots';
 import { useEffect, useState } from 'react';
 import ConsultationsStore, { type OptionsResponse } from '../../../../store/consultations-store';
 import { ru } from 'date-fns/locale';
 import type { MultiValue } from 'react-select';
-import type { IUserDataProfile } from '../../../../models/Auth';
 import type { ConsultationData } from '../EditModal/EditModal';
 
 interface ShiftModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecord: (data: ConsultationData) => void;
-    profileData?: IUserDataProfile;
 }
 
 
-const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, profileData = {} as IUserDataProfile }) => {
+const RepeatModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord }) => {
     const consultationStore = new ConsultationsStore();
     const [otherProblemText, setOtherProblemText] = useState<string>("");
     const [error, setError] = useState<string>("");
@@ -77,7 +75,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, prof
     return (
         <div className="modal">
             <div className='shift-modal consultation-modal'>
-                <h2 className="consultation-modal__title">Перенос консультации</h2>
+                <h2 className="consultation-modal__title">Повтор консультации</h2>
 
                 <button
                     className="consultation-modal__close"
@@ -87,15 +85,12 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, prof
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы переносите консультацию: 4 августа, 15:30</p>
+                    <p>Вы повторяете консультацию у специалиста: </p>
+                    <p>Анна Петрова</p>
                 </div>
 
 
-                <div className="shift-modal__client">
-                    <p className="consultation-modal__client">
-                        Клиент: {profileData.name} {profileData.surname} {profileData?.patronymic}, {profileData.phone}
-                    </p>
-                </div>
+                <div className="shift-modal__client">Клиент: Иванова Мария Петровна, 8 888 888 88 88</div>
 
                 <div className="consultation-modal__date-time">
                     <div className="consultation-modal__calendar">
@@ -123,9 +118,6 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, prof
                     <p className="shift-modal__selected-time">
                         Вы выбрали: {selectedTime || "не выбрано"}
                     </p>
-                    <p className='shift-modal__selected-specialist'>
-                        <strong>Специалист: </strong> Анна Петрова
-                    </p>
                 </div>
 
                 {error && (
@@ -136,11 +128,11 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, prof
                     className="shift-modal__submit"
                     onClick={handleSubmit}
                 >
-                    Перенести
+                    Повторить
                 </button>
             </div>
         </div>
     )
 }
 
-export default ShiftModal;
+export default RepeatModal;

@@ -1,4 +1,4 @@
-export interface TypeResponse {
-    message?: string;
-    success: boolean;
-}
+export type TypeResponse = {
+  success: boolean;
+  message: string;
+};

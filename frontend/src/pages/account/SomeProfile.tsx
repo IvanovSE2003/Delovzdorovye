@@ -10,8 +10,8 @@ import UpcomingConsultations from "../../features/account/UpcomingConsultations/
 import ArchiveConsultations from "../../features/account/ArchiveConsultations/ArchiveConsultations";
 import UserProfile from "../../features/account/MyProfile/UserProfile";
 import '../../features/account/MyProfile/MyProfile.scss';
-import Modal, { type ConsultationData } from "../../components/UI/Modals/RecordModal/RecordModal";
-import ShiftModal from "../../components/UI/Modals/ShiftModal/ShiftModal";
+import type { ConsultationData } from "../../components/UI/Modals/EditModal/EditModal";
+import AdminRecordModal from "../../components/UI/Modals/RecordModal/AdminRecordModal";
 
 const Profile = () => {
     const { id } = useParams();
@@ -29,7 +29,6 @@ const Profile = () => {
 
     const handleRecordConsultation = (data: ConsultationData) => {
         console.log("Данные для записи:", data);
-        // Здесь логика отправки данных на сервер
         setModalRecord(false);
     };
 
@@ -43,9 +42,8 @@ const Profile = () => {
 
     return (
         <AccountLayout>
-            <Modal
+            <AdminRecordModal
                 isOpen={modalRecord}
-                adminMode
                 onClose={() => setModalRecord(false)}
                 onRecord={handleRecordConsultation}
             />
@@ -61,7 +59,7 @@ const Profile = () => {
                     {store.user.role === "ADMIN" && (
                         <button
                             className="neg-button width100"
-                            style={{marginTop: '30px'}}
+                            style={{ marginTop: '30px' }}
                             onClick={() => setModalRecord(true)}
                         >
                             Записать на консультацию
@@ -70,10 +68,11 @@ const Profile = () => {
                 </div>
             </div>
 
-            {store.user.role === "ADMIN" && (
+            {store.user.role === "ADMIN" && profile.role === "PATIENT" && (
                 <>
                     <UpcomingConsultations
                         id={id}
+                        profile={profile}
                     />
 
                     <ArchiveConsultations />

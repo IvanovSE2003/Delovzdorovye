@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './ArchiveConsultations.scss';
+import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
+import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
 
 interface Consultation {
     id: number;
@@ -35,6 +37,8 @@ const ArchiveConsultations: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
 
+    const [modalRepeat, setModalRepeat] = useState<boolean>(false);
+
     useEffect(() => {
         fetchArchiveConsultations();
     }, []);
@@ -53,15 +57,18 @@ const ArchiveConsultations: React.FC = () => {
         }
     };
 
-    const handleRepeatConsultation = (id: number) => {
-        // Логика повторения консультации
-        console.log('Повторить консультацию:', id);
-    };
 
     const handleDownloadRecommendation = (fileUrl: string) => {
         // Логика скачивания файла рекомендации
         window.open(fileUrl, '_blank');
     };
+
+    const handleRepeatConsultation = (data: ConsultationData) => {
+        console.log("Данные для записи:", data);
+        // Здесь логика отправки данных на сервер
+        setModalRepeat(false);
+    };
+
 
     if (loading) {
         return (
@@ -83,6 +90,13 @@ const ArchiveConsultations: React.FC = () => {
 
     return (
         <div className="user-consultations">
+            <RepeatModal
+                isOpen={modalRepeat}
+                onClose={() => setModalRepeat(false)}
+                onRecord={handleRepeatConsultation}
+            />
+
+
             <h2 className="user-consultations__title">Архив консультаций</h2>
 
             {consultations.length === 0 ? (
@@ -113,7 +127,7 @@ const ArchiveConsultations: React.FC = () => {
                             <div className="archive-consultation-card__actions">
                                 <button
                                     className="archive-consultation-card__button archive-consultation-card__button--repeat"
-                                    onClick={() => handleRepeatConsultation(consultation.id)}
+                                    onClick={() => setModalRepeat(true)}
                                 >
                                     Повторить
                                 </button>

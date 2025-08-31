@@ -1,11 +1,20 @@
 import AccountLayout from "../AccountLayout";
 import reschedule from '../../../assets/images/reschedule.png';
 import cancel from '../../../assets/images/cancel.png';
+import RateModal from "../../../components/UI/Modals/RateModal/RateModal";
+import { useState } from "react";
 
 const Consultations: React.FC = () => {
+    const [modalRate, setModalRate] = useState<boolean>(false);
+
     return (
         <AccountLayout>
             <div className="consultations">
+
+                <RateModal
+                    isOpen={modalRate}
+                    onClose={() => setModalRate(false)}
+                />
 
                 <h2 className="consultations__title">Предстоящие консультации</h2>
                 <div className="consultations__consultations-now">
@@ -64,12 +73,16 @@ const Consultations: React.FC = () => {
                         <p><strong>Специалист: </strong> <a href="\">Анна Петрова</a></p>
                         <div className="icons">
                             <div className="icon-block">
-                                <img src={reschedule} id="reschedule" />
-                                <label htmlFor="reschedule ">Оценить</label>
+                                <button className="icon-block__btn" onClick={() => setModalRate(true)}>
+                                    <img src={reschedule} alt="Оценить" />
+                                    <span>Оценить</span>
+                                </button>
                             </div>
                             <div className="icon-block">
-                                <img src={cancel} id="cancel" />
-                                <label htmlFor="cancel">Повторить</label>
+                                <button className="icon-block__btn">
+                                    <img src={cancel} alt="Повторить" />
+                                    <span>Повторить</span>
+                                </button>
                             </div>
                         </div>
                     </div>
