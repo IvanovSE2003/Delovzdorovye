@@ -46,6 +46,7 @@ const Profile = () => {
                 isOpen={modalRecord}
                 onClose={() => setModalRecord(false)}
                 onRecord={handleRecordConsultation}
+                userId={id}
             />
 
             <div className="user-profile">

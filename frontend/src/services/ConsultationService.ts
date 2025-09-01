@@ -1,7 +1,6 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
-import type { TypeResponse } from "../models/response/DefaultResponse";
-import type { OptionsResponse, OptionsResponse2, Slot } from "../store/consultations-store";
+import type { AppointmentRequest, AppointmentResponse, OptionsResponse, Slot } from "../store/consultations-store";
 
 interface Consultation {
     id: number;
@@ -39,17 +38,28 @@ export default class ConsultationService {
         return $api.get<OptionsResponse[]>('/consultation/problem/all');
     }
 
-
     static async getSpecialists(problems: number[]): Promise<AxiosResponse<SpecialistResponse[]>> {
-        return $api.post<SpecialistResponse[]>('/consultation/specialist/all', { problems });
+        return $api.post<SpecialistResponse[]>('/consultation/specialistForProblems', { problems });
     }
 
-    // static async findDays(problems: number[]): Promise<AxiosResponse<TypeResponse>> {
-    //     return $api.post<TypeResponse>('consultation/findDay', problems);
-    // }
+    static async getSchedule(id: number) {
+        return $api.post<Slot[]>(`/consultation/findSchedule`, { id });
+    }
 
-    static async getSchedule(doctorId: number) {
-        return $api.get<Slot[]>(`/schedule/${doctorId}`);
+    static async createAppointment(data: AppointmentRequest): Promise<AxiosResponse<AppointmentResponse>> {
+        return $api.post('/consultation/appointment', { userId: data.userId, time: data.time, problems: data.problems, date: data.date });
+    }
+
+    static async deleteProblem(id: number) {
+        return $api.delete(`/consultation/problem/${id}`);
+    }
+
+    static async updateProblem(id: number, newData: string) {
+        return $api.put(`/consultation/problem/${id}`, {name: newData});
+    }
+
+    static async createProblem(newData: string) {
+        return $api.post('/consultation/problem/create', { name: newData });
     }
 
     static async getAllConsultions(

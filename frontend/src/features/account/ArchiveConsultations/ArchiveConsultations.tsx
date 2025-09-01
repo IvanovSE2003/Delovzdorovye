@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './ArchiveConsultations.scss';
 import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
 import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
+import ConsultationService from '../../../services/ConsultationService';
 
 interface Consultation {
     id: number;
@@ -39,23 +40,14 @@ const ArchiveConsultations: React.FC = () => {
 
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
 
-    useEffect(() => {
-        fetchArchiveConsultations();
-    }, []);
+    const fetchConsultations = async () => {
+        const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE" })
+        console.log(response.data.consultations[0]);
+    }
 
-    const fetchArchiveConsultations = async () => {
-        try {
-            setLoading(true);
-            // Замените на ваш реальный эндпоинт
-            //   const response = await axios.get<Consultation[]>('https://api.example.com/user-consultations');
-            //   setConsultations(response.data);
-        } catch (err) {
-            //   setError('Ошибка при загрузке архивных консультаций');
-            //   console.error('Ошибка при загрузке данных:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        fetchConsultations();
+    }, [])
 
 
     const handleDownloadRecommendation = (fileUrl: string) => {

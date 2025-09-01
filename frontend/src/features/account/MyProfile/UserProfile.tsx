@@ -32,13 +32,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true,
 
                 {!profileData.isAnonymous && (
                     <>
-                        <span><span className="label">Пол:</span> {profileData.gender}</span>
-                        <span><span className="label">Дата рождения:</span> {GetFormatDate(profileData.dateBirth)}</span>
-                        {profileData.age && (<span><span className="label">Возвраст</span> {profileData?.age} </span>)}
+                        {profileData.gender && (<span><span className="label">Пол:</span> {profileData.gender}</span>)}
+                        {profileData.dateBirth && (<span><span className="label">Дата рождения:</span> {GetFormatDate(profileData.dateBirth)}</span>)}
+                        {profileData.age && (<span><span className="label">Возвраст: </span> {profileData?.age} </span>)}
                     </>
                 )}
-                <span><span className="label">Номер телефона:</span> {GetFormatPhone(profileData.phone)}</span>
-                <span><span className="label">E-mail:</span> {profileData.email}</span>
+                {profileData.phone && (<span><span className="label">Номер телефона:</span> {GetFormatPhone(profileData.phone)}</span>)}
+                {profileData.email && (<span><span className="label">E-mail:</span> {profileData.email}</span>)}
 
                 {isButton && (
                     <div className="user-profile__buttons">

@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import UserProfile from "../../features/account/MyProfile/UserProfile";
 
 
-const AdminPage = () => {
+const AdminPage: React.FC = () => {
     const { store } = useContext(Context);
     const [isEditing, setIsEditing] = useState<boolean>(false);
 

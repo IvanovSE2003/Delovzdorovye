@@ -10,7 +10,7 @@ const componentMap = {
   ADMIN: lazy(() => import('./AdminPage')),
 };
 
-const PersonalPage = () => {
+const Account: React.FC = observer(() => {
   const { store } = useContext(Context);
   const Component = componentMap[store.user.role as keyof typeof componentMap];
 
@@ -21,6 +21,6 @@ const PersonalPage = () => {
       </Suspense>
     </AccountLayout>
   );
-};
+});
 
-export default observer(PersonalPage);
+export default Account;

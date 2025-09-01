@@ -13,9 +13,33 @@ export type OptionsResponse2 = {
 };
 
 export interface Slot {
-    date: string;   // "2025-09-05"
-    time: string;   // "10:00"
+    date: string;
+    time: string;
     doctorId: number;
+}
+
+export interface AppointmentRequest {
+    userId: string;
+    time: string;
+    problems: number[];
+    date: string; // ISO строка
+    // otherProblem?: string;
+    // doctorId: number;
+}
+
+export interface AppointmentResponse {
+    id: number;
+    consultation_status: string;
+    payment_status: string;
+    other_problem: string | null;
+    recommendations: string | null;
+    duration: number;
+    score: number | null;
+    comment: string | null;
+    reservation_expires_at: string;
+    userId: number;
+    doctorId: number;
+    timeSlotId: number;
 }
 
 export default class ConsultationsStore {
@@ -46,12 +70,12 @@ export default class ConsultationsStore {
     }
 
     // Получаем расписание врача
-    async getSchedule(doctorId: number): Promise<Omit<Slot, "doctorId">[]> {
+    async getSchedule(id: number): Promise<Slot[]> {
         try {
-            const response = await ConsultationService.getSchedule(doctorId);
+            const response = await ConsultationService.getSchedule(id);
             return response.data;
         } catch (e) {
-            console.error(`Ошибка при загрузке рассписания врача ${doctorId}:`, e);
+            console.error(`Ошибка при загрузке рассписания врача ${id}:`, e);
             return [];
         }
     }
@@ -67,6 +91,40 @@ export default class ConsultationsStore {
         }
 
         return slots;
+    }
+
+    async createAppointment(data: AppointmentRequest): Promise<AppointmentResponse> {
+        try {
+            const response = await ConsultationService.createAppointment(data);
+            return response.data;
+        } catch (e) {
+            console.error(`Ошибка при создании консультации:`, e);
+            return {} as AppointmentResponse;
+        }
+    }
+
+    async deleteProblem(id: number): Promise<void> {
+        try {
+            await ConsultationService.deleteProblem(id);
+        } catch (e) {
+            console.error(`Ошибка при удалении проблемы:`, e);
+        }
+    }
+
+    async updateProblem(id: number, newData: string ) {
+        try {
+            await ConsultationService.updateProblem(id, newData);
+        } catch (e) {
+            console.error(`Ошибка при изменении проблемы:`, e);
+        }
+    }
+
+    async createProblem(newData: string) {
+        try {
+            await ConsultationService.createProblem(newData);
+        } catch(e) {
+            console.error("Ошибка при создании проблемы: ", e);
+        }
     }
 
     // async findDays(problems: number[]): Promise<TypeResponse> {

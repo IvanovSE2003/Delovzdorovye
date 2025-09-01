@@ -1,9 +1,12 @@
+import { observer } from "mobx-react-lite";
 import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
 import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
+import { Context } from "../../../main";
 import AccountLayout from "../AccountLayout";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 const Main: React.FC = () => {
+    const { store } = useContext(Context);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const handleRecordConsultation = (data: ConsultationData) => {
@@ -18,6 +21,7 @@ const Main: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onRecord={handleRecordConsultation}
+                userId={store.user.id}
             />
 
             <div className="main">
@@ -59,4 +63,4 @@ const Main: React.FC = () => {
     );
 };
 
-export default Main;
+export default observer(Main);

@@ -1,56 +1,108 @@
-// ConsultationForm.tsx
-import { useState } from "react";
+// RecordForm.tsx
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
 import TimeSlots from "../../../../features/account/TimeSlots/TimeSlots";
-import type { OptionsResponse } from "../../../../store/consultations-store";
+import type { OptionsResponse, Slot } from "../../../../store/consultations-store";
 import './RecordModal.scss';
+import ConsultationsStore from "../../../../store/consultations-store";
 
 interface ConsultationFormProps {
   specialist?: OptionsResponse | null;
-  onSubmit: (data: {
-    date: Date;
-    time: string;
-    problemIds: number[];
-    otherProblem: string;
-  }) => void;
+  problems?: number[];
+  userId?: string;
+  slotsOverride?: Slot[];
+  selectTimeDate: (time: string, date: string) => void;
 }
 
-const times = [
-  "09:00", "09:30", "10:00", "10:30",
-  "12:00", "12:30", "13:00", "13:30",
-  "15:00", "16:00", "18:00", "19:30"
-];
+const RecordForm: React.FC<ConsultationFormProps> = ({
+  specialist,
+  problems = [],
+  userId = "",
+  slotsOverride,
+  selectTimeDate
+}) => {
+  const store = new ConsultationsStore();
 
-const RecordForm: React.FC<ConsultationFormProps> = ({ specialist, onSubmit }) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [otherProblemText, setOtherProblemText] = useState("");
   const [error, setError] = useState("");
+  const [slots, setSlots] = useState<Omit<Slot, "doctorId">[]>([]);
 
-  const handleSubmit = () => {
+  // Загружаем расписание (только если не переданы slotsOverride)
+  useEffect(() => {
+    if (slotsOverride) {
+      setSlots(slotsOverride);
+      return;
+    }
+
+    const loadSpecialistSchedule = async () => {
+      if (!specialist) return;
+      try {
+        const schedule = await store.getSchedule(specialist.value);
+        setSlots(schedule);
+      } catch (error) {
+        console.error('Ошибка загрузки расписания:', error);
+        setError('Не удалось загрузить расписание специалиста');
+      }
+    };
+
+    loadSpecialistSchedule();
+  }, [specialist, slotsOverride]);
+
+  // Проверка доступных дат
+  const availableDates: Date[] = Array.from(
+    new Set(
+      slots.map(slot => new Date(slot.date).toDateString())
+    )
+  ).map(str => new Date(str));
+  const isDateAvailable = (date: Date) => {
+    return availableDates.some(availableDate =>
+      availableDate.toDateString() === date.toDateString()
+    );
+  };
+
+  // Проверка выбрана ли дата в календаре
+  const slotsForSelectedDate = slots.filter(
+    slot => new Date(slot.date).toDateString() === selectedDate?.toDateString()
+  );
+
+  // Обработка записи консультации
+  const handleSubmit = async () => {
     if (!selectedDate || !selectedTime) {
       setError("Выберите дату и время");
       return;
     }
-    if (!specialist) {
-      setError("Не выбран специалист");
-      return;
-    }
 
-    onSubmit({
-      date: selectedDate,
-      time: selectedTime,
-      problemIds: [], // прокинете снаружи
-      otherProblem: otherProblemText
-    });
+    try {
+      if (!slotsOverride) {
+        // админский сценарий
+        await store.createAppointment({
+          userId,
+          time: selectedTime,
+          problems,
+          date: selectedDate.toISOString(),
+        });
+      }
+
+      console.log(selectedDate, selectedTime)
+      selectTimeDate(selectedDate.toDateString(), selectedTime);
+      setError("");
+    } catch (e) {
+      console.error("Ошибка при записи на консультацию:", e);
+      setError("Не удалось записаться на консультацию. Попробуйте позже.");
+    }
   };
+
+  useEffect(() => {
+    console.log(selectedDate, selectedTime)
+    selectTimeDate(selectedTime??"", selectedDate?.toDateString()??"");
+  }, [selectedDate, selectedDate])
 
   return (
     <div>
-      {specialist && <p>Выбран специалист: {specialist.label}</p>}
-
       <div className="consultation-modal__date-time">
         <div className="consultation-modal__calendar">
           <DatePicker
@@ -61,11 +113,17 @@ const RecordForm: React.FC<ConsultationFormProps> = ({ specialist, onSubmit }) =
             dateFormat="dd.MM.yyyy"
             minDate={new Date()}
             todayButton="Сегодня"
+            filterDate={(date) => isDateAvailable(date)}
+            highlightDates={[{ "available": availableDates }]}
           />
         </div>
 
         <div className="consultation-modal__time">
-          <TimeSlots times={times} onSelect={setSelectedTime} />
+          <TimeSlots
+            slots={slotsForSelectedDate}
+            selectedTime={selectedTime}
+            onTimeSelect={setSelectedTime}
+          />
           <p>Вы выбрали: {selectedTime || "не выбрано"}</p>
         </div>
       </div>
@@ -85,8 +143,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({ specialist, onSubmit }) =
       </div>
 
       {error && <div className="consultation-modal__error">{error}</div>}
-
-      <button className="consultation-modal__submit" onClick={handleSubmit}>Записаться</button>
     </div>
   );
 };

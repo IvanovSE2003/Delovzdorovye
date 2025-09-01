@@ -15,8 +15,9 @@ interface ConsultationModalProps {
 export interface ConsultationData {
     problems: number[];
     otherProblemText: string;
-    date: Date | undefined;
+    date: Date | string | undefined;
     time: string | null;
+    doctorId?: number;
 }
 
 const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
@@ -34,13 +35,11 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
     const getProblems = async () => {
         const data = await consultationStore.getProblems();
         setProblems(data);
-        console.log("Проблемы: ", data);
     }
 
     const getSpecialists = async () => {
-        const data = await consultationStore.getSpecialists();
-        setSpecialists(data);
-        console.log("Специалисты: ", data);
+        // const data = await consultationStore.findSpecialists();
+        // setSpecialists(data);
     }
 
     useEffect(() => {
@@ -185,7 +184,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                     </div>
 
                     <div className="consultation-modal__time">
-                        <TimeSlots times={times} onSelect={setSelectedTime} />
+                        {/* <TimeSlots times={times} onSelect={setSelectedTime} /> */}
                         <p className="consultation-modal__selected-time">
                             Вы выбрали: {selectedTime || "не выбрано"}
                         </p>

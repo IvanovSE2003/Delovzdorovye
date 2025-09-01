@@ -21,15 +21,16 @@ interface Consultation {
     details: string;
 }
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile}) => {
-    const fetchConsultations = () => {
-        const response = ConsultationService.getAllConsultions(10, 1, {consultation_status: "UPCOMING"})
-        console.log(response);
-    }
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
     const [modalEdit, setModalEdit] = useState<boolean>(false);
+
+    const fetchConsultations = async () => {
+        const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING" })
+        console.log(response.data.consultations[0]);
+    }
 
     useEffect(() => {
         fetchConsultations();
@@ -55,7 +56,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile}
 
     const handleEditConsultation = (data: ConsultationData) => {
         console.log("Данные для записи:", data);
-        // Здесь логика отправки данных на сервер
         setModalEdit(false);
     };
 

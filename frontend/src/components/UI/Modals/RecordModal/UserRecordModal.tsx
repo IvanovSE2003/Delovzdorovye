@@ -1,85 +1,102 @@
 import { useState } from "react";
 import Select, { type MultiValue } from "react-select";
 import ConsultationsStore, { type OptionsResponse, type Slot } from "../../../../store/consultations-store";
-import RecordForm from "./RecordForm"; // подключаем форму
+import RecordForm from "./RecordForm";
+import './RecordModal.scss';
+import type { ConsultationData } from "../EditModal/EditModal";
 
 interface UserConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRecord: (data: { date: string; time: string; doctorId: number; problems: number[]; otherProblem: string }) => void;
+  onRecord: (data: ConsultationData) => void;
+  userId: number;
 }
 
-function buildScheduleMap(slots: Slot[]) {
-  const schedule: Record<string, Record<string, number[]>> = {};
-  slots.forEach(({ date, time, doctorId }) => {
-    if (!schedule[date]) schedule[date] = {};
-    if (!schedule[date][time]) schedule[date][time] = [];
-    schedule[date][time].push(doctorId);
-  });
-  return schedule;
-}
-
-const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
+const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord, userId }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [scheduleMap, setScheduleMap] = useState<Record<string, Record<string, number[]>>>({});
+
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const store = new ConsultationsStore();
 
+  // Загрузка проблем в селект
   const loadProblems = async () => {
     if (problems.length > 0) return;
     setProblems(await store.getProblems());
   };
 
+  // Изменение селекта с проблемами
   const handleProblemChange = async (selected: MultiValue<OptionsResponse>) => {
     setSelectedProblems(selected);
     const ids = selected.map(p => p.value);
     const fetchedSlots = await store.getSchedulesByProblems(ids);
     setSlots(fetchedSlots);
-    setScheduleMap(buildScheduleMap(fetchedSlots));
   };
 
-  const handleSubmit = (formData: { date: Date; time: string; problemIds: number[]; otherProblem: string }) => {
-    const dateStr = formData.date.toISOString().split("T")[0];
-    const doctorId = scheduleMap[dateStr]?.[formData.time]?.[0]; // первый доступный врач
-    if (!doctorId) return;
-
-    onRecord({
-      date: dateStr,
-      time: formData.time,
-      doctorId,
-      problems: formData.problemIds,
-      otherProblem: formData.otherProblem,
-    });
-    onClose();
+  const handleSubmit = () => {
+    console.log(
+      {
+        userId: userId,
+        time: selectedTime,
+        date: selectedDate,
+        problems: selectedProblems.map(value => value.value)
+      }
+    )
   };
+
+  // Затемнение некоторые полей
+  const isOptionDisabled = (option: OptionsResponse): boolean => {
+    const hasOtherProblem = selectedProblems.some(opt => opt.value === 9);
+    const hasRegularProblems = selectedProblems.some(opt => opt.value !== 9);
+
+    if (option.value === 9) {
+      return hasRegularProblems;
+    } else {
+      return hasOtherProblem;
+    }
+  };
+
+  const selectTimeDate = (time: string, date: string) => {
+    setSelectedDate(date);
+    setSelectedTime(time);
+  }
 
   if (!isOpen) return null;
 
   return (
     <div className="modal">
       <div className="consultation-modal">
-        <h2>Запись на консультацию</h2>
-        <button onClick={onClose}>X</button>
+        <h2 className="consultation-modal__title">Запись на консультацию</h2>
+        <button className="consultation-modal__close" onClick={onClose}>X</button>
 
         <Select
           isMulti
           options={problems}
           value={selectedProblems}
+          placeholder="Выберите одну или несколько проблем"
+          className="consultation-modal__select"
+          classNamePrefix="custom-select"
           onChange={handleProblemChange}
+          isOptionDisabled={isOptionDisabled}
           onMenuOpen={loadProblems}
-          placeholder="Выберите проблему"
+          noOptionsMessage={() => "Нет доступных проблем"}
         />
 
-        {slots.length > 0 && (
-          <RecordForm
-            specialist={null}
-            onSubmit={(formData) =>
-              handleSubmit({ ...formData, problemIds: selectedProblems.map(p => p.value) })
-            }
-          />
-        )}
+        <RecordForm
+          specialist={null}
+          slotsOverride={slots}
+          selectTimeDate={selectTimeDate}
+        />
+
+        <button
+          className="consultation-modal__submit"
+          onClick={handleSubmit}
+        >
+          Записаться
+        </button>
       </div>
     </div>
   );
