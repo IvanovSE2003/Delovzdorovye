@@ -75,15 +75,6 @@ export default class BatchController {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
 
-            const doctorFieldMap: Record<string, (doctor: Doctor, value: string) => void> = {
-                "Специализации": (doctor, value) => {
-                    doctor.specializations = value.split(",").map(s => s.trim());
-                },
-                "Опыт работы": (doctor, value) => (doctor.experienceYears = parseInt(value)),
-                // "Диплом": (doctor, value) => (doctor.diploma = value),
-                // "Лицензия": (doctor, value) => (doctor.license = value),
-            };
-
             const userFieldMap: Record<string, (user: User, value: string) => void> = {
                 "Изображение": (u, v) => (u.img = v),
                 "Имя": (u, v) => (u.name = v),
@@ -97,15 +88,7 @@ export default class BatchController {
                 "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
             };
 
-            if (batch.field_name in doctorFieldMap) {
-                const doctor = await this.doctorRepository.findByUserId(user.id);
-                if (!doctor) {
-                    return next(ApiError.badRequest("Доктор не найден"));
-                }
-
-                doctorFieldMap[batch.field_name](doctor, batch.new_value);
-                await this.doctorRepository.update(doctor);
-            } else if (batch.field_name in userFieldMap) {
+            if (batch.field_name in userFieldMap) {
                 userFieldMap[batch.field_name](user, batch.new_value);
                 await this.userRepository.update(user);
             } else {
@@ -185,7 +168,7 @@ export default class BatchController {
                     phone: user.phone,
                     gender: user.gender,
                     email: user.email,
-                    specializations: null,
+                    specialization: null,
                     diploma: null,
                     license: null,
                     isBlocked: user.isBlocked
@@ -194,9 +177,7 @@ export default class BatchController {
                 if (user.role === 'DOCTOR') {
                     const doctorInfo = doctorMap.get(user.id);
                     if (doctorInfo) {
-                        userData.specializations = doctorInfo.specializations || null;
-                        // userData.diploma = doctorInfo.diploma || null;
-                        // userData.license = doctorInfo.license || null;
+                        userData.specialization = doctorInfo.specialization || null;
                     }
                 }
 
@@ -249,5 +230,16 @@ export default class BatchController {
         }
     }
 
-    
+    async getAllProfData(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {limit, page, filters} = req.body;
+            const profDatas = await this.batchRepository.findAllProfData(limit, page, filters);
+            if(!profDatas) {
+                return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
+            }
+            res.status(200).json(profDatas)
+        } catch(e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
 }

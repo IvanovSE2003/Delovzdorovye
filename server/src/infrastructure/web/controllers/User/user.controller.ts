@@ -168,7 +168,7 @@ export default class UserController {
         }
     }
 
-    async check(req: Request, res: Response, next: NextFunction) {
+    async check(req: any, res: Response, next: NextFunction) {
         try {
             if (!req.user) {
                 return next(ApiError.internal("Пользователь не авторизован"));

@@ -80,4 +80,9 @@ export default class Consultation {
         this.score = score;
         return this;
     }
+
+    setRecomendation(rec: string) {
+        this.recommendations = rec;
+        return this;
+    }
 }

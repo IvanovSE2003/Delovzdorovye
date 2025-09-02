@@ -11,6 +11,15 @@ import TimerService from "../../../../core/domain/services/timer.service.js";
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
 import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
+import { v4 } from "uuid";
+import path, { dirname } from "path";
+import { UploadedFile } from 'express-fileupload';
+import fs from 'fs/promises';
+import { fileURLToPath } from "url";
+import FileService from "../../../../core/domain/services/file.service.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default class ConsultationController {
     constructor(
@@ -20,7 +29,8 @@ export default class ConsultationController {
         private readonly doctorReposiotry: DoctorRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
         private readonly timerService: TimerService,
-        private readonly doctorScheduleRepository: DoctorScheduleRepository
+        private readonly doctorScheduleRepository: DoctorScheduleRepository,
+        private readonly fileService: FileService
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
@@ -519,6 +529,29 @@ export default class ConsultationController {
             return res.status(200).json(updateConsultation);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
+        }
+    }
+
+    async completeConsultation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const recommendations = req.files?.recommendations as UploadedFile;
+
+            const fileName = await this.fileService.saveFile(recommendations);
+            if (!fileName) {
+                return next(ApiError.internal('Не удалось загрузить файл'));
+            }
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE").setRecomendation(fileName));
+            res.status(200).json({ success: true, message: "Консультация успешно завершена и перенесена в архив" });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message))
         }
     }
 

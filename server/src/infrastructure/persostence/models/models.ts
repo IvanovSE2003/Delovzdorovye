@@ -10,6 +10,7 @@ import { SpecializationModelInterface } from './interfaces/specializations.model
 import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
 import { ProblemModelInterface } from './interfaces/problem.model.js'
 import { ConsultationModelInterface } from './interfaces/consultation.model.js'
+import { ProfDataModelInterface } from './interfaces/profData.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -103,12 +104,22 @@ const Transaction = sequelize.define('transaction', {
 
 const ModerationBatchModel = sequelize.define<BatchModelInterface>('moderation_batch', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    status: { type: DataType.STRING, defaultValue: 'pending' }, // pending, approved, rejected
+    status: { type: DataType.STRING}, 
     rejection_reason: { type: DataType.TEXT, allowNull: true },
     is_urgent: { type: DataType.BOOLEAN, defaultValue: false },
     field_name: { type: DataType.STRING, allowNull: false },
     old_value: { type: DataType.TEXT, allowNull: true },
     new_value: { type: DataType.TEXT, allowNull: false }
+});
+
+const ProfDataModel = sequelize.define<ProfDataModelInterface>('prof_data_records', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    new_diploma: { type: DataType.STRING },
+    new_license: { type: DataType.STRING},
+    new_specialization: { type: DataType.STRING },
+    new_experience_years: { type: DataType.INTEGER }, 
+    comment: { type: DataType.TEXT, allowNull: true },
+    type: { type: DataType.STRING, defaultValue: 'ADD'}
 });
 
 const DoctorSpecialization = sequelize.define('doctor_specializations', {
@@ -176,8 +187,11 @@ Consultation.belongsTo(UserModel);
 DoctorModel.hasMany(DoctorsSchedule, { foreignKey: "doctorId" });
 DoctorsSchedule.belongsTo(DoctorModel, { foreignKey: "doctorId" });
 
-UserModel.hasOne(TokenModel)
-TokenModel.belongsTo(UserModel)
+UserModel.hasOne(TokenModel);
+TokenModel.belongsTo(UserModel);
+
+UserModel.hasOne(ProfDataModel);
+ProfDataModel.belongsTo(UserModel);
 
 DoctorsSchedule.hasMany(TimeSlot, { foreignKey: "doctorsScheduleId" });
 TimeSlot.belongsTo(DoctorsSchedule, { foreignKey: "doctorsScheduleId" });
@@ -213,5 +227,6 @@ export default {
     ProblemSpecialization,
     ContentModel,
     ContentWithTitleModel,
-    ConsultationProblems
+    ConsultationProblems,
+    ProfDataModel
 }

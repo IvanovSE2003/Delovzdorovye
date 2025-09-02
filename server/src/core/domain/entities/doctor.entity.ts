@@ -4,10 +4,10 @@ export default class Doctor {
     constructor(
         public id: number,
         public experienceYears: number,
-        public diplomas: string[],
-        public licenses: string[],
+        public diploma: string,
+        public license: string,
         public isActivated: boolean,
-        public specializations: string[],
+        public specialization: string,
         public userId?: number,
         public userName?: string,
         public userSurname?: string,

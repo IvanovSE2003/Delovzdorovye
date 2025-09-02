@@ -4,8 +4,8 @@ import ApiError from "../../error/ApiError.js";
 import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import FileService from "../../../../core/domain/services/file.service.js";
 import Doctor from "../../../../core/domain/entities/doctor.entity.js";
-import { UploadedFile } from "express-fileupload";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
+import ProfData from "../../../../core/domain/entities/profData.entity.js";
 
 export default class DoctorController {
     constructor(
@@ -66,7 +66,7 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { data: dataString } = req.body as { data: string };
+            const { data: dataString, comment, type } = req.body as { data: string; comment?: string; type?: "ADD" | "DELETE" };
 
             let data: Partial<Doctor>;
             try {
@@ -75,88 +75,71 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Неверный формат данных"));
             }
 
-            const doctorId = Number(id);
-            const doctor = await this.doctorRepository.findById(doctorId);
+            const doctor = await this.doctorRepository.findById(Number(id));
             if (!doctor) {
-                return next(ApiError.badRequest("Доктор не найден"));
+                return next(ApiError.badRequest("Специалист не найден"));
             }
 
-            if (!data.diplomas) data.diplomas = [];
-            if (!data.licenses) data.licenses = [];
+            const profDataRecord: ProfData = {
+                comment: comment || null,
+                type: type || 'ADD'
+            };
 
-            const fileFields = ["diplomas", "licenses"] as const;
-            const fileProcessingPromises: Promise<void>[] = [];
+            if (req.files?.diploma) {
+                const diplomaFile = Array.isArray(req.files.diploma)
+                    ? req.files.diploma[0]
+                    : req.files.diploma;
 
-            for (const field of fileFields) {
-                const files = req.files?.[field] as UploadedFile[] | UploadedFile | undefined;
-
-                if (files) {
-                    const fileArray = Array.isArray(files) ? files : [files];
-
-                    for (const file of fileArray) {
-                        const processFile = async () => {
-                            try {
-                                const fileName = await this.fileService.saveFile(file);
-                                data[field]!.push(fileName);
-                            } catch (error) {
-                                console.error(`Ошибка обработки файла для поля ${field}:`, error);
-                            }
-                        };
-                        fileProcessingPromises.push(processFile());
-                    }
+                try {
+                    const fileName = await this.fileService.saveFile(diplomaFile);
+                    profDataRecord.new_diploma = fileName;
+                } catch (error) {
+                    console.error('Ошибка обработки файла диплома:', error);
+                    return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
+            } else if (data.diploma) {
+                profDataRecord.new_diploma = data.diploma;
             }
 
-            await Promise.all(fileProcessingPromises);
+            if (req.files?.license) {
+                const licenseFile = Array.isArray(req.files.license)
+                    ? req.files.license[0]
+                    : req.files.license;
 
-            const allowedFields: (keyof Doctor)[] = [
-                "experienceYears",
-                "diplomas",
-                "licenses"
-            ];
+                try {
+                    const fileName = await this.fileService.saveFile(licenseFile);
+                    profDataRecord.new_license = fileName;
+                } catch (error) {
+                    console.error('Ошибка обработки файла лицензии:', error);
+                    return next(ApiError.internal('Ошибка загрузки лицензии'));
+                }
+            } else if (data.license) {
+                profDataRecord.new_license = data.license;
+            }
 
-            const changes = Object.entries(data)
-                .filter(([field]) => allowedFields.includes(field as keyof Doctor))
-                .map(([field, newValue]) => {
-                    const key = field as keyof Doctor;
-                    const oldValue = doctor[key];
+            if (data.experienceYears !== undefined) {
+                profDataRecord.new_experience_years = data.experienceYears;
+            }
 
-                    let formattedOldValue = oldValue;
-                    let formattedNewValue = newValue;
-
-                    if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-                        formattedOldValue = oldValue.join(', ');
-                        formattedNewValue = newValue.join(', ');
-                    } else if (Array.isArray(oldValue)) {
-                        formattedOldValue = oldValue.join(', ');
-                        formattedNewValue = String(newValue);
-                    } else if (Array.isArray(newValue)) {
-                        formattedOldValue = String(oldValue);
-                        formattedNewValue = newValue.join(', ');
-                    }
-
-                    return {
-                        field_name: FIELD_TRANSLATIONS[field] || field,
-                        old_value: formattedOldValue != null ? String(formattedOldValue) : null,
-                        new_value: String(formattedNewValue),
-                    };
-                });
-
-            if (changes.length === 0) {
-                return next(ApiError.badRequest("Нет допустимых полей для изменения"));
+            if(data.specialization !== undefined) {
+                profDataRecord.new_specialization = data.specialization;
             }
 
             const user = await this.userRepository.findByDoctorId(doctor.id);
             if (!user) {
                 return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
             }
-
-            await this.batchRepository.createBatchWithChangesUser(user.id, changes);
+            profDataRecord.userId = user.id;
+            await this.batchRepository.createBasicData(profDataRecord);
 
             return res.json({
                 success: true,
                 message: "Изменения отправлены на модерацию",
-                changesCount: changes.length
+                changes: {
+                    experienceYears: data.experienceYears !== undefined,
+                    diploma: profDataRecord.new_diploma !== undefined,
+                    license: profDataRecord.new_license !== undefined
+                }
             });
 
         } catch (e: any) {
@@ -180,10 +163,3 @@ export default class DoctorController {
         }
     }
 }
-
-const FIELD_TRANSLATIONS: Record<string, string> = {
-    specializations: 'Специализации',
-    experienceYears: 'Опыт работы',
-    diplomas: 'Дипломы',
-    licenses: 'Лицензии',
-};

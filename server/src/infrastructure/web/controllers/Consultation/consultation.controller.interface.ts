@@ -7,6 +7,7 @@ import TimeSlotRepositoryImpl from "../../../../core/application/repositories/ti
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
 import { timerService } from "../../../../socket/timer.service.init.js";
 import ConsultationController from "./consultation.controller.js";
+import FileServiceImpl from "../../../../core/application/services/file.service.impl.js"
 
 const problemRepository = new ProblemRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
@@ -14,6 +15,7 @@ const userRepository = new UserRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const timeSlotRepository = new TimeSlotRepositoryImpl();
 const doctorScheduleRepository = new DoctorScheduleRepositoryImpl();
+const fileService = new FileServiceImpl();
 
 const consultationController = new ConsultationController(
     problemRepository, 
@@ -22,7 +24,8 @@ const consultationController = new ConsultationController(
     doctorRepository, 
     timeSlotRepository, 
     timerService,
-    doctorScheduleRepository
+    doctorScheduleRepository,
+    fileService
 );
 
 export default consultationController;
