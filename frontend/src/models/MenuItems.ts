@@ -4,7 +4,6 @@ export interface MenuItem {
 }
 
 export interface SidebarProps {
-    menuItems: MenuItem[];
-    logo?: React.ReactNode;
+    menuItems: { path: string; name: string }[];
     className?: string;
 }

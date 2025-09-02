@@ -4,32 +4,43 @@ import ShiftModal from '../../../components/UI/Modals/ShiftModal/ShiftModal';
 import CancelModal from '../../../components/UI/Modals/CancelModal/CancelModal';
 import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
 import EditModal, { type ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
-import type { IUserDataProfile } from '../../../models/Auth';
 import ConsultationService from '../../../services/ConsultationService';
 
 interface UserConsultationsProps {
     id: string | undefined;
-    profile: IUserDataProfile;
 }
 
-interface Consultation {
+export interface Consultation {
     id: number;
+    durationTime: string;
     date: string;
-    time: string;
-    specialist: string;
-    symptoms: string;
-    details: string;
+    DoctorId: number;
+    DoctorName: string;
+    DoctorSurname: string;
+    DoctorPatronymic?: string;
+    PatientName: string;
+    PatientSurname: string;
+    PatientPatronymic?: string;
+    Problems: string[];
+    score?: number;
+    comment?: string;
+    reason_cancel?: string;
+    recommendations?: string;
+    other_problem?: string;
 }
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
     const [modalEdit, setModalEdit] = useState<boolean>(false);
+    const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[])
+
+    const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
 
     const fetchConsultations = async () => {
-        const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING" })
-        console.log(response.data.consultations[0]);
+        const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
+        setConsultations(response.data.consultations);
     }
 
     useEffect(() => {
@@ -37,9 +48,14 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile 
     }, [])
 
     const handleShiftConsultation = (data: ConsultationData) => {
-        console.log("Данные для записи:", data);
+        console.log("Данные для переноса:", data);
         // Здесь логика отправки данных на сервер
         setModalShift(false);
+    };
+
+    const clickShiftConsultation = (consultation: Consultation) => {
+        setSelectedConsultation(consultation);
+        setModalShift(true);
     };
 
     const handleCancelConsultation = (reason: string) => {
@@ -59,24 +75,13 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile 
         setModalEdit(false);
     };
 
-    const consultations: Consultation[] = [
-        {
-            id: 1,
-            date: 'Завтра',
-            time: '15:30-16:30',
-            specialist: 'Анна Петрова',
-            symptoms: 'Головная боль',
-            details: 'Периодические головные боли в течение последних двух недель, усиливаются к вечеру'
-        },
-    ];
-
     return (
         <div className="user-consultations">
             <ShiftModal
                 isOpen={modalShift}
+                consultationData={selectedConsultation || {} as Consultation}
                 onClose={() => setModalShift(false)}
                 onRecord={handleShiftConsultation}
-                profileData={profile}
             />
 
             <CancelModal
@@ -102,29 +107,36 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", profile 
 
             {consultations.map(consultation => (
                 <div key={consultation.id} className="consultation-card">
+                    id: {consultation.id} {/*  Отладочная печать */}
                     <div className="consultation-card__time">
                         <span className="consultation-card__date">{consultation.date}</span>
-                        <span className="consultation-card__hours">{consultation.time}</span>
+                        <span className="consultation-card__hours">{consultation.durationTime}</span>
                     </div>
 
                     <div className="consultation-card__info">
                         <div className="consultation-card__specialist">
-                            Специалист: <span>{consultation.specialist}</span>
+                            Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
                         </div>
 
                         <div className="consultation-card__symptoms">
-                            Симптомы: <span>{consultation.symptoms}</span>
+                            {'Симптомы: '}
+                            {consultation.Problems.map((p, i) => (
+                                <span key={i}>
+                                    {p.toLocaleLowerCase()}
+                                    {i < consultation.Problems.length - 1 ? ', ' : '.'}
+                                </span>
+                            ))}
                         </div>
 
                         <div className="consultation-card__details">
-                            Симптомы подробно: <span>{consultation.details}</span>
+                            Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
                         </div>
                     </div>
 
                     <div className="consultation-card__actions">
                         <button
                             className="consultation-card__button consultation-card__button--transfer"
-                            onClick={() => setModalShift(true)}
+                            onClick={() => clickShiftConsultation(consultation)}
                         >
                             Перенести
                         </button>

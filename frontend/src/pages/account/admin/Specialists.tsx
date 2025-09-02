@@ -170,13 +170,12 @@ const Specialists: React.FC = () => {
 
     return (
         <AccountLayout>
-            <h3 className="tab">Редактирование профилей</h3>
-
             {message && <div className="alert alert-success">{message}</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="admin-page">
-                {/* Добавляем строку поиска */}
+                <h1 className="admin-page__title">Редактирование профилей</h1>
+
                 <div className="admin-page__search">
                     <SearchInput
                         placeholder="Поиск по фамилии, имени, отчеству специалиста"

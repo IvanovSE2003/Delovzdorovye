@@ -18,7 +18,7 @@ export interface IScheduleCreate {
 
 export interface ISlotCreate {
     time: string;
-    scheduleId: number|undefined;
+    scheduleId: number | undefined;
 }
 
 const TimeSheet = () => {
@@ -37,7 +37,7 @@ const TimeSheet = () => {
     const handleInputChangeDay = (field: keyof IScheduleCreate) => (e: React.ChangeEvent<HTMLInputElement>) => {
         setDayCreate(prev => ({
             ...prev,
-            [field]: e.target.value
+            [field]: e.target.value,
         }));
     };
 
@@ -53,6 +53,7 @@ const TimeSheet = () => {
         try {
             setLoading(true);
             const response = await ScheduleService.getSchedules(store.user.id);
+            console.log(response.data)
             setSchedules(response.data);
         } catch (e: any) {
             console.error(e.message);
@@ -68,6 +69,7 @@ const TimeSheet = () => {
 
             const scheduleData = {
                 ...dayCreate,
+                date: dayCreate.date ? new Date(dayCreate.date).toISOString() : '',
                 userId: store.user.id
             };
 
@@ -88,6 +90,7 @@ const TimeSheet = () => {
             await getSchedules();
         }
     }
+
 
     // Удаление дня
     const deleteDay = async () => {
@@ -220,7 +223,7 @@ const TimeSheet = () => {
                         )}
 
                         <div className="timesheet__days">
-                            {schedules ? (
+                            {schedules && schedules.length > 0 ? (
                                 schedules.map((s) => (
                                     <motion.div
                                         key={s.id}
@@ -229,9 +232,11 @@ const TimeSheet = () => {
                                         onClick={() => setSelectedSchedule(s)}
                                     >
                                         <div className="timesheet__day-info">
-                                            <span className="timesheet__day-date">{new Date(s.date).toLocaleDateString()}</span>
+                                            <span className="timesheet__day-date">
+                                                {s?.date ? new Date(s.date).toLocaleDateString() : "—"}
+                                            </span>
                                             <span className="timesheet__day-time">
-                                                {s.time_start.slice(0, 5)} - {s.time_end.slice(0, 5)}
+                                                {s?.time_start ? s.time_start.slice(0, 5) : "—"} - {s?.time_end ? s.time_end.slice(0, 5) : "—"}
                                             </span>
                                         </div>
                                     </motion.div>
@@ -239,6 +244,7 @@ const TimeSheet = () => {
                             ) : (
                                 <div>Нет данных</div>
                             )}
+
                         </div>
                     </div>
 
@@ -251,10 +257,12 @@ const TimeSheet = () => {
 
                         {selectedSchedule ? (
                             <div className="timesheet__slots-list">
-                                {selectedSchedule.timeSlot
-                                    ? selectedSchedule.timeSlot.map((slot: ISlots, index) => (
+                                {selectedSchedule.timeSlot && selectedSchedule.timeSlot.length > 0 ? (
+                                    selectedSchedule.timeSlot.map((slot: ISlots, index) => (
                                         <div key={index} className="timesheet__slot">
-                                            <span className="timesheet__slot-time">{slot.time.slice(0, 5)}</span>
+                                            <span className="timesheet__slot-time">
+                                                {slot.time ? slot.time.slice(0, 5) : "—"}
+                                            </span>
                                             <button
                                                 className="timesheet__button timesheet__button--danger timesheet__button--small"
                                                 onClick={() => deleteSlot(slot.id)}
@@ -263,8 +271,10 @@ const TimeSheet = () => {
                                             </button>
                                         </div>
                                     ))
-                                    : <div>Ячеек нет</div>
-                                }
+                                ) : (
+                                    <div>Ячеек нет</div>
+                                )}
+
                                 <button
                                     className="timesheet__button timesheet__button--primary"
                                     onClick={() => setShowAddSlot(true)}
@@ -280,7 +290,7 @@ const TimeSheet = () => {
 
                         {showAddSlot && (
                             <div className="timesheet__add-slot">
-                                <br/>
+                                <br />
                                 <label className="timesheet__label">Время:</label>
                                 <input
                                     type="time"

@@ -2,14 +2,7 @@
 
 .makeconsultation {
   padding: 0 30px;
-
-  &__title {
-    font-size: 2rem;
-    font-weight: bolder;
-    margin-bottom: 20px;
-    color: black;
-  }
-
+  
   &__search {
     margin-bottom: 24px;
 
@@ -85,32 +78,10 @@
     font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s ease;
-
-    a {
-        color: white;
-        &:hover {
-            color: white;
-        }
-    }
+    color: white;
     
     &:hover {
       background-color: $red-color;
-    }
-  }
-}
-
-@media (max-width: 600px) {
-  .users-page {
-    padding: 16px;
-    
-    &__user-card {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    
-    &__profile-button {
-      align-self: flex-end;
     }
   }
 }

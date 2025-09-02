@@ -2,8 +2,8 @@ import type { Slot } from "../../../store/consultations-store";
 import './TimeSlots.scss'
 
 interface TimeSlotsProps {
-  slots: Omit<Slot, "doctorId">[];
-  selectedTime: string | null;
+  slots: Slot[];
+  selectedTime?: string | null;
   onTimeSelect: (time: string) => void;
 }
 

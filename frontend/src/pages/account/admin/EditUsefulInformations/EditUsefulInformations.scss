@@ -1,7 +1,7 @@
 @use '../../../../assets/styles/variables.scss' as *;
 
 .edit-info {
-  font-family: Arial, sans-serif;
+  padding: 0 20px;
 
   &__tabs {
     display: flex;

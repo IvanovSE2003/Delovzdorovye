@@ -122,7 +122,6 @@ const EditUsefulInformations: React.FC = () => {
 
 
   // 🔹 блок проблем
-
   const formRecordClick = async () => {
     try {
       const data = await store.getProblems();
@@ -184,6 +183,7 @@ const EditUsefulInformations: React.FC = () => {
   return (
     <AccountLayout>
       <div className="edit-info">
+        <h1 className="admin-page__title">Редактирование полезной информации</h1>
         <div className="edit-info__tabs">
           <button
             className={`edit-info__tab ${activeTab === "client" ? "edit-info__tab--active" : ""}`}

@@ -78,8 +78,8 @@ const Users = () => {
 
   return (
     <AccountLayout>
-      <h1 className="tab">Профили</h1>
       <div className="admin-page">
+        <h1 className="admin-page__title">Профили</h1>
 
         <div className="admin-page__search">
           <SearchInput

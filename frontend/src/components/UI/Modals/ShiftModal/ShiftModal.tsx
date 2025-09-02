@@ -1,78 +1,57 @@
-import DatePicker from 'react-datepicker';
-import './ShiftModal.scss'
-import TimeSlots from '../../../../features/account/TimeSlots/TimeSlots';
 import { useEffect, useState } from 'react';
-import ConsultationsStore, { type OptionsResponse } from '../../../../store/consultations-store';
-import { ru } from 'date-fns/locale';
-import type { MultiValue } from 'react-select';
-import type { IUserDataProfile } from '../../../../models/Auth';
 import type { ConsultationData } from '../EditModal/EditModal';
+import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
+
+import RecordForm from '../RecordModal/RecordForm';
+import './ShiftModal.scss'
 
 interface ShiftModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecord: (data: ConsultationData) => void;
-    profileData?: IUserDataProfile;
+    consultationData: Consultation;
 }
 
-
-const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, profileData = {} as IUserDataProfile }) => {
-    const consultationStore = new ConsultationsStore();
-    const [otherProblemText, setOtherProblemText] = useState<string>("");
+const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, consultationData = {} as Consultation, }) => {
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>();
-    const [selectedOptions, setSelectedOptions] = useState<MultiValue<OptionsResponse>>([]);
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-    const times = [
-        "09:00", "09:30", "10:00", "10:30",
-        "12:00", "12:30", "13:00", "13:30",
-        "15:00", "16:00", "18:00", "19:30"
-    ];
-
+    // Перенести консультацию
     const handleSubmit = () => {
         if (!selectedDate || !selectedTime) {
             setError("Пожалуйста, выберите дату и время");
             return;
         }
 
-        const problems = selectedOptions.map(option => option.value);
-
-        // Проверяем, есть ли выбранные проблемы
-        if (problems.length === 0 && !otherProblemText.trim()) {
-            setError("Пожалуйста, выберите хотя бы одну проблему");
-            return;
-        }
-
         onRecord({
-            problems,
-            otherProblemText: otherProblemText,
+            id: consultationData.id,
             date: selectedDate,
             time: selectedTime
         });
 
         // Сброс формы
-        setSelectedOptions([]);
-        setOtherProblemText("");
-        setSelectedDate(undefined);
+        setSelectedDate(null);
         setSelectedTime(null);
         setError("");
     };
 
+    // Передача данные с RecordForm
+    const onTimeDateSelect = (time: string | null, date: string | null) => {
+        setSelectedTime(time);
+        setSelectedDate(date);
+    }
+
+    // Сброс формы при закрытии
     useEffect(() => {
         if (!isOpen) {
-            // Сброс формы при закрытии
-            setSelectedOptions([]);
-            setOtherProblemText("");
-            // setShowOtherProblemInput(false);
-            setSelectedDate(undefined);
+            setSelectedDate(null);
             setSelectedTime(null);
             setError("");
         }
     }, [isOpen]);
 
     if (!isOpen) return null;
-
 
     return (
         <div className="modal">
@@ -87,44 +66,31 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, prof
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы переносите консультацию: 4 августа, 15:30</p>
+                    <p>Вы переносите консультацию: {consultationData.date}, {consultationData.durationTime}</p>
                 </div>
 
 
                 <div className="shift-modal__client">
                     <p className="consultation-modal__client">
-                        Клиент: {profileData.name} {profileData.surname} {profileData?.patronymic}, {profileData.phone}
+                        Клиент: {consultationData.PatientName} {consultationData.PatientSurname} {consultationData?.PatientPatronymic}
                     </p>
                 </div>
 
-                <div className="consultation-modal__date-time">
-                    <div className="consultation-modal__calendar">
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={(date: Date | null) => {
-                                setSelectedDate(date || new Date());
-                            }}
-                            inline
-                            locale={ru}
-                            dateFormat="dd.MM.yyyy"
-                            minDate={new Date()}
-                            todayButton="Сегодня"
-                            popperClassName="large-datepicker"
-                            calendarClassName="large-datepicker"
-                        />
-                    </div>
-
-                    <div className="consultation-modal__time">
-                        <TimeSlots times={times} onSelect={setSelectedTime} />
-                    </div>
-                </div>
+                <RecordForm
+                    onTimeDateSelect={onTimeDateSelect}
+                    specialist={{
+                        // value: consultationData.DoctorId,
+                        value: 2,
+                        label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
+                    }}
+                />
 
                 <div className="shift-modal__result">
                     <p className="shift-modal__selected-time">
-                        Вы выбрали: {selectedTime || "не выбрано"}
+                        <strong>Вы выбрали: </strong> {selectedDate && selectedTime ? `${selectedTime}, ${new Date(selectedDate).toLocaleDateString()}` : "не выбрано"}
                     </p>
                     <p className='shift-modal__selected-specialist'>
-                        <strong>Специалист: </strong> Анна Петрова
+                        <strong>Специалист: </strong> {consultationData.DoctorSurname} {consultationData.DoctorName} {consultationData?.DoctorPatronymic}
                     </p>
                 </div>
 

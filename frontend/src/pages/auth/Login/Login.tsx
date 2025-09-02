@@ -98,6 +98,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       return;
     }
     const data = await store.completeTwoFactor(localStorage.getItem('tempToken'), code);
+    console.log(data);
     data.success && navigate(RouteNames.PERSONAL);
   };
 

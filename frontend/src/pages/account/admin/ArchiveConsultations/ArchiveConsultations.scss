@@ -1,6 +1,8 @@
 @use '../../../../assets/styles/variables.scss' as *;
 
 .archive {
+  padding: 0 20px;
+
   &__search {
     margin-bottom: 20px;
   }
@@ -92,5 +94,12 @@
     &:focus {
       outline: none;
     }
+  }
+
+  &__none {
+    color: black;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: bolder;
   }
 }

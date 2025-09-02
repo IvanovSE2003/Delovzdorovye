@@ -28,11 +28,11 @@ export interface IRoute {
     element: React.ReactNode;
 }
 
-export type ProtectedRoute = {
-    path: string;
-    element: React.ComponentType;
-    roles?: string[];
-};
+export interface ProtectedRoute {
+  path: string;
+  element: React.FC;
+  roles?: string[];
+}
 
 export const RouteNames = {
     // Общие пути
@@ -90,7 +90,7 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
 };
 
 
-export const publicRoutes = [
+export const publicRoutes: ProtectedRoute[] = [
     // Общие машруты для всех неавторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },

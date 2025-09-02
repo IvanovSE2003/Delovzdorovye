@@ -1,21 +1,8 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
 import type { AppointmentRequest, AppointmentResponse, OptionsResponse, Slot } from "../store/consultations-store";
+import type { Consultation } from "../features/account/UpcomingConsultations/UpcomingConsultations";
 
-interface Consultation {
-    id: number;
-    consultation_status: string;
-    payment_status: string;
-    other_problem: string;
-    recommendations: string;
-    duration: number;
-    score: number | null;
-    comment: string | null;
-    reservation_expires_at: string;
-    userId: number;
-    doctorId: number;
-    timeSlotId: number;
-}
 
 interface ConsultationsResponse {
     consultations: Consultation[];
@@ -66,7 +53,7 @@ export default class ConsultationService {
         limit = 10,
         page = 1,
         filters: {
-            userId?: number,
+            userId?: string,
             payment_status?: string;
             consultation_status?: "UPCOMING" | "ARCHIVE";
         }

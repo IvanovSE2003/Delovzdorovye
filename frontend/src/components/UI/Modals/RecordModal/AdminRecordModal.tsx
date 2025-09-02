@@ -103,12 +103,12 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
           }
         />
 
-        <RecordForm
+        {/* <RecordForm
           specialist={selectedSpecialist}
           problems={selectedProblems.map(value => value.value)}
           selectTimeDate={selectTimeDate}
           userId={userId}
-        />
+        /> */}
       </div>
     </div>
   );

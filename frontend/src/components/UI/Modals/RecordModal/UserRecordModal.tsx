@@ -37,15 +37,19 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
   };
 
   const handleSubmit = () => {
-    console.log(
-      {
-        userId: userId,
-        time: selectedTime,
-        date: selectedDate,
-        problems: selectedProblems.map(value => value.value)
-      }
-    )
-  };
+    if (!selectedDate || !selectedTime) {
+      console.log("Дата или время не выбраны");
+      return;
+    }
+
+    console.log({
+      userId,
+      time: selectedTime,
+      date: selectedDate,
+      problems: selectedProblems.map(p => p.value)
+    })
+  }
+
 
   // Затемнение некоторые полей
   const isOptionDisabled = (option: OptionsResponse): boolean => {
@@ -59,9 +63,10 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     }
   };
 
-  const selectTimeDate = (time: string, date: string) => {
+  const onTimeDateSelect = (time: string, date: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
+    console.log(time, date);
   }
 
   if (!isOpen) return null;
@@ -88,7 +93,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
         <RecordForm
           specialist={null}
           slotsOverride={slots}
-          selectTimeDate={selectTimeDate}
+          onTimeDateSelect={onTimeDateSelect}
         />
 
         <button

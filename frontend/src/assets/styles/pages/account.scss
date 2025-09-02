@@ -64,11 +64,14 @@
 // Страницы профиля администратора
 .admin-page {
   width: 100%;
-  overflow-x: auto; // Основной скролл для таблицы
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding: 0 20px;
 
   &__title {
-    margin-top: 20px;
+    font-size: 2rem;
+    font-weight: bolder;
+    margin-bottom: 2rem;
   }
 
   &__message {

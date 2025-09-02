@@ -3,46 +3,16 @@ import './ArchiveConsultations.scss';
 import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
 import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
 import ConsultationService from '../../../services/ConsultationService';
+import type { Consultation } from '../UpcomingConsultations/UpcomingConsultations';
+import { API_URL } from '../../../http';
 
-interface Consultation {
-    id: number;
-    date: string;
-    time: string;
-    specialist: string;
-    symptoms: string;
-    details: string;
-    recommendationFile?: string;
-}
 
 const ArchiveConsultations: React.FC = () => {
-    const [consultations, setConsultations] = useState<Consultation[]>([
-        {
-            id: 1,
-            date: 'Вчера',
-            time: '15:30-16:30',
-            specialist: 'Анна Петрова',
-            symptoms: 'Головная боль',
-            details: 'Периодические головные боли в течение последних двух недель',
-            recommendationFile: 'recommendation.pdf'
-        },
-        {
-            id: 2,
-            date: '08.09.2025',
-            time: '15:30-16:30',
-            specialist: 'Анна Петрова',
-            symptoms: 'Боли в спине',
-            details: 'Ноющие боли в поясничном отделе после физических нагрузок',
-            recommendationFile: 'recommendation2.pdf'
-        }
-    ]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
-
+    const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[]);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
 
     const fetchConsultations = async () => {
         const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE" })
-        console.log(response.data.consultations[0]);
     }
 
     useEffect(() => {
@@ -61,27 +31,8 @@ const ArchiveConsultations: React.FC = () => {
         setModalRepeat(false);
     };
 
-
-    if (loading) {
-        return (
-            <div className="user-consultations">
-                <h2 className="user-consultations__title">Архив консультаций</h2>
-                <div className="user-consultations__loading">Загрузка...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="user-consultations">
-                <h2 className="user-consultations__title">Архив консультаций</h2>
-                <div className="user-consultations__error">{error}</div>
-            </div>
-        );
-    }
-
     return (
-        <div className="user-consultations">
+        <div className="archive-consultations">
             <RepeatModal
                 isOpen={modalRepeat}
                 onClose={() => setModalRepeat(false)}
@@ -89,49 +40,51 @@ const ArchiveConsultations: React.FC = () => {
             />
 
 
-            <h2 className="user-consultations__title">Архив консультаций</h2>
+            <h2 className="archive-consultations__title">Архив консультаций</h2>
 
             {consultations.length === 0 ? (
-                <div className="user-consultations__empty">Нет архивных консультаций</div>
+                <div className="archive-consultations__empty">Нет архивных консультаций</div>
             ) : (
-                <div className="user-consultations__list">
+                <div className="archive-consultations__list">
                     {consultations.map((consultation) => (
-                        <div key={consultation.id} className="consultation-card">
-                            <div className="consultation-card__time">
-                                <span className="consultation-card__date">{consultation.date}</span>
-                                <span className="consultation-card__hours">{consultation.time}</span>
+                        <div key={consultation.id} className="archive-consultation-card">
+                            <div className="archive-consultation-card__time">
+                                <span className="archive-consultation-card__date">{consultation.date}</span>
+                                <span className="archive-consultation-card__hours">{consultation.durationTime}</span>
                             </div>
 
-                            <div className="consultation-card__info">
-                                <div className="consultation-card__specialist">
-                                    Специалист: <span>{consultation.specialist}</span>
+                            <div className="archive-consultation-card__info">
+                                <div className="archive-consultation-card__specialist">
+                                    Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
                                 </div>
 
-                                <div className="consultation-card__symptoms">
-                                    Симптомы: <span>{consultation.symptoms}</span>
+                                <div className="archive-consultation-card__symptoms">
+                                    Симптомы: <span>{consultation.Problems}</span>
                                 </div>
 
-                                <div className="consultation-card__details">
-                                    Симптомы подробно: <span>{consultation.details}</span>
+                                <div className="archive-consultation-card__details">
+                                    Симптомы подробно: <span>{consultation.other_problem ? consultation.other_problem : "Не указано"}</span>
                                 </div>
                             </div>
 
                             <div className="archive-consultation-card__actions">
                                 <button
-                                    className="archive-consultation-card__button archive-consultation-card__button--repeat"
+                                    className="archive-consultation-card__button"
                                     onClick={() => setModalRepeat(true)}
                                 >
                                     Повторить
                                 </button>
 
-                                {consultation.recommendationFile && (
-                                    <button
-                                        className="archive-consultation-card__button archive-consultation-card__button--recommendation"
-                                        onClick={() => handleDownloadRecommendation(consultation.recommendationFile!)}
-                                    >
-                                        Рекомендация: Файл
-                                    </button>
-                                )}
+                                <div className="archive-consultation-card__recomendations">
+                                    {`Рекомендации: `}
+                                    {consultation.recommendations ? (
+                                        <a href={`${API_URL}/${consultation.recommendations}`}>
+                                            Файл
+                                        </a>
+                                    ) : (
+                                        "Файл не приложен"
+                                    )}
+                                </div>
                             </div>
 
                             <div className="archive-consultation-card__divider"></div>

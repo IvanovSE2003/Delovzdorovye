@@ -3,7 +3,6 @@ import Select, { type MultiValue } from 'react-select';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
-import TimeSlots from "../../../../features/account/TimeSlots/TimeSlots";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import './EditModal.scss';
 interface ConsultationModalProps {
@@ -13,8 +12,9 @@ interface ConsultationModalProps {
 }
 
 export interface ConsultationData {
-    problems: number[];
-    otherProblemText: string;
+    id: number;
+    problems?: number[];
+    otherProblemText?: string;
     date: Date | string | undefined;
     time: string | null;
     doctorId?: number;

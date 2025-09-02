@@ -3,6 +3,7 @@ import AccountLayout from "../../AccountLayout";
 import './MakeConsultation.scss';
 import BatchService from '../../../../services/BatchService';
 import SearchInput from '../../../../components/UI/Search/Search';
+import { Link } from 'react-router';
 
 export interface UserCon {
     id: number;
@@ -42,7 +43,7 @@ const MakeConsultation = () => {
     return (
         <AccountLayout>
             <div className="makeconsultation">
-                <h1 className="makeconsultation__title">Пользователи системы</h1>
+                <h1 className="admin-page__title">Пользователи системы</h1>
 
                 <SearchInput
                     placeholder="Введите телефон, имя, фамилию пользователя"
@@ -63,11 +64,13 @@ const MakeConsultation = () => {
                                 </span>
                                 <span className="makeconsultation__user-phone">{user.phone}</span>
                             </div>
-                            <button className="makeconsultation__profile-button">
-                                <a target='_blank' href={`/profile/${user.id}`}>
+                            <Link
+                                to={`/profile/${user.id}`}
+                            >
+                                <button className="makeconsultation__profile-button">
                                     Профиль
-                                </a>
-                            </button>
+                                </button>
+                            </Link>
                         </div>
                     ))}
                 </div>

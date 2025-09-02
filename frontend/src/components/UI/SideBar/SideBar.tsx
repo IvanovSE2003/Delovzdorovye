@@ -1,29 +1,45 @@
-import { Link, useLocation } from 'react-router-dom';
 import type { SidebarProps } from '../../../models/MenuItems';
 import './Sidebar.scss';
-import { RouteNames } from '../../../routes';
-import logo from '../../../../public/logo.svg';
+import { NavLink, useLocation } from "react-router-dom";
 
 const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
   const location = useLocation();
+  const lastMenu = localStorage.getItem("lastMenu");
+
+  // функция, которая проверяет, относится ли путь к разделу
+  const isPathRelatedToMenu = (menuPath: string, currentPath: string) => {
+    // пример: для "Запись на консультацию" включаем profile/:id
+    if (menuPath === '/make-consultation') {
+      return currentPath.startsWith('/make-consultation') || currentPath.startsWith('/profile/');
+    }
+    // здесь можно добавить другие исключения для других разделов
+    return currentPath.startsWith(menuPath);
+  };
+
+  // определяем активный пункт меню
+  const activePath =
+    menuItems.find(item => isPathRelatedToMenu(item.path, location.pathname))
+      ?.path || lastMenu;
+
   return (
     <div className={`sidebar ${className}`}>
       <div className="sidebar__logo">
-        <Link to={RouteNames.MAIN}>
-          <img src={logo} alt="logo" />
-        </Link>
+        <NavLink to="/">
+          <img src="/logo.svg" alt="logo" />
+        </NavLink>
       </div>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {menuItems?.map((item, index) => (
-            <li key={index} className={`sidebar__menu-item ${location.pathname === item.path ? 'sidebar__menu-item--active' : ''
-              }`}>
-              <Link
+            <li key={index} className="sidebar__menu-item">
+              <NavLink
                 to={item.path}
-                className="sidebar__link"
+                className={({ isActive }) =>
+                  `${(isActive || activePath === item.path) ? 'active' : ''}`
+                }
               >
                 {item.name}
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
