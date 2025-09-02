@@ -65,7 +65,6 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     name: { type: DataType.STRING }
 })
 
-
 const TimeSlot = sequelize.define<TimeSlotmModelInterface>('time_slot', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     time: { type: DataType.TIME },
@@ -83,9 +82,10 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
     comment: { type: DataType.TEXT, allowNull: true },
     reservation_expires_at: { type: DataType.DATE, allowNull: true },
     reason_cancel: { type: DataType.TEXT, allowNull: true },
+    time: { type: DataType.STRING },
+    date: { type: DataType.DATEONLY },
     doctorId: { type: DataType.INTEGER, allowNull: false, references: { model: DoctorModel, key: 'id' } },
     userId: { type: DataType.INTEGER, allowNull: false, references: { model: UserModel, key: 'id' } },
-    timeSlotId: { type: DataType.INTEGER, allowNull: false, references: { model: TimeSlot, key: 'id' } }
 })
 
 const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
@@ -121,21 +121,28 @@ const ProblemSpecialization = sequelize.define('problem_specializations', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
 });
 
+const ConsultationProblems = sequelize.define('consultation_problems', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    consultationId: { type: DataType.INTEGER, allowNull: false, field: 'consultation_id' },
+    problemId: { type: DataType.INTEGER, allowNull: false, field: 'problem_id' }
+}, {
+    tableName: 'consultation_problems'
+});
 
 
 // Таблицы с контентом на сайте
 
 const ContentModel = sequelize.define('content', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    type: { type: DataType.STRING, allowNull: false }, 
+    type: { type: DataType.STRING, allowNull: false },
     text_content: { type: DataType.TEXT, allowNull: false }
 });
 
 const ContentWithTitleModel = sequelize.define('content_with_title', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    label: { type: DataType.STRING, allowNull: false }, 
+    label: { type: DataType.STRING, allowNull: false },
     text_content: { type: DataType.TEXT, allowNull: false },
-    type: { type: DataType.STRING, allowNull: false }   
+    type: { type: DataType.STRING, allowNull: false }
 });
 
 
@@ -178,8 +185,17 @@ TimeSlot.belongsTo(DoctorsSchedule, { foreignKey: "doctorsScheduleId" });
 DoctorModel.belongsToMany(SpecializationModel, { through: DoctorSpecialization });
 SpecializationModel.belongsToMany(DoctorModel, { through: DoctorSpecialization });
 
-Consultation.belongsToMany(ProblemModel, { through: 'consultation_problems' });
-ProblemModel.belongsToMany(Consultation, { through: 'consultation_problems' });
+Consultation.belongsToMany(ProblemModel, {
+    through: ConsultationProblems,
+    foreignKey: 'consultationId',
+    otherKey: 'problemId'
+});
+
+ProblemModel.belongsToMany(Consultation, {
+    through: ConsultationProblems,
+    foreignKey: 'problemId',
+    otherKey: 'consultationId'
+});
 
 export default {
     UserModel,
@@ -195,6 +211,7 @@ export default {
     ProblemModel,
     DoctorSpecialization,
     ProblemSpecialization,
-    ContentModel, 
-    ContentWithTitleModel
+    ContentModel,
+    ContentWithTitleModel,
+    ConsultationProblems
 }

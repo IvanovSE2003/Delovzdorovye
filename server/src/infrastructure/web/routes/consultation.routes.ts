@@ -16,11 +16,12 @@ router.get('/getTimeLeft/:id', (req: Request, res: Response, next: NextFunction)
 
 router.post('/specialistForProblems', (req: Request, res: Response, next: NextFunction) => consultationController.findSpecialistForProblem(req, res, next));
 router.post('/findSchedule', (req: Request, res: Response, next: NextFunction) => consultationController.findScheduleForSpecialist(req, res, next));
-// router.post()
 
 router.get('/problem/all', (req: Request, res: Response, next: NextFunction) => consultationController.findProblmesAll(req, res, next));
 router.put('/problem/:id', (req: Request, res: Response, next: NextFunction) => consultationController.updateProblem(req, res, next));
 router.delete('/problem/:id', (req: Request, res: Response, next: NextFunction) => consultationController.deleteProblem(req, res, next));
 router.post('/problem/create', (req: Request, res: Response, next: NextFunction) => consultationController.createProblem(req, res, next));
+
+router.post('/rating/create', (req: Request, res: Response, next: NextFunction) => consultationController.sendRatingComment(req, res, next));
 
 export default router;

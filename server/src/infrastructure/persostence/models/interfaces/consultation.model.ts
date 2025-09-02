@@ -11,9 +11,10 @@ interface IConsultationAttributes {
     comment: string | null;
     reservation_expires_at: Date | null;
     reason_cancel: string | null;
+    time: string,
+    date: string,
     doctorId: number;
     userId: number;
-    timeSlotId: number;
 }
 
 export interface IConsultaitionCreationAttributes extends Optional<IConsultationAttributes, 'id'> { }

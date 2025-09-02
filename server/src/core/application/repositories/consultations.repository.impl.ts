@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import { Op } from "sequelize";
+import Problem from "../../domain/entities/problem.entity.js";
 
 export default class ConsultationRepositoryImpl implements ConsultationRepository {
     async findById(id: number): Promise<Consultation | null> {
@@ -46,7 +47,22 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         const consultations = await models.Consultation.findAll({
             where,
             include: [
-
+                {
+                    model: models.DoctorModel,
+                    include: [{
+                        model: models.UserModel,
+                        attributes: ['id', 'name', 'surname', 'patronymic']
+                    }]
+                },
+                {
+                    model: models.UserModel,
+                    attributes: ['id', 'name', 'surname', 'patronymic']
+                },
+                {
+                    model: models.ProblemModel,
+                    through: { attributes: [] },
+                    attributes: ['id', 'name']
+                },
             ],
             limit,
             offset: (page - 1) * limit,
@@ -155,7 +171,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         return consult.id ? await this.update(consult) : await this.create(consult);
     }
 
-    private mapToDomainConsultation(consultModel: ConsultationModelInterface) {
+    private mapToDomainConsultation(consultModel: any): Consultation {
         return new Consultation(
             consultModel.id,
             consultModel.consultation_status,
@@ -167,9 +183,35 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             consultModel.comment,
             consultModel.reservation_expires_at,
             consultModel.reason_cancel,
+            consultModel.time,
+            consultModel.date,
             consultModel.userId,
             consultModel.doctorId,
-            consultModel.timeSlotId
+
+            consultModel.doctor ? {
+                id: consultModel.doctor.id,
+                user: {
+                    id: consultModel.doctor.user.id,
+                    name: consultModel.doctor.user.name,
+                    surname: consultModel.doctor.user.surname,
+                    patronymic: consultModel.doctor.user.patronymic,
+                    email: consultModel.doctor.user.email,
+                    img: consultModel.doctor.user.img
+                }
+            } : null,
+            consultModel.user ? {
+                id: consultModel.user.id,
+                name: consultModel.user.name,
+                surname: consultModel.user.surname,
+                patronymic: consultModel.user.patronymic,
+                email: consultModel.user.email,
+                phone: consultModel.user.phone,
+                date_birth: consultModel.user.date_birth,
+                gender: consultModel.user.gender
+            } : null,
+            consultModel.problems ? consultModel.problems.map((problem: any) =>
+                new Problem(problem.id, problem.name)
+            ) : []
         );
     }
 
@@ -184,9 +226,10 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             comment: consult.comment,
             reservation_expires_at: consult.reservation_expires_at,
             reason_cancel: consult.reason_cancel,
+            time: consult.time,
+            date: consult.date,
             userId: consult.userId,
             doctorId: consult.doctorId,
-            timeSlotId: consult.timeSlotId
         };
     }
 }

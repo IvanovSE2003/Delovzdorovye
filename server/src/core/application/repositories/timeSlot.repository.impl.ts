@@ -5,7 +5,7 @@ import { ITimeSlotCreationAttributes, TimeSlotmModelInterface } from "../../../i
 import { Op } from "sequelize";
 
 export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
-    async findByTimeDate(time: string, doctorId: number, date: string): Promise<TimeSlot | null> {
+    async findByTimeDate(time: string, doctorId: number, date: string, isAvailable: boolean): Promise<TimeSlot | null> {
         const targetDate = new Date(date);
         const startOfDay = new Date(targetDate);
         startOfDay.setHours(0, 0, 0, 0);
@@ -21,7 +21,7 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
                 model: models.TimeSlot,
                 where: {
                     time: time,
-                    isAvailable: true
+                    isAvailable: isAvailable
                 }
             }]
         });

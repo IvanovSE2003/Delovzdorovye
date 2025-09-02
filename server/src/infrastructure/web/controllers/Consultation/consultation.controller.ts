@@ -10,6 +10,7 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import TimerService from "../../../../core/domain/services/timer.service.js";
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
+import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 
 export default class ConsultationController {
     constructor(
@@ -91,10 +92,69 @@ export default class ConsultationController {
         try {
             const { page, limit, filters } = req.body;
             const consultations = await this.consultationRepository.findAll(page, limit, filters);
-            if (!consultations) {
+
+            if (!consultations || consultations.consultations.length === 0) {
                 return next(ApiError.badRequest('Консультации не найдены'));
             }
-            return res.status(200).json(consultations);
+
+            const formatTimeRange = (startTime: string, duration: number): string => {
+                if (!startTime || !duration) return 'Не указано';
+
+                try {
+                    const [hours, minutes] = startTime.split(':').map(Number);
+
+                    // Вычисляем время окончания
+                    const totalMinutes = hours * 60 + minutes + duration;
+                    const endHours = Math.floor(totalMinutes / 60) % 24;
+                    const endMinutes = totalMinutes % 60;
+
+                    // Форматируем с ведущими нулями
+                    const formattedStart = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    const formattedEnd = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+
+                    return `${formattedStart} - ${formattedEnd}`;
+                } catch {
+                    return 'Неверный формат';
+                }
+            };
+
+            const formattedConsultations = consultations.consultations.map(consultation => {
+                const result: any = {
+                    id: consultation.id,
+                    other_problem: consultation.other_problem,
+                    recommendations: consultation.recommendations,
+                    durationTime: formatTimeRange(consultation.time || '', consultation.duration || 0),
+                    date: consultation.date,
+                    score: consultation.score,
+                    comment: consultation.comment,
+                    reason_cancel: consultation.reason_cancel,
+                };
+
+                if (consultation.doctor) {
+                    result.DoctorName = consultation.doctor.user.name;
+                    result.DoctorSurname = consultation.doctor.user.surname;
+                    result.DoctorPatronymic = consultation.doctor.user.patronymic;
+                }
+
+                if (consultation.user) {
+                    result.PatientName = consultation.user.name;
+                    result.PatientSurname = consultation.user.surname;
+                    result.PatientPatronymic = consultation.user.patronymic;
+                }
+
+                if (consultation.problems) {
+                    result.Problems = consultation.problems.map((p: any) => p.name);
+                }
+
+                return result;
+            });
+
+            return res.status(200).json({
+                consultations: formattedConsultations,
+                totalCount: consultations.totalCount,
+                totalPages: consultations.totalPages
+            });
+
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -180,7 +240,7 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Нет доступных врачей на указанные дату и время'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctor.id, date);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctor.id, date, true);
 
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка не найдена'));
@@ -189,7 +249,8 @@ export default class ConsultationController {
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, user.id, doctor.id, timeSlot.id));
+            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
+            await this.addProblemsToConsultation(consultation.id, problems);
 
             await this.timeSlotRepository.save(timeSlot.setAvailable(false));
             this.timerService.startTimer(consultation.id, reservationExpiresAt);
@@ -279,15 +340,25 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультация не найдена'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctorId, date);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctorId, date, true);
 
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не свободной ячейки для записи на консультацию'));
             }
 
-            const updateConsult = await this.consultationRepository.save(consultation.setTimeSlot(timeSlot.id));
+            console.log(consultation.time, consultation.doctorId, consultation.date);
+            const timeSlotPrev = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, false);
 
-            return res.status(200).json(updateConsult);
+            if (!timeSlotPrev) {
+                return next(ApiError.badRequest('Не найден предыдущий верменной слот'));
+            }
+
+            await this.timeSlotRepository.save(timeSlot.setAvailable(false));
+            await this.timeSlotRepository.save(timeSlotPrev.setAvailable(true));
+
+            const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
+
+            return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${newConsult.date} на ${time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -310,7 +381,7 @@ export default class ConsultationController {
             } else {
                 updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
             }
-            return res.status(200).json(updateConsult);
+            return res.status(200).json({ success: true, message: "Консультация была отменена" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -327,7 +398,9 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультация не найдена'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date);
+            const user = await this.userRepository.findByDoctorId(consultation.doctorId);
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date, true);
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка занята или найдена'));
             }
@@ -340,10 +413,10 @@ export default class ConsultationController {
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
             const newConsultation = await this.consultationRepository.create(
-                new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, consultation.userId, consultation.doctorId, timeSlot.id)
+                new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, timeSlot.time, date, consultation.userId, consultation.doctorId)
             );
 
-            res.status(200).json(newConsultation);
+            res.status(200).json({ success: true, message: `Вы повторили консультацию у специалиста ${user?.name} ${user?.name} ${user?.name} в ${newConsultation.date} на ${consultation.time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -427,4 +500,41 @@ export default class ConsultationController {
             return next(ApiError.internal(e.message));
         }
     }
+
+    async sendRatingComment(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id, rating, comment } = req.body;
+            const consultation = await this.consultationRepository.findById(Number(id));
+
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            if (consultation.consultation_status === "UPCOMING") {
+                return next(ApiError.badRequest('Консультация еще не прошла'));
+            }
+
+            const updateConsultation = await this.consultationRepository.save(consultation.setComment(comment).setScore(rating));
+
+            return res.status(200).json(updateConsultation);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    private async addProblemsToConsultation(consultationId: number, problemIds: number[]): Promise<void> {
+        try {
+            const consultationProblems = problemIds.map(problemId => ({
+                consultationId: consultationId,
+                problemId: problemId
+            }));
+
+            await models.ConsultationProblems.bulkCreate(consultationProblems);
+
+        } catch (error) {
+            console.error('Ошибка при добавлении проблем к консультации:', error);
+            throw error;
+        }
+    }
 }
+
