@@ -57,6 +57,7 @@ export default class ContentController {
             const contents = await this.contentService.getAll(type ? String(type) : undefined);
 
             const results = contents.map(c => ({
+                id: c.id,
                 header: c.label,
                 text: c.text_content
             }));
