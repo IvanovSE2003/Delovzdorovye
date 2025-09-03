@@ -8,11 +8,11 @@ import User from "../../../../core/domain/entities/user.entity.js";
 import regData from "../../types/reqData.type.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
-import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import dataResult from "../../types/dataResultAuth.js";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
-import Batch from "../../../../core/domain/entities/batch.entity.js";
 import Doctor from "../../../../core/domain/entities/doctor.entity.js";
+import BasicData from "../../../../core/domain/entities/basicData.entity.js"
+import BasicDataRepository from "../../../../core/domain/repositories/basicData.repository.js"
 
 export default class UserController {
     constructor(
@@ -20,7 +20,7 @@ export default class UserController {
         private readonly userRepository: UserRepository,
         private readonly tokenService: TokenService,
         private readonly fileService: FileService,
-        private readonly batchRepository: BatchRepository,
+        private readonly basicDataRepository: BasicDataRepository,
         private readonly doctorRepository: DoctorRepository
     ) { }
 
@@ -453,7 +453,7 @@ export default class UserController {
 
             if (updatedUserWithAvatar.role === "DOCTOR") {
                 const changes = this.collectDoctorChanges(user, data);
-                await this.batchRepository.createBatchWithChangesUser(
+                await this.basicDataRepository.createBatchWithChangesUser(
                     Number(updatedUserWithAvatar.id),
                     changes
                 );
@@ -560,7 +560,7 @@ export default class UserController {
             if (user.role === 'DOCTOR') {
                 const result = await this.userRepository.uploadAvatar(numericUserId, img);
 
-                const batch = new Batch(
+                const batch = new BasicData(
                     0,
                     'pending',
                     ' ',
@@ -571,7 +571,7 @@ export default class UserController {
                     user.id
                 );
 
-                await this.batchRepository.create(batch);
+                await this.basicDataRepository.create(batch);
                 updatedUser = await this.userRepository.save(user.setSentChanges(true));
             } else {
                 updatedUser = await this.userRepository.uploadAvatar(numericUserId, img);
@@ -630,7 +630,7 @@ export default class UserController {
             }
 
             if (newRole === 'DOCTOR') {
-                const doctor = await this.doctorRepository.create(new Doctor(0, 0, [], [], true, [], user.id));
+                const doctor = await this.doctorRepository.create(new Doctor(0, 0, '', '', true, '', user.id));
                 if (!doctor) {
                     return next(ApiError.internal('Ошибка изменения пользователя на роль специалиста'));
                 }

@@ -3,7 +3,6 @@ import ApiError from "../../error/ApiError.js";
 import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
-import adjustScheduleToTimeZone from "../../function/adjustScheduleToTimeZone.js"
 import DoctorSchedule from "../../../../core/domain/entities/doctorSchedule.entity.js";
 import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import getRussianDayOfWeek from "../../function/getRussianDayOfWeek.js";
@@ -60,7 +59,7 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Пользователь не является специалистом'));
             }
 
-            const schedule = await this.doctorScheduleRepository.create(new DoctorSchedule(0, date, day_weekly, time_start, time_end, doctor.id))
+            const schedule = await this.doctorScheduleRepository.create(new DoctorSchedule(0, date, day_weekly, doctor.id))
             return res.status(200).json(schedule);
         } catch (e: any) {
             return next(ApiError.internal(e.message));

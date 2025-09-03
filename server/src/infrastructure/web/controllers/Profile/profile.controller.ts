@@ -3,7 +3,6 @@ import DoctorRepository from "../../../../core/domain/repositories/doctor.reposi
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import ApiError from "../../error/ApiError.js";
 import calculateAge from "../../function/calcAge.js";
-import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 
 export default class ProfileController {
     constructor(
@@ -50,8 +49,8 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        license: doctor?.licenses,
-                        specializations: doctor?.specializations
+                        license: doctor?.license,
+                        specializations: doctor?.specialization
                     },
                     default: baseData
                 },
@@ -64,8 +63,8 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        diploma: doctor?.diplomas,
-                        specializations: doctor?.specializations
+                        diploma: doctor?.diploma,
+                        specializations: doctor?.specialization
                     },
                     default: baseData
                 },
@@ -82,9 +81,9 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        diploma: doctor?.diplomas,
-                        license: doctor?.licenses,
-                        specializations: doctor?.specializations
+                        diploma: doctor?.diploma,
+                        license: doctor?.license,
+                        specializations: doctor?.specialization
                     },
                     default: {
                         ...baseData,

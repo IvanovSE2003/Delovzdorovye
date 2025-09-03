@@ -8,11 +8,11 @@ import SmsServiceImpl from "../../../../core/application/services/sms.service.im
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
 import TelegramServiceStart from "../../../../telegram/startTelegramBot.js";
 import FileServiceImpt from "../../../../core/application/services/file.service.impl.js";
-import BatchRepositoryImpl from "../../../../core/application/repositories/batch.repository.impl.js";
+import BasicDataRepositoryImpl from "../../../../core/application/repositories/basicData.repository.impl.js"
 import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 
 const userRepository = new UserRepositoryImpl();
-const batchRepository = new BatchRepositoryImpl();
+const basicDataRepository = new BasicDataRepositoryImpl();
 const fileService = new FileServiceImpt();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
@@ -22,6 +22,6 @@ const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, proce
 const SpecializationRepository = new SpecializationsRepositoryImpl();
 
 const authService = new AuthServiceImpl(userRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
-const userController = new UserController(authService, userRepository, tokenService, fileService, batchRepository, doctorRepository);
+const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository);
 
 export default userController;

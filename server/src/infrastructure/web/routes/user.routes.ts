@@ -26,7 +26,6 @@ router.post('/checkVarifyCodeSMS',(req: Request, res: Response, next: NextFuncti
 
 router.get('/activate', (req: Request, res: Response, next: NextFunction) => userController.activate(req, res, next));
 router.post('/sendChangeEmail',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
-// router.post('/sendChangePhone',(req: Request, res: Response, next: NextFunction) => userController.sendActivationEmail(req, res, next));
 
 router.post('/activateLinkTg/:userId', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.linkTelegram(req, res, next));
 

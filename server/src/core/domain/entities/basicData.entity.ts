@@ -1,4 +1,4 @@
-export default class Batch {
+export default class BasicData {
     constructor(
         public id: number,
         public status: string,

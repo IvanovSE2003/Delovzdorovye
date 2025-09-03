@@ -6,6 +6,7 @@ export default interface ConsultationRepository {
         payment_status?: string;
         consultation_status?: string;
         userId?: number;
+        doctorId?: number;
     }
     ): Promise<{
         consultations: Consultation[];

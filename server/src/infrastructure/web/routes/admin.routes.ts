@@ -1,5 +1,5 @@
 import { Router, NextFunction, Request, Response } from "express";
-import batchController from "../controllers/Batch/batch.controller.interface.js";
+import batchController from "../controllers/Admin/admin.controller.interface.js";
 import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
 
 const router: Router = Router(); 
@@ -13,6 +13,7 @@ router.post('/all', (req: Request, res: Response, next: NextFunction) => batchCo
 router.post('/userConsult/all', (req: Request, res: Response, next: NextFunction) => batchController.getUserConsultation(req, res, next));
 router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getOne(req, res, next));
 
-router.post('consultation/all', (req: Request, res: Response, next: NextFunction) => batchController.getConsultaions(req, res, next))
+router.post('consultation/all', (req: Request, res: Response, next: NextFunction) => batchController.getConsultaions(req, res, next));
+router.post('/profData/all', (req: Request, res: Response, next: NextFunction) => batchController.getAllProfData(req, res, next));
 
 export default router;

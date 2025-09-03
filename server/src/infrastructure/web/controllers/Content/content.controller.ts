@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import ContentService from "../../../../core/domain/services/content.service";
 import DataContent from "../../types/dataContent";
+import ApiError from "../../error/ApiError"
 
 export default class ContentController {
     constructor(
         private readonly contentService: ContentService
-    ) {}
+    ) { }
 
     async createContent(req: Request, res: Response, next: NextFunction) {
         try {
@@ -21,8 +22,8 @@ export default class ContentController {
             const created = await this.contentService.create(newContent);
             return res.status(201).json(created);
 
-        } catch (error) {
-            next(error);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
     }
 
@@ -40,9 +41,13 @@ export default class ContentController {
                 return res.status(404).json({ message: "Контент не найден" });
             }
 
-            return res.json(content);
-        } catch (error) {
-            next(error);
+            return res.json({
+                header: content.label,
+                text: content.text_content,
+                type: content.type
+            });
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
     }
 
@@ -50,9 +55,15 @@ export default class ContentController {
         try {
             const { type } = req.query;
             const contents = await this.contentService.getAll(type ? String(type) : undefined);
-            return res.json(contents);
-        } catch (error) {
-            next(error);
+
+            const results = contents.map(c => ({
+                header: c.label,
+                text: c.text_content
+            }));
+
+            return res.json(results);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
     }
 
@@ -76,8 +87,8 @@ export default class ContentController {
             }
 
             return res.json(updated);
-        } catch (error) {
-            next(error);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
     }
 
@@ -93,8 +104,8 @@ export default class ContentController {
             }
 
             return res.status(204).send();
-        } catch (error) {
-            next(error);
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
         }
     }
 }

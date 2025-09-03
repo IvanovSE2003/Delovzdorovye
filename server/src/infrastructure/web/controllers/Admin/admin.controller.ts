@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express'
-import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import ApiError from "../../error/ApiError.js";
 import DoctorRepository from '../../../../core/domain/repositories/doctor.repository.js';
 import UserRepository from '../../../../core/domain/repositories/user.repository.js';
@@ -7,19 +6,22 @@ import Doctor from '../../../../core/domain/entities/doctor.entity.js';
 import User from '../../../../core/domain/entities/user.entity.js';
 import UserShortInfoDto from '../../types/UserShortInfoDto.js';
 import ConsultationRepository from '../../../../core/domain/repositories/consultation.repository.js';
+import BasicDataRepository from '../../../../core/domain/repositories/basicData.repository.js';
+import ProfDataRepository from '../../../../core/domain/repositories/profData.repository.js';
 
 export default class BatchController {
     constructor(
-        private readonly batchRepository: BatchRepository,
+        private readonly basicDataReposiotry: BasicDataRepository,
+        private readonly profDataRepository: ProfDataRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly userRepository: UserRepository,
         private readonly consultationRepository: ConsultationRepository
-    ) { }
+    ) {}
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const batch = await this.batchRepository.findById(Number(id));
+            const batch = await this.basicDataReposiotry.findById(Number(id));
 
             if (!batch) {
                 return next(ApiError.badRequest('Изменение не найдено'));
@@ -35,7 +37,7 @@ export default class BatchController {
         try {
             const limit = req.body.limit || 10;
             const page = req.body.page || 1;
-            const batches = await this.batchRepository.findAll(Number(page), Number(limit));
+            const batches = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
 
             if (!batches || batches.batches.length === 0) {
                 return next(ApiError.badRequest('Изменения не найдены'));
@@ -65,7 +67,7 @@ export default class BatchController {
         try {
             const { id } = req.params;
 
-            const batch = await this.batchRepository.findById(Number(id));
+            const batch = await this.basicDataReposiotry.findById(Number(id));
             if (!batch) {
                 return next(ApiError.badRequest("Изменение не найдено"));
             }
@@ -95,9 +97,9 @@ export default class BatchController {
                 return next(ApiError.badRequest("Недопустимое поле для изменения"));
             }
 
-            await this.batchRepository.delete(batch.id);
+            await this.basicDataReposiotry.delete(batch.id);
 
-            const batches = await this.batchRepository.findAllByUserId(user.id);
+            const batches = await this.basicDataReposiotry.findAllByUserId(user.id);
             if (batches.length === 0) {
                 await this.userRepository.save(user.setSentChanges(false));
             }
@@ -117,16 +119,15 @@ export default class BatchController {
             const { id } = req.params;
             const { rejection_reason } = req.body;
 
-            const batch = await this.batchRepository.findById(Number(id));
+            const batch = await this.basicDataReposiotry.findById(Number(id));
 
             if (!batch) {
                 return next(ApiError.badRequest('Изменение не найдено'));
             }
 
-            // создание уведомлений
             console.log(rejection_reason);
 
-            await this.batchRepository.delete(batch.id);
+            await this.basicDataReposiotry.delete(batch.id);
             return res.status(200).json({
                 success: true,
                 message: 'Изменение успешно отменено и сообщение отправлено'
@@ -233,7 +234,7 @@ export default class BatchController {
     async getAllProfData(req: Request, res: Response, next: NextFunction) {
         try {
             const {limit, page, filters} = req.body;
-            const profDatas = await this.batchRepository.findAllProfData(limit, page, filters);
+            const profDatas = await this.profDataRepository.findAll(limit, page, filters);
             if(!profDatas) {
                 return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
             }

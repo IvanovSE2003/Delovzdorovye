@@ -1,4 +1,3 @@
-// consultation.controller.interface.ts
 import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
 import DoctorScheduleRepositoryImpl from "../../../../core/application/repositories/doctorSchedule.repository.impl.js";

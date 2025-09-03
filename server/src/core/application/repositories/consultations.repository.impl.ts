@@ -18,6 +18,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         payment_status?: string;
         consultation_status?: string;
         userId?: number;
+        doctorId?: number;
     }
     ): Promise<{
         consultations: Consultation[];
@@ -36,6 +37,10 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
 
         if (filters?.userId !== undefined && filters?.userId !== null) {
             where.userId = filters.userId;
+        }
+
+        if (filters?.doctorId !== undefined && filters?.doctorId !== null) {
+            where.doctorId = filters.doctorId;
         }
 
         const totalCount = await models.Consultation.count({

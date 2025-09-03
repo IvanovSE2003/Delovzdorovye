@@ -141,6 +141,7 @@ export default class ConsultationController {
                 };
 
                 if (consultation.doctor) {
+                    result.DoctorId = consultation.doctor.id;
                     result.DoctorName = consultation.doctor.user.name;
                     result.DoctorSurname = consultation.doctor.user.surname;
                     result.DoctorPatronymic = consultation.doctor.user.patronymic;
@@ -237,7 +238,7 @@ export default class ConsultationController {
 
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { date, time, problems, userId } = req.body;
+            const { date, time, problems, userId, otherProblemText} = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
@@ -259,7 +260,7 @@ export default class ConsultationController {
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
+            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 30, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
             await this.addProblemsToConsultation(consultation.id, problems);
 
             await this.timeSlotRepository.save(timeSlot.setAvailable(false));

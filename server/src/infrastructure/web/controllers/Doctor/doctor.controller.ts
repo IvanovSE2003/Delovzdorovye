@@ -1,16 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
+import ProfDataRespository from "../../../../core/domain/repositories/profData.repository.js"
 import ApiError from "../../error/ApiError.js";
-import BatchRepository from "../../../../core/domain/repositories/batch.repository.js";
 import FileService from "../../../../core/domain/services/file.service.js";
 import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
-import ProfData from "../../../../core/domain/entities/profData.entity.js";
 
 export default class DoctorController {
     constructor(
         private readonly doctorRepository: DoctorRepository,
-        private readonly batchRepository: BatchRepository,
+        private readonly profDataRepository: ProfDataRespository,
         private readonly fileService: FileService,
         private readonly userRepository: UserRepository
     ) { }
@@ -80,7 +79,7 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Специалист не найден"));
             }
 
-            const profDataRecord: ProfData = {
+            const profDataRecord: any = {
                 comment: comment || null,
                 type: type || 'ADD'
             };
@@ -130,7 +129,7 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
             }
             profDataRecord.userId = user.id;
-            await this.batchRepository.createBasicData(profDataRecord);
+            await this.profDataRepository.create(profDataRecord);
 
             return res.json({
                 success: true,
