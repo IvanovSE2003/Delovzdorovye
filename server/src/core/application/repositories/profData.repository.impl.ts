@@ -4,30 +4,6 @@ import ProfDataRepository from "../../domain/repositories/profData.repository";
 import models from "../../../infrastructure/persostence/models/models";
 
 export default class ProfDataRepositoryImpl implements ProfDataRepository {
-    async create(profData: ProfData): Promise<ProfData> {
-        const createdProfData = await models.ProfDataModel.create(this.mapToPersistence(profData));
-        return this.mapToDomainProfData(createdProfData);
-    }
-
-    async update(profData: ProfData): Promise<ProfData> {
-        const [affectedCount, affectedRows] = await models.ProfDataModel.update(this.mapToPersistence(profData), { where: { id: profData.id }, returning: true });
-        if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
-            throw new Error('Фиксация изменения профессиональных данных не была обновлена');
-        }
-        const updatedProfData = affectedRows[0];
-        return this.mapToDomainProfData(updatedProfData);
-    }
-
-    async save(ProfData: ProfData): Promise<ProfData> {
-        return ProfData.id ? await this.update(ProfData) : await this.create(ProfData);
-    }
-
-    async delete(id: number): Promise<void> {
-        const deletedCount = await models.ProfDataModel.destroy({ where: { id } });
-        if (deletedCount === 0) {
-            throw new Error('Фиксация изменения профессиональных данных не найдена или не была удалена');
-        }
-    }
 
     async findAll(page: number, limit: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPages: number }> {
         const where: any = {};
@@ -51,6 +27,36 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
             totalCount,
             totalPages,
         };
+    }
+
+    async findById(id: number): Promise<ProfData | null> {
+        const profData = await models.ProfDataModel.findByPk(id);
+        return profData ? this.mapToDomainProfData(profData) : null
+    }
+
+    async create(profData: ProfData): Promise<ProfData> {
+        const createdProfData = await models.ProfDataModel.create(this.mapToPersistence(profData));
+        return this.mapToDomainProfData(createdProfData);
+    }
+
+    async update(profData: ProfData): Promise<ProfData> {
+        const [affectedCount, affectedRows] = await models.ProfDataModel.update(this.mapToPersistence(profData), { where: { id: profData.id }, returning: true });
+        if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
+            throw new Error('Фиксация изменения профессиональных данных не была обновлена');
+        }
+        const updatedProfData = affectedRows[0];
+        return this.mapToDomainProfData(updatedProfData);
+    }
+
+    async save(ProfData: ProfData): Promise<ProfData> {
+        return ProfData.id ? await this.update(ProfData) : await this.create(ProfData);
+    }
+
+    async delete(id: number): Promise<void> {
+        const deletedCount = await models.ProfDataModel.destroy({ where: { id } });
+        if (deletedCount === 0) {
+            throw new Error('Фиксация изменения профессиональных данных не найдена или не была удалена');
+        }
     }
 
     private mapToDomainProfData(profModel: ProfDataModelInterface): ProfData {

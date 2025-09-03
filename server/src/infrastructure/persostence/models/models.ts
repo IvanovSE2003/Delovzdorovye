@@ -102,7 +102,7 @@ const Transaction = sequelize.define('transaction', {
     date: { type: DataType.DATE }
 })
 
-const ModerationBatchModel = sequelize.define<BatchModelInterface>('moderation_batch', {
+const ModerationBatchModel = sequelize.define<BatchModelInterface>('basic_data_records', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     status: { type: DataType.STRING}, 
     rejection_reason: { type: DataType.TEXT, allowNull: true },

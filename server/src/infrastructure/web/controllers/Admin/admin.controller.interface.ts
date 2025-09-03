@@ -10,6 +10,6 @@ const ProfDataRepository = new ProfDataRepositoryImpl();
 const DoctorRepository = new DoctorRepositoryImpl();
 const UserRepository = new UserRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
-const batchController = new BatchController(BasicDataRepository, ProfDataRepository, DoctorRepository, UserRepository, consultationRepository);
+const adminController = new BatchController(BasicDataRepository, ProfDataRepository, DoctorRepository, UserRepository, consultationRepository);
 
-export default batchController;
+export default adminController;

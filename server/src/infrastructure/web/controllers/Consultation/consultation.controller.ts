@@ -98,7 +98,7 @@ export default class ConsultationController {
         }
     }
 
-    async findAllConsultation(req: Request, res: Response, next: NextFunction) {
+    async findAll(req: Request, res: Response, next: NextFunction) {
         try {
             const { page, limit, filters } = req.body;
             const consultations = await this.consultationRepository.findAll(page, limit, filters);
@@ -151,6 +151,7 @@ export default class ConsultationController {
                     result.PatientName = consultation.user.name;
                     result.PatientSurname = consultation.user.surname;
                     result.PatientPatronymic = consultation.user.patronymic;
+                    result.PatientPhone = consultation.user.phone;
                 }
 
                 if (consultation.problems) {
@@ -171,84 +172,19 @@ export default class ConsultationController {
         }
     }
 
-    async findDateForProblem(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { problems } = req.body as { problems: number[] };
-
-            const problemEntities = await models.ProblemModel.findAll({
-                where: { id: problems },
-                include: [
-                    {
-                        model: models.SpecializationModel,
-                        through: { attributes: [] }
-                    }
-                ]
-            });
-
-            if (!problemEntities || problemEntities.length === 0) {
-                return next(ApiError.badRequest("Проблемы не найдены"));
-            }
-
-            const specializationIds = [
-                ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
-            ];
-
-            if (specializationIds.length === 0) {
-                return next(ApiError.badRequest("Нет подходящих специалистов"));
-            }
-
-            const doctors = await models.DoctorModel.findAll({
-                include: [
-                    {
-                        model: models.SpecializationModel,
-                        where: { id: specializationIds }
-                    },
-                    {
-                        model: models.DoctorsSchedule
-                    }
-                ]
-            });
-
-            const availableDates = [...new Set(
-                doctors.flatMap(doc => doc.doctors_schedules?.map(s => s.date) || [])
-            )];
-
-            return res.json(availableDates);
-
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
-    }
-
-    async findTimeSlotForDateProblem(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { problems, date } = req.body as { problems: number[], date: string };
-
-            const availableSlots = await this.consultationRepository.findTimeSlotForDateProblem(problems, date);
-
-            if (availableSlots.length === 0) {
-                return next(ApiError.badRequest("Нет доступных слотов у подходящих врачей в эту дату"));
-            }
-
-            return res.json({ slots: availableSlots });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
-    }
-
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { date, time, problems, userId, otherProblemText} = req.body;
+            const { date, time, problems, doctorId, userId, otherProblemText} = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const doctor = await this.doctorReposiotry.findByDateTimeForProblems(date, time, problems);
+            const doctor = await this.doctorReposiotry.findById(Number(doctorId));
 
             if (!doctor) {
-                return next(ApiError.badRequest('Нет доступных врачей на указанные дату и время'));
+                return next(ApiError.badRequest('Специалист не найден'));
             }
 
             const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctor.id, date, true);
@@ -260,11 +196,11 @@ export default class ConsultationController {
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 30, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
+            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 60, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
             await this.addProblemsToConsultation(consultation.id, problems);
 
             await this.timeSlotRepository.save(timeSlot.setAvailable(false));
-            this.timerService.startTimer(consultation.id, reservationExpiresAt);
+            // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -325,7 +261,7 @@ export default class ConsultationController {
 
             const formattedDoctors = result.doctors.map(doctor => ({
                 value: doctor.id,
-                label: `${doctor.userSurname} ${doctor.userName} ${doctor.userPatronymic}`.trim()
+                label: `${doctor.user?.name} ${doctor.user?.surname} ${doctor.user?.patronymic}`.trim()
             }));
 
             return res.status(200).json(formattedDoctors);

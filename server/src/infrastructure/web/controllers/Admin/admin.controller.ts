@@ -16,7 +16,7 @@ export default class BatchController {
         private readonly doctorRepository: DoctorRepository,
         private readonly userRepository: UserRepository,
         private readonly consultationRepository: ConsultationRepository
-    ) {}
+    ) { }
 
     async getOne(req: Request, res: Response, next: NextFunction) {
         try {
@@ -33,10 +33,10 @@ export default class BatchController {
         }
     }
 
-    async getAll(req: Request, res: Response, next: NextFunction) {
+    async getAllBasicData(req: Request, res: Response, next: NextFunction) {
         try {
-            const limit = req.body.limit || 10;
-            const page = req.body.page || 1;
+            const limit = req.query.limit || 10;
+            const page = req.query.page || 1;
             const batches = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
 
             if (!batches || batches.batches.length === 0) {
@@ -137,6 +137,33 @@ export default class BatchController {
         }
     }
 
+    async confirmProfData(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+
+            const profData = await this.profDataRepository.findById(Number(id));
+
+            if (!profData) {
+                return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
+            }
+
+            const doctor = await this.doctorRepository.findByUserId(profData.userId || 0);
+
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
+            }
+
+            const newDoctor = await this.doctorRepository.save(doctor.setYear(profData.new_experience_years));
+            await this.doctorRepository.saveLisinseDiploma(newDoctor, profData.new_license, profData.new_diploma, profData.new_specialization);
+            return res.status(200).json({
+                success: true,
+                message: "Изменения успешно подтверждены и применены для профессиональных данных",
+            });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
     async getAllUser(req: Request, res: Response, next: NextFunction) {
         try {
             const users = await this.userRepository.getAll();
@@ -149,8 +176,7 @@ export default class BatchController {
                 .filter(user => user.role === 'DOCTOR')
                 .map(user => user.id);
 
-            const doctors = await this.doctorRepository.findByUserIds(doctorUserIds);
-
+            const doctors = await this.doctorRepository.getDoctorsWithSpecializations(doctorUserIds);
             const doctorMap = new Map<number, Doctor>();
             doctors.forEach(doctor => {
                 if (doctor.userId) {
@@ -177,8 +203,11 @@ export default class BatchController {
 
                 if (user.role === 'DOCTOR') {
                     const doctorInfo = doctorMap.get(user.id);
-                    if (doctorInfo) {
-                        userData.specialization = doctorInfo.specialization || null;
+                    if (doctorInfo && doctorInfo.specializations && doctorInfo.specializations.length > 0) {
+                        const firstSpecialization = doctorInfo.specializations[0];
+                        userData.specialization = firstSpecialization.name;
+                        userData.diploma = firstSpecialization.diploma || null;
+                        userData.license = firstSpecialization.license || null;
                     }
                 }
 
@@ -233,13 +262,16 @@ export default class BatchController {
 
     async getAllProfData(req: Request, res: Response, next: NextFunction) {
         try {
-            const {limit, page, filters} = req.body;
-            const profDatas = await this.profDataRepository.findAll(limit, page, filters);
-            if(!profDatas) {
+            const limit = req.query.limit || 10;
+            const page = req.query.page || 1;
+            const filters = req.query.filters || {}
+            
+            const profDatas = await this.profDataRepository.findAll(Number(limit), Number(page), filters);
+            if (!profDatas) {
                 return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
             }
             res.status(200).json(profDatas)
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }

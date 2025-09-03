@@ -4,10 +4,8 @@ import consultationController from "../controllers/Consultation/consultation.con
 
 const router: Router = Router(); 
 
-router.post('/findDay', (req: Request, res: Response, next: NextFunction) => consultationController.findDateForProblem(req, res, next));
-router.post('/findTimeSlot', (req: Request, res: Response, next: NextFunction) => consultationController.findTimeSlotForDateProblem(req, res, next));
 router.post('/appointment', (req: Request, res: Response, next: NextFunction) => consultationController.appointment(req, res, next));
-router.post('/all', (req: Request, res: Response, next: NextFunction) => consultationController.findAllConsultation(req, res, next));
+router.post('/all', (req: Request, res: Response, next: NextFunction) => consultationController.findAll(req, res, next));
 router.post('/specialist/all', (req: Request, res: Response, next: NextFunction) => consultationController.findSpecialistAll(req, res, next));
 router.post('/resheduleConsultation/:id', (req: Request, res: Response, next: NextFunction) => consultationController.resheduleConsultation(req, res, next));
 router.post('/cancelConsultation/:id', (req: Request, res: Response, next: NextFunction) => consultationController.cancelConsultation(req, res, next));

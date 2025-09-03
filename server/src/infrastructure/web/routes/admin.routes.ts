@@ -1,19 +1,20 @@
 import { Router, NextFunction, Request, Response } from "express";
-import batchController from "../controllers/Admin/admin.controller.interface.js";
+import adminController from "../controllers/Admin/admin.controller.interface.js";
 import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
 
 const router: Router = Router(); 
 
-router.put('/confirm/:id', (req: Request, res: Response, next: NextFunction) => batchController.confirm(req, res, next));
-router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.reject(req, res, next));
+router.put('/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirm(req, res, next));
+router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.reject(req, res, next));
 
-router.get('/get-all-user', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getAllUser(req, res, next));
+router.get('/get-all-user', (req: Request, res: Response, next: NextFunction) => adminController.getAllUser(req, res, next));
 
-router.post('/all', (req: Request, res: Response, next: NextFunction) => batchController.getAll(req, res, next));
-router.post('/userConsult/all', (req: Request, res: Response, next: NextFunction) => batchController.getUserConsultation(req, res, next));
-router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getOne(req, res, next));
+router.get('/basicData/all', (req: Request, res: Response, next: NextFunction) => adminController.getAllBasicData(req, res, next));
+router.get('/profData/all', (req: Request, res: Response, next: NextFunction) => adminController.getAllProfData(req, res, next));
 
-router.post('consultation/all', (req: Request, res: Response, next: NextFunction) => batchController.getConsultaions(req, res, next));
-router.post('/profData/all', (req: Request, res: Response, next: NextFunction) => batchController.getAllProfData(req, res, next));
+router.post('/userConsult/all', (req: Request, res: Response, next: NextFunction) => adminController.getUserConsultation(req, res, next));
+router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.getOne(req, res, next));
+
+router.post('consultation/all', (req: Request, res: Response, next: NextFunction) => adminController.getConsultaions(req, res, next));
 
 export default router;
