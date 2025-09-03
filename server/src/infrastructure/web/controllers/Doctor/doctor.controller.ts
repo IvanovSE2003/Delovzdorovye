@@ -3,7 +3,6 @@ import DoctorRepository from "../../../../core/domain/repositories/doctor.reposi
 import ProfDataRespository from "../../../../core/domain/repositories/profData.repository.js"
 import ApiError from "../../error/ApiError.js";
 import FileService from "../../../../core/domain/services/file.service.js";
-import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 
 export default class DoctorController {
@@ -67,7 +66,7 @@ export default class DoctorController {
             const { id } = req.params;
             const { data: dataString, comment, type } = req.body as { data: string; comment?: string; type?: "ADD" | "DELETE" };
 
-            let data: Partial<Doctor>;
+            let data: any
             try {
                 data = JSON.parse(dataString);
             } catch (parseError) {
@@ -129,7 +128,9 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
             }
             profDataRecord.userId = user.id;
-            await this.profDataRepository.create(profDataRecord);
+            await this.profDataRepository.save(profDataRecord);
+
+            await this.userRepository.save(user.setSentChanges(true));
 
             return res.json({
                 success: true,

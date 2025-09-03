@@ -115,6 +115,7 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             throw error;
         }
     }
+    
 
     private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & { time_slots?: any[] }): DoctorSchedule {
         const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({

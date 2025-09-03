@@ -48,8 +48,21 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
         return this.mapToDomainProfData(updatedProfData);
     }
 
-    async save(ProfData: ProfData): Promise<ProfData> {
-        return ProfData.id ? await this.update(ProfData) : await this.create(ProfData);
+    async save(profData: ProfData): Promise<ProfData> {
+        const [profDataModel, created] = await models.ProfDataModel.findOrCreate({
+            where: {
+                userId: profData.userId,
+                new_specialization: profData.new_specialization
+            },
+            defaults: this.mapToPersistence(profData)
+        });
+
+        if (!created) {
+            await profDataModel.update(this.mapToPersistence(profData));
+            await profDataModel.reload();
+        }
+
+        return this.mapToDomainProfData(profDataModel);
     }
 
     async delete(id: number): Promise<void> {

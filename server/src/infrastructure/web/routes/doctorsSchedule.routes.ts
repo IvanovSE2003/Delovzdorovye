@@ -3,7 +3,7 @@ import scheduleController from "../controllers/DoctorSchedule/doctorSchedule.con
 
 const router = Router(); 
 
-router.get('/:userId', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.getByDoctor(req, res, next));
+router.get('/doctor', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.getByDoctor(req, res, next));
 router.post('/create', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.createSchedule(req, res, next));
 router.delete('/delete/:id', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.deleteSchedule(req, res, next));
 router.post('/createTimeSlot', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.createTimeSlot(req, res, next));
