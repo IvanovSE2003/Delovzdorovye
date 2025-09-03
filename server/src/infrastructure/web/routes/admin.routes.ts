@@ -7,7 +7,7 @@ const router: Router = Router();
 router.put('/confirm/:id', (req: Request, res: Response, next: NextFunction) => batchController.confirm(req, res, next));
 router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.reject(req, res, next));
 
-router.get('/get-all-user', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => batchController.getAllUser(req, res, next));
+router.get('/get-all-user', (req: Request, res: Response, next: NextFunction) => batchController.getAllUser(req, res, next));
 
 router.post('/all', (req: Request, res: Response, next: NextFunction) => batchController.getAll(req, res, next));
 router.post('/userConsult/all', (req: Request, res: Response, next: NextFunction) => batchController.getUserConsultation(req, res, next));

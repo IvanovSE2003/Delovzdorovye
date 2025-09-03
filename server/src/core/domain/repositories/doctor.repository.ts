@@ -20,9 +20,11 @@ export default interface DoctorRepository {
         totalPages: number;
     }>;
     findByUserIds(userIds: number[]): Promise<Doctor[]>;
-    findByDateTimeForProblems(date: string, time: string, problems: number[]): Promise<Doctor>;
+    getDoctorsWithSpecializations(userIds: number[]): Promise<Doctor[]>;
     update(doctor: Doctor): Promise<Doctor>;
     create(doctor: Doctor): Promise<Doctor>;
+    save(doctor: Doctor): Promise<Doctor>;
 
+    saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
     getTimeSlots(doctorId: number): Promise<TimeSlot[]>;
 }

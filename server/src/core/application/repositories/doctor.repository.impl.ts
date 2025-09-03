@@ -4,9 +4,6 @@ import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infras
 import Doctor from '../../domain/entities/doctor.entity.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
 import TimeSlot from '../../domain/entities/timeSlot.entity.js';
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import timezone from "dayjs/plugin/timezone.js";
 import { Op } from "sequelize";
 
 const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
@@ -111,7 +108,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 },
                 {
                     model: SpecializationModel,
-                    through: { attributes: ['diploma', 'license'] }, // Включаем атрибуты связующей таблицы
+                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['name'],
                     where: filters?.specialization ? { name: filters.specialization } : {}
                 }
@@ -147,97 +144,15 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return doctors.map(doctor => this.mapToDomainDoctor(doctor));
     }
 
-    async findByDateTimeForProblems(date: string, time: string, problems: number[]): Promise<Doctor> {
-        let specializationIds: number[] = [];
-
-        if (problems.length > 0) {
-            const problemEntities = await models.ProblemModel.findAll({
-                where: { id: problems },
-                include: [{ model: models.SpecializationModel, through: { attributes: [] } }]
-            });
-
-            if (!problemEntities || problemEntities.length === 0) {
-                throw new Error("Проблемы не найдены");
-            }
-
-            specializationIds = [
-                ...new Set(problemEntities.flatMap(p => p.specializations?.map(s => s.id) || []))
-            ];
-
-            if (specializationIds.length === 0) {
-                throw new Error("Нет подходящих специализаций для указанных проблем");
-            }
-        }
-
-        const targetDate = new Date(date);
-        const startOfDay = new Date(targetDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(targetDate);
-        endOfDay.setHours(23, 59, 59, 999);
-
+    async getDoctorsWithSpecializations(userIds: number[]) {
         const doctors = await DoctorModel.findAll({
-            include: [
-                {
-                    model: models.UserModel,
-                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender'],
-                    required: true
-                },
-                {
-                    model: models.SpecializationModel,
-                    attributes: ['name'],
-                    through: {
-                        attributes: ['diploma', 'license']
-                    },
-                    where: problems.length > 0 ? { id: specializationIds } : undefined,
-                    required: problems.length > 0
-                },
-                {
-                    model: models.DoctorsSchedule,
-                    where: {
-                        date: { [Op.between]: [startOfDay, endOfDay] },
-                    },
-                    include: [{
-                        model: models.TimeSlot,
-                        where: {
-                            time: time,
-                            isAvailable: true
-                        },
-                        required: true
-                    }],
-                    required: true
-                }
-            ],
-            where: {
-                isActivated: true
-            }
+            where: { userId: userIds },
+            include: [{
+                model: SpecializationModel,
+                through: { attributes: ['diploma', 'license'] }
+            }]
         });
-
-        if (doctors.length === 0) {
-            throw new Error('Нет доступных врачей на указанные дату и время');
-        }
-
-        if (problems.length === 0) {
-            return this.mapToDomainDoctor(doctors[0] as DoctorModelInterface & { specializations?: any[]; user?: any });
-        }
-
-        let bestDoctor = doctors[0];
-        let maxSpecializationMatch = 0;
-
-        for (const doctor of doctors) {
-            if (doctor.specializations) {
-                const doctorSpecializationIds = doctor.specializations.map(s => s.id);
-                const matchingCount = specializationIds.filter(id =>
-                    doctorSpecializationIds.includes(id)
-                ).length;
-
-                if (matchingCount > maxSpecializationMatch) {
-                    maxSpecializationMatch = matchingCount;
-                    bestDoctor = doctor;
-                }
-            }
-        }
-
-        return this.mapToDomainDoctor(bestDoctor as DoctorModelInterface & { specializations?: any[]; user?: any });
+        return doctors.map(doctor => this.mapToDomainDoctor(doctor))
     }
 
     async update(doctor: Doctor): Promise<Doctor> {
@@ -248,7 +163,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         const transaction = await sequelize.transaction();
 
         try {
-            // Обновляем основные данные доктора
             const [affectedCount, updatedDoctors] = await DoctorModel.update(
                 this.mapToPersistence(doctor),
                 {
@@ -258,44 +172,18 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 }
             );
 
-            if (affectedCount === 0 || !updatedDoctors || updatedDoctors.length === 0) {
-                throw new Error(`Доктор с id ${doctor.id} не найден`);
-            }
-
-            const updatedDoctor = updatedDoctors[0] as DoctorModelInterface;
-            const specializationUpdates = [];
-            for (let i = 0; i < doctor.specializations.length; i++) {
-                const specName = doctor.specializations[i];
-                const diploma = doctor.diplomas[i] || null;
-                const license = doctor.licenses[i] || null;
-
-                const [spec] = await SpecializationModel.findOrCreate({
-                    where: { name: specName },
-                    transaction
-                });
-
-                specializationUpdates.push(
-                    DoctorSpecialization.upsert({
-                        doctorId: doctor.id,
-                        specializationId: spec.id,
-                        diploma,
-                        license
-                    }, { transaction })
-                );
-            }
-
-            await Promise.all(specializationUpdates);
-
-            const currentSpecializations = await SpecializationModel.findAll({
-                where: { name: { [Op.in]: doctor.specializations } },
+            const doctorSpecialization = await DoctorSpecialization.findOne({
+                where: { doctorId: doctor.id },
+                include: [SpecializationModel],
                 transaction
-            });
+            }) as any;
 
-            const currentSpecIds = currentSpecializations.map(spec => spec.id);
+            const currentSpecialization = doctorSpecialization?.specialization
+
             await DoctorSpecialization.destroy({
                 where: {
                     doctorId: doctor.id,
-                    specializationId: { [Op.notIn]: currentSpecIds }
+                    specializationId: currentSpecialization?.id
                 },
                 transaction
             });
@@ -327,31 +215,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 { transaction }
             );
 
-            const specializationCreates = [];
-            for (let i = 0; i < doctor.specializations.length; i++) {
-                const specName = doctor.specializations[i];
-                const diploma = doctor.diplomas[i] || null;
-                const license = doctor.licenses[i] || null;
-
-                const [spec] = await SpecializationModel.findOrCreate({
-                    where: { name: specName },
-                    transaction
-                });
-
-                specializationCreates.push(
-                    DoctorSpecialization.create({
-                        doctorId: createdDoctor.id,
-                        specializationId: spec.id,
-                        diploma,
-                        license
-                    }, { transaction })
-                );
-                console.log(specializationCreates);
-            }
-
-            await Promise.all(specializationCreates);
-            await transaction.commit();
-
             const fullDoctor = await DoctorModel.findByPk(createdDoctor.id, {
                 include: [{
                     model: SpecializationModel,
@@ -366,6 +229,18 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             await transaction.rollback();
             throw error;
         }
+    }
+
+    async save(doctor: Doctor): Promise<Doctor> {
+        return doctor.id ? await this.update(doctor) : await this.create(doctor);
+    }
+
+    async saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
+        const specializationData = models.DoctorSpecialization.findOne({
+            where: {
+                doctorId: doctor.id
+            }
+        });
     }
 
     async getTimeSlots(doctorId: number): Promise<TimeSlot[]> {
@@ -408,32 +283,26 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return timeSlots;
     }
 
-    private mapToDomainDoctor(doctorModel: DoctorModelInterface & { specializations?: any[]; user?: any }): Doctor {
-        const specializations: string[] = [];
-        const diplomas: string[] = [];
-        const licenses: string[] = [];
-
-        if (doctorModel.specializations) {
-            doctorModel.specializations.forEach(spec => {
-                specializations.push(spec.name);
-                diplomas.push(spec.doctor_specializations?.diploma || '');
-                licenses.push(spec.doctor_specializations?.license || '');
-            });
-        }
+    private mapToDomainDoctor(doctorModel: any): Doctor {
+        const specializations = doctorModel.specializations?.map((spec: any) => ({
+            id: spec.id,
+            name: spec.name,
+            diploma: spec.doctor_specializations?.diploma,
+            license: spec.doctor_specializations?.license
+        })) || null;
 
         return new Doctor(
             doctorModel.id,
             doctorModel.experience_years,
-            diplomas,
-            licenses,
             doctorModel.isActivated,
-            specializations,
             doctorModel.userId,
-            doctorModel.user?.name,
-            doctorModel.user?.surname,
-            doctorModel.user?.patronymic,
-            doctorModel.user?.img,
-            doctorModel.user?.gender
+            doctorModel.user ? {
+                id: doctorModel.user.id,
+                name: doctorModel.user.name,
+                surname: doctorModel.user.surname,
+                patronymic: doctorModel.user.patronymic
+            } : null,
+            specializations
         );
     }
 
