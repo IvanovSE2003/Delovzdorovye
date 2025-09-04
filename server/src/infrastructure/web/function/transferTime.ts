@@ -8,10 +8,10 @@ export function adjustScheduleToTimeZone(schedule: DoctorSchedule, userTimeZone:
 
     return {
         ...schedule,
-        date: this.adjustDate(schedule.date, timeDifference),
+        date: adjustDate(schedule.date, timeDifference),
         timeSlot: schedule.timeSlot?.map(slot => ({
             ...slot,
-            time: this.adjustTime(slot.time, timeDifference)
+            time: adjustTime(slot.time, timeDifference)
         }))
     };
 }
