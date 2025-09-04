@@ -33,7 +33,8 @@ export default class ProfileController {
                 surname: user.surname,
                 patronymic: user.patronymic,
                 role: user.role,
-                isAnonymous: user.isAnonymous
+                isAnonymous: user.isAnonymous,
+                timeZone: user.timeZone
             };
 
             const age = user.dateBirth ? calculateAge(user.dateBirth) : 0;
@@ -49,8 +50,8 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        license: doctor?.license,
-                        specializations: doctor?.specialization
+                        // license: doctor?.license,
+                        // specializations: doctor?.specialization
                     },
                     default: baseData
                 },
@@ -63,8 +64,8 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        diploma: doctor?.diploma,
-                        specializations: doctor?.specialization
+                        // diploma: doctor?.diploma,
+                        // specializations: doctor?.specialization
                     },
                     default: baseData
                 },
@@ -81,9 +82,9 @@ export default class ProfileController {
                         ...baseData,
                         gender: user.gender,
                         experienceYears: doctor?.experienceYears,
-                        diploma: doctor?.diploma,
-                        license: doctor?.license,
-                        specializations: doctor?.specialization
+                        // diploma: doctor?.diploma,
+                        // license: doctor?.license,
+                        // specializations: doctor?.specialization
                     },
                     default: {
                         ...baseData,
