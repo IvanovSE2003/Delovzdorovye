@@ -22,7 +22,8 @@ const consultationController = new ConsultationController(
     userRepository, 
     doctorRepository, 
     timeSlotRepository,
-    fileService
+    fileService,
+    doctorScheduleRepository
 );
 
 export default consultationController;

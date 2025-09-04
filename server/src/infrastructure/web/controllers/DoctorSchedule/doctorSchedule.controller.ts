@@ -8,8 +8,7 @@ import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import getRussianDayOfWeek from "../../function/getRussianDayOfWeek.js";
 import { ITimeZones } from '../../../../../../frontend/src/models/TimeZones.js'
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
-
-const STORAGE_TIMEZONE = ITimeZones.MOSCOW;
+import {adjustScheduleToTimeZone, convertUserTimeToMoscow} from "../../function/transferTime.js"
 
 export default class DoctorScheduleController {
     constructor(
@@ -105,7 +104,7 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Пользователь-доктор не найден'));
             }
 
-            const timeInMoscow = this.convertDoctorTimeToMoscow(time, user.timeZone);
+            const timeInMoscow = convertUserTimeToMoscow(time, user.timeZone);
 
             const newTimeSLot = new TimeSlot(0, timeInMoscow, true, schedule.id);
             const result = await this.timeSlotRepository.save(newTimeSLot);
@@ -145,7 +144,7 @@ export default class DoctorScheduleController {
             }
 
             const userSchedules = schedules.map(s =>
-                this.adjustScheduleToTimeZone(s, linker.timeZone)
+                adjustScheduleToTimeZone(s, linker.timeZone)
             );
 
             const result = userSchedules.flatMap(schedule => {
@@ -162,43 +161,5 @@ export default class DoctorScheduleController {
         }
     }
 
-    private adjustScheduleToTimeZone(schedule: DoctorSchedule, userTimeZone: ITimeZones): DoctorSchedule {
-        const timeDifference = userTimeZone - STORAGE_TIMEZONE;
-
-        return {
-            ...schedule,
-            date: this.adjustDate(schedule.date, timeDifference),
-            timeSlot: schedule.timeSlot?.map(slot => ({
-                ...slot,
-                time: this.adjustTime(slot.time, timeDifference)
-            }))
-        };
-    }
-
-    private adjustTime(time: string, hoursDiff: number): string {
-        const [hours, minutes] = time.split(':').map(Number);
-        let newHours = hours + hoursDiff;
-
-        // Обработка перехода через сутки
-        if (newHours >= 24) {
-            newHours -= 24;
-        } else if (newHours < 0) {
-            newHours += 24;
-        }
-
-        return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
-
-    private adjustDate(date: string, hoursDiff: number): string {
-        if (hoursDiff === 0) return date;
-
-        const jsDate = new Date(date);
-        jsDate.setHours(jsDate.getHours() + hoursDiff);
-        return jsDate.toISOString().split('T')[0];
-    }
-
-    private convertDoctorTimeToMoscow(time: string, doctorTimeZone: ITimeZones): string {
-        const hoursDiff = STORAGE_TIMEZONE - doctorTimeZone;
-        return this.adjustTime(time, hoursDiff);
-    }
+    
 }

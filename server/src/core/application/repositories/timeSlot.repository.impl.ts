@@ -70,8 +70,7 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     private mapToPersistence(slot: TimeSlot): ITimeSlotCreationAttributes {
         return {
             time: slot.time,
-            isAvailable: slot.isAvailable,
-            doctorsScheduleId: slot.doctorsScheduleId
+            isAvailable: slot.isAvailable
         };
     }
 }

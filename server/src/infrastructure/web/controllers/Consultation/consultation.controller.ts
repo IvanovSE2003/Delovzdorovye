@@ -10,6 +10,8 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
+import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
+import {convertUserTimeToMoscow} from "../../function/transferTime.js"
 
 export default class ConsultationController {
     constructor(
@@ -18,7 +20,8 @@ export default class ConsultationController {
         private readonly userRepository: UserRepository,
         private readonly doctorReposiotry: DoctorRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
-        private readonly fileService: FileService
+        private readonly fileService: FileService,
+        private readonly scheduleRepository: DoctorScheduleRepository
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
@@ -162,21 +165,20 @@ export default class ConsultationController {
 
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { date, time, problems, doctorId, userId, otherProblemText} = req.body;
-
+            const { date, time, problems, doctorId, userId, otherProblemText } = req.body;
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const doctor = await this.doctorReposiotry.findById(Number(doctorId));
+            const timeInMoscow = convertUserTimeToMoscow(time, user.timeZone);
 
+            const doctor = await this.doctorReposiotry.findById(Number(doctorId));
             if (!doctor) {
                 return next(ApiError.badRequest('Специалист не найден'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctor.id, date, true);
-
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(timeInMoscow, doctor.id, date, true);
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка не найдена'));
             }
