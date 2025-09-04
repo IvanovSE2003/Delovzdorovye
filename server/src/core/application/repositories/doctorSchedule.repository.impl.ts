@@ -4,8 +4,6 @@ import DoctorSchedule from '../../domain/entities/doctorSchedule.entity.js';
 import { DoctorScheduleModelInterface, IDoctorScheduleCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctorSchedule.model.js';
 import TimeSlotsArray from '../../../infrastructure/web/types/timeSlot.type.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
-import TimeSlot from '../../domain/entities/timeSlot.entity.js';
-import { ITimeSlotCreationAttributes, TimeSlotmModelInterface } from '../../../infrastructure/persostence/models/interfaces/timeSlot.model.js';
 
 const { DoctorsSchedule } = models;
 
@@ -15,6 +13,9 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             where: { doctorId },
             include: [{
                 model: models.TimeSlot,
+                where: {
+                    isAvailable: true
+                },
                 as: 'time_slots',
                 foreignKey: 'schedule_id'
             }]
