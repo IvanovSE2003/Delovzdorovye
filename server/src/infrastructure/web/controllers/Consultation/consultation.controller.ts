@@ -7,19 +7,9 @@ import Consultation from "../../../../core/domain/entities/consultation.entity.j
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
-import TimerService from "../../../../core/domain/services/timer.service.js";
 import Problem from "../../../../core/domain/entities/problem.entity.js";
-import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
-import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
-import { v4 } from "uuid";
-import path, { dirname } from "path";
 import { UploadedFile } from 'express-fileupload';
-import fs from 'fs/promises';
-import { fileURLToPath } from "url";
 import FileService from "../../../../core/domain/services/file.service.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export default class ConsultationController {
     constructor(
@@ -28,8 +18,6 @@ export default class ConsultationController {
         private readonly userRepository: UserRepository,
         private readonly doctorReposiotry: DoctorRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
-        private readonly timerService: TimerService,
-        private readonly doctorScheduleRepository: DoctorScheduleRepository,
         private readonly fileService: FileService
     ) { }
 
@@ -417,32 +405,6 @@ export default class ConsultationController {
             });
 
             res.status(200).json(doctors);
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
-    }
-
-    async findScheduleForSpecialist(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.body;
-            const doctor = await this.doctorReposiotry.findById(Number(id));
-            if (!doctor) {
-                return next(ApiError.badRequest('Специалист не найден'));
-            }
-
-            const schedules = await this.doctorScheduleRepository.findByDoctorId(doctor.id);
-            if (!schedules || schedules.length === 0) {
-                return next(ApiError.badRequest('Расписание для данного врача не найдено'));
-            }
-            const result = schedules.flatMap(schedule => {
-                return schedule.timeSlot?.map(time => ({
-                    doctorId: doctor.id,
-                    date: schedule.date,
-                    time: time.time
-                })) || [];
-            });
-
-            res.status(200).json(result);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

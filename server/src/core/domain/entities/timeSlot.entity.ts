@@ -3,8 +3,6 @@ export default class TimeSlot {
         public id: number,
         public time: string,
         public isAvailable: boolean,
-        public consultationId?: number,
-        public patientId?: number,
         public doctorsScheduleId?: number
     ) {}
 

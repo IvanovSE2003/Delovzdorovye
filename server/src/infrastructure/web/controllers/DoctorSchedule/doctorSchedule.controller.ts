@@ -7,6 +7,7 @@ import DoctorSchedule from "../../../../core/domain/entities/doctorSchedule.enti
 import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import getRussianDayOfWeek from "../../function/getRussianDayOfWeek.js";
 import { ITimeZones } from '../../../../../../frontend/src/models/TimeZones.js'
+import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
 
 const STORAGE_TIMEZONE = ITimeZones.MOSCOW;
 
@@ -14,22 +15,23 @@ export default class DoctorScheduleController {
     constructor(
         private readonly doctorScheduleRepository: DoctorScheduleRepository,
         private readonly doctorRepository: DoctorRepository,
-        private readonly userRepository: UserRepository
+        private readonly userRepository: UserRepository,
+        private readonly timeSlotRepository: TimeSlotRepository
     ) { }
 
     async getByDoctor(req: Request<{ userId: string }, any, any, any>, res: Response, next: NextFunction) {
         try {
-            const { userId, userIdLinker } = req.query;
+            const { userId } = req.query;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
-            const linker = await this.userRepository.findById(Number(userIdLinker));
-            if (!linker) {
-                return next(ApiError.badRequest('Пользователь, который получает данные не найден'));
-            }
+            // const linker = await this.userRepository.findById(Number(userIdLinker));
+            // if (!linker) {
+            //     return next(ApiError.badRequest('Пользователь, который получает данные не найден'));
+            // }
 
             const doctor = await this.doctorRepository.findByUserId(user.id);
             if (!doctor) {
@@ -41,12 +43,11 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Расписания не найдены'));
             }
 
-            // Конвертируем в часовой пояс пользователя-линкера
-            const userSchedules = schedules.map(s =>
-                this.adjustScheduleToTimeZone(s, linker.timeZone)
-            );
+            // const userSchedules = schedules.map(s =>
+            //     this.adjustScheduleToTimeZone(s, linker.timeZone)
+            // );
 
-            return res.status(200).json(userSchedules);
+            return res.status(200).json(schedules);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -88,13 +89,28 @@ export default class DoctorScheduleController {
     async createTimeSlot(req: Request, res: Response, next: NextFunction) {
         try {
             const { time, scheduleId } = req.body;
-            const isAvailable = false;
+
             const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
             if (!schedule) {
                 return next(ApiError.badRequest('Расписание не найдено'));
             }
-            const time_slot = await this.doctorScheduleRepository.createTimeSlot(new TimeSlot(0, time, isAvailable, undefined, undefined, schedule.id));
-            res.status(200).json(time_slot);
+
+            const doctor = await this.doctorRepository.findById(schedule.doctorId || 0);
+            if (!doctor || !doctor.userId) {
+                return next(ApiError.badRequest('Доктор не найден'));
+            }
+
+            const user = await this.userRepository.findById(doctor.userId);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь-доктор не найден'));
+            }
+
+            const timeInMoscow = this.convertDoctorTimeToMoscow(time, user.timeZone);
+
+            const newTimeSLot = new TimeSlot(0, timeInMoscow, true, schedule.id);
+            const result = await this.timeSlotRepository.save(newTimeSLot);
+
+            res.status(200).json(result);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -105,6 +121,42 @@ export default class DoctorScheduleController {
             const { id } = req.params;
             await this.doctorScheduleRepository.deleteTimeSlot(Number(id));
             res.status(200).send();
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async findScheduleForSpecialist(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { doctorId, linkerId } = req.query;
+            const doctor = await this.doctorRepository.findById(Number(doctorId));
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
+            }
+
+            const linker = await this.userRepository.findById(Number(linkerId));
+            if (!linker) {
+                return next(ApiError.badRequest('Пользователь, который получает данные не найден'));
+            }
+
+            const schedules = await this.doctorScheduleRepository.findByDoctorId(doctor.id);
+            if (!schedules || schedules.length === 0) {
+                return next(ApiError.badRequest('Расписание для данного врача не найдено'));
+            }
+
+            const userSchedules = schedules.map(s =>
+                this.adjustScheduleToTimeZone(s, linker.timeZone)
+            );
+
+            const result = userSchedules.flatMap(schedule => {
+                return schedule.timeSlot?.map(time => ({
+                    doctorId: doctor.id,
+                    date: schedule.date,
+                    time: time.time
+                })) || [];
+            });
+
+            res.status(200).json(result);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -143,5 +195,10 @@ export default class DoctorScheduleController {
         const jsDate = new Date(date);
         jsDate.setHours(jsDate.getHours() + hoursDiff);
         return jsDate.toISOString().split('T')[0];
+    }
+
+    private convertDoctorTimeToMoscow(time: string, doctorTimeZone: ITimeZones): string {
+        const hoursDiff = STORAGE_TIMEZONE - doctorTimeZone;
+        return this.adjustTime(time, hoursDiff);
     }
 }

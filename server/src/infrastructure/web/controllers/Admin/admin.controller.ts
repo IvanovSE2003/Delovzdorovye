@@ -195,35 +195,30 @@ export default class BatchController {
                     phone: user.phone,
                     gender: user.gender,
                     email: user.email,
-                    specialization: null,
-                    diploma: null,
-                    license: null,
+                    profData: [],
                     isBlocked: user.isBlocked
                 };
 
                 if (user.role === 'DOCTOR') {
                     const doctorInfo = doctorMap.get(user.id);
                     if (doctorInfo && doctorInfo.specializations && doctorInfo.specializations.length > 0) {
-                        const firstSpecialization = doctorInfo.specializations[0];
-                        userData.specialization = firstSpecialization.name;
-                        userData.diploma = firstSpecialization.diploma || null;
-                        userData.license = firstSpecialization.license || null;
-                    if (doctorInfo && doctorInfo.specializations && doctorInfo.specializations.length > 0) {
-                        const firstSpecialization = doctorInfo.specializations[0];
-                        userData.specialization = firstSpecialization.name;
-                        userData.diploma = firstSpecialization.diploma || null;
-                        userData.license = firstSpecialization.license || null;
+                        userData.profData = doctorInfo.specializations.map(spec => ({
+                            specialization: spec.name,
+                            diploma: spec.diploma || null,
+                            license: spec.license || null
+                        }));
                     }
                 }
 
                 return userData;
-        }});
+            });
 
             return res.status(200).json(response);
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
     }
+
 
     async getUserConsultation(req: Request, res: Response, next: NextFunction) {
         try {
@@ -270,7 +265,7 @@ export default class BatchController {
             const limit = req.query.limit || 10;
             const page = req.query.page || 1;
             const filters = req.query.filters || {}
-            
+
             const profDatas = await this.profDataRepository.findAll(Number(limit), Number(page), filters);
             if (!profDatas) {
                 return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));

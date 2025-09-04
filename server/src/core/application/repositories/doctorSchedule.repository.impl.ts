@@ -39,11 +39,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         return this.mapToDomainSchedule(createdSchedule);
     }
 
-    async createTimeSlot(timeSlot: TimeSlot): Promise<TimeSlot> {
-        const timeSlotCreated = await models.TimeSlot.create(this.mapToPersistenceTimeSlot(timeSlot));
-        return this.mapToDomainTimeSlot(timeSlotCreated);
-    }
-
     async update(schedule: DoctorSchedule): Promise<DoctorSchedule> {
         const [updatedCount] = await DoctorsSchedule.update(this.mapToPersistence(schedule), {
             where: { id: schedule.id }
@@ -115,7 +110,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             throw error;
         }
     }
-    
 
     private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & { time_slots?: any[] }): DoctorSchedule {
         const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({
@@ -138,22 +132,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             date: schedule.date,
             day_weekly: schedule.day_weekly,
             doctorId: schedule.doctorId
-        };
-    }
-
-    private mapToDomainTimeSlot(timeSlotModel: TimeSlotmModelInterface): TimeSlot {
-        return new TimeSlot(
-            timeSlotModel.id,
-            timeSlotModel.time,
-            timeSlotModel.isAvailable
-        );
-    }
-
-    private mapToPersistenceTimeSlot(timeSlot: TimeSlot): ITimeSlotCreationAttributes {
-        return {
-            id: timeSlot.id,
-            time: timeSlot.time,
-            isAvailable: timeSlot.isAvailable
         };
     }
 }

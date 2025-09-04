@@ -21,9 +21,7 @@ const consultationController = new ConsultationController(
     consultationRepository, 
     userRepository, 
     doctorRepository, 
-    timeSlotRepository, 
-    timerService,
-    doctorScheduleRepository,
+    timeSlotRepository,
     fileService
 );
 
