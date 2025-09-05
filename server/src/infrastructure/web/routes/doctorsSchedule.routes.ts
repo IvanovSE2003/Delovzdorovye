@@ -7,7 +7,7 @@ router.get('/doctor', (req: Request<{userId: string}>, res: Response, next: Next
 router.get('/findSchedule', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.findScheduleForSpecialist(req, res, next));
 
 router.get('/getBetweenSchedule', (req: Request, res: Response, next: NextFunction) => scheduleController.getBetweenSchedule(req, res, next));
-router.post('/createWithRepetitions', (req: Request, res: Response, next: NextFunction) => scheduleController.getBetweenSchedule(req, res, next));
+router.post('/createWithRepetitions', (req: Request, res: Response, next: NextFunction) => scheduleController.createWithRepetitions(req, res, next));
 
 router.post('/create', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.createSchedule(req, res, next));
 router.delete('/delete/:id', (req: Request<{userId: string}>, res: Response, next: NextFunction) => scheduleController.deleteSchedule(req, res, next));

@@ -179,21 +179,59 @@ export default class DoctorScheduleController {
     }
 
     async createWithRepetitions(req: Request, res: Response, next: NextFunction) {
-        const {time, scheduleId, repetitions, doctorId} = req.body;
+        try {
+            const { time, scheduleId, repetitions, doctorId } = req.body;
 
-        const doctor = await this.doctorRepository.findById(Number(doctorId));
-        if(!doctor) {
-            return next(ApiError.badRequest('Специалист не нейден'));
-        }
+            const doctor = await this.doctorRepository.findById(Number(doctorId));
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
+            }
 
-        const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
-        if(!schedule) {
-            return next(ApiError.badRequest('Расписание для специалиста не найдено'));
-        }
+            const user = await this.userRepository.findByDoctorId(doctor.id);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
 
-        const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, time, true, schedule.id));
-        if(!timeSlot) {
-            return next(ApiError.badRequest('Не удалось создать ячейку времени'));
+            const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
+            if (!schedule) {
+                return next(ApiError.badRequest('Расписание для специалиста не найдено'));
+            }
+
+            const baseDate = new Date(schedule.date);
+
+            const moscowTime = convertUserTimeToMoscow(time, user.timeZone);
+
+            if (repetitions) {
+                for (let i = 0; i < 5; i++) {
+                    const newDate = new Date(baseDate);
+                    newDate.setDate(baseDate.getDate() + i * 7);
+
+                    let repeatedSchedule = await this.doctorScheduleRepository.findByDate(doctorId, newDate);
+                    if (!repeatedSchedule) {
+                        repeatedSchedule = await this.doctorScheduleRepository.create(
+                            new DoctorSchedule(
+                                0,
+                                newDate.toISOString().slice(0, 10),
+                                getRussianDayOfWeek(newDate.toString()),
+                                doctorId,
+                                []
+                            )
+                        );
+                    }
+
+                    await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, true, repeatedSchedule.id));
+                }
+            } else {
+                const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, true, schedule.id));
+                if (!timeSlot) {
+                    return next(ApiError.badRequest('Не удалось создать ячейку времени'));
+                }
+            }
+
+            return res.status(200).json({ success: true, message: "Запрос успешно выполнен" });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
+
 }

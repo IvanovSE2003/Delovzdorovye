@@ -47,7 +47,7 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
                 model: models.TimeSlot,
                 as: 'time_slots',
                 foreignKey: 'doctorsScheduleId',
-                required: false 
+                required: false
             }]
         });
 
@@ -69,6 +69,10 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         }
 
         return this.findById(schedule.id) as Promise<DoctorSchedule>;
+    }
+
+    async save(schedule: DoctorSchedule): Promise<DoctorSchedule> {
+        return schedule.id ? await this.update(schedule) : await this.create(schedule);
     }
 
     async delete(id: number): Promise<void> {
@@ -120,6 +124,28 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             throw error;
         }
     }
+
+    async findByDate(doctorId: number, date: Date | string): Promise<DoctorSchedule | null> {
+        const normalizedDate =
+            typeof date === "string"
+                ? new Date(date).toISOString().slice(0, 10)
+                : date.toISOString().slice(0, 10);
+
+        const schedule = await DoctorsSchedule.findOne({
+            where: {
+                doctorId,
+                date: normalizedDate
+            },
+            include: [{
+                model: models.TimeSlot,
+                as: 'time_slots',
+                foreignKey: 'doctorsScheduleId'
+            }]
+        });
+
+        return schedule ? this.mapToDomainSchedule(schedule) : null;
+    }
+
 
     private mapToDomainSchedule(scheduleModel: DoctorScheduleModelInterface & { time_slots?: any[] }): DoctorSchedule {
         const time_slots: TimeSlotsArray | undefined = scheduleModel.time_slots?.map(slot => ({

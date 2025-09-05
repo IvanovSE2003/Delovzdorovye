@@ -24,8 +24,6 @@ const adjustScheduleToTimeZone = (schedule: DoctorSchedule, userTimeZone: number
         schedule.id,
         schedule.date,
         schedule.day_weekly,
-        adjustTime(schedule.time_start),
-        adjustTime(schedule.time_end),
         schedule.doctorId,
         adjustedSlots
     );
