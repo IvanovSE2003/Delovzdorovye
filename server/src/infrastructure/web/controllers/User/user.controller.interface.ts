@@ -11,9 +11,9 @@ import FileServiceImpt from "../../../../core/application/services/file.service.
 import BasicDataRepositoryImpl from "../../../../core/application/repositories/basicData.repository.impl.js"
 import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 
-const userRepository = new UserRepositoryImpl();
-const basicDataRepository = new BasicDataRepositoryImpl();
 const fileService = new FileServiceImpt();
+const userRepository = new UserRepositoryImpl(fileService);
+const basicDataRepository = new BasicDataRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
 const mailService = new MailServiceImpl();

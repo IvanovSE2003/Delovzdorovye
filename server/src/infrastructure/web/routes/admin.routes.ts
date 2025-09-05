@@ -4,8 +4,10 @@ import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
 
 const router: Router = Router(); 
 
-router.put('/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirm(req, res, next));
-router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.reject(req, res, next));
+router.put('/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirmBasicData(req, res, next));
+router.put('/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.rejectBasicData(req, res, next));
+
+router.put('/profData/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirmProfData(req, res, next));
 
 router.get('/get-all-user', (req: Request, res: Response, next: NextFunction) => adminController.getAllUser(req, res, next));
 

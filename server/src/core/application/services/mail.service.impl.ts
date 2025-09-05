@@ -35,7 +35,6 @@ export default class MailServiceImpl implements MailService {
 
     async sendPinCodeResetEmail(to: string, resetToken: string): Promise<void> {
         const resetUrl = `${process.env.CLIENT_URL}/pinCode-reset/${resetToken}`;
-        
         try {
             await this.transporter.sendMail({
                 from: `"Медицинский сервис Дело в здоровье" <${process.env.SMTP_USER}>`,
@@ -50,31 +49,16 @@ export default class MailServiceImpl implements MailService {
         }
     }
 
-    async sendTwoFactorEmail(to: string, code: string): Promise<void> {
-        try {
-            await this.transporter.sendMail({
-                from: `"Медицинский сервис medOnline" <${process.env.SMTP_USER}>`,
-                to,
-                subject: 'Код двухэтапной аутентификации',
-                text: `Ваш код подтверждения: ${code}`,
-                html: this.getTwoFactorEmailHtml(code)
-            });
-        } catch (error) {
-            console.error('Ошибка отправки кода 2FA:', error);
-            throw new Error('Ошибка отправки кода подтверждения');
-        }
-    }
-
     async sendActivationPhone(to: string, code: string): Promise<void> {
-        const activationUrl = `t.me/sendMedOnlineBot`;
+        const botUrl = `t.me/sendMedOnlineBot`;
         
         try {
             await this.transporter.sendMail({
                 from: `"Медицинский сервис Дело в здоровье" <${process.env.SMTP_USER}>`,
                 to,
-                subject: 'Активация аккаунта',
-                text: `Для активации перейдите в телеграм бот по ссылке: ${activationUrl}`,
-                html: this.getActivationEmailHtmlBot(activationUrl, code)
+                subject: 'Подтверждение номера телефона',
+                text: `Для подтверждения перейдите в телеграм бот по ссылке: ${botUrl}`,
+                html: this.getActivationEmailHtmlBot(botUrl, code)
             });
         } catch (error) {
             console.error('Ошибка отправки письма активации:', error);
@@ -108,7 +92,7 @@ export default class MailServiceImpl implements MailService {
                     ${code}
                 </div>
                 <p>Код действителен в течение 5 минут.</p>
-                <p><b>Если вы не запрашивали вход, проигнорируйте это письмо.</b></p>
+                <p><b>Если вы не запрашивали код, проигнорируйте это письмо.</b></p>
                 <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
                     С уважением,<br>Команда Дело в здоровье
                 </p>
@@ -156,12 +140,12 @@ export default class MailServiceImpl implements MailService {
         `;
     }
 
-    private getActivationEmailHtmlBot(activationUrl: string, code: string): string {
+    private getActivationEmailHtmlBot(botUrl: string, code: string): string {
         return `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: #2563eb;">Здравствуйте!</h1>
+                <h1 style="color: #2563eb;">Подтверждение номера телефона</h1>
                 <h3>Для подтверждения вашего номера напишите боту сообщение <b>/link ${code}</b></h3>
-                <a href="${activationUrl}" 
+                <a href="${botUrl}" 
                     style="display: inline-block; padding: 12px 24px; 
                     background-color: #2563eb; color: white; 
                     text-decoration: none; border-radius: 4px; margin: 20px 0;">

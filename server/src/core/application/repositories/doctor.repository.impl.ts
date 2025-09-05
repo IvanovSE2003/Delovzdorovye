@@ -215,6 +215,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 { transaction }
             );
 
+            await transaction.commit();
+
             const fullDoctor = await DoctorModel.findByPk(createdDoctor.id, {
                 include: [{
                     model: SpecializationModel,
@@ -223,7 +225,18 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 }]
             });
 
-            return this.mapToDomainDoctor(fullDoctor!);
+            if (!fullDoctor) {
+                return new Doctor(
+                    createdDoctor.id,
+                    createdDoctor.experience_years,
+                    createdDoctor.isActivated,
+                    createdDoctor.userId,
+                    null,
+                    []
+                );
+            }
+
+            return this.mapToDomainDoctor(fullDoctor);
 
         } catch (error) {
             await transaction.rollback();
@@ -236,11 +249,34 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
-        const specializationData = models.DoctorSpecialization.findOne({
+        let specializationModel = await models.SpecializationModel.findOne({
+            where: { name: specialization }
+        });
+
+        if (!specializationModel) {
+            specializationModel = await models.SpecializationModel.create({ name: specialization });
+        }
+
+        let doctorSpecialization = await models.DoctorSpecialization.findOne({
             where: {
-                doctorId: doctor.id
+                doctorId: doctor.id,
+                specializationId: specializationModel.id
             }
         });
+
+        if (doctorSpecialization) {
+            await doctorSpecialization.update({
+                diploma,
+                license
+            });
+        } else {
+            await models.DoctorSpecialization.create({
+                doctorId: doctor.id,
+                specializationId: specializationModel.id,
+                diploma,
+                license
+            });
+        }
     }
 
     async getTimeSlots(doctorId: number): Promise<TimeSlot[]> {
@@ -271,8 +307,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     slot.id,
                     slot.time,
                     slot.is_available,
-                    slot.consultationId,
-                    slot.patientId,
                     schedule.id
                 );
 
@@ -284,25 +318,29 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     private mapToDomainDoctor(doctorModel: any): Doctor {
-        const specializations = doctorModel.specializations?.map((spec: any) => ({
-            id: spec.id,
-            name: spec.name,
-            diploma: spec.doctor_specializations?.diploma,
-            license: spec.doctor_specializations?.license
-        })) || null;
+        const profData = Array.isArray(doctorModel.specializations)
+            ? doctorModel.specializations.map((spec: any) => ({
+                id: spec.id,
+                specialization: spec.name,
+                diploma: spec.doctor_specializations?.diploma || null,
+                license: spec.doctor_specializations?.license || null
+            }))
+            : [];
 
         return new Doctor(
             doctorModel.id,
             doctorModel.experience_years,
             doctorModel.isActivated,
             doctorModel.userId,
-            doctorModel.user ? {
-                id: doctorModel.user.id,
-                name: doctorModel.user.name,
-                surname: doctorModel.user.surname,
-                patronymic: doctorModel.user.patronymic
-            } : null,
-            specializations
+            doctorModel.user
+                ? {
+                    id: doctorModel.user.id,
+                    name: doctorModel.user.name,
+                    surname: doctorModel.user.surname,
+                    patronymic: doctorModel.user.patronymic
+                }
+                : null,
+            profData
         );
     }
 

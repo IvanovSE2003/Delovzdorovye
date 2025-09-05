@@ -63,16 +63,16 @@ export default class BatchController {
         }
     }
 
-    async confirm(req: Request, res: Response, next: NextFunction) {
+    async confirmBasicData(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
 
-            const batch = await this.basicDataReposiotry.findById(Number(id));
-            if (!batch) {
+            const basicData = await this.basicDataReposiotry.findById(Number(id));
+            if (!basicData) {
                 return next(ApiError.badRequest("Изменение не найдено"));
             }
 
-            const user = await this.userRepository.findById(batch.userId || 0);
+            const user = await this.userRepository.findById(basicData.userId || 0);
             if (!user) {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
@@ -90,14 +90,14 @@ export default class BatchController {
                 "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
             };
 
-            if (batch.field_name in userFieldMap) {
-                userFieldMap[batch.field_name](user, batch.new_value);
+            if (basicData.field_name in userFieldMap) {
+                userFieldMap[basicData.field_name](user, basicData.new_value);
                 await this.userRepository.update(user);
             } else {
                 return next(ApiError.badRequest("Недопустимое поле для изменения"));
             }
 
-            await this.basicDataReposiotry.delete(batch.id);
+            await this.basicDataReposiotry.delete(basicData.id);
 
             const batches = await this.basicDataReposiotry.findAllByUserId(user.id);
             if (batches.length === 0) {
@@ -114,20 +114,20 @@ export default class BatchController {
         }
     }
 
-    async reject(req: Request, res: Response, next: NextFunction) {
+    async rejectBasicData(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
             const { rejection_reason } = req.body;
 
-            const batch = await this.basicDataReposiotry.findById(Number(id));
+            const basicData = await this.basicDataReposiotry.findById(Number(id));
 
-            if (!batch) {
+            if (!basicData) {
                 return next(ApiError.badRequest('Изменение не найдено'));
             }
 
             console.log(rejection_reason);
 
-            await this.basicDataReposiotry.delete(batch.id);
+            await this.basicDataReposiotry.delete(basicData.id);
             return res.status(200).json({
                 success: true,
                 message: 'Изменение успешно отменено и сообщение отправлено'
@@ -140,7 +140,6 @@ export default class BatchController {
     async confirmProfData(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-
             const profData = await this.profDataRepository.findById(Number(id));
 
             if (!profData) {
@@ -155,9 +154,33 @@ export default class BatchController {
 
             const newDoctor = await this.doctorRepository.save(doctor.setYear(profData.new_experience_years));
             await this.doctorRepository.saveLisinseDiploma(newDoctor, profData.new_license, profData.new_diploma, profData.new_specialization);
+
+            await this.profDataRepository.delete(profData.id);
             return res.status(200).json({
                 success: true,
                 message: "Изменения успешно подтверждены и применены для профессиональных данных",
+            });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async rejectProfData(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { rejection_reason } = req.body;
+
+            const profData = await this.profDataRepository.findById(Number(id));
+            if (!profData) {
+                return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
+            }
+
+            console.log(rejection_reason);
+
+            await this.profDataRepository.delete(profData.id);
+            return res.status(200).json({
+                success: true,
+                message: 'Изменение успешно отменено и сообщение отправлено'
             });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -201,9 +224,9 @@ export default class BatchController {
 
                 if (user.role === 'DOCTOR') {
                     const doctorInfo = doctorMap.get(user.id);
-                    if (doctorInfo && doctorInfo.specializations && doctorInfo.specializations.length > 0) {
-                        userData.profData = doctorInfo.specializations.map(spec => ({
-                            specialization: spec.name,
+                    if (doctorInfo && doctorInfo.profData && doctorInfo.profData.length > 0) {
+                        userData.profData = doctorInfo.profData.map(spec => ({
+                            specialization: spec.specialization || null,
                             diploma: spec.diploma || null,
                             license: spec.license || null
                         }));
@@ -218,7 +241,6 @@ export default class BatchController {
             next(ApiError.badRequest(e.message));
         }
     }
-
 
     async getUserConsultation(req: Request, res: Response, next: NextFunction) {
         try {

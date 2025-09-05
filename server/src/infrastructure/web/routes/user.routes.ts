@@ -31,7 +31,7 @@ router.post('/activateLinkTg/:userId', authMiddlewareInstance, (req: Request, re
 
 router.post('/request-pin-reset', (req: Request, res: Response, next: NextFunction) => userController.requestPinReset(req, res, next));
 router.post('/reset-pin', body('token').notEmpty(), (req: Request, res: Response, next: NextFunction) => userController.resetPin(req, res, next));
-router.post('/change-role', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.changeRole(req, res, next));
+router.post('/change-role', (req: Request, res: Response, next: NextFunction) => userController.changeRole(req, res, next));
 
 router.post('/block-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.blockAccount(req, res, next));
 router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next));

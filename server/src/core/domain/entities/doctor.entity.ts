@@ -10,11 +10,11 @@ export default class Doctor {
             surname: string | null;
             patronymic: string | null;
         } | null,
-        public specializations?: Array<{
+        public profData?: Array<{
             id: number;
-            name: string;
-            diploma?: string;
-            license?: string;
+            specialization?: string | null;
+            diploma?: string | null;
+            license?: string | null;
         }> | null
     ) {}
 

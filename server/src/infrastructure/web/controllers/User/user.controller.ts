@@ -556,28 +556,19 @@ export default class UserController {
                 return next(ApiError.badRequest('Загружено несколько файлов'));
             }
 
-            let updatedUser;
+            let updatedUser: User;
+            const fileName = await this.fileService.saveFile(img);
             if (user.role === 'DOCTOR') {
-                const result = await this.userRepository.uploadAvatar(numericUserId, img);
+                const result = await this.userRepository.uploadAvatar(numericUserId, fileName);
+                const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, result.img, user.id);
 
-                const batch = new BasicData(
-                    0,
-                    'pending',
-                    ' ',
-                    false,
-                    'Изображение',
-                    user.img,
-                    result.img,
-                    user.id
-                );
-
-                await this.basicDataRepository.create(batch);
+                await this.basicDataRepository.create(basicData);
                 updatedUser = await this.userRepository.save(user.setSentChanges(true));
             } else {
-                updatedUser = await this.userRepository.uploadAvatar(numericUserId, img);
+                updatedUser = await this.userRepository.uploadAvatar(numericUserId, fileName);
             }
 
-            const responseData = {
+            const result = {
                 img: updatedUser.img,
                 surname: updatedUser.surname,
                 name: updatedUser.name,
@@ -589,13 +580,12 @@ export default class UserController {
                 email: updatedUser.email
             };
 
-            res.status(200).json(responseData);
-
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-            return next(ApiError.badRequest(errorMessage));
+            res.status(200).json(result);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
+    
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
@@ -629,10 +619,12 @@ export default class UserController {
                 return next(ApiError.badRequest('Неизвестная роль'));
             }
 
+            console.log(user)
+
             if (newRole === 'DOCTOR') {
-                const doctor = await this.doctorRepository.create(new Doctor(0, 0, '', '', true, '', user.id));
+                const doctor = await this.doctorRepository.save(new Doctor(0, 0, true, user.id));
                 if (!doctor) {
-                    return next(ApiError.internal('Ошибка изменения пользователя на роль специалиста'));
+                    return next(ApiError.internal('Ошибка изменения роли пользователя на специалиста'));
                 }
             }
 

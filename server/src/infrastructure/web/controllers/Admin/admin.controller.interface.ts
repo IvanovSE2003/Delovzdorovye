@@ -4,11 +4,13 @@ import DoctorRepositoryImpl from "../../../../core/application/repositories/doct
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
 import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
 import ProfDataRepositoryImpl from "../../../../core/application/repositories/profData.repository.impl.js";
+import FileServiceImpt from "../../../../core/application/services/file.service.impl.js";
 
 const BasicDataRepository = new BasicDataRepositoryImpl();
 const ProfDataRepository = new ProfDataRepositoryImpl();
 const DoctorRepository = new DoctorRepositoryImpl();
-const UserRepository = new UserRepositoryImpl();
+const fileService = new FileServiceImpt();
+const UserRepository = new UserRepositoryImpl(fileService);
 const consultationRepository = new ConsultationRepositoryImpl();
 const adminController = new BatchController(BasicDataRepository, ProfDataRepository, DoctorRepository, UserRepository, consultationRepository);
 

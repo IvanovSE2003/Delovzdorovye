@@ -49,7 +49,7 @@ class TokenServiceImpl implements TokenService {
             };
         } catch (e) {
             if (e instanceof jwt.TokenExpiredError) {
-                throw ApiError.badRequest('Access token просрочен');
+                throw ApiError.notAuthorized('Access token просрочен');
             }
             if (e instanceof jwt.JsonWebTokenError) {
                 throw ApiError.badRequest('Неверный access token');

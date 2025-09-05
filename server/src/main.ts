@@ -8,15 +8,20 @@ import fileUpload from 'express-fileupload'
 import path from 'path'
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser'
-import ConsultationRepositoryImpl from './core/application/repositories/consultations.repository.impl.js'
-import TimeSlotRepositoryImpl from './core/application/repositories/timeSlot.repository.impl.js'
-import TimerServiceImpl from './core/application/services/timer.service.impl.js'
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { timerService } from './socket/timer.service.init.js'
+import cron from 'node-cron';
+import models from './infrastructure/persostence/models/models.js';
+import { Op } from 'sequelize';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 dotenv.config();
-
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -77,8 +82,44 @@ const start = async () => {
         await sequelize.authenticate();
         await sequelize.sync();
         // await timerService.restoreTimers();
+
+        cron.schedule('*/5 * * * *', async () => {
+            try {
+                const nowMoscow = dayjs().tz('Europe/Moscow');
+                const [updatedCount] = await models.Consultation.update(
+                    { consultation_status: 'ARCHIVE' },
+                    {
+                        where: {
+                            consultation_status: 'UPCOMING',
+                            [Op.and]: [
+                                { date: { [Op.lte]: nowMoscow.format('YYYY-MM-DD') } }
+                            ]
+                        }
+                    }
+                );
+                const consultations = await models.Consultation.findAll({
+                    where: {
+                        consultation_status: 'UPCOMING',
+                        date: { [Op.lte]: nowMoscow.format('YYYY-MM-DD') }
+                    }
+                });
+
+                for (const consult of consultations) {
+                    const consultDateTime = dayjs.tz(`${consult.date} ${consult.time}`, 'YYYY-MM-DD HH:mm', 'Europe/Moscow');
+                    if (consultDateTime.isBefore(nowMoscow)) {
+                        await consult.update({ consultation_status: 'ARCHIVE' });
+                        console.log(`Консультация ${consult.id} завершена автоматически`);
+                    }
+                }
+
+            } catch (e) {
+                console.error('Ошибка при авто-завершении консультаций:', e);
+            }
+        }, {
+            timezone: 'Europe/Moscow'
+        });
         server.listen(PORT, () => {
-            console.log(`🚀 Сервер запустился на порте: ${PORT}`);
+            console.log(`Сервер запустился на порте: ${PORT}`);
         });
     } catch (e) {
         console.log(e)

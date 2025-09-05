@@ -104,7 +104,7 @@ const Transaction = sequelize.define('transaction', {
 
 const ModerationBatchModel = sequelize.define<BatchModelInterface>('basic_data_records', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    status: { type: DataType.STRING}, 
+    status: { type: DataType.STRING },
     rejection_reason: { type: DataType.TEXT, allowNull: true },
     is_urgent: { type: DataType.BOOLEAN, defaultValue: false },
     field_name: { type: DataType.STRING, allowNull: false },
@@ -115,18 +115,21 @@ const ModerationBatchModel = sequelize.define<BatchModelInterface>('basic_data_r
 const ProfDataModel = sequelize.define<ProfDataModelInterface>('prof_data_records', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     new_diploma: { type: DataType.STRING },
-    new_license: { type: DataType.STRING},
+    new_license: { type: DataType.STRING },
     new_specialization: { type: DataType.STRING },
-    new_experience_years: { type: DataType.INTEGER }, 
+    new_experience_years: { type: DataType.INTEGER },
     comment: { type: DataType.TEXT, allowNull: true },
-    type: { type: DataType.STRING, defaultValue: 'ADD'}
+    type: { type: DataType.STRING, defaultValue: 'ADD' }
 });
 
 const DoctorSpecialization = sequelize.define('doctor_specializations', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     diploma: { type: DataType.STRING, allowNull: true },
-    license: { type: DataType.STRING, allowNull: true }
+    license: { type: DataType.STRING, allowNull: true },
+    doctorId: { type: DataType.INTEGER, allowNull: false, references: { model: DoctorModel, key: 'id' } },
+    specializationId: { type: DataType.INTEGER, allowNull: false, references: { model: SpecializationModel, key: 'id' } }
 });
+
 
 const ProblemSpecialization = sequelize.define('problem_specializations', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
@@ -196,8 +199,20 @@ ProfDataModel.belongsTo(UserModel);
 DoctorsSchedule.hasMany(TimeSlot, { foreignKey: "doctorsScheduleId" });
 TimeSlot.belongsTo(DoctorsSchedule, { foreignKey: "doctorsScheduleId" });
 
-DoctorModel.belongsToMany(SpecializationModel, { through: DoctorSpecialization });
-SpecializationModel.belongsToMany(DoctorModel, { through: DoctorSpecialization });
+DoctorModel.belongsToMany(SpecializationModel, {
+    through: DoctorSpecialization,
+    foreignKey: 'doctorId',
+    otherKey: 'specializationId'
+});
+
+SpecializationModel.belongsToMany(DoctorModel, {
+    through: DoctorSpecialization,
+    foreignKey: 'specializationId',
+    otherKey: 'doctorId'
+});
+
+DoctorSpecialization.belongsTo(DoctorModel, { foreignKey: 'doctorId' });
+DoctorSpecialization.belongsTo(SpecializationModel, { foreignKey: 'specializationId' });
 
 Consultation.belongsToMany(ProblemModel, {
     through: ConsultationProblems,

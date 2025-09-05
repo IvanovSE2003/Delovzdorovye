@@ -3,19 +3,15 @@ import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
 import { UserModelInterface, IUserCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/user.model.js';
-import { v4 } from 'uuid';
-import path from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { UploadedFile } from 'express-fileupload';
-import fs from 'fs/promises';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import FileService from '../../domain/services/file.service.js';
 
 const { UserModel } = models;
 
 export default class UserRepositoryImpl implements UserRepository {
+    constructor(
+        private readonly fileService: FileService
+    ) { }
+
     async findByEmailOrPhone(credential: string): Promise<User | null> {
         const user = await UserModel.findOne({
             where: {
@@ -142,28 +138,22 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
-    async uploadAvatar(userId: number, img: UploadedFile): Promise<User> {
-        const ext = path.extname(img.name);
-        const fileName = v4() + ext;
-        const filePath = path.resolve(__dirname, '..', '..', '..', '..', 'static', fileName);
-
-        await img.mv(filePath);
-
+    async uploadAvatar(userId: number, fileName: string): Promise<User> {
         const user = await this.findById(userId);
         if (!user) {
             throw new Error('Пользователь не найден');
         }
 
-        if (user.img !== 'man.png' && user.img !== 'girl.png') {
-            const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
+        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
             try {
-                await fs.unlink(oldAvatarPath);
+                await this.fileService.deleteFile(user.img);
             } catch (err) {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
         }
-        const userUpdate = await this.save(user.updateAvatar(fileName));
-        return userUpdate;
+
+        const updatedUser = await this.save(user.updateAvatar(fileName));
+        return updatedUser;
     }
 
     async deleteAvatar(userId: number): Promise<User> {
@@ -172,27 +162,17 @@ export default class UserRepositoryImpl implements UserRepository {
             throw new Error('Пользователь не найден');
         }
 
-        let userDelete;
-
-        if (user.img !== 'man.png' && user.img !== 'girl.png') {
-            const oldAvatarPath = path.resolve(__dirname, '..', '..', '..', '..', 'static', user.img);
+        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
             try {
-                await fs.unlink(oldAvatarPath);
+                await this.fileService.deleteFile(user.img);
             } catch (err) {
                 console.error('Ошибка при удалении старого аватара:', err);
             }
-        } else {
-            userDelete = user;
         }
 
-
-        if (user.gender === 'Женщина') {
-            userDelete = await this.save(user.updateAvatar("girl.png"));
-        } else {
-            userDelete = await this.save(user.updateAvatar("man.png"));
-        }
-
-        return userDelete;
+        const defaultAvatar = user.gender === 'Женщина' ? 'girl.png' : 'man.png';
+        const updatedUser = await this.save(user.updateAvatar(defaultAvatar));
+        return updatedUser;
     }
 
     async getAll(): Promise<User[]> {

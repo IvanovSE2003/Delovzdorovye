@@ -10,11 +10,11 @@ import FileServiceImpl from "../../../../core/application/services/file.service.
 
 const problemRepository = new ProblemRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
-const userRepository = new UserRepositoryImpl();
+const fileService = new FileServiceImpl();
+const userRepository = new UserRepositoryImpl(fileService);
 const doctorRepository = new DoctorRepositoryImpl();
 const timeSlotRepository = new TimeSlotRepositoryImpl();
 const doctorScheduleRepository = new DoctorScheduleRepositoryImpl();
-const fileService = new FileServiceImpl();
 
 const consultationController = new ConsultationController(
     problemRepository, 

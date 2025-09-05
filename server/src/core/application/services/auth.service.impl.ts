@@ -346,15 +346,18 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async requestPinReset(emailOrPhone: string): Promise<void> {
-        const userPhone = await this.userRepository.findByPhone(emailOrPhone);
-        const userEmail = await this.userRepository.findByEmail(emailOrPhone);
-        let method = null, user = null;
-        if (!userPhone) {
-            method = 'SMS';
-            user = userEmail;
-        } else if (!userEmail) {
-            method = 'EMAIL';
-            user = userPhone;
+        const userByPhone = await this.userRepository.findByPhone(emailOrPhone);
+        const userByEmail = await this.userRepository.findByEmail(emailOrPhone);
+
+        let method: "SMS" | "EMAIL" | null = null;
+        let user: User | null = null;
+
+        if (userByPhone) {
+            method = "SMS";
+            user = userByPhone as User;
+        } else if (userByEmail) {
+            method = "EMAIL";
+            user = userByEmail as User;
         }
 
         if (!user || !method) {
@@ -362,12 +365,14 @@ export class AuthServiceImpl implements AuthService {
         }
 
         const resetToken = v4();
-        const resetTokenExpires = new Date(Date.now() + 3600000);
+        const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
 
-        await this.userRepository.save(user.setResetToken(resetToken, resetTokenExpires, user.pinCode));
-        if (method === 'SMS') {
+        const updatedUser = user.setResetToken(resetToken, resetTokenExpires, user.pinCode);
+        await this.userRepository.save(updatedUser);
+
+        if (method === "EMAIL") {
             await this.mailService.sendPinCodeResetEmail(user.email, resetToken);
-        } else if (method === 'EMAIL') {
+        } else {
             await this.smsService.sendPinCodeResetEmail(user.phone, resetToken);
         }
     }
