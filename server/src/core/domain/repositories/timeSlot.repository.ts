@@ -6,4 +6,5 @@ export default interface TimeSlotRepository {
     save(timeSlot: TimeSlot): Promise<TimeSlot>;
     create(timeSlot: TimeSlot): Promise<TimeSlot>;
     update(timeSlot: TimeSlot): Promise<TimeSlot>;    
+    delete(id: number): Promise<void>;
 }

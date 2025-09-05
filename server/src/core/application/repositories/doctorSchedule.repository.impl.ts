@@ -4,6 +4,7 @@ import DoctorSchedule from '../../domain/entities/doctorSchedule.entity.js';
 import { DoctorScheduleModelInterface, IDoctorScheduleCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctorSchedule.model.js';
 import TimeSlotsArray from '../../../infrastructure/web/types/timeSlot.type.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
+import { Op } from "sequelize";
 
 const { DoctorsSchedule } = models;
 
@@ -33,6 +34,24 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
             }]
         });
         return schedule ? this.mapToDomainSchedule(schedule) : null;
+    }
+
+    async getBetweenSchedule(startDate: string, endDate: string): Promise<DoctorSchedule[]> {
+        const schedules = await DoctorsSchedule.findAll({
+            where: {
+                date: {
+                    [Op.between]: [startDate, endDate]
+                }
+            },
+            include: [{
+                model: models.TimeSlot,
+                as: 'time_slots',
+                foreignKey: 'doctorsScheduleId',
+                required: false 
+            }]
+        });
+
+        return schedules.map(schedule => this.mapToDomainSchedule(schedule));
     }
 
     async create(schedule: DoctorSchedule): Promise<DoctorSchedule> {
@@ -74,16 +93,6 @@ export default class DoctorScheduleRepositoryImpl implements DoctorScheduleRepos
         } catch (error) {
             await transaction.rollback();
             throw error;
-        }
-    }
-
-    async deleteTimeSlot(id: number): Promise<void> {
-        const deletedCount = await models.TimeSlot.destroy({
-            where: { id },
-        });
-
-        if (deletedCount === 0) {
-            throw new Error('Ячейка вермени для удаления не найдена');
         }
     }
 

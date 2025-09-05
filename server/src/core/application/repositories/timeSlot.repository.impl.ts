@@ -59,6 +59,16 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return this.mapToDomainTimeSlot(updatedUser);
     }
 
+    async delete(id: number): Promise<void> {
+        const deletedCount = await models.TimeSlot.destroy({
+            where: { id },
+        });
+
+        if (deletedCount === 0) {
+            throw new Error('Ячейка вермени для удаления не найдена');
+        }
+    }
+    
     private mapToDomainTimeSlot(slotModel: TimeSlotmModelInterface) {
         return new TimeSlot(
             slotModel.id,

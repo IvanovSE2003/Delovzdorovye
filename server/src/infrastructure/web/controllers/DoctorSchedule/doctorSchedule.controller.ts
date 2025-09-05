@@ -6,9 +6,10 @@ import DoctorRepository from "../../../../core/domain/repositories/doctor.reposi
 import DoctorSchedule from "../../../../core/domain/entities/doctorSchedule.entity.js";
 import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import getRussianDayOfWeek from "../../function/getRussianDayOfWeek.js";
-import { ITimeZones } from '../../../../../../frontend/src/models/TimeZones.js'
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
-import {adjustScheduleToTimeZone, convertUserTimeToMoscow} from "../../function/transferTime.js"
+import { adjustScheduleToTimeZone, convertUserTimeToMoscow } from "../../function/transferTime.js"
+import normalizeDate from "../../function/normDate.js";
+
 
 export default class DoctorScheduleController {
     constructor(
@@ -118,7 +119,7 @@ export default class DoctorScheduleController {
     async deleteTimeSlot(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            await this.doctorScheduleRepository.deleteTimeSlot(Number(id));
+            await this.timeSlotRepository.delete(Number(id));
             res.status(200).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -161,5 +162,38 @@ export default class DoctorScheduleController {
         }
     }
 
-    
+    async getBetweenSchedule(req: Request, res: Response, next: NextFunction) {
+        try {
+            const startDate = normalizeDate(req.query.startDate as string);
+            const endDate = normalizeDate(req.query.endDate as string);
+
+            if (!startDate || !endDate) {
+                return next(ApiError.badRequest('Неверный формат даты'));
+            }
+
+            const schedules = await this.doctorScheduleRepository.getBetweenSchedule(startDate, endDate);
+            return res.status(200).json(schedules);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async createWithRepetitions(req: Request, res: Response, next: NextFunction) {
+        const {time, scheduleId, repetitions, doctorId} = req.body;
+
+        const doctor = await this.doctorRepository.findById(Number(doctorId));
+        if(!doctor) {
+            return next(ApiError.badRequest('Специалист не нейден'));
+        }
+
+        const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
+        if(!schedule) {
+            return next(ApiError.badRequest('Расписание для специалиста не найдено'));
+        }
+
+        const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, time, true, schedule.id));
+        if(!timeSlot) {
+            return next(ApiError.badRequest('Не удалось создать ячейку времени'));
+        }
+    }
 }

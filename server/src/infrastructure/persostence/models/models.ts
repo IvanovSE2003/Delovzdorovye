@@ -91,7 +91,7 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
 
 const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    date: { type: DataType.DATE },
+    date: { type: DataType.DATEONLY  },
     day_weekly: { type: DataType.STRING },
 })
 
