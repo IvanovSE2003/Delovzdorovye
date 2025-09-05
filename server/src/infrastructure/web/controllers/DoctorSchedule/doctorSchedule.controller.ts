@@ -180,16 +180,16 @@ export default class DoctorScheduleController {
 
     async createWithRepetitions(req: Request, res: Response, next: NextFunction) {
         try {
-            const { time, scheduleId, repetitions, doctorId } = req.body;
+            const { time, scheduleId, repetitions, userId } = req.body;
 
-            const doctor = await this.doctorRepository.findById(Number(doctorId));
-            if (!doctor) {
-                return next(ApiError.badRequest('Специалист не найден'));
-            }
-
-            const user = await this.userRepository.findByDoctorId(doctor.id);
+            const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const doctor = await this.doctorRepository.findByUserId(user.id)
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
             }
 
             const schedule = await this.doctorScheduleRepository.findById(Number(scheduleId));
@@ -206,14 +206,14 @@ export default class DoctorScheduleController {
                     const newDate = new Date(baseDate);
                     newDate.setDate(baseDate.getDate() + i * 7);
 
-                    let repeatedSchedule = await this.doctorScheduleRepository.findByDate(doctorId, newDate);
+                    let repeatedSchedule = await this.doctorScheduleRepository.findByDate(doctor.id, newDate);
                     if (!repeatedSchedule) {
                         repeatedSchedule = await this.doctorScheduleRepository.create(
                             new DoctorSchedule(
                                 0,
                                 newDate.toISOString().slice(0, 10),
                                 getRussianDayOfWeek(newDate.toString()),
-                                doctorId,
+                                doctor.id,
                                 []
                             )
                         );
