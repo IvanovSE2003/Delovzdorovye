@@ -16,7 +16,7 @@ export default class DoctorScheduleController {
 
     async create(req: Request, res: Response, next: NextFunction) {
         try {
-            const { time, date, isRecurring, userId } = req.body;
+            const { time, date, isRecurring, dayWeek, userId } = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
@@ -29,7 +29,8 @@ export default class DoctorScheduleController {
             }
 
             const moscowTime = convertUserTimeToMoscow(time, user.timeZone);
-            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, date, isRecurring, 0, "OPEN"));
+            console.log(normalizeDate(date))
+            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(date), isRecurring, dayWeek, "OPEN", doctor.id));
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не удалось создать ячейку времени'));
             }
@@ -90,13 +91,21 @@ export default class DoctorScheduleController {
         try {
             const startDate = normalizeDate(req.query.startDate as string);
             const endDate = normalizeDate(req.query.endDate as string);
+            const userId = req.query.userId as string;
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
 
             if (!startDate || !endDate) {
                 return next(ApiError.badRequest('Неверный формат даты'));
             }
 
             const timeSlots = await this.timeSlotRepository.findTimeSlotsBetweenDate(startDate, endDate);
-            return res.status(200).json(timeSlots);
+            const results = timeSlots.map(timeSlot => adjustTimeSlotToTimeZone(timeSlot, user.timeZone));
+
+            return res.status(200).json(results);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
