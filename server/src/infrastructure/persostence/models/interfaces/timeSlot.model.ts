@@ -3,9 +3,12 @@ import { Model, Optional } from 'sequelize';
 interface ITimeSlotAttributes {
     id: number;
     time: string;
-    isAvailable: boolean;
-    doctorsScheduleId?: number
+    date: string;
+    isRecurring: boolean;
+    dayWeek: number;
+    status: "OPEN" | "CLOSE" | "BOOKED";
+    doctorId?: number;
 }
 
 export interface ITimeSlotCreationAttributes extends Optional<ITimeSlotAttributes, 'id'> { }
-export interface TimeSlotmModelInterface extends Model<ITimeSlotAttributes, ITimeSlotCreationAttributes>, ITimeSlotAttributes {}
+export interface TimeSlotmModelInterface extends Model<ITimeSlotAttributes, ITimeSlotCreationAttributes>, ITimeSlotAttributes { }

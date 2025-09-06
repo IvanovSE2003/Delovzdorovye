@@ -5,40 +5,54 @@ import { ITimeSlotCreationAttributes, TimeSlotmModelInterface } from "../../../i
 import { Op } from "sequelize";
 
 export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
-    async findByTimeDate(time: string, doctorId: number, date: string, isAvailable: boolean): Promise<TimeSlot | null> {
-        const targetDate = new Date(date);
-        const startOfDay = new Date(targetDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(targetDate);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const doctorSchedule = await models.DoctorsSchedule.findOne({
-            where: {
-                doctorId: doctorId,
-                date: { [Op.between]: [startOfDay, endOfDay] },
-            },
-            include: [{
-                model: models.TimeSlot,
-                where: {
-                    time: time,
-                    isAvailable: isAvailable
-                }
-            }]
-        });
-
-        if (!doctorSchedule || !doctorSchedule.time_slots || doctorSchedule.time_slots.length === 0) {
-            return null;
-        }
-
-        return this.mapToDomainTimeSlot(doctorSchedule.time_slots[0]);
-    }
-
     async findById(id: number): Promise<TimeSlot | null> {
-        const timeSlot = await models.TimeSlot.findByPk(id);
+        const timeSlot = await models.DoctorSlots.findByPk(id);
         if (!timeSlot) {
             return null;
         }
         return this.mapToDomainTimeSlot(timeSlot);
+    }
+
+    async findByDoctorId(id: number): Promise<TimeSlot[]> {
+        const timeSlots = await models.DoctorSlots.findAll({
+            where: {
+                doctorId: id
+            }
+        })
+        return timeSlots.map(timeSlot => this.mapToDomainTimeSlot(timeSlot));
+    }
+
+    async findByTimeDate(time: string, doctorId: number, date: string, isAvailable: boolean): Promise<TimeSlot | null> {
+        const slotModels = await models.DoctorSlots.findOne({
+            where: {
+                date: date,
+                time: time,
+                doctorId: doctorId
+            }
+        })
+        return slotModels ? this.mapToDomainTimeSlot(slotModels) : null
+    }
+
+    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]> {
+        const slotModels = await models.DoctorSlots.findAll({
+            where: {
+                date: {
+                    [Op.between]: [startDate, endDate]
+                }
+            }
+        });
+
+        return slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m));
+    }
+
+    async findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]> {
+        const timeSlots = await models.DoctorSlots.findAll({
+            where: {
+                date: date,
+                doctorId: doctorId
+            }
+        })
+        return timeSlots.map(timsSlot => this.mapToDomainTimeSlot(timsSlot));
     }
 
     async save(timeSlot: TimeSlot): Promise<TimeSlot> {
@@ -46,12 +60,12 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     }
 
     async create(timeSlot: TimeSlot): Promise<TimeSlot> {
-        const createdTimeSlot = await models.TimeSlot.create(this.mapToPersistence(timeSlot));
+        const createdTimeSlot = await models.DoctorSlots.create(this.mapToPersistence(timeSlot));
         return this.mapToDomainTimeSlot(createdTimeSlot);
     }
 
     async update(timeSlot: TimeSlot): Promise<TimeSlot> {
-        const [affectedCount, affectedRows] = await models.TimeSlot.update(this.mapToPersistence(timeSlot), { where: { id: timeSlot.id }, returning: true });
+        const [affectedCount, affectedRows] = await models.DoctorSlots.update(this.mapToPersistence(timeSlot), { where: { id: timeSlot.id }, returning: true });
         if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
             throw new Error('Пользователь не был обновлен');
         }
@@ -60,7 +74,7 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     }
 
     async delete(id: number): Promise<void> {
-        const deletedCount = await models.TimeSlot.destroy({
+        const deletedCount = await models.DoctorSlots.destroy({
             where: { id },
         });
 
@@ -68,20 +82,27 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
             throw new Error('Ячейка вермени для удаления не найдена');
         }
     }
-    
-    private mapToDomainTimeSlot(slotModel: TimeSlotmModelInterface) {
+
+    private mapToDomainTimeSlot(slotModel: TimeSlotmModelInterface): TimeSlot {
         return new TimeSlot(
             slotModel.id,
             slotModel.time,
-            slotModel.isAvailable
+            slotModel.date,
+            slotModel.isRecurring,
+            slotModel.dayWeek,
+            slotModel.status,
+            slotModel.doctorId
         );
     }
 
     private mapToPersistence(slot: TimeSlot): ITimeSlotCreationAttributes {
         return {
             time: slot.time,
-            isAvailable: slot.isAvailable,
-            doctorsScheduleId: slot.doctorsScheduleId
+            date: slot.date,
+            isRecurring: slot.isRecurring,
+            dayWeek: slot.dayWeek,
+            status: slot.status,
+            doctorId: slot.doctorId
         };
     }
 }

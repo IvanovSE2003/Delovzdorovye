@@ -10,7 +10,6 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
-import DoctorScheduleRepository from "../../../../core/domain/repositories/doctorSchedule.repository.js";
 import {convertUserTimeToMoscow} from "../../function/transferTime.js"
 
 export default class ConsultationController {
@@ -21,7 +20,6 @@ export default class ConsultationController {
         private readonly doctorReposiotry: DoctorRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
         private readonly fileService: FileService,
-        private readonly scheduleRepository: DoctorScheduleRepository
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
@@ -104,12 +102,10 @@ export default class ConsultationController {
                 try {
                     const [hours, minutes] = startTime.split(':').map(Number);
 
-                    // Вычисляем время окончания
                     const totalMinutes = hours * 60 + minutes + duration;
                     const endHours = Math.floor(totalMinutes / 60) % 24;
                     const endMinutes = totalMinutes % 60;
 
-                    // Форматируем с ведущими нулями
                     const formattedStart = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                     const formattedEnd = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
 
@@ -189,7 +185,7 @@ export default class ConsultationController {
             const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 60, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
             await this.addProblemsToConsultation(consultation.id, problems);
 
-            await this.timeSlotRepository.save(timeSlot.setAvailable(false));
+            await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
             // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
@@ -290,8 +286,8 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Не найден предыдущий верменной слот'));
             }
 
-            await this.timeSlotRepository.save(timeSlot.setAvailable(false));
-            await this.timeSlotRepository.save(timeSlotPrev.setAvailable(true));
+            await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
+            await this.timeSlotRepository.save(timeSlotPrev.setStatus("BOOKED"));
 
             const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
 

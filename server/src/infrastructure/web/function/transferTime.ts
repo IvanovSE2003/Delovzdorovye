@@ -1,19 +1,20 @@
 import { ITimeZones } from "../../../../../frontend/src/models/TimeZones";
-import DoctorSchedule from "../../../core/domain/entities/doctorSchedule.entity";
+import TimeSlot from "../../../core/domain/entities/timeSlot.entity";
 
 const STORAGE_TIMEZONE = ITimeZones.MOSCOW;
 
-export function adjustScheduleToTimeZone(schedule: DoctorSchedule, userTimeZone: ITimeZones): DoctorSchedule {
+export function adjustTimeSlotToTimeZone(slot: TimeSlot, userTimeZone: ITimeZones): TimeSlot {
     const timeDifference = userTimeZone - STORAGE_TIMEZONE;
 
-    return {
-        ...schedule,
-        date: adjustDate(schedule.date, timeDifference),
-        timeSlot: schedule.timeSlot?.map(slot => ({
-            ...slot,
-            time: adjustTime(slot.time, timeDifference)
-        }))
-    };
+    return new TimeSlot(
+        slot.id,
+        adjustTime(slot.time, timeDifference),
+        adjustDate(slot.date, timeDifference),
+        slot.isRecurring,
+        slot.dayWeek,
+        slot.status,
+        slot.doctorId
+    );
 }
 
 export function adjustTime(time: string, hoursDiff: number): string {

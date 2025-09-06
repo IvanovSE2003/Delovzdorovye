@@ -4,7 +4,6 @@ import { UserModelInterface } from "../models/interfaces/user.model.js"
 import { TelegramModelInterface } from './interfaces/telegram.model.js'
 import { DoctorModelInterface } from './interfaces/doctor.model.js'
 import { TokenModelInterface } from './interfaces/token.model.js'
-import { DoctorScheduleModelInterface } from './interfaces/doctorSchedule.model.js'
 import { BatchModelInterface } from './interfaces/batch.model.js'
 import { SpecializationModelInterface } from './interfaces/specializations.model.js'
 import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
@@ -66,10 +65,13 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
     name: { type: DataType.STRING }
 })
 
-const TimeSlot = sequelize.define<TimeSlotmModelInterface>('time_slot', {
+const DoctorSlots = sequelize.define<TimeSlotmModelInterface>('time_slot', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     time: { type: DataType.TIME },
-    isAvailable: { type: DataType.BOOLEAN, defaultValue: true }
+    date: {type: DataType.DATEONLY},
+    isRecurring: {type: DataType.BOOLEAN, defaultValue: false},
+    dayWeek: {type: DataType.INTEGER},
+    status: { type: DataType.STRING},
 });
 
 const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
@@ -87,12 +89,6 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
     date: { type: DataType.DATEONLY },
     doctorId: { type: DataType.INTEGER, allowNull: false, references: { model: DoctorModel, key: 'id' } },
     userId: { type: DataType.INTEGER, allowNull: false, references: { model: UserModel, key: 'id' } },
-})
-
-const DoctorsSchedule = sequelize.define<DoctorScheduleModelInterface>('doctors_schedule', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    date: { type: DataType.DATEONLY  },
-    day_weekly: { type: DataType.STRING },
 })
 
 const Transaction = sequelize.define('transaction', {
@@ -181,23 +177,20 @@ Transaction.belongsTo(Consultation)
 DoctorModel.hasOne(Consultation)
 Consultation.belongsTo(DoctorModel)
 
-TimeSlot.hasOne(Consultation)
-Consultation.belongsTo(TimeSlot)
+DoctorSlots.hasOne(Consultation)
+Consultation.belongsTo(DoctorSlots)
 
 UserModel.hasOne(Consultation);
 Consultation.belongsTo(UserModel);
 
-DoctorModel.hasMany(DoctorsSchedule, { foreignKey: "doctorId" });
-DoctorsSchedule.belongsTo(DoctorModel, { foreignKey: "doctorId" });
+DoctorModel.hasMany(DoctorSlots, { foreignKey: "doctorId" });
+DoctorSlots.belongsTo(DoctorModel, { foreignKey: "doctorId" });
 
 UserModel.hasOne(TokenModel);
 TokenModel.belongsTo(UserModel);
 
 UserModel.hasOne(ProfDataModel);
 ProfDataModel.belongsTo(UserModel);
-
-DoctorsSchedule.hasMany(TimeSlot, { foreignKey: "doctorsScheduleId" });
-TimeSlot.belongsTo(DoctorsSchedule, { foreignKey: "doctorsScheduleId" });
 
 DoctorModel.belongsToMany(SpecializationModel, {
     through: DoctorSpecialization,
@@ -231,10 +224,9 @@ export default {
     DoctorModel,
     Transaction,
     Consultation,
-    DoctorsSchedule,
     TokenModel,
     UserTelegramModel,
-    TimeSlot,
+    DoctorSlots,
     ModerationBatchModel,
     SpecializationModel,
     ProblemModel,
