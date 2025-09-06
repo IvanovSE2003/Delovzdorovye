@@ -4,11 +4,10 @@ import "./MyInput.scss";
 interface FileInputProps {
   id: string;
   label: string;
-  onChange: (files: File[]) => void; // теперь всегда массив
+  onChange: (file: File | null) => void; // теперь принимает один файл или null
   required?: boolean;
   accept?: string;
   className?: string;
-  multiple?: boolean;
 }
 
 const MyInputFile: React.FC<FileInputProps> = ({
@@ -18,7 +17,6 @@ const MyInputFile: React.FC<FileInputProps> = ({
   required = false,
   accept,
   className = "",
-  multiple = false,
 }) => {
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,19 +24,25 @@ const MyInputFile: React.FC<FileInputProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const fileList = Array.from(files);
-      setFileName(
-        multiple ? `Выбрано файлов: ${files.length}` : files[0].name
-      );
-      onChange(multiple ? fileList : [fileList[0]]);
+      setFileName(files[0].name);
+      onChange(files[0]);
     } else {
       setFileName("");
-      onChange([]); // возвращаем пустой массив
+      onChange(null);
     }
   };
 
   const handleClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation(); // предотвращаем срабатывание клика на контейнере
+    setFileName("");
+    onChange(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -51,12 +55,23 @@ const MyInputFile: React.FC<FileInputProps> = ({
         onChange={handleChange}
         required={required}
         accept={accept}
-        multiple={multiple}
       />
 
       <div className="file-input__container" onClick={handleClick}>
-        <div className="file-input__button">Выбрать файлы</div>
-        <div className="file-input__text">{label}</div>
+        <div className="file-input__button">Выбрать файл</div>
+        <div className="file-input__text">
+          {fileName || label} {/* показываем имя файла или стандартный label */}
+        </div>
+        {fileName && (
+          <button
+            type="button"
+            className="file-input__clear"
+            onClick={handleClear}
+            aria-label="Очистить выбор файла"
+          >
+            ×
+          </button>
+        )}
       </div>
     </div>
   );

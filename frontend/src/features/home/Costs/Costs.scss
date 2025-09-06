@@ -8,6 +8,14 @@
     justify-content: center;
     padding: 2rem 0;
 
+    &__box {
+        width: 100%;
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     &__title {
         text-align: center;
         font-weight: bold;
@@ -16,12 +24,43 @@
         font-size: $title-size;
     }
 
+    &__message {
+        font-size: 1.4rem;
+        font-weight: bold;
+        animation: opacity 5s forwards;
+
+        &--good {
+            color: green;
+        }
+
+        &--bad {
+            color: red;
+        }
+
+        @keyframes opacity {
+            0% {
+                opacity: 1;
+            }
+
+            70% {
+                opacity: 1; 
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    }
+
     &__block {
         background-color: $block-color;
-        padding: 2rem 4rem;
+        padding: 2rem 3rem;
         margin: 0.4rem 0;
         width: 400px;
         border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
 
         &__title {
             color: $primary-color;
@@ -30,11 +69,77 @@
         }
 
         &__description {
+            white-space: pre-line;
             color: $text-color;
             text-align: center;
             line-height: 1.5;
             font-size: 1.5rem;
             margin: 0;
+        }
+
+        &--none {
+            font-size: 1.8rem;
+            font-weight: bolder;
+            color: $primary-color;
+            margin: 0;
+            text-align: center;
+        }
+
+        &__input {
+            padding: 10px 14px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        &__textarea {
+            min-height: 100px;
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            padding: 12px 14px;
+            font-size: 1.6rem;
+            line-height: 1.5;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            }
+        }
+    }
+
+    &__button-edit {
+        padding: 0.9rem 2rem;
+        font-size: 1.6rem;
+        color: white;
+        background-color: $button-color;
+        border: none;
+        border-radius: 10px;
+
+        &:hover {
+            background-color: $button-color-hover;
+            cursor: pointer;
+        }
+    }
+
+    &__button-delete {
+        background-color: $red-color !important;
+
+        &:hover {
+            background-color: $red-color-hover !important;
         }
     }
 }

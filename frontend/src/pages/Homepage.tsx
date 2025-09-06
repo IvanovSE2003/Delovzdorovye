@@ -4,19 +4,27 @@ import Solutions from '../features/home/Solutions/Solutions';
 import Costs from '../features/home/Costs/Costs';
 import Informations from '../features/home/Informations/Informations';
 import Contacts from '../features/home/Contacts/Contacts';
+import { useContext } from 'react';
+import { Context } from '../main';
+import { observer } from 'mobx-react-lite';
+
 
 const HomePage = () => {
+  const { store } = useContext(Context);
+
   return (
     <div>
       <Header />
       <Slider />
       <Solutions />
       <div className='line'></div>
-      <Costs />
+      <Costs 
+        role={store.user.role}
+      />
       <Informations />
       <Contacts />
     </div>
   )
 }
 
-export default HomePage;
+export default observer(HomePage);

@@ -7,6 +7,18 @@ import MyInputFile from '../../../components/UI/MyInput/MyInputFile';
 import FilePreview from '../../../components/UI/MyInput/FilePreview';
 import MyInput from '../../../components/UI/MyInput/MyInput';
 import Select from 'react-select';
+import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
+import type { TypeResponse } from '../../../models/response/DefaultResponse';
+import type { AxiosError } from 'axios';
+import DoctorService from '../../../services/DoctorService';
+
+interface SpecializationForm {
+    name: string;
+    diploma: File | null;
+    license: File | null;
+    existingDiploma?: string;
+    existingLicense?: string;
+}
 
 type FileType = 'DIPLOMA' | 'LICENSE';
 
@@ -14,201 +26,280 @@ const DoctorInfo = () => {
     const { store } = useContext(Context);
 
     const [edit, setEdit] = useState<boolean>(false);
-    const [specialization, setSpecialization] = useState<string>('');
     const [experienceYears, setExperienceYears] = useState<number>(0);
-
-    const [diplomas, setDiplomas] = useState<File[]>([]);
-    const [licenses, setLicenses] = useState<File[]>([]);
-
-    const [diplomaFileNames, setDiplomaFileNames] = useState<string[]>([]);
-    const [licenseFileNames, setLicenseFileNames] = useState<string[]>([]);
+    const [specializations, setSpecializations] = useState<SpecializationForm[]>([]);
+    const [availableSpecializations, setAvailableSpecializations] = useState<any[]>([]);
 
     const getDoctorInfo = async () => {
-        const data = await store.getDoctorInfo(store.user.id);
-        setSpecialization(data.specialization || '');
-        setExperienceYears(data.experienceYears || 0);
-        setDiplomaFileNames(data.diploma ? [data.diploma] : []);
-        setLicenseFileNames(data.license ? [data.license] : []);
+        try {
+            const data: IDoctor = await store.getDoctorInfo(store.user.id);
+            setExperienceYears(data.experienceYears || 0);
+
+            // Преобразуем специализации в форму для редактирования
+            const transformedSpecs = data.specializations.map(spec => ({
+                name: spec.name,
+                diploma: null,
+                license: null,
+                existingDiploma: spec.diploma,
+                existingLicense: spec.license
+            }));
+
+            setSpecializations(transformedSpecs);
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+        }
     };
 
-    const saveChange = () => {
-        console.log({
-            specialization,
-            experienceYears,
-            diplomas,
-            licenses,
-        });
-        setEdit(false);
+    const saveChanges = async () => {
+        try {
+            // Здесь будет логика сохранения изменений
+            console.log({
+                experienceYears,
+                specializations
+            });
+
+            setEdit(false);
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+        }
     };
 
-    const handleFileChange = (files: File[], type: FileType) => {
-        if (type === 'DIPLOMA') setDiplomas([...diplomas, ...files]);
-        else setLicenses([...licenses, ...files]);
+    const addSpecialization = () => {
+        setSpecializations([...specializations, { name: '', diploma: null, license: null }]);
+    };
+
+    const removeSpecialization = (index: number) => {
+        setSpecializations(specializations.filter((_, i) => i !== index));
+    };
+
+    const updateSpecialization = (index: number, field: keyof SpecializationForm, value: any) => {
+        const updated = [...specializations];
+        updated[index] = { ...updated[index], [field]: value };
+        setSpecializations(updated);
+    };
+
+    const handleFileChange = (index: number, type: FileType, files: File[]) => {
+        if (files.length > 0) {
+            updateSpecialization(index, type.toLowerCase() as 'diploma' | 'license', files[0]);
+        }
     };
 
     const handleRemoveFile = (index: number, type: FileType) => {
-        if (type === 'DIPLOMA') setDiplomas(diplomas.filter((_, i) => i !== index));
-        else setLicenses(licenses.filter((_, i) => i !== index));
+        updateSpecialization(index, type.toLowerCase() as 'diploma' | 'license', null);
     };
+
+    const getSpecialization = async () => {
+        try {
+            const response = await DoctorService.getSpecializations();
+            const specializations = response.data.map(item => ({ value: item.id, label: item.name }));
+            setAvailableSpecializations(specializations);
+            console.log(response.data.map(value => value.name));
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при получении списка специализации: ", error.response?.data.message)
+        }
+    }
 
     useEffect(() => {
         getDoctorInfo();
     }, []);
 
-    const options = [
-        {value: '1', label: "Специализия 1"},
-    ]
+    if (!store.user) {
+        return <div>Загрузка...</div>;
+    }
 
     return (
         <div className='doctor-info'>
-            <h1 className="doctor-info__title">
-                {edit ? "Редактирование" : "Карточка специалиста"}
-            </h1>
-            <div className="doctor-info__subtitle">
-                {edit ? "Полной профессиональной информации" : "Полная профессиональная информация"}
+            <div className="doctor-info__header">
+                <h1 className="doctor-info__title">
+                    {edit ? "Редактирование профиля" : "Профиль специалиста"}
+                </h1>
+                <p className="doctor-info__subtitle">
+                    {edit ? "Обновите вашу профессиональную информацию" : "Ваша профессиональная информация"}
+                </p>
             </div>
 
             <div className='doctor-info__content'>
                 {edit ? (
-                    <>
-                        {/* <Select
-                            isMulti
-                            options={options}
-                            placeholder="Выберите специализации"
-                            onChange={}
-                        />
-
-                        <MyInput
-                            id="expirenceYears"
-                            label="Опыт работы в годах"
-                            value={}
-                            onChange={}
-                            required
-                        />
-
-                        <div>
-                            <MyInputFile
-                                id="diploma-upload"
-                                label="Перетащите файлы или нажмите для выбора"
-                                onChange={(files) => handleFileChange(files, 'DIPLOMA')}
-                                accept=".pdf"
-                                multiple
-                            />
-                            <FilePreview
-                                files={diplomas}
-                                type="DIPLOMA"
-                                onRemove={handleRemoveFile}
+                    <div className="doctor-info__edit">
+                        <div className="form-section">
+                            <label className="form-section__label">Опыт работы (лет)</label>
+                            <MyInput
+                                type="number"
+                                value={experienceYears.toString()}
+                                onChange={(e) => setExperienceYears(Number(e))}
+                                placeholder="Введите опыт работы" id={''} label={''}
                             />
                         </div>
 
-                        <div>
-                            <MyInputFile
-                                id="license-upload"
-                                label="Перетащите файлы или нажмите для выбора"
-                                onChange={(files) => handleFileChange(files, 'LICENSE')}
-                                accept=".pdf"
-                                multiple
-                            />
-                            <FilePreview
-                                files={licenses}
-                                type="LICENSE"
-                                onRemove={handleRemoveFile}
-                            />
-                        </div> */}
-                    </>
+                        <div className="form-section">
+                            <div className="form-section__header">
+                                <label className="form-section__label">Специализации</label>
+                                <button
+                                    type="button"
+                                    className="add-button"
+                                    onClick={addSpecialization}
+                                >
+                                    + Добавить специализацию
+                                </button>
+                            </div>
+
+                            {specializations.map((spec, index) => (
+                                <div key={index} className="specialization-form">
+                                    <Select
+                                        options={availableSpecializations}
+                                        placeholder="Выберите специализацию"
+                                        className="doctor-info__select"
+                                        classNamePrefix="custom-select"
+                                        value={availableSpecializations.find(opt => opt.value === spec.name)}
+                                        onMenuOpen={getSpecialization}
+                                        onChange={(selected) =>
+                                            updateSpecialization(index, 'name', selected?.value || '')
+                                        }
+                                    />
+
+                                    <div className="documents-row">
+                                        <div className="document-upload">
+                                            {/* <MyInputFile
+                                                onChange={(files) => handleFileChange(index, 'DIPLOMA', files)}
+                                                accept=".pdf,.jpg,.jpeg,.png" 
+                                                id={'diploma'}
+                                                label={'Диплом'}
+                                            /> */}
+                                            {spec.existingDiploma && !spec.diploma && (
+                                                <div className="existing-file">
+                                                    <span>Текущий файл: </span>
+                                                    <a
+                                
+                                
+                                href={`${URL}/${spec.existingDiploma}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Посмотреть
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="document-upload">
+                                            {/* <MyInputFile
+                                                onChange={(files) => handleFileChange(index, 'LICENSE')}
+                                                accept=".pdf,.jpg,.jpeg,.png" 
+                                                id={'license'}
+                                                label={'Лицензия'}
+                                            /> */}
+                                            {spec.existingLicense && !spec.license && (
+                                                <div className="existing-file">
+                                                    <span>Текущий файл: </span>
+                                                    <a
+                                                        href={`${URL}/${spec.existingLicense}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Посмотреть
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 ) : (
-                    <>
-                        <div className="medical-section">
-                            <div className="section-header">
-                                <div className="section-icon">💼</div>
-                                <h2 className="section-title">Специализации</h2>
+                    <div className="doctor-info__view">
+                        <div className="info-section">
+                            <div className="info-section__header">
+                                <div className="info-section__icon">⚒️</div>
+                                <h3 className="info-section__title">Опыт работы</h3>
                             </div>
-                            <div className="record">
-                                <div className="record-details">
-                                    <div className="detail-item">
-                                        {specialization ? (
-                                            <span className="detail-label">{specialization}</span>
-                                        ) : (
-                                            <span className="detail-label">Нет данных</span>
-                                        )}
-                                    </div>
+                            <div className="info-section__content">
+                                <div className="info-item">
+                                    <span className="info-item__value">
+                                        {experienceYears} {experienceYears === 1 ? 'год' :
+                                            experienceYears < 5 ? 'года' : 'лет'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="medical-section">
-                            <div className="section-header">
-                                <div className="section-icon">⚒️</div>
-                                <h2 className="section-title">Опыт работы в годах</h2>
+                        <div className="info-section">
+                            <div className="info-section__header">
+                                <div className="info-section__icon">💼</div>
+                                <h3 className="info-section__title">Специализации</h3>
                             </div>
-                            <div className="record">
-                                <div className="record-details">
-                                    <div className="detail-item">
-                                        {experienceYears ? (
-                                            <span className="detail-label">{experienceYears}</span>
-                                        ) : (
-                                            <span className="detail-label">Нет данных</span>
-                                        )}
+                            <div className="info-section__content">
+                                {specializations.length > 0 ? (
+                                    specializations.map((spec, index) => (
+                                        <div key={index} className="specialization-item">
+                                            <div className="specialization-item__header">
+                                                <h4 className="specialization-item__name">{spec.name}</h4>
+                                            </div>
+                                            <div className="specialization-item__docs">
+                                                {spec.existingDiploma && (
+                                                    <div className="doc-item">
+                                                        <span className="doc-item__label">Диплом:</span>
+                                                        <a
+                                                            href={`${URL}/${spec.existingDiploma}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="doc-item__link"
+                                                        >
+                                                            Посмотреть документ
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {spec.existingLicense && (
+                                                    <div className="doc-item">
+                                                        <span className="doc-item__label">Лицензия:</span>
+                                                        <a
+                                                            href={`${URL}/${spec.existingLicense}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="doc-item__link"
+                                                        >
+                                                            Посмотреть документ
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="info-item">
+                                        <span className="info-item__value">Специализации не добавлены</span>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
-
-                        <div className="medical-section">
-                            <div className="section-header">
-                                <div className="section-icon">📜</div>
-                                <h2 className="section-title">Диплом</h2>
-                            </div>
-                            {diplomas.length > 0 ? (
-                                diplomas.map((file, index) => (
-                                    <div key={file.name} className="record">
-                                        <span className="detail-label">
-                                            <a href={`${URL}/${file.name}`} target="_blank" rel="noopener noreferrer">
-                                                {`Документ №${index + 1}`}
-                                            </a>
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="detail-item">
-                                    <span className="detail-label">Файл не загружен</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="medical-section">
-                            <div className="section-header">
-                                <div className="section-icon">📋</div>
-                                <h2 className="section-title">Лицензия</h2>
-                            </div>
-                            {licenses.length > 0 ? (
-                                licenses.map((file, index) => (
-                                    <div key={file.name} className="record">
-                                        <span className="detail-label">
-                                            <a href={`${URL}/${file.name}`} target="_blank" rel="noopener noreferrer">
-                                                {`Документ №${index + 1}`}
-                                            </a>
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="detail-item">
-                                    <span className="detail-label">Файл не загружен</span>
-                                </div>
-                            )}
-                        </div>
-                    </>
+                    </div>
                 )}
             </div>
 
-            <div>
+            <div className="doctor-info__actions">
                 {edit ? (
-                    <>
-                        <button className='my-button width100' onClick={saveChange}>Сохранить</button>
-                        <button className='neg-button width100' onClick={() => setEdit(false)}>Отмена</button>
-                    </>
+                    <div className="action-buttons">
+                        <button className="action-button action-button--primary" onClick={saveChanges}>
+                            Сохранить изменения
+                        </button>
+                        <button
+                            className="action-button action-button--secondary"
+                            onClick={() => {
+                                getDoctorInfo(); // Сбрасываем изменения
+                                setEdit(false);
+                            }}
+                        >
+                            Отмена
+                        </button>
+                    </div>
                 ) : (
-                    <button className='my-button width100' onClick={() => setEdit(true)}>Редактировать</button>
+                    <button
+                        className="action-button action-button--primary"
+                        onClick={() => setEdit(true)}
+                    >
+                        Редактировать профиль
+                    </button>
                 )}
             </div>
         </div>

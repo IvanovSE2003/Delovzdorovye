@@ -1,0 +1,169 @@
+@use '../../../assets/styles/variables.scss' as *;
+
+.schedule-grid {
+    overflow-x: auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rbga(0, 0, 0, 0.2);
+
+    &__table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+    }
+
+    &__head {
+        background: #f5f5f5;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    &__day {
+        padding: 6px 8px;
+        border: 1px solid $gray-color;
+        text-align: center;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    &__time {
+        width: 60px;
+        text-align: right;
+        padding-right: 8px;
+        font-size: 1.2rem;
+        color: $gray-color;
+    }
+
+    &__row {
+        height: 40px;
+    }
+
+    &__week-switcher {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        gap: 10px;
+
+        button {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #f9f9f9;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    &_week-label {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    &__today-btn {
+        font-weight: 500;
+        background: #e6f3ff;
+        border-color: #99caff;
+    }
+
+    &__slot {
+        width: 80px;
+        height: 40px;
+        border: 1px solid $gray-color;
+        cursor: pointer;
+        text-align: center;
+        vertical-align: middle;
+        position: relative;
+        transition: background 0.2s ease;
+
+        &--closed {
+            background: #e0e0e0;
+        }
+
+        &--open {
+            background: #fff;
+        }
+
+        &--booked {
+            background: #fff;
+
+            &::after {
+                content: "📌";
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: #e53935;
+            }
+        }
+
+        &:hover {
+            filter: brightness(0.95);
+        }
+    }
+}
+
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+
+    &__content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 15px 0;
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #1976d2;
+            color: #fff;
+            font-size: 14px;
+
+            &:hover {
+                background: #125ea3;
+            }
+        }
+    }
+
+    &__close {
+        margin-top: 10px;
+        background-color: $red-color;
+        padding: 0.6rem 4rem;
+        border: none;
+        border-radius: 10px;
+        color: white;
+
+        &:hover {
+            background-color: $red-color-hover;
+            cursor: pointer;
+        }
+    }
+}

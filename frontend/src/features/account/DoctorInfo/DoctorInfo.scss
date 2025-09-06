@@ -1,164 +1,348 @@
 @use "../../../assets/styles/variables.scss" as *;
 
 .doctor-info {
-    width: 90%;
+    width: 100%;
+    min-height: calc(100% + 40vh);
     margin: 1rem auto;
     padding: 1rem 2rem;
     border-radius: 10px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: $button-gradient;
     color: white;
     box-sizing: border-box;
     text-align: center;
 
-    &__content {
-        margin: 1rem auto;
-        padding: 0 1rem;
-        box-sizing: border-box;
-        display: flex;
-        text-align: left;
-        flex-direction: column;
-        gap: 13px;
-        font-size: 1.2rem;
+    &__header {
+        margin-bottom: 32px;
+        text-align: center;
     }
 
     &__title {
         font-size: 2rem;
         font-weight: bolder;
+        color: white;
+        margin-bottom: 0;
     }
 
     &__subtitle {
-        font-size: 1.3rem;
-        margin-top: -15px;
-        margin-bottom: 3rem;
-        font-weight: 600;
+        margin-top: 10px;
+        font-size: 1.4rem;
+        color: white;
+    }
+
+    &__content {
+        margin-bottom: 32px;
+    }
+
+    &__actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    &__select {
+        margin-top: 20px;
+        margin-bottom: 20px;
+
+        .custom-select {
+            &__control {
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                min-height: 48px;
+                font-size: 1.1rem;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    border-color: $primary-color;
+                }
+
+                &--is-focused {
+                    border-color: $primary-color;
+                    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+                }
+            }
+
+            &__menu {
+                z-index: 1000 !important;
+                color: black;
+                text-align: left;
+            }
+
+            &__multi-value {
+                background-color: $primary-color;
+                border-radius: 4px;
+
+                &__label {
+                    color: white;
+                }
+            }
+        }
     }
 }
 
-.medical-sections {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 25px;
-    padding: 30px;
-}
-
-.medical-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-    &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
-}
-
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
-}
-
-.section-icon {
-    min-width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5em;
-}
-
-.section-title {
-    font-size: 1.7rem;
-    color: $gray-color;
-}
-
-.record {
+.info-section {
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    padding: 1.8rem;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &__header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #b1b1b1;
+    }
+
+    &__icon {
+        font-size: 2.2rem;
+        margin-right: 12px;
+    }
+
+    &__title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: $gray-color;
+        margin: 0;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
 }
 
-.record-details {
-    display: grid;
-    gap: 12px;
-}
-
-.detail-item {
+.info-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.3rem 0;
-}
+    padding: 12px 0;
 
-.detail-label {
-    color: $text-color;
-    font-size: 1.2rem;
-}
-
-.file-upload {
-    margin-top: 8px;
-
-    &__buttons {
-        display: flex;
-        gap: 10px;
+    &__label {
+        font-weight: 600;
+        color: $gray-color;
+        min-width: 120px;
     }
 
-    &__label,
-    .file-remove-button {
-        display: inline-block;
-        text-align: center;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        border: none;
-        margin-bottom: 10px;
-        width: max-content;
-        font-size: 0.9rem;
+    &__value {
+        color: $gray-color;
+        font-weight: bolder;
+    }
+}
+
+// Специализации
+.specialization-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    &__name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    &__docs {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &__label {
+        font-weight: 600;
+        color: #7f8c8d;
+        min-width: 80px;
+    }
+
+    &__link {
+        color: #3498db;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+// Форма редактирования
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        font-size: 1.5rem;
+        font-weight: bolder;
     }
 
     &__label {
-        background-color: $button-color;
-
-        &:hover {
-            background-color: $button-color-hover;
-        }
-    }
-
-    .file-remove-button {
-        background-color: rgb(186, 16, 16);
-
-        &:hover {
-            background-color: rgb(87, 15, 15);
-        }
-    }
-
-    &__input {
-        display: none;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
     }
 }
 
-.file-info {
-    margin: 13px 0;
-    font-size: 1.1rem;
+.add-button {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
 
-    &__name {
-        color: $gray-color;
+    &:hover {
+        background: #229954;
+    }
+}
+
+.remove-button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: #c0392b;
+    }
+}
+
+.specialization-form {
+    background-color: $nav-color;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+
+        h4 {
+            font-size: 1.4rem;
+            color: black;
+        }
+    }
+}
+
+.specialization-select {
+    margin-bottom: 16px;
+}
+
+.documents-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.document-upload {
+    &__label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+}
+
+.existing-file {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #7f8c8d;
+
+    a {
+        color: #3498db;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+// Кнопки действий
+.action-buttons {
+    display: flex;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+}
+
+.action-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &--primary {
+        background: #3498db;
+        color: white;
+
+        &:hover {
+            background: #2980b9;
+        }
     }
 
-    &__size {
-        color: $primary-color;
-        margin-left: 8px;
+    &--secondary {
+        background: #95a5a6;
+        color: white;
+
+        &:hover {
+            background: #7f8c8d;
+        }
+    }
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+    .doctor-info {
+        padding: 16px;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .documents-row {
+        grid-template-columns: 1fr;
     }
 }

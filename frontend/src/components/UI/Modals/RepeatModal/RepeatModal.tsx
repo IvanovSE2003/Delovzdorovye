@@ -1,32 +1,20 @@
-import DatePicker from 'react-datepicker';
-import './RepeatModal.scss'
-import TimeSlots from '../../../../features/account/TimeSlots/TimeSlots';
 import { useEffect, useState } from 'react';
-import ConsultationsStore, { type OptionsResponse } from '../../../../store/consultations-store';
-import { ru } from 'date-fns/locale';
+import { type OptionsResponse } from '../../../../store/consultations-store';
 import type { MultiValue } from 'react-select';
+import type { ModalProps } from '../CancelModal/CancelModal';
 import type { ConsultationData } from '../EditModal/EditModal';
 
-interface ShiftModalProps {
-    isOpen: boolean;
-    onClose: () => void;
+import RecordForm from '../RecordModal/RecordForm';
+import './RepeatModal.scss';
+
+interface RepeatModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
 }
 
-
-const RepeatModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord }) => {
-    const consultationStore = new ConsultationsStore();
-    const [otherProblemText, setOtherProblemText] = useState<string>("");
+const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>();
-    const [selectedOptions, setSelectedOptions] = useState<MultiValue<OptionsResponse>>([]);
-
-    const times = [
-        "09:00", "09:30", "10:00", "10:30",
-        "12:00", "12:30", "13:00", "13:30",
-        "15:00", "16:00", "18:00", "19:30"
-    ];
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
     const handleSubmit = () => {
         if (!selectedDate || !selectedTime) {
@@ -34,43 +22,27 @@ const RepeatModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord }) =
             return;
         }
 
-        const problems = selectedOptions.map(option => option.value);
-
-        // Проверяем, есть ли выбранные проблемы
-        if (problems.length === 0 && !otherProblemText.trim()) {
-            setError("Пожалуйста, выберите хотя бы одну проблему");
-            return;
-        }
-
         onRecord({
-            problems,
-            otherProblemText: otherProblemText,
             date: selectedDate,
-            time: selectedTime
+            time: selectedTime,
+            doctorId: 0
         });
-
-        // Сброс формы
-        setSelectedOptions([]);
-        setOtherProblemText("");
-        setSelectedDate(undefined);
-        setSelectedTime(null);
-        setError("");
     };
 
+    // Получение даты и времени из 
+    const onTimeDateSelect = (time: string | null, date: string | null) => {
+        setSelectedTime(time);
+        setSelectedDate(date);
+    }
+
+    // Сброс формы при закрытии
     useEffect(() => {
         if (!isOpen) {
-            // Сброс формы при закрытии
-            setSelectedOptions([]);
-            setOtherProblemText("");
-            // setShowOtherProblemInput(false);
-            setSelectedDate(undefined);
-            setSelectedTime(null);
             setError("");
         }
     }, [isOpen]);
 
     if (!isOpen) return null;
-
 
     return (
         <div className="modal">
@@ -86,37 +58,25 @@ const RepeatModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord }) =
 
                 <div className="shift-modal__information">
                     <p>Вы повторяете консультацию у специалиста: </p>
-                    <p>Анна Петрова</p>
+                    <p>{consultationData.DoctorSurname} {consultationData.DoctorName} {consultationData?.DoctorPatronymic}</p>
                 </div>
 
 
-                <div className="shift-modal__client">Клиент: Иванова Мария Петровна, 8 888 888 88 88</div>
-
-                <div className="consultation-modal__date-time">
-                    <div className="consultation-modal__calendar">
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={(date: Date | null) => {
-                                setSelectedDate(date || new Date());
-                            }}
-                            inline
-                            locale={ru}
-                            dateFormat="dd.MM.yyyy"
-                            minDate={new Date()}
-                            todayButton="Сегодня"
-                            popperClassName="large-datepicker"
-                            calendarClassName="large-datepicker"
-                        />
-                    </div>
-
-                    <div className="consultation-modal__time">
-                        <TimeSlots times={times} onSelect={setSelectedTime} />
-                    </div>
+                <div className="shift-modal__client">
+                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic}, {consultationData.PatientPhone}
                 </div>
+
+                <RecordForm
+                    onTimeDateSelect={onTimeDateSelect}
+                    specialist={{
+                        value: consultationData.DoctorId,
+                        label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
+                    }}
+                />
 
                 <div className="shift-modal__result">
                     <p className="shift-modal__selected-time">
-                        Вы выбрали: {selectedTime || "не выбрано"}
+                        Вы выбрали: {selectedDate && selectedTime ? <>{selectedDate} {selectedTime} </> : "не выбрано"}
                     </p>
                 </div>
 

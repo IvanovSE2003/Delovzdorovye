@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Select, { type MultiValue } from "react-select";
 import RecordForm from "./RecordForm";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
@@ -7,19 +7,22 @@ import './RecordModal.scss'
 interface AdminConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userId: string;
   onRecord: (data: any) => void;
-  userId?: string;
 }
 
-const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClose, onRecord, userId = "" }) => {
-  const [problems, setProblems] = useState<OptionsResponse[]>([]);
-  const [specialists, setSpecialists] = useState<OptionsResponse[]>([]);
-  const [selectedProblems, setselectedProblems] = useState<MultiValue<OptionsResponse>>([]);
-  const [selectedSpecialist, setSelectedSpecialist] = useState<OptionsResponse | null>(null);
+const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClose, onRecord, userId=undefined }) => {
+  const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
+  const [specialists, setSpecialists] = useState<OptionsResponse[]>([] as OptionsResponse[]);
+  const [doctorId, setDoctorId] = useState<number | undefined>(undefined);
+  const [error, setError] = useState<string>("");
   const store = new ConsultationsStore();
 
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedProblems, setselectedProblems] = useState<MultiValue<OptionsResponse>>([]);
+  const [selectedSpecialist, setSelectedSpecialist] = useState<OptionsResponse | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [otherProblem, setOtherProblem] = useState<string>("");
 
   // Получение всех проблем
   const loadProblems = async () => {
@@ -33,7 +36,7 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
 
     if (selected.length === 0) {
       setSpecialists([]);
-      setSelectedSpecialist(null);
+      setSelectedSpecialist(undefined);
       return;
     }
 
@@ -60,10 +63,37 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
     }
   };
 
-  const selectTimeDate = (time: string, date: string) => {
+  // Получение даты и времени от RecordForm
+  const selectTimeDate = (time: string | null, date: string | null, doctorId?: number) => {
     setSelectedDate(date);
     setSelectedTime(time);
+    setDoctorId(doctorId);
   }
+
+  // Записать человека на консультацию
+  const handleSubmit = () => {
+    if (!selectedDate || !selectedTime || !doctorId) {
+      setError("Дата или время не выбраны");
+      return;
+    }
+
+    onRecord({
+      time: selectedTime,
+      date: selectedDate,
+      otherProblemText: otherProblem,
+      problems: selectedProblems.map(p => p.value),
+      doctorId: doctorId,
+    });
+
+    setselectedProblems([]);
+    setSelectedSpecialist(undefined);
+    setSelectedTime(null);
+    setSelectedDate(null);
+    setDoctorId(undefined);
+    setOtherProblem("");
+    setError("");
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -103,12 +133,33 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
           }
         />
 
-        {/* <RecordForm
+        <RecordForm
           specialist={selectedSpecialist}
-          problems={selectedProblems.map(value => value.value)}
-          selectTimeDate={selectTimeDate}
-          userId={userId}
-        /> */}
+          onTimeDateSelect={selectTimeDate}
+          userId={userId||""}
+        />
+
+        <div className="consultation-modal__other-problem">
+          <p>Подробно о проблеме: </p>
+          <textarea
+            name="other-problem"
+            id="other-problem"
+            className="consultation-modal__textarea"
+            placeholder="Если хотите, опишите вашу проблему подробнее..."
+            value={otherProblem}
+            onChange={(e) => setOtherProblem(e.target.value)}
+          />
+        </div>
+
+        {error && (<div className="consultation-modal__error">{error}</div>)}
+
+        <button
+          className="consultation-modal__submit"
+          onClick={handleSubmit}
+          disabled={!selectedDate || !selectedTime}
+        >
+          Записать
+        </button>
       </div>
     </div>
   );

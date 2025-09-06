@@ -8,9 +8,10 @@ import axios from "axios";
 import type { AuthResponse, LoginResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
-import BatchService from "../services/BatchService";
-import DoctorService, { type DoctorResponse } from "../services/DoctorService";
+import BatchService from "../services/AdminService";
+import DoctorService from "../services/DoctorService";
 import { menuConfig } from "../routes/index";
+import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
 
 interface ImenuItems {
     path: string;
@@ -85,7 +86,7 @@ export default class Store {
     }
 
     // Второй этап входа
-    async completeTwoFactor(tempToken: string | null, code: string): Promise<{success: boolean}> {
+    async completeTwoFactor(tempToken: string | null, code: string): Promise<{ success: boolean }> {
         return this.withLoading(async () => {
             try {
                 const response = await AuthService.completeTwoFactor(tempToken, code);
@@ -94,13 +95,13 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
-                return {success: true};
+                return { success: true };
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data?.message || "Ошибка при входе!";
                 this.setError(errorMessage);
 
-                return {success: false};
+                return { success: false };
             }
         });
     }
@@ -210,78 +211,6 @@ export default class Store {
         }
     }
 
-
-
-    // Отправка сообщения на почту о сбросе пин-кода
-    async sendEmailResetPinCode(creditial: string): Promise<TypeResponse> {
-        try {
-            this.setError("");
-            const response = await AuthService.sendEmailResetPinCode(creditial);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при отправке сообщения для сброса пин-кода!");
-            return { success: false, message: this.error };
-        }
-    }
-
-    // Сборос пин-кода
-    async resetPinCode(newPin: string, token: string): Promise<TypeResponse> {
-        try {
-            this.setError("");
-            const response = await AuthService.resetPinCode(newPin, token);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при сбросе пароля!");
-            return { success: false, message: this.error };
-        }
-    }
-
-
-
-    // Отравка кода на телефон\почту
-    async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<{ message: string }> {
-        try {
-            this.setError("");
-            const response = await AuthService.twoFactorSend(method, creditial);
-            if (response.data.message) this.setError(response.data.message)
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при отправке кода!");
-            return { message: this.error }
-        }
-    }
-
-    // Проверка кода почты для входа 
-    async checkVarifyCode(code: string, creditial: string): Promise<TypeResponse & { userId: number | null }> {
-        try {
-            this.setError("");
-            const response = await AuthService.checkVarifyCode(code, creditial);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при проверке почтового кода!");
-            return { success: false, message: this.error, userId: null };
-        }
-    }
-
-    // Отправить сообщение об активации почты
-    async sendActivate(email: string): Promise<TypeResponse> {
-        try {
-            const response = await UserService.sendActivate(email);
-            this.user.isActivated = response.data.success;
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при отправки сообщения на почту!");
-            return { success: false, message: this.error }
-        }
-    }
-
-
-
     // Получить токен для активации телеграмм-бота
     async getTokenTg(id: number): Promise<TypeResponse> {
         try {
@@ -315,43 +244,6 @@ export default class Store {
             this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
         }
     }
-
-
-    // Получить все изменения у специалиста
-    async getBatchAll(limit: number, page: number) {
-        try {
-            const response = await BatchService.getBatchAll(limit, page);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
-        }
-    }
-
-    // Принять изменения
-    async confirmChange(id: number): Promise<TypeResponse> {
-        try {
-            const response = await BatchService.confirmChange(id);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при подтверждении изменений!");
-            return { success: false, message: this.error };
-        }
-    }
-
-    // Отклонить изменения
-    async rejectChange(id: number, message: string): Promise<TypeResponse> {
-        try {
-            const response = await BatchService.rejectChange(id, message);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
-            return { success: false, message: this.error };
-        }
-    }
-
 
     // Получить всех пользователей
     async getUsersAll(): Promise<User[]> {
@@ -402,15 +294,54 @@ export default class Store {
     }
 
 
+
+
+
     // Получить дополнительную информацию о докторе
-    async getDoctorInfo(id: number): Promise<DoctorResponse> {
+    async getDoctorInfo(id: number): Promise<IDoctor> {
         try {
             const response = await DoctorService.getDoctorInfo(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получении информации о докторе");
-            return {} as DoctorResponse;
+            return {} as IDoctor;
         }
     }
+
+    // Получить все изменения у специалиста
+    async getBatchAll(limit: number, page: number) {
+        try {
+            const response = await BatchService.getBatchAll(limit, page);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при удалении фото!");
+        }
+    }
+
+    // Принять изменения
+    async confirmChange(id: number): Promise<TypeResponse> {
+        try {
+            const response = await BatchService.confirmChange(id);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при подтверждении изменений!");
+            return { success: false, message: this.error };
+        }
+    }
+
+    // Отклонить изменения
+    async rejectChange(id: number, message: string): Promise<TypeResponse> {
+        try {
+            const response = await BatchService.rejectChange(id, message);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
+            return { success: false, message: this.error };
+        }
+    }
+
 }

@@ -1,10 +1,9 @@
 import { useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import "./EditUsefulInformations.scss";
-import BatchService from "../../../../services/BatchService";
 import ConsultationsStore from "../../../../store/consultations-store";
 
-interface InfoBlock {
+export interface InfoBlock {
   id: number;
   header?: string;
   text: string;

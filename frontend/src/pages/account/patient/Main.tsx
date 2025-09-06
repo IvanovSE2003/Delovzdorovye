@@ -4,15 +4,21 @@ import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecor
 import { Context } from "../../../main";
 import AccountLayout from "../AccountLayout";
 import { useContext, useState } from "react";
+import ConsultationService from "../../../services/ConsultationService";
 
 const Main: React.FC = () => {
     const { store } = useContext(Context);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-    const handleRecordConsultation = (data: ConsultationData) => {
-        console.log("Данные для записи:", data);
-        // Здесь логика отправки данных на сервер
-        setIsModalOpen(false);
+    const handleRecordConsultation = async (data: ConsultationData) => {
+        const RecordData = {
+            ...data,
+            userId: store.user.id,
+        };
+
+        console.log("Данные для записи на консультацию:", RecordData);
+        const response = await ConsultationService.createAppointment(RecordData);
+        console.log(response.data);
     };
 
     return (
@@ -21,7 +27,6 @@ const Main: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onRecord={handleRecordConsultation}
-                userId={store.user.id}
             />
 
             <div className="main">

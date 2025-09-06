@@ -11,13 +11,16 @@ import ConsultationsStore from "../../../../store/consultations-store";
 interface ConsultationFormProps {
   specialist?: OptionsResponse;
   slotsOverride?: Slot[];
-  onTimeDateSelect: (time: string | null, date: string | null) => void;
+  onTimeDateSelect: (time: string | null, date: string | null, doctorId?: number) => void;
+  userId: string;
 }
+
 
 const RecordForm: React.FC<ConsultationFormProps> = ({
   specialist = {} as OptionsResponse,
-  slotsOverride = [] as Slot[],
+  slotsOverride = undefined,
   onTimeDateSelect,
+  userId=undefined
 }) => {
   const store = new ConsultationsStore();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -27,15 +30,19 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
 
   // Загружаем расписание (только если не переданы slotsOverride)
   useEffect(() => {
-    if (slotsOverride.length > 0) {
+    if (slotsOverride !== undefined) {
       setSlots(slotsOverride);
+      if (slotsOverride.length == 0) {
+        setSelectedDate(null);
+        setSelectedTime(null);
+      }
       return;
     }
 
     const loadSpecialistSchedule = async () => {
       if (!specialist?.value) return;
       try {
-        const schedule = await store.getSchedule(specialist.value);
+        const schedule = await store.getSchedule(specialist.value, Number(userId));
         setSlots(schedule || []);
       } catch (error) {
         console.error("Ошибка загрузки расписания:", error);
@@ -64,11 +71,25 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
       new Date(slot.date).toDateString() === selectedDate.toDateString()
   );
 
-  // Передаём выбранные время и дату наверх
+  // Передаём выбранные время, дату и врача наверх
   useEffect(() => {
-    const dateStr = selectedDate ? selectedDate.toISOString().split("T")[0] : null;
-    onTimeDateSelect(selectedTime, dateStr);
-  }, [selectedDate, selectedTime]);
+    if (!selectedDate || !selectedTime) {
+      onTimeDateSelect(null, null, undefined);
+      return;
+    }
+
+    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+
+    // Ищем слот по дате и времени
+    const matchedSlot = slots.find(
+      slot =>
+        new Date(slot.date).toDateString() === selectedDate.toDateString() &&
+        slot.time === selectedTime
+    );
+
+    onTimeDateSelect(selectedTime, dateStr, matchedSlot?.doctorId);
+  }, [selectedDate, selectedTime, slots]);
+
 
   return (
     <div>
@@ -90,14 +111,11 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
           />
         </div>
 
-        <div className="consultation-modal__time">
-          <TimeSlots
-            slots={slotsForSelectedDate}
-            selectedTime={selectedTime}
-            onTimeSelect={setSelectedTime}
-          />
-          <p>Вы выбрали: {selectedTime || "не выбрано"}</p>
-        </div>
+        <TimeSlots
+          slots={slotsForSelectedDate}
+          selectedTime={selectedTime}
+          onTimeSelect={setSelectedTime}
+        />
       </div>
 
       {error && <div className="consultation-modal__error">{error}</div>}

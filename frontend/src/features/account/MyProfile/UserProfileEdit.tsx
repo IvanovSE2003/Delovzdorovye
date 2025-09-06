@@ -9,11 +9,12 @@ interface UserProfileEditProps {
     onRemovePhoto: (changePhoto: (img: string) => void) => void;
     onSave: (ProfileData: IUserDataProfile) => void;
     onCancel: () => void;
+    mode?: "ADMIN" | "PATIENT" | "DOCTOR";
 }
 
 type Gender = 'Мужчина' | 'Женщина';
 
-const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPhoto, onRemovePhoto, onSave, onCancel }) => {
+const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPhoto, onRemovePhoto, onSave, onCancel, mode = "PATIENT" }) => {
     const [profileEditData, SetProfileEditData] = useState<IUserDataProfile>(profileData);
     const [error, setError] = useState<string | null>(null);
 
@@ -114,26 +115,28 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPho
 
     return (
         <>
-            <div className="user-profile__avatar-content">
-                <div className="user-profile__avatar">
-                    <img src={`${URL}/${profileData.img}`} alt="avatar-delovzdorovye" />
-                </div>
-                {!profileEditData.isAnonymous && (
-                    <div className="user-profile__links">
-                        <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
-                            <p>Добавить фото</p>
-                            <input
-                                id="avatar-upload"
-                                type="file"
-                                accept=".png,.jpeg,.jpg"
-                                style={{ display: 'none' }}
-                                onChange={(e) => onAddPhoto(e, changePhoto)}
-                            />
-                        </label>
-                        <p onClick={() => onRemovePhoto(changePhoto)}>Удалить фото</p>
+            {mode !== "ADMIN" && (
+                <div className="user-profile__avatar-content">
+                    <div className="user-profile__avatar">
+                        <img src={`${URL}/${profileData.img}`} alt="avatar-delovzdorovye" />
                     </div>
-                )}
-            </div>
+                    {!profileEditData.isAnonymous && (
+                        <div className="user-profile__links">
+                            <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
+                                <p>Добавить фото</p>
+                                <input
+                                    id="avatar-upload"
+                                    type="file"
+                                    accept=".png,.jpeg,.jpg"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => onAddPhoto(e, changePhoto)}
+                                />
+                            </label>
+                            <p onClick={() => onRemovePhoto(changePhoto)}>Удалить фото</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="edit-form">
                 {profileEditData.role === "PATIENT" && (

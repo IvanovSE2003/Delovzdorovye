@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react';
 import './CancelModal.scss'
+import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
 
-interface CancelModalProps {
+export interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onRecord: (reasons: string) => void;
+    consultationData: Consultation;
 }
 
-const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord }) => {
+interface CancelModalProps extends ModalProps {
+    onRecord: (reasons: string, id: number) => void;
+}
+
+const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
     const [reasons, setReasons] = useState<string>("");
     const [error, setError] = useState<string>("");
 
     const handleSubmit = () => {
-        console.log(reasons)
         if (!reasons) {
             setError("Пожалуйста, заполните причину отказа!");
             return;
         }
 
-        onRecord(reasons);
+        onRecord(reasons, consultationData.id);
     };
 
     useEffect(() => {
@@ -42,17 +46,18 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord }) 
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы отменяете консультацию: 7 августа, 20:30</p>
+                    <p>Вы отменяете консультацию: {consultationData.date}, {consultationData.durationTime}</p>
                 </div>
 
                 <div className="shift-modal__client">
-                    Клиент: Иванова Мария Петрова, 8 888 888 88 88
+                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData?.PatientPatronymic}, 8 888 888 88 88
                 </div>
 
                 <div className="cancel-modal__reason">
                     <textarea
                         id="reasons"
-                        placeholder='Причина отказа'
+                        placeholder='Причина отказа (не менее 10 символов)'
+                        value={reasons}
                         onChange={(e) => setReasons(e.target.value)}
                     />
                 </div>
@@ -67,6 +72,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord }) 
 
                 <button
                     className='shift-modal__submit'
+                    disabled={reasons.length <= 10}
                     onClick={handleSubmit}
                 >
                     Отменить

@@ -1,6 +1,7 @@
 import type { IUserDataProfile } from "../../../models/Auth";
 import { GetFormatDate, GetFormatPhone } from "../../../hooks/UserProfileHooks";
 import { URL } from "../../../http";
+import { getTimeZoneLabel } from "../../../models/TimeZones";
 
 
 interface UserProfileProps {
@@ -9,12 +10,13 @@ interface UserProfileProps {
     isButton?: boolean;
     onEdit?: () => void;
     onLogout?: () => void;
+    mode?: "ADMIN" | "PATIENT" | "DOCTOR";
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true, isButton = true, onEdit, onLogout }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true, isButton = true, onEdit, onLogout, mode="PATIENT"}) => {
     return (
         <>
-            {isAvatar && (
+            {isAvatar && mode !== "ADMIN" && (
                 <div className="user-profile__avatar-content">
                     <div className="user-profile__avatar">
                         <img src={`${URL}/${profileData.img}`} alt="avatar-delovzdorovye" />
@@ -39,6 +41,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true,
                 )}
                 {profileData.phone && (<span><span className="label">Номер телефона:</span> {GetFormatPhone(profileData.phone)}</span>)}
                 {profileData.email && (<span><span className="label">E-mail:</span> {profileData.email}</span>)}
+                {profileData.timeZone && (<span><span className="label">Часовой пояс: </span> {getTimeZoneLabel(profileData.timeZone)}</span>)}
 
                 {isButton && (
                     <div className="user-profile__buttons">

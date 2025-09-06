@@ -1,18 +1,19 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
+import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
 
-export interface DoctorResponse{
-    id: number,
-    specialization: string,
-    experienceYears: number,
-    diploma: string,
-    license: string,
-    isActivated: boolean, 
-    userId: number
+export type SpecializationResponse = {
+    id: number;
+    name: string;
 }
 
+
 export default class DoctorService {
-    static async getDoctorInfo(id: number): Promise<AxiosResponse<DoctorResponse>> {
-        return $api.get<DoctorResponse>(`/doctor/${id}`);
+    static async getDoctorInfo(id: number): Promise<AxiosResponse<IDoctor>> {
+        return $api.get<IDoctor>(`/doctor/${id}`);
+    }
+
+    static async getSpecializations(): Promise<AxiosResponse<SpecializationResponse[]>> {
+        return $api.get<SpecializationResponse[]>('/specialization/all');
     }
 }

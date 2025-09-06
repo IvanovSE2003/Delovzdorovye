@@ -401,8 +401,9 @@
   &__title {
     font-size: 1.8rem;
     margin-bottom: 2rem;
-    font-weight: bolder;
+    font-weight: bold;
     color: black;
+    text-align: center;
   }
 
   &__consultations-now {
@@ -823,6 +824,49 @@
       border-bottom: 1px solid #e0e0e0;
       white-space: nowrap;
     }
+  }
+}
+
+.userfulinfo {
+  &__title {
+    font-size: 2rem;
+    font-weight: bolder;
+    color: black;
+  }
+
+  &__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 0 2rem;
+  }
+
+  &__block {
+    background-color: #F2E8FF;
+    padding: 2rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 0 10px $shadow-color;
+
+    &__title {
+      font-size: 1.8rem;
+      color: #050058;
+    }
+
+    &__text {
+      color: $gray-color;
+      font-size: 1.6rem;
+    }
+  }
+
+  &__none {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bolder;
+    color: black;
+    background-color: #F2E8FF;
+    padding: 2rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 0 10px $shadow-color;
   }
 }
 

@@ -1,7 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
+import type { ITimeZones } from "./TimeZones";
 
 export type Gender = "Мужчина" | "Женщина" | "";
-export type Role = "PATIENT" | "DOCTOR" | "ADMIN" | "";
+export type Role = "PATIENT" | "DOCTOR" | "ADMIN";
 export interface IUser {
     id: number;
     name: string;
@@ -36,6 +37,7 @@ export interface IUserDataProfile {
     email: string;
     isAnonymous: boolean;
     age?: number;
+    timeZone?: ITimeZones;
 }
 
 export interface IAdminDataProfile {

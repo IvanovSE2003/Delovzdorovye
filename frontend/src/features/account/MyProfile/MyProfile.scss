@@ -40,6 +40,10 @@
     color: $text-color;
   }
 
+  &__admin {
+    width: 100%;
+  }
+
   &__error {
     color: $red-color;
     font-size: 1.2rem;
@@ -210,5 +214,15 @@
       color: $red-color;
     }
   }
+}
 
+.error-message {
+  color: $red-color;
+  font-size: 1rem;
+  margin-left: 5px;
+  margin-bottom: 5px;
+}
+
+.input-error {
+  box-shadow: 0 0 3px $red-color !important;
 }

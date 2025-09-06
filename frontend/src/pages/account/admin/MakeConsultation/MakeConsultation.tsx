@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import AccountLayout from "../../AccountLayout";
 import './MakeConsultation.scss';
-import BatchService from '../../../../services/BatchService';
+import BatchService from '../../../../services/AdminService';
 import SearchInput from '../../../../components/UI/Search/Search';
 import { Link } from 'react-router';
 

@@ -18,6 +18,11 @@
             font-weight: bold;
             font-size: 1.3rem;
             resize: vertical;
+
+            &:focus {
+                outline: none;
+                border: 1px solid $button-color-hover;
+            }
         }
     }
 }

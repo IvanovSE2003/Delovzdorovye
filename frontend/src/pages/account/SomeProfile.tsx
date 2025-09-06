@@ -12,6 +12,7 @@ import UserProfile from "../../features/account/MyProfile/UserProfile";
 import '../../features/account/MyProfile/MyProfile.scss';
 import type { ConsultationData } from "../../components/UI/Modals/EditModal/EditModal";
 import AdminRecordModal from "../../components/UI/Modals/RecordModal/AdminRecordModal";
+import ConsultationService from "../../services/ConsultationService";
 
 const Profile = () => {
     const { id } = useParams();
@@ -19,18 +20,28 @@ const Profile = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState<IUserDataProfile | null>(null)
     const [modalRecord, setModalRecord] = useState<boolean>(false);
+    const [refreshUpcoming, setRefreshUpcoming] = useState(0);
 
+    // Получение данных профиля пользователя
     const getDataProfile = async () => {
         if (!store.user?.id) return;
         const { data } = await $api.post(`/profile/${id}`, { linkerId: store.user.id });
         setProfile(data);
     }
 
-    const handleRecordConsultation = (data: ConsultationData) => {
-        console.log("Данные для записи:", data);
-        setModalRecord(false);
+    // Запись человека на консультацию
+    const handleRecordConsultation = async (data: ConsultationData) => {
+        const RecordData = {
+            ...data,
+            userId: Number(id),
+        };
+
+        console.log("Данные для записи на консультацию:", RecordData);
+        await ConsultationService.createAppointment(RecordData);
+        setRefreshUpcoming(prev => prev + 1);
     };
 
+    // Получение данных при открытии страницы
     useEffect(() => {
         if (store.user?.id) {
             getDataProfile();
@@ -42,10 +53,10 @@ const Profile = () => {
     return (
         <AccountLayout>
             <AdminRecordModal
+                userId={id||""}
                 isOpen={modalRecord}
                 onClose={() => setModalRecord(false)}
                 onRecord={handleRecordConsultation}
-                userId={id}
             />
 
             <div className="user-profile">
@@ -68,6 +79,7 @@ const Profile = () => {
                         <UserProfile
                             profileData={profile}
                             isButton={false}
+                            mode={profile.role}
                         />
                     </div>
                     {store.user.role === "ADMIN" && (
@@ -84,8 +96,17 @@ const Profile = () => {
 
             {store.user.role === "ADMIN" && profile.role === "PATIENT" && (
                 <>
-                    <UpcomingConsultations id={id}/>
-                    <ArchiveConsultations />
+                    <div className="user-consultations">
+                        <h2 className="consultations__title">Предстоящие консультации</h2>
+                        <UpcomingConsultations
+                            id={id}
+                            refreshTrigger={refreshUpcoming}
+                        />
+                    </div>
+                    <div className="user-consultations">
+                        <h2 className="consultations__title">Архив консультации</h2>
+                        <ArchiveConsultations />
+                    </div>
                 </>
             )}
         </AccountLayout>

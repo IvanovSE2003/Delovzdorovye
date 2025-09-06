@@ -12,12 +12,13 @@ interface ConsultationModalProps {
 }
 
 export interface ConsultationData {
-    id: number;
+    id?: number;
+    userId?: number;
     problems?: number[];
     otherProblemText?: string;
     date: Date | string | undefined;
     time: string | null;
-    doctorId?: number;
+    doctorId: number;
 }
 
 const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {

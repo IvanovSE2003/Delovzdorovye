@@ -112,25 +112,37 @@
     background: $light-color;
     cursor: pointer;
 
-    &:hover {   
+    &:hover {
       .file-input__button {
         transform: scale(1.03);
       }
-    }
-
-    &:focus-within {
-      outline: 2px solid #6c5ce7;
-      outline-offset: 2px;
     }
   }
 
   &__button {
     padding: 20px;
-    background: linear-gradient(148.98deg, $primary-color 8.51%, $secondary-color 120.39%);
+    background: $button-gradient;
     color: white;
     font-weight: 500;
     transition: background 0.3s ease;
     white-space: nowrap;
+  }
+
+  &__clear {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: $gray-color;
+    cursor: pointer;
+    width: 40px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #ff4444;
+    }
   }
 
   &__text {
@@ -150,7 +162,7 @@
 
   &--disabled {
     opacity: 0.6;
-    
+
     .file-input__container {
       cursor: not-allowed;
     }

@@ -1,5 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import ConsultationService, { type SpecialistResponse } from "../services/ConsultationService";
+import { AxiosError } from "axios";
+import type { TypeResponse } from "../models/response/DefaultResponse";
 
 export interface OptionsResponse {
     value: number;
@@ -23,7 +25,7 @@ export interface AppointmentRequest {
     time: string;
     problems: number[];
     date: string; // ISO строка
-    // otherProblem?: string;
+    otherProblem?: string;
     // doctorId: number;
 }
 
@@ -64,18 +66,19 @@ export default class ConsultationsStore {
             const response = await ConsultationService.getSpecialists(problems);
             return response.data;
         } catch (e) {
-            console.error("Ошибка при поиске специалистов: ", e);
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при поиске специалистов: ", error.response?.data.message);
             return [];
         }
     }
 
     // Получаем расписание врача
-    async getSchedule(id: number): Promise<Slot[]> {
+    async getSchedule(doctorId: number, linkerId: number): Promise<Slot[]> {
         try {
-            const response = await ConsultationService.getSchedule(id);
+            const response = await ConsultationService.getSchedule(doctorId, linkerId);
             return response.data;
         } catch (e) {
-            console.error(`Ошибка при загрузке рассписания врача ${id}:`, e);
+            console.error(`Ошибка при загрузке рассписания врача ${doctorId}:`, e);
             return [];
         }
     }
@@ -93,15 +96,15 @@ export default class ConsultationsStore {
         return slots;
     }
 
-    async createAppointment(data: AppointmentRequest): Promise<AppointmentResponse> {
-        try {
-            const response = await ConsultationService.createAppointment(data);
-            return response.data;
-        } catch (e) {
-            console.error(`Ошибка при создании консультации:`, e);
-            return {} as AppointmentResponse;
-        }
-    }
+    // async createAppointment(data: ): Promise<AppointmentResponse> {
+    //     try {
+    //         const response = await ConsultationService.createAppointment(data);
+    //         return response.data;
+    //     } catch (e) {
+    //         console.error(`Ошибка при создании консультации:`, e);
+    //         return {} as AppointmentResponse;
+    //     }
+    // }
 
     async deleteProblem(id: number): Promise<void> {
         try {
@@ -111,7 +114,7 @@ export default class ConsultationsStore {
         }
     }
 
-    async updateProblem(id: number, newData: string ) {
+    async updateProblem(id: number, newData: string) {
         try {
             await ConsultationService.updateProblem(id, newData);
         } catch (e) {
@@ -122,7 +125,7 @@ export default class ConsultationsStore {
     async createProblem(newData: string) {
         try {
             await ConsultationService.createProblem(newData);
-        } catch(e) {
+        } catch (e) {
             console.error("Ошибка при создании проблемы: ", e);
         }
     }

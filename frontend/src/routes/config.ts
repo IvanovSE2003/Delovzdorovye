@@ -16,7 +16,7 @@ import MainPat from "../pages/account/patient/Main";
 import ConsultationsPat from '../pages/account/patient/Consultations'
 import UsefulInfo from "../pages/account/patient/UsefulInfo";
 import Recomendations from "../pages/account/patient/Recomendations";
-import SpecialistsPat from "../pages/account/patient/Specialists";
+import SpecialistsPat from "../pages/account/patient/Specialists/Specialists";
 
 
 import Users from "../pages/account/admin/Users";

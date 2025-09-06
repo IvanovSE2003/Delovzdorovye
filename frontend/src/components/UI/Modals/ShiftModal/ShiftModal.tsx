@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { ConsultationData } from '../EditModal/EditModal';
 import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
+import type { ModalProps } from '../CancelModal/CancelModal';
 
 import RecordForm from '../RecordModal/RecordForm';
 import './ShiftModal.scss'
 
-interface ShiftModalProps {
-    isOpen: boolean;
-    onClose: () => void;
+interface ShiftModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
-    consultationData: Consultation;
 }
 
 const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, consultationData = {} as Consultation, }) => {
@@ -27,7 +25,9 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
         onRecord({
             id: consultationData.id,
             date: selectedDate,
-            time: selectedTime
+            time: selectedTime,
+            problems: [],
+            doctorId: 0
         });
 
         // Сброс формы
@@ -72,15 +72,14 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
 
                 <div className="shift-modal__client">
                     <p className="consultation-modal__client">
-                        Клиент: {consultationData.PatientName} {consultationData.PatientSurname} {consultationData?.PatientPatronymic}
+                        Клиент: {consultationData.PatientName} {consultationData.PatientSurname} {consultationData?.PatientPatronymic}, 8 888 888 88 88
                     </p>
                 </div>
 
                 <RecordForm
                     onTimeDateSelect={onTimeDateSelect}
                     specialist={{
-                        // value: consultationData.DoctorId,
-                        value: 2,
+                        value: consultationData.DoctorId,
                         label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
                     }}
                 />
@@ -101,6 +100,8 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                 <button
                     className="shift-modal__submit"
                     onClick={handleSubmit}
+                    disabled={!selectedDate || !selectedTime}
+                    title={!selectedDate || !selectedTime ? "Выберите дату и время" : "Перенести"}
                 >
                     Перенести
                 </button>

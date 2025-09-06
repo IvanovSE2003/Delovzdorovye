@@ -1,0 +1,32 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+.consultations-doctor {
+    padding: 1rem 2rem;
+    border-radius: 20px;
+    margin: 20px 0;
+    background-color: $nav-color;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8rem;
+
+    &__title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bolder;
+        color: black;
+    }
+
+    &__upcoming,
+    &__archive {
+        width: 70%;
+        margin: 10px auto;
+    }
+
+    &__none {
+        font-size: 1.8rem;
+        font-weight: bolder;
+        color: black;
+        text-align: center;
+    }
+}

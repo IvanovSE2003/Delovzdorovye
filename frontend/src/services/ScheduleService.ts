@@ -6,8 +6,8 @@ import type { IScheduleCreate, ISlotCreate } from "../pages/account/doctor/TimeS
 
 
 export default class ScheduleService {
-    static getSchedules(id: number) {
-        return $api.get<ISchedules[]>(`/schedule/${id}`);
+    static getSchedules(id: number, linkerId: number) {
+        return $api.get<ISchedules[]>(`/schedule/doctor?userId=${id}&userIdLinker=${linkerId}`);
     }
 
     static addDay(data: IScheduleCreate): Promise<void> {
@@ -24,5 +24,13 @@ export default class ScheduleService {
 
     static deleteSlot(id: number): Promise<AxiosResponse<TypeResponse>> {
         return $api.delete<TypeResponse>(`/schedule/deleteTimeSlot/${id}`);
+    }
+
+    static getScheduleWeek(start: string, end: string) {
+        return $api.get(`/schedule/getBetweenSchedule?startDate=${start}&endDate=${end}`);
+    }
+    
+    static setschuduleDay(time: string, scheduleId: number, repetitions: boolean, userId: number): Promise<AxiosResponse<TypeResponse>>{
+        return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, {time, scheduleId, repetitions, userId});
     }
 }

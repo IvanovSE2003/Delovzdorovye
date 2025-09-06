@@ -9,16 +9,18 @@ interface UserConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRecord: (data: ConsultationData) => void;
-  userId: number;
 }
 
-const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord, userId }) => {
+const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [error, setError] = useState<string>("");
 
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [otherProblem, setOtherProblem] = useState<string>("");
+  const [doctorId, setDoctorId] = useState<number | undefined>(undefined);
 
   const store = new ConsultationsStore();
 
@@ -36,20 +38,23 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     setSlots(fetchedSlots);
   };
 
+  // Записаться на консультацию
   const handleSubmit = () => {
-    if (!selectedDate || !selectedTime) {
-      console.log("Дата или время не выбраны");
+    if (!selectedDate || !selectedTime || !doctorId) {
+      setError("Дата или время не выбраны");
       return;
     }
 
-    console.log({
-      userId,
+    onRecord({
       time: selectedTime,
       date: selectedDate,
-      problems: selectedProblems.map(p => p.value)
-    })
-  }
+      otherProblemText: otherProblem,
+      problems: selectedProblems.map(p => p.value),
+      doctorId: doctorId,
+    });
 
+    onClose();
+  };
 
   // Затемнение некоторые полей
   const isOptionDisabled = (option: OptionsResponse): boolean => {
@@ -63,11 +68,12 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     }
   };
 
-  const onTimeDateSelect = (time: string, date: string) => {
+  // Получить дату и время от RecordForm
+  const onTimeDateSelect = (time: string | null, date: string | null, doctorId?: number) => {
     setSelectedDate(date);
     setSelectedTime(time);
-    console.log(time, date);
-  }
+    setDoctorId(doctorId);
+  };
 
   if (!isOpen) return null;
 
@@ -91,10 +97,25 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
         />
 
         <RecordForm
-          specialist={null}
+          specialist={undefined}
           slotsOverride={slots}
           onTimeDateSelect={onTimeDateSelect}
+          userId={""}
         />
+
+        <div className="consultation-modal__other-problem">
+          <p>Подробно о проблеме: </p>
+          <textarea
+            name="other-problem"
+            id="other-problem"
+            className="consultation-modal__textarea"
+            placeholder="Если хотите, опишите вашу проблему подробнее..."
+            value={otherProblem}
+            onChange={(e) => setOtherProblem(e.target.value)}
+          />
+        </div>
+
+        {error && (<div className="consultation-modal__error">{error}</div>)}
 
         <button
           className="consultation-modal__submit"

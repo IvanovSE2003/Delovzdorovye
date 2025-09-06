@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main.js";
 import { observer } from "mobx-react-lite";
 
@@ -9,9 +9,14 @@ import UserProfile from "./UserProfile.js";
 import UserProfileEdit from "./UserProfileEdit.js";
 import type { IUserDataProfile } from "../../../models/Auth.js";
 
-const MyProfile: React.FC = () => {
+interface MyProfileProps {
+    mode?: "ADMIN" | "DOCTOR" | "PATIENT";
+}
+
+const MyProfile: React.FC<MyProfileProps> = ({ mode = "PATIENT" }) => {
     const { store } = useContext(Context);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [error, setError] = useState<string>("");
 
     const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>, changePhoto: (img: string) => void) => {
         if (e.target.files && e.target.files[0]) {
@@ -40,21 +45,27 @@ const MyProfile: React.FC = () => {
     };
 
     const handleSave = async (ProfileData: IUserDataProfile) => {
-        console.log(ProfileData)
+        setError("");
         const data = await store.updateUserData(ProfileData, store.user.id);
         if (data.success) setIsEditing(false);
+        else setError(data.message);
     };
 
     const Logout = async () => {
         await store.logout();
     };
 
+    useEffect(() => {
+        setError("");
+    }, [isEditing])
+
     if (store.loading) return <Loader />
 
     return (
         <div className="user-profile">
+            {error && (<div className="user-profile__error">{error}</div>)}
             <div className="user-profile__box">
-                <div className="user-profile__content">
+                <div className={mode !== "ADMIN" ? "user-profile__content" : "user-profile__admin"}>
                     {isEditing ? (
                         <UserProfileEdit
                             profileData={store.user}
@@ -62,12 +73,14 @@ const MyProfile: React.FC = () => {
                             onRemovePhoto={handleRemovePhoto}
                             onSave={handleSave}
                             onCancel={() => setIsEditing(false)}
+                            mode={mode}
                         />
                     ) : (
                         <UserProfile
                             profileData={store.user}
                             onEdit={() => setIsEditing(true)}
                             onLogout={Logout}
+                            mode={mode}
                         />
                     )}
                 </div>

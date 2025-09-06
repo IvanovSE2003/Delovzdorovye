@@ -1,29 +1,47 @@
+import { useEffect, useState } from "react";
 import AccountLayout from "../AccountLayout";
+import type { InfoBlock } from "../admin/EditUsefulInformations/EditUsefulInformations";
+import type { AxiosError } from "axios";
+import type { TypeResponse } from "../../../models/response/DefaultResponse";
+import AdminService from "../../../services/AdminService";
 
-const UsefulInfo = () => {
+const UsefulInfo: React.FC = () => {
+    const [data, setData] = useState<InfoBlock[]>([] as InfoBlock[]);
+
+    // Получение полезной информации для клиента
+    const fetchData = async () => {
+        try {
+            const response = await AdminService.getClientUsefulBlock();
+            setData(response.data)
+            console.log(response.data);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>
+            console.error("Ошибка при получение полезной информации: ", error.response?.data.message);
+        }
+    }
+
+    // Получение данных при загрузки страницы
+    useEffect(() => {
+        fetchData();
+    }, [])
+
+    if (data.length === 0) return (
+        <AccountLayout>
+            <div className="userfulinfo__none">нет данных</div>
+        </AccountLayout>
+    );
+
     return (
         <AccountLayout>
-            <div className="usefulinfo">
-                <div className="usefulinfo-block">
-                    <h2 className="usefulinfo-block__qustion">Как записаться на консультацию?</h2>
-                    <p className="usefulinfo-block__answer">
-                        1. Перейдите на главную страницу. <br/>
-                        2. Нажмите кнопку "Записаться на консультацию". <br/>
-                        3. В открывшейся форме укажите желаемую дату и время специалиста.
-                    </p>
-                </div>
+            <h2 className="userfulinfo__title">Полезная информация</h2>
+            <div className="userfulinfo__blocks">
+                {data && data.map(d => (
+                    <div className="userfulinfo__block">
+                        <h3 className="userfulinfo__block__title">{d.header}</h3>
+                        <p className="userfulinfo__block__text">{d.text}</p>
+                    </div>
+                ))}
             </div>
-
-            <div className="usefulinfo">
-                <div className="usefulinfo-block">
-                    <h2 className="usefulinfo-block__qustion">Сколько стоит и длится консультация?</h2>
-                    <p className="usefulinfo-block__answer">
-                        Каждая консультация длится 1 час и стоит 3000 ₽. Если вам потребуется больше времени, можно будет продлить сеанс (каждые 30 мин - 1500 ₽).
-                    </p>
-                </div>
-            </div>
-
-
         </AccountLayout>
     )
 }

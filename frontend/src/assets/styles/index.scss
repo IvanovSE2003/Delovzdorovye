@@ -10,6 +10,21 @@
     font-style: normal;
 }
 
+body::-webkit-scrollbar {
+    width: 10px;
+    box-sizing: border-box;
+}
+
+body::-webkit-scrollbar-track {
+    background: $light-color;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: $button-color;
+    border-radius: 20px;
+    border: 0.5px solid $primary-color;
+}
+
 img {
     pointer-events: none;
 }

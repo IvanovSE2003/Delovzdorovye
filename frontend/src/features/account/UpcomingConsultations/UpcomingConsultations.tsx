@@ -5,10 +5,8 @@ import CancelModal from '../../../components/UI/Modals/CancelModal/CancelModal';
 import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
 import EditModal, { type ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
 import ConsultationService from '../../../services/ConsultationService';
-
-interface UserConsultationsProps {
-    id: string | undefined;
-}
+import type { TypeResponse } from '../../../models/response/DefaultResponse';
+import type { AxiosError } from 'axios';
 
 export interface Consultation {
     id: number;
@@ -21,6 +19,7 @@ export interface Consultation {
     PatientName: string;
     PatientSurname: string;
     PatientPatronymic?: string;
+    PatientPhone: string;
     Problems: string[];
     score?: number;
     comment?: string;
@@ -29,54 +28,85 @@ export interface Consultation {
     other_problem?: string;
 }
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
+export interface UserConsultationsProps {
+    id?: string;
+    mode?: "ADMIN" | "PATIENT";
+    refreshTrigger?: number;
+}
+
+
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "ADMIN", refreshTrigger = 0 }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
     const [modalEdit, setModalEdit] = useState<boolean>(false);
-    const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[])
 
+    const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[])
     const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
 
+    // Получение данных предстоящих консультаций
     const fetchConsultations = async () => {
-        const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
-        setConsultations(response.data.consultations);
+        try {
+            const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
+            setConsultations(response.data.consultations);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error('Ошибка при получение предстоящих консультации: ', error.response?.data.message)
+        }
     }
 
+    // Получаем данные при заходе на страницу
     useEffect(() => {
         fetchConsultations();
     }, [])
 
+    // Обновление данных по сигналу извне
+    useEffect(() => {
+        fetchConsultations();
+    }, [refreshTrigger]);
+
+    // Завершение переноса консультации
     const handleShiftConsultation = (data: ConsultationData) => {
-        console.log("Данные для переноса:", data);
-        // Здесь логика отправки данных на сервер
+        console.log("Данные для переноса консультации:", data);
+        // const response = await ConsultationService.shiftAppoinment(data);
+        // console.log(response.data);
         setModalShift(false);
     };
 
-    const clickShiftConsultation = (consultation: Consultation) => {
-        setSelectedConsultation(consultation);
-        setModalShift(true);
-    };
-
-    const handleCancelConsultation = (reason: string) => {
-        console.log("Данные для записи:", reason);
-        // Здесь логика отправки данных на сервер
+    // Завершение отмены консультации
+    const handleCancelConsultation = (reason: string, id: number) => {
+        console.log(`Данные для записи ${id}: `, reason);
+        // const response = await ConsultationService.cancelAppoinment(reason, id);
+        // console.log(response.data);
         setModalCancel(false);
     };
 
+    // Завершение повторения консультации
     const handleRepeatConsultation = (data: ConsultationData) => {
         console.log("Данные для записи:", data);
-        // Здесь логика отправки данных на сервер
+        // const response = await ConsultationService.repeatAppoinment(data);
+        // console.log(response.data);
         setModalRepeat(false);
     };
 
-    const handleEditConsultation = (data: ConsultationData) => {
-        console.log("Данные для записи:", data);
+    // Завершение редактирование консультации
+    const handleEditConsultation = (newData: ConsultationData) => {
+        console.log("Новые данные для консультации:", newData);
+        // const response = await ConsultationService.editAppoinment(newData);
+        // console.log(response.data);
         setModalEdit(false);
     };
 
+    // Обработка сликов по кнопкам карточек с консультациями
+    const handleClickButton = (data: Consultation, fun: (bool: boolean) => void) => {
+        setSelectedConsultation(data);
+        fun(true);
+    }
+
+    if (consultations.length === 0) return <div className="archive-consultations__empty">Нет предстоящих консультаций</div>
+
     return (
-        <div className="user-consultations">
+        <>
             <ShiftModal
                 isOpen={modalShift}
                 consultationData={selectedConsultation || {} as Consultation}
@@ -86,24 +116,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
 
             <CancelModal
                 isOpen={modalCancel}
+                consultationData={selectedConsultation || {} as Consultation}
                 onClose={() => setModalCancel(false)}
                 onRecord={handleCancelConsultation}
             />
-
-            <RepeatModal
-                isOpen={modalRepeat}
-                onClose={() => setModalRepeat(false)}
-                onRecord={handleRepeatConsultation}
-            />
-
-            <EditModal
-                // Надо получать еще уже готовые данные для карточки
-                isOpen={modalEdit}
-                onClose={() => setModalEdit(false)}
-                onRecord={handleEditConsultation}
-            />
-
-            <h2 className='user-consultations__title'>Предстоящие консультации</h2>
 
             {consultations.map(consultation => (
                 <div key={consultation.id} className="consultation-card">
@@ -136,33 +152,49 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "" }) => {
                     <div className="consultation-card__actions">
                         <button
                             className="consultation-card__button consultation-card__button--transfer"
-                            onClick={() => clickShiftConsultation(consultation)}
+                            onClick={() => handleClickButton(consultation, setModalShift)}
                         >
                             Перенести
                         </button>
                         <button
                             className="consultation-card__button consultation-card__button--cancel"
-                            onClick={() => setModalCancel(true)}
+                            onClick={() => handleClickButton(consultation, setModalCancel)}
                         >
                             Отменить
                         </button>
-                        <button
-                            className="consultation-card__button consultation-card__button--repeat"
-                            onClick={() => setModalRepeat(true)}
-                        >
-                            Повторить
-                        </button>
-                        <button
-                            // Надо полчить еще уже готовые данные
-                            className="consultation-card__button consultation-card__button--edit"
-                            onClick={() => setModalEdit(true)}
-                        >
-                            Редактировать
-                        </button>
+                        {mode === "ADMIN" && (
+                            <>
+                                <RepeatModal
+                                    isOpen={modalRepeat}
+                                    consultationData={selectedConsultation || {} as Consultation}
+                                    onClose={() => setModalRepeat(false)}
+                                    onRecord={handleRepeatConsultation}
+                                />
+
+                                <EditModal
+                                    isOpen={modalEdit}
+                                    onClose={() => setModalEdit(false)}
+                                    onRecord={handleEditConsultation}
+                                />
+
+                                <button
+                                    className="consultation-card__button consultation-card__button--repeat"
+                                    onClick={() => setModalRepeat(true)}
+                                >
+                                    Повторить
+                                </button>
+                                <button
+                                    className="consultation-card__button consultation-card__button--edit"
+                                    onClick={() => setModalEdit(true)}
+                                >
+                                    Редактировать
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             ))}
-        </div>
+        </>
     );
 }
 
