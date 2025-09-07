@@ -15,6 +15,7 @@ interface IConsultationAttributes {
     date: string,
     doctorId: number;
     userId: number;
+    doctor?: any;
 }
 
 export interface IConsultaitionCreationAttributes extends Optional<IConsultationAttributes, 'id'> { }

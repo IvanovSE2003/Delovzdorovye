@@ -13,6 +13,7 @@ import DoctorRepository from "../../../../core/domain/repositories/doctor.reposi
 import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 import BasicData from "../../../../core/domain/entities/basicData.entity.js"
 import BasicDataRepository from "../../../../core/domain/repositories/basicData.repository.js"
+import ConsultationRepository from "../../../../core/domain/repositories/consultation.repository.js"
 
 export default class UserController {
     constructor(
@@ -21,7 +22,8 @@ export default class UserController {
         private readonly tokenService: TokenService,
         private readonly fileService: FileService,
         private readonly basicDataRepository: BasicDataRepository,
-        private readonly doctorRepository: DoctorRepository
+        private readonly doctorRepository: DoctorRepository,
+        private readonly consultationRepository: ConsultationRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -585,7 +587,7 @@ export default class UserController {
             return next(ApiError.internal(e.message));
         }
     }
-    
+
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
@@ -632,6 +634,33 @@ export default class UserController {
             return res.status(200).json({ success: true, message: `Роль пользователя была изменена на ${newRole}` });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async getRecomendation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.query;
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const consultations = await this.consultationRepository.findByUserId(user.id);
+            if (consultations && consultations.length === 0) {
+                return next(ApiError.badRequest('Консультации для пользователя не найдены'));
+            }
+
+            res.status(200).json(consultations.map(consult => ({
+                doctorName: consult.doctor?.user.name,
+                doctorSurname: consult.doctor?.user.surname,
+                doctorPatronymic: consult.doctor?.user.patronymic,
+                date: consult.date,
+                time: consult.time,
+                recomendation: consult.recommendations,
+                specialization: consult.doctor?.profData.map(p => p.specialization) 
+            })));
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 

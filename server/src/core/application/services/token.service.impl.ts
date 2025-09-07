@@ -101,7 +101,7 @@ class TokenServiceImpl implements TokenService {
     async findToken(refreshToken: string): Promise<Token> {
         const tokenData = await TokenModel.findOne({where: {refreshToken}});
         if(!tokenData) {
-            throw new Error("Токен не найден");
+            throw new Error(`Refresh токен: ${refreshToken} был не найден в базе данных для пользователя`);
         }
         return tokenData;
     }

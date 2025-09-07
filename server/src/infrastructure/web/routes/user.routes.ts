@@ -36,6 +36,8 @@ router.post('/change-role', (req: Request, res: Response, next: NextFunction) =>
 router.post('/block-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.blockAccount(req, res, next));
 router.post('/unblock-account', authMiddlewareInstance, adminMiddleware(), (req: Request, res: Response, next: NextFunction) => userController.unblockAccount(req, res, next));
 
+router.get('/getRecomendation', (req: Request, res: Response, next: NextFunction) => userController.getRecomendation(req, res, next));
+
 router.get('/:id', (req: Request, res: Response, next: NextFunction) => userController.getOne(req, res, next));
 router.put('/:id', (req: Request, res: Response, next: NextFunction) => userController.update(req, res, next));
 router.delete('/:id', (req: Request, res: Response, next: NextFunction) => userController.delete(req, res, next));

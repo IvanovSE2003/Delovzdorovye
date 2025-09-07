@@ -1,4 +1,4 @@
-import { ConsultationModelInterface, IConsultaitionCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/consultation.model.js";
+import { IConsultaitionCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/consultation.model.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import Consultation from "../../domain/entities/consultation.entity.js";
 import ConsultationRepository from "../../domain/repositories/consultation.repository.js";
@@ -121,7 +121,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         const startOfDay = dayjs(date).tz("Europe/Moscow").startOf("day").toDate();
         const endOfDay = dayjs(date).tz("Europe/Moscow").endOf("day").toDate();
 
-        const schedules = await models.DoctorsSchedule.findAll({
+        const timeSlots = await models.DoctorSlots.findAll({
             where: {
                 date: { [Op.between]: [startOfDay, endOfDay] },
                 doctorId: doctorIds
@@ -129,25 +129,53 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             attributes: ["id"]
         });
 
-
-        const scheduleIds = schedules.map(s => s.id);
-
-        if (scheduleIds.length === 0) {
-            throw new Error("Нет доступных слотов у подходящих врачей в эту дату");
-        }
-
-        const timeSlots = await models.TimeSlot.findAll({
-            where: {
-                doctorsScheduleId: scheduleIds,
-                isAvailable: true
-            },
-            order: [["time", "ASC"]],
-            attributes: ["time"]
-        });
-
         const availableSlots = [...new Set(timeSlots.map(slot => slot.time))];
         return availableSlots;
     }
+
+    async findByUserId(id: number): Promise<Consultation[]> {
+        const consultations = await models.Consultation.findAll({
+            where: 
+            { 
+                userId: id,
+                consultation_status: "ARCHIVE"
+            },
+            include: [
+                {
+                    model: models.DoctorModel,
+                    as: "doctor",
+                    include: [
+                        {
+                            model: models.UserModel,
+                            as: "user"
+                        },
+                        {
+                            model: models.DoctorSpecialization,
+                            as: "profData",
+                            include: [
+                                {
+                                    model: models.SpecializationModel,
+                                    attributes: ["id", "name"]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: models.UserModel,
+                    as: "user"
+                },
+                {
+                    model: models.ProblemModel,
+                    as: "problems",
+                    through: { attributes: [] }
+                }
+            ]
+        });
+
+        return consultations.map(consult => this.mapToDomainConsultation(consult));
+    }
+
 
     async create(consultationData: Consultation): Promise<Consultation> {
         const createdConsult = await models.Consultation.create(this.mapToPersistence(consultationData));
@@ -202,7 +230,14 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
                     patronymic: consultModel.doctor.user.patronymic,
                     email: consultModel.doctor.user.email,
                     img: consultModel.doctor.user.img
-                }
+                },
+                profData: consultModel.doctor.profData
+                    ? consultModel.doctor.profData.map((p: any) => ({
+                        specialization: p.specialization ? p.specialization.name : null,
+                        diploma: p.diploma,
+                        license: p.license
+                    }))
+                    : []
             } : null,
             consultModel.user ? {
                 id: consultModel.user.id,

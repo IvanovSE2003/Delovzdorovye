@@ -26,6 +26,12 @@ export default class Consultation {
                 email: string | null;
                 img: string;
             };
+            profData: {
+                specialization: string | null,
+                diploma: string | null,
+                license: string | null
+            }[]
+
         } | null,
         public user?: {
             id: number;

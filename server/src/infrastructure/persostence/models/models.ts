@@ -68,10 +68,10 @@ const ProblemModel = sequelize.define<ProblemModelInterface>('problem', {
 const DoctorSlots = sequelize.define<TimeSlotmModelInterface>('time_slot', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     time: { type: DataType.TIME },
-    date: {type: DataType.DATEONLY},
-    isRecurring: {type: DataType.BOOLEAN, defaultValue: false},
-    dayWeek: {type: DataType.INTEGER},
-    status: { type: DataType.STRING},
+    date: { type: DataType.DATEONLY },
+    isRecurring: { type: DataType.BOOLEAN, defaultValue: false },
+    dayWeek: { type: DataType.INTEGER },
+    status: { type: DataType.STRING },
 });
 
 const Consultation = sequelize.define<ConsultationModelInterface>('consultation', {
@@ -204,7 +204,16 @@ SpecializationModel.belongsToMany(DoctorModel, {
     otherKey: 'doctorId'
 });
 
-DoctorSpecialization.belongsTo(DoctorModel, { foreignKey: 'doctorId' });
+DoctorModel.hasMany(DoctorSpecialization, {
+    foreignKey: "doctorId",
+    as: "profData"
+});
+
+DoctorSpecialization.belongsTo(DoctorModel, {
+    foreignKey: "doctorId",
+    as: "doctor"
+});
+
 DoctorSpecialization.belongsTo(SpecializationModel, { foreignKey: 'specializationId' });
 
 Consultation.belongsToMany(ProblemModel, {

@@ -10,6 +10,7 @@ import TelegramServiceStart from "../../../../telegram/startTelegramBot.js";
 import FileServiceImpt from "../../../../core/application/services/file.service.impl.js";
 import BasicDataRepositoryImpl from "../../../../core/application/repositories/basicData.repository.impl.js"
 import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
+import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
 
 const fileService = new FileServiceImpt();
 const userRepository = new UserRepositoryImpl(fileService);
@@ -20,8 +21,9 @@ const mailService = new MailServiceImpl();
 const SmsService = new SmsServiceImpl(TelegramServiceStart, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 const SpecializationRepository = new SpecializationsRepositoryImpl();
+const consultationRepository = new ConsultationRepositoryImpl();
 
 const authService = new AuthServiceImpl(userRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
-const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository);
+const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository, consultationRepository);
 
 export default userController;

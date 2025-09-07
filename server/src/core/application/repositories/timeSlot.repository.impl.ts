@@ -36,13 +36,48 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]> {
         const slotModels = await models.DoctorSlots.findAll({
             where: {
+                isRecurring: false,
                 date: {
                     [Op.between]: [startDate, endDate]
                 }
             }
         });
 
-        return slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m));
+        const recurringModels = await models.DoctorSlots.findAll({
+            where: {
+                isRecurring: true
+            }
+        });
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        const recurringSlots: TimeSlot[] = [];
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dayOfWeek = d.getDay();
+            const dateStr = d.toISOString().split("T")[0];
+
+            recurringModels.forEach((m: TimeSlotmModelInterface) => {
+                if (m.dayWeek === dayOfWeek) {
+                    recurringSlots.push(
+                        new TimeSlot(
+                            m.id,
+                            m.time,
+                            dateStr,          
+                            m.isRecurring,
+                            m.dayWeek,
+                            m.status,
+                            m.doctorId
+                        )
+                    );
+                }
+            });
+        }
+
+        return [
+            ...slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m)),
+            ...recurringSlots
+        ];
     }
 
     async findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]> {
