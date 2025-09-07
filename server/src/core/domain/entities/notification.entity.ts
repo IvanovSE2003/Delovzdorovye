@@ -5,8 +5,9 @@ export default class Notification {
         public message: string,
         public type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT",
         public isRead: boolean,
-        public entityId: number | null,
+        public entity: object | null,
         public entityType: string | null,
+        public userId?: number
     ) {}
 
     setType(type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT") {

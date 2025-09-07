@@ -279,44 +279,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         }
     }
 
-    async getTimeSlots(doctorId: number): Promise<TimeSlot[]> {
-        const doctorSchedules = await models.DoctorsSchedule.findAll({
-            where: {
-                doctorId: doctorId
-            },
-            include: [{
-                model: models.TimeSlot,
-                required: false,
-                where: { is_available: true }
-            }]
-        });
-
-        const timeSlots: TimeSlot[] = [];
-
-        for (const schedule of doctorSchedules) {
-            for (const slot of (schedule as any).time_slots || []) {
-                const scheduleDate = new Date(schedule.date);
-                const [hours, minutes] = slot.time.split(':').map(Number);
-                scheduleDate.setHours(hours, minutes, 0, 0);
-
-                if (scheduleDate < new Date()) {
-                    continue;
-                }
-
-                const timeSlot = new TimeSlot(
-                    slot.id,
-                    slot.time,
-                    slot.is_available,
-                    schedule.id
-                );
-
-                timeSlots.push(timeSlot);
-            }
-        }
-
-        return timeSlots;
-    }
-
     private mapToDomainDoctor(doctorModel: any): Doctor {
         const profData = Array.isArray(doctorModel.specializations)
             ? doctorModel.specializations.map((spec: any) => ({

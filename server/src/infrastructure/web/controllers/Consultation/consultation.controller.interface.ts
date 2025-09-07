@@ -6,6 +6,7 @@ import UserRepositoryImpl from "../../../../core/application/repositories/user.r
 import { timerService } from "../../../../socket/timer.service.init.js";
 import ConsultationController from "./consultation.controller.js";
 import FileServiceImpl from "../../../../core/application/services/file.service.impl.js"
+import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js";
 
 const problemRepository = new ProblemRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
@@ -13,6 +14,7 @@ const fileService = new FileServiceImpl();
 const userRepository = new UserRepositoryImpl(fileService);
 const doctorRepository = new DoctorRepositoryImpl();
 const timeSlotRepository = new TimeSlotRepositoryImpl();
+const notificationRepository = new NotificationRepositoryImpl();
 
 const consultationController = new ConsultationController(
     problemRepository, 
@@ -20,7 +22,8 @@ const consultationController = new ConsultationController(
     userRepository, 
     doctorRepository, 
     timeSlotRepository,
-    fileService
+    fileService,
+    notificationRepository
 );
 
 export default consultationController;

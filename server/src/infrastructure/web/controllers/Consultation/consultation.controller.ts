@@ -10,7 +10,9 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
-import {convertUserTimeToMoscow} from "../../function/transferTime.js"
+import { convertUserTimeToMoscow } from "../../function/transferTime.js"
+import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js"
+import Notification from "../../../../core/domain/entities/notification.entity.js";
 
 export default class ConsultationController {
     constructor(
@@ -20,6 +22,7 @@ export default class ConsultationController {
         private readonly doctorReposiotry: DoctorRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
         private readonly fileService: FileService,
+        private readonly notificationRepository: NotificationRepository
     ) { }
 
     async findProblmesAll(req: Request, res: Response, next: NextFunction) {
@@ -187,6 +190,7 @@ export default class ConsultationController {
             await this.addProblemsToConsultation(consultation.id, problems);
 
             await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
+            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Консультация была назначена на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", user.id));
             // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
@@ -291,6 +295,7 @@ export default class ConsultationController {
             await this.timeSlotRepository.save(timeSlotPrev.setStatus("BOOKED"));
 
             const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
+            await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${newConsult.date} в ${newConsult.time}`, "CONSULTATION", false, newConsult, "CONSULTATION", user.id));
 
             return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${newConsult.date} на ${time}` });
         } catch (e: any) {
@@ -315,6 +320,7 @@ export default class ConsultationController {
             } else {
                 updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
             }
+            await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена у специалиста ${updateConsult.doctor?.user.surname} ${updateConsult.doctor?.user.name}`, "CONSULTATION", false, updateConsult, "CONSULTATION", updateConsult.userId));
             return res.status(200).json({ success: true, message: "Консультация была отменена" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -350,6 +356,7 @@ export default class ConsultationController {
                 new Consultation(0, "UPCOMING", "PAYMENT", null, null, 30, null, null, reservationExpiresAt, null, timeSlot.time, date, consultation.userId, consultation.doctorId)
             );
 
+            await this.notificationRepository.save(new Notification(0, "Повтор консультации", `Был сделан повтор на консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name}  на ${newConsultation.date} в ${newConsultation.time}`, "CONSULTATION", false, newConsultation, "CONSULTATION", newConsultation.userId));
             res.status(200).json({ success: true, message: `Вы повторили консультацию у специалиста ${user?.name} ${user?.name} ${user?.name} в ${newConsultation.date} на ${consultation.time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -447,6 +454,7 @@ export default class ConsultationController {
             }
 
             await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE").setRecomendation(fileName));
+            await this.notificationRepository.save(new Notification(0, "Новые рекомендации", `Специалист ${consultation.doctor?.user.surname} ${consultation.doctor?.user.name} дала рекомендации после консультации по ваши проблемам: ${consultation.problems}` , "CONSULTATION", false, consultation, "CONSULTATION", consultation.userId));
             res.status(200).json({ success: true, message: "Консультация успешно завершена и перенесена в архив" });
         } catch (e: any) {
             return next(ApiError.internal(e.message))

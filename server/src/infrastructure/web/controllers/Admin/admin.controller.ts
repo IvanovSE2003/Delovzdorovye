@@ -8,6 +8,8 @@ import UserShortInfoDto from '../../types/UserShortInfoDto.js';
 import ConsultationRepository from '../../../../core/domain/repositories/consultation.repository.js';
 import BasicDataRepository from '../../../../core/domain/repositories/basicData.repository.js';
 import ProfDataRepository from '../../../../core/domain/repositories/profData.repository.js';
+import NotificationRepository from '../../../../core/domain/repositories/notifaction.repository.js';
+import Notification from '../../../../core/domain/entities/notification.entity.js';
 
 export default class BatchController {
     constructor(
@@ -15,7 +17,8 @@ export default class BatchController {
         private readonly profDataRepository: ProfDataRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly userRepository: UserRepository,
-        private readonly consultationRepository: ConsultationRepository
+        private readonly consultationRepository: ConsultationRepository,
+        private readonly notificationRepository: NotificationRepository
     ) { }
 
     async getOne(req: Request, res: Response, next: NextFunction) {
@@ -99,11 +102,12 @@ export default class BatchController {
 
             await this.basicDataReposiotry.delete(basicData.id);
 
-            const batches = await this.basicDataReposiotry.findAllByUserId(user.id);
-            if (batches.length === 0) {
+            const basicDatas = await this.basicDataReposiotry.findAllByUserId(user.id);
+            if (basicDatas.length === 0) {
                 await this.userRepository.save(user.setSentChanges(false));
             }
 
+            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, basicData, "BASICDATA"));
 
             return res.status(200).json({
                 success: true,
@@ -156,6 +160,8 @@ export default class BatchController {
             await this.doctorRepository.saveLisinseDiploma(newDoctor, profData.new_license, profData.new_diploma, profData.new_specialization);
 
             await this.profDataRepository.delete(profData.id);
+
+            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, profData, "PROFDATA"));
             return res.status(200).json({
                 success: true,
                 message: "Изменения успешно подтверждены и применены для профессиональных данных",

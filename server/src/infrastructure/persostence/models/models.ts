@@ -145,8 +145,9 @@ const Notification = sequelize.define<NotificationModelInterface>('notification'
     message: {type: DataType.TEXT},
     type: {type: DataType.STRING},
     isRead: {type: DataType.BOOLEAN, defaultValue: false},
-    entityId: {type: DataType.INTEGER, defaultValue: null},
-    entityType: {type: DataType.STRING, defaultValue: null}
+    entity: {type: DataType.JSONB, defaultValue: null},
+    entityType: {type: DataType.STRING, defaultValue: null},
+    userId: { type: DataType.INTEGER, allowNull: false }
 });
 
 
@@ -181,8 +182,8 @@ Transaction.belongsTo(UserModel)
 UserModel.hasOne(UserTelegramModel)
 UserTelegramModel.belongsTo(UserModel)
 
-UserModel.hasOne(Notification)
-Notification.belongsTo(UserModel)
+UserModel.hasMany(Notification, { foreignKey: "userId" });
+Notification.belongsTo(UserModel, { foreignKey: "userId" });
 
 Consultation.hasOne(Transaction)
 Transaction.belongsTo(Consultation)

@@ -6,7 +6,7 @@ interface INotificationAttributes {
     message: string;
     type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT";
     isRead: boolean;
-    entityId: number | null;
+    entity: object | null;
     entityType: string | null;
     userId?: number;
 }

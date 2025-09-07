@@ -9,6 +9,7 @@ import profileRouter from './profile.router.js'
 import specializationRouter from './specializations.router.js'
 import consultationRouter from './consultation.routes.js'
 import contentRouter from './content.router.js'
+import notificationRouter from './notification.route.js'
 
 router.use('/user', userRouter);
 router.use('/doctor', doctorRouter);
@@ -18,6 +19,7 @@ router.use('/profile', profileRouter);
 router.use('/specialization', specializationRouter);
 router.use('/consultation', consultationRouter);
 router.use('/content', contentRouter);
+router.use('/notification', notificationRouter);
 
 export default router;
 

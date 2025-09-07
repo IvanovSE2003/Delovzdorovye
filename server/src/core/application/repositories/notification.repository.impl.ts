@@ -28,6 +28,15 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         };
     }
 
+    async findByUserId(id: number): Promise<Notification[]> {
+        const notifactions = await models.Notification.findAll({
+            where: {
+                userId: id
+            }
+        })
+        return notifactions.map(not => this.mapToDomainNotification(not));
+    }
+
     async create(notification: Notification): Promise<Notification> {
         const createdNotification = await models.Notification.create(this.mapToPersistence(notification));
         return this.mapToDomainNotification(createdNotification);
@@ -50,6 +59,14 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         await models.Notification.destroy({ where: { id } });
     }
 
+    async deleteByUser(id: number): Promise<void> {
+        await models.Notification.destroy({
+            where: {
+                userId: id
+            }
+        })
+    }
+
     private mapToDomainNotification(notifactionModel: NotificationModelInterface) {
         return new Notification(
             notifactionModel.id,
@@ -57,8 +74,9 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
             notifactionModel.message,
             notifactionModel.type,
             notifactionModel.isRead,
-            notifactionModel.entityId,
-            notifactionModel.entityType
+            notifactionModel.entity,
+            notifactionModel.entityType,
+            notifactionModel.userId
         );
     }
 
@@ -68,8 +86,9 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
             message: notifaction.message,
             type: notifaction.type,
             isRead: notifaction.isRead,
-            entityId: notifaction.entityId,
-            entityType: notifaction.entityType
+            entity: notifaction.entity,
+            entityType: notifaction.entityType,
+            userId: notifaction.userId
         };
     }
 }

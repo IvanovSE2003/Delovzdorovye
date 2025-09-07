@@ -1,5 +1,4 @@
 import Doctor from "../entities/doctor.entity.js";
-import TimeSlot from "../entities/timeSlot.entity.js";
 
 export default interface DoctorRepository {
     findById(id: number): Promise<Doctor | null>;
@@ -26,5 +25,4 @@ export default interface DoctorRepository {
     save(doctor: Doctor): Promise<Doctor>;
 
     saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
-    getTimeSlots(doctorId: number): Promise<TimeSlot[]>;
 }
