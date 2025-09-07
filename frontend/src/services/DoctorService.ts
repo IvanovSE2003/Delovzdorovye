@@ -1,19 +1,26 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
 import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
-
-export type SpecializationResponse = {
-    id: number;
-    name: string;
-}
-
+import type { Specializations } from "../pages/account/admin/EditUsefulInformations/SpecializationsTab";
 
 export default class DoctorService {
     static async getDoctorInfo(id: number): Promise<AxiosResponse<IDoctor>> {
         return $api.get<IDoctor>(`/doctor/${id}`);
     }
 
-    static async getSpecializations(): Promise<AxiosResponse<SpecializationResponse[]>> {
-        return $api.get<SpecializationResponse[]>('/specialization/all');
+    static async getSpecializations(): Promise<AxiosResponse<Specializations[]>> {
+        return $api.get<Specializations[]>('/specialization/all');
+    }
+
+    static async updateSpecialization(id: number, name: string): Promise<AxiosResponse<Specializations>>{
+        return $api.put<Specializations>(`/specialization/${id}`, {name})
+    }
+
+    static async createSpecialization(name: string): Promise<AxiosResponse<Specializations>>{
+        return $api.post<Specializations>('/specialization/create', {name});
+    }
+
+    static async deleteSpecialization(id: number): Promise<void> {
+        $api.delete(`/specialization/${id}`)
     }
 }

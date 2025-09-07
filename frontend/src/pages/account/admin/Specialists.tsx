@@ -173,7 +173,7 @@ const Specialists: React.FC = () => {
             {message && <div className="alert alert-success">{message}</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="admin-page">
+            <div className="page-container">
                 <h1 className="admin-page__title">Редактирование профилей</h1>
 
                 <div className="admin-page__search">

@@ -42,7 +42,7 @@ const MakeConsultation = () => {
 
     return (
         <AccountLayout>
-            <div className="makeconsultation">
+            <div className="page-container makeconsultation">
                 <h1 className="admin-page__title">Пользователи системы</h1>
 
                 <SearchInput
@@ -52,7 +52,7 @@ const MakeConsultation = () => {
                 />
 
                 <div className="makeconsultation__list">
-                    {filteredUsers.map(user => (
+                    {filteredUsers.length>0 ? filteredUsers.map(user => (
                         <div key={user.id} className="makeconsultation__user-card">
                             <div className="makeconsultation__user-info">
                                 <span className="makeconsultation__user-name">
@@ -72,7 +72,9 @@ const MakeConsultation = () => {
                                 </button>
                             </Link>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="consultation__empty">Пользователей не найдено</div>
+                    )}
                 </div>
             </div>
         </AccountLayout>

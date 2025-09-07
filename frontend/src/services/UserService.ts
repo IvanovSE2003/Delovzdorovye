@@ -3,6 +3,7 @@ import type { AxiosResponse } from "axios";
 import type { IUserDataProfile, IUser, IAdminDataProfile } from "../models/Auth";
 import type { TypeResponse } from '../models/response/DefaultResponse';
 import type { PatientData } from '../models/PatientData';
+import type { Recomendations } from '../pages/account/patient/Recomendations';
 
 export default class UserService {
 
@@ -57,5 +58,9 @@ export default class UserService {
 
     static async changeRoleUser(id: number, newRole: string): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>('/user/change-role', { userId: id, newRole })
+    }
+
+    static async getRecomendation(id: number): Promise<AxiosResponse<Recomendations[]>>{
+        return $api.get<Recomendations[]>(`/user/getRecomendation?userId=${id}`);
     }
 }

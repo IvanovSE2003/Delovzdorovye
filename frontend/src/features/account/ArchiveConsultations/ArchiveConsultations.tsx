@@ -61,7 +61,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
         fun(true);
     }
 
-    if (consultations.length === 0) return <div className="archive-consultations__empty">Нет архивных консультаций</div>;
+    if (consultations.length === 0) return <div className="consultation__empty">Нет архивных консультаций</div>;
 
     return (
         <>

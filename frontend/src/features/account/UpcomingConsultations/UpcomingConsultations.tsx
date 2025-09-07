@@ -103,7 +103,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
         fun(true);
     }
 
-    if (consultations.length === 0) return <div className="archive-consultations__empty">Нет предстоящих консультаций</div>
+    if (consultations.length === 0) return <div className="consultation__empty">Нет предстоящих консультаций</div>
 
     return (
         <>

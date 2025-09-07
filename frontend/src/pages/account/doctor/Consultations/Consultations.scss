@@ -1,14 +1,14 @@
 @use '../../../../assets/styles/variables.scss' as *;
 
 .consultations-doctor {
-    padding: 1rem 2rem;
-    border-radius: 20px;
-    margin: 20px 0;
     background-color: $nav-color;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8rem;
+
+    &__main-title {
+        color: black;
+        font-weight: bolder;
+        font-size: 2rem;
+        text-align: left;
+    }
 
     &__title {
         text-align: center;

@@ -84,12 +84,12 @@ export default class ConsultationsStore {
     }
 
     // Собираем все расписания специалистов для проблем
-    async getSchedulesByProblems(problemIds: number[]): Promise<Slot[]> {
+    async getSchedulesByProblems(problemIds: number[], linkerId: number): Promise<Slot[]> {
         const specialists = await this.findSpecialists(problemIds);
         let slots: Slot[] = [];
 
         for (const doc of specialists) {
-            const docSlots = await this.getSchedule(doc.id);
+            const docSlots = await this.getSchedule(doc.id, linkerId);
             slots = slots.concat(docSlots.map(s => ({ ...s, doctorId: doc.id })));
         }
 

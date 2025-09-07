@@ -1,0 +1,45 @@
+@use '../variables.scss' as *;
+
+.usefulinfo {
+    padding: 1rem 2rem;
+    margin: 10px;
+
+    &__title {
+        font-size: 2rem;
+        font-weight: bolder;
+    }
+
+    &__none {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: bolder;
+        color: black;
+    }
+
+    &-block {
+        background-color: #F2E8FF;
+        border-radius: 10px;
+        color: $text-color;
+        padding: 1rem 2rem;
+
+        &__title {
+            color: black;
+            font-size: 2rem;
+            font-weight: bolder;
+            margin-bottom: 20px;
+        }
+
+        &__text {
+            font-size: 1.6rem;
+            white-space: pre-line;
+        }
+    }
+}
+
+.usefulinfo-doctor {
+    background-color: $secondary-color;
+}
+
+.usefulinfo-patient {
+    background-color: $secondary-color;
+}

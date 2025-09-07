@@ -2,6 +2,8 @@
 @use "./pages/account.scss";
 @use "./pages/home.scss";
 @use "./pages/auth.scss";
+@use './pages/consultations.scss';
+@use './pages/usefulinfo.scss';
 
 .color-block {
   display: flex;
@@ -29,59 +31,6 @@
 
     img {
       width: 100%;
-    }
-  }
-}
-
-.account-blocked {
-  width: 100%;
-
-
-  &__title {
-    text-align: center;
-    font-size: $title-size;
-    font-weight: bold;
-    color: $primary-color;
-  }
-
-  &__description {
-    text-align: justify;
-  }
-
-
-  &__message {
-    font-size: 1.3rem;
-    color: green;
-  }
-
-  &__error {
-    font-size: 1.3rem;
-    color: red;
-  }
-
-  &__email {
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: bold;
-  }
-
-  &__buttons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  &__button {
-    width: 100%;
-    padding: 8px 0;
-    border: none;
-    border-radius: 10px;
-    background-color: $button-color;
-    color: white;
-
-    &:hover {
-      background-color: $button-color-hover;
     }
   }
 }

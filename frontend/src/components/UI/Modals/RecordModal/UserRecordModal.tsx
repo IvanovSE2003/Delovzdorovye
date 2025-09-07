@@ -9,9 +9,10 @@ interface UserConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRecord: (data: ConsultationData) => void;
+  userId: number;
 }
 
-const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
+const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord, userId }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -34,7 +35,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
   const handleProblemChange = async (selected: MultiValue<OptionsResponse>) => {
     setSelectedProblems(selected);
     const ids = selected.map(p => p.value);
-    const fetchedSlots = await store.getSchedulesByProblems(ids);
+    const fetchedSlots = await store.getSchedulesByProblems(ids, userId);
     setSlots(fetchedSlots);
   };
 

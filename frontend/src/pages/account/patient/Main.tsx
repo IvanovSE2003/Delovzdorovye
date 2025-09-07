@@ -27,6 +27,7 @@ const Main: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onRecord={handleRecordConsultation}
+                userId={store.user.id}
             />
 
             <div className="main">

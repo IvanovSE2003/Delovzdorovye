@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import Search from "../../../../components/UI/Search/Search"
 import "./ArchiveConsultations.scss";
-import type { Consultation, UserConsultationsProps } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
+import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
 import ConsultationService from "../../../../services/ConsultationService";
 import { API_URL } from "../../../../http";
 
 
-const ArchiveConsultations:  React.FC<UserConsultationsProps> = ({ id = "", mode = "ADMIN", refreshTrigger = 0 }) => {
+const ArchiveConsultations = () => {
   const [search, setSearch] = useState("");
   const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[]);
 
@@ -32,7 +32,7 @@ const ArchiveConsultations:  React.FC<UserConsultationsProps> = ({ id = "", mode
 
   return (
     <AccountLayout>
-      <div className="archive">
+      <div className="page-container archive">
         <h1 className="admin-page__title">Архив консультаций</h1>
 
         <Search

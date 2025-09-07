@@ -73,3 +73,15 @@ input {
         gap: 20px;
     }
 }
+
+.page-container {
+    padding: 1rem 2rem;
+    border-radius: 15px;
+
+    &__title {
+        text-align: left;
+        font-size: $title-size;
+        font-weight: bolder;
+        margin: 2rem 0;
+    }
+}

@@ -26,11 +26,11 @@ export default class ScheduleService {
         return $api.delete<TypeResponse>(`/schedule/deleteTimeSlot/${id}`);
     }
 
-    static getScheduleWeek(start: string, end: string) {
-        return $api.get(`/schedule/getBetweenSchedule?startDate=${start}&endDate=${end}`);
+    static getScheduleWeek(start: string, end: string, userId: number) {
+        return $api.get(`/schedule/getBetweenSchedule?startDate=${start}&endDate=${end}&userId=${userId}`);
     }
     
-    static setschuduleDay(time: string, scheduleId: number, repetitions: boolean, userId: number): Promise<AxiosResponse<TypeResponse>>{
-        return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, {time, scheduleId, repetitions, userId});
+    static setschuduleDay(time: string, date: string, isRecurring: boolean, userId: number, dayWeek: number): Promise<AxiosResponse<TypeResponse>>{
+        return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, {time, date, isRecurring, userId, dayWeek});
     }
 }

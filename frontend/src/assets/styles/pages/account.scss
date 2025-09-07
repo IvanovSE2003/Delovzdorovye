@@ -328,33 +328,6 @@
   }
 }
 
-// Полезная информация для пациента
-.usefulinfo {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 10px;
-
-  &-block {
-    background-color: #F2E8FF;
-    border-radius: 10px;
-    color: $text-color;
-    padding: 1rem 2rem;
-
-    &__qustion {
-      text-align: left;
-      font-weight: bold;
-      color: #0C055C;
-      font-size: 1.7rem;
-    }
-
-    &__answer {
-      font-size: 1.3rem;
-      text-align: justify;
-    }
-  }
-}
-
 // Страница с уведомлениями
 .notifications {
   padding: 2rem;

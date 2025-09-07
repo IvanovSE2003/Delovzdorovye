@@ -7,12 +7,6 @@ import ScheduleService from "../../../services/ScheduleService";
 
 export type SlotStatus = "closed" | "open" | "booked";
 
-export interface TimeSlot {
-  day: string;
-  time: string;
-  status: SlotStatus;
-}
-
 interface ScheduleGridProps {
   onChange?: (slots: Record<string, SlotStatus>) => void;
   userId: number;
@@ -25,12 +19,14 @@ const hours = Array.from({ length: 24 }, (_, i) =>
 const getWeekDays = (offset: number) => {
   const startOfWeek = dayjs()
     .add(offset, "week")
-    .startOf("week")
-    .add(1, "day"); // понедельник
+    .startOf("week");
+  const monday = startOfWeek.add(0, "day");
+
   return Array.from({ length: 7 }, (_, i) =>
-    startOfWeek.add(i, "day").format("YYYY-MM-DD")
+    monday.add(i, "day").format("YYYY-MM-DD")
   );
 };
+
 
 type ModalData =
   | { day: string; time: string; reset?: false }
@@ -41,11 +37,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const weekDays = getWeekDays(weekOffset);
 
   const [slots, setSlots] = useState<Record<string, SlotStatus>>({});
+  const [slotToId, setSlotToId] = useState<Record<string, number>>({});
+  const [maxId, setMaxId] = useState(0);
+
   const [modalData, setModalData] = useState<ModalData | null>(null);
-  const [dayToScheduleId, setDayToScheduleId] = useState<Record<string, number>>(
-    {}
-  );
-  const [maxScheduleId, setMaxScheduleId] = useState<number>(0);
 
   // загрузка расписания
   useEffect(() => {
@@ -53,30 +48,33 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       try {
         const startDate = weekDays[0];
         const endDate = weekDays[6];
-        const res = await ScheduleService.getScheduleWeek(startDate, endDate);
+        const res = await ScheduleService.getScheduleWeek(startDate, endDate, userId);
 
         const mapped: Record<string, SlotStatus> = {};
-        const dayIdMap: Record<string, number> = {};
+        const idMap: Record<string, number> = {};
+        let localMax = maxId;
 
-        let localMaxId = maxScheduleId;
+        res.data.forEach((slotObj: any) => {
+          const day = dayjs(slotObj.date).format("YYYY-MM-DD");
+          const time = slotObj.time.slice(0, 5);
+          const key = `${day}_${time}`;
 
-        res.data.forEach((dayObj: any) => {
-          const day = dayjs(dayObj.date).format("YYYY-MM-DD");
-          dayIdMap[day] = dayObj.id; // сохраняем scheduleId для дня
-          if (dayObj.id > localMaxId) {
-            localMaxId = dayObj.id; // обновляем локальный max
+          // статус из API
+          let status: SlotStatus = "closed";
+          if (slotObj.status === "OPEN") status = "open";
+          if (slotObj.status === "BOOKED") status = "booked";
+
+          mapped[key] = status;
+          idMap[key] = slotObj.id;
+
+          if (slotObj.id > localMax) {
+            localMax = slotObj.id;
           }
-
-          (dayObj.timeSlot || []).forEach((slot: any) => {
-            const time = slot.time.slice(0, 5);
-            const key = `${day}_${time}`;
-            mapped[key] = !slot.is_available ? "booked" : "open";
-          });
         });
 
         setSlots(mapped);
-        setDayToScheduleId(dayIdMap);
-        setMaxScheduleId(localMaxId); // сохраняем maxId
+        setSlotToId(idMap);
+        setMaxId(localMax);
         if (onChange) onChange(mapped);
       } catch (e) {
         console.error("Ошибка при получении расписания:", e);
@@ -86,14 +84,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
     fetchSchedule();
   }, [weekOffset]);
 
-  const ensureScheduleId = (day: string): number => {
-    if (dayToScheduleId[day]) {
-      return dayToScheduleId[day];
-    }
-    // если дня нет, создаём новый id
-    const newId = maxScheduleId + 1;
-    setDayToScheduleId((prev) => ({ ...prev, [day]: newId }));
-    setMaxScheduleId(newId);
+  const ensureSlotId = (day: string, time: string): number => {
+    const key = `${day}_${time}`;
+    if (slotToId[key]) return slotToId[key];
+
+    const newId = maxId + 1;
+    setSlotToId((prev) => ({ ...prev, [key]: newId }));
+    setMaxId(newId);
+    console.log(`Создан новый slotId=${newId} для ${key}`);
     return newId;
   };
 
@@ -212,12 +210,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               <button
                 onClick={async () => {
                   try {
-                    const scheduleId = ensureScheduleId(modalData.day);
+                    const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
                     await ScheduleService.setschuduleDay(
                       modalData.time,
-                      scheduleId,
+                      modalData.day,
                       false,
-                      userId
+                      userId,
+                      dayWeek
                     );
                     toggleSlot(modalData.day, modalData.time, "once");
                   } catch (e) {
@@ -232,12 +231,13 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               <button
                 onClick={async () => {
                   try {
-                    const scheduleId = ensureScheduleId(modalData.day);
+                    const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
                     await ScheduleService.setschuduleDay(
                       modalData.time,
-                      scheduleId,
+                      modalData.day,
                       true,
-                      userId
+                      userId,
+                      dayWeek
                     );
                     toggleSlot(modalData.day, modalData.time, "weekly");
                   } catch (e) {
@@ -268,9 +268,15 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
             <div className="modal__actions">
               <button
                 onClick={async () => {
-                  toggleSlot(modalData.day, modalData.time, "once");
-                  await ScheduleService.deleteSlot
-                  setModalData(null);
+                  try {
+                    const slotId = ensureSlotId(modalData.day, modalData.time);
+                    await ScheduleService.deleteSlot(slotId);
+                    toggleSlot(modalData.day, modalData.time, "once");
+                  } catch (e) {
+                    console.error("Ошибка при удалении слота:", e);
+                  } finally {
+                    setModalData(null);
+                  }
                 }}
               >
                 Сбросить
