@@ -7,6 +7,7 @@ import EditModal, { type ConsultationData } from '../../../components/UI/Modals/
 import ConsultationService from '../../../services/ConsultationService';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import type { AxiosError } from 'axios';
+import { getDateLabel } from '../../../hooks/DateHooks';
 
 export interface Consultation {
     id: number;
@@ -16,6 +17,7 @@ export interface Consultation {
     DoctorName: string;
     DoctorSurname: string;
     DoctorPatronymic?: string;
+    DoctorUserId: number;
     PatientName: string;
     PatientSurname: string;
     PatientPatronymic?: string;
@@ -125,7 +127,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 <div key={consultation.id} className="consultation-card">
                     id: {consultation.id} {/*  Отладочная печать */}
                     <div className="consultation-card__time">
-                        <span className="consultation-card__date">{consultation.date}</span>
+                        <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
                         <span className="consultation-card__hours">{consultation.durationTime}</span>
                     </div>
 

@@ -6,6 +6,7 @@ import type { AxiosError } from "axios";
 import UserService from "../../../services/UserService";
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
+import { getDateLabel } from "../../../hooks/DateHooks";
 
 export interface Recomendations {
     doctorName: string;
@@ -25,7 +26,7 @@ const Recomendations = () => {
         try {
             const response = await UserService.getRecomendation(store.user.id);
             setRecomendations(response.data);
-        } catch(e) {
+        } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при получении рекомендаций: ", error.response?.data.message);
         }
@@ -41,42 +42,21 @@ const Recomendations = () => {
 
                 <h2 className="page-container__title">Рекомендации от специалистов</h2>
 
-                {recomendations ? recomendations.map(recomend => (
-                    <div className="block">
-                        <h3>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic} 
-                            ({recomend.recomendation})
-                        </h3>
-                        <div className="block__info">
-                            <a href={`${API_URL}/${recomend.recomendation}`}>Документ</a>
-                            <div className="date">{recomend.date} {recomend.time}</div>
-                        </div>
-                    </div>
-                )) : (
-                    <div className="consultation__empty">Нет данных</div>
-                )}
-
-                {/* <div className="recomendations__blocks">
-                    <div className="block">
-                        <h3>Рекомендация от Анна Петрова, Нутрициолог</h3>
-                        <div className="block__info">
-                            <a href="/">Документ</a>
-                            <div className="date">
-                                05.08, 13:33
+                <div className="recomendations__blocks">
+                    {recomendations.length > 0 ? recomendations.map(recomend => (
+                        <div className="block">
+                            <h3>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic}
+                                {` (${recomend.specialization.join(", ")})`}
+                            </h3>
+                            <div className="block__info">
+                                <a target="_blank" href={`${API_URL}/${recomend.recomendation}`}>Документ</a>
+                                <div className="date">{getDateLabel(recomend.date)}, {recomend.time}</div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="block">
-                        <h3>Рекомендация от Анна Иванова, Психолог</h3>
-                        <div className="block__info">
-                            <a href="/">Документ</a>
-                            <div className="date">
-                                04.08, 20:00
-                            </div>
-                        </div>
-                    </div>
-                </div> */}
-
+                    )) : (
+                        <div className="consultation__empty">Рекомендации для пользователя не найдены</div>
+                    )}
+                </div>
             </div>
         </AccountLayout >
     )

@@ -8,6 +8,7 @@ import { API_URL } from '../../../http';
 import type { AxiosError } from 'axios';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import RateModal from '../../../components/UI/Modals/RateModal/RateModal';
+import { getDateLabel } from '../../../hooks/DateHooks';
 
 interface ArchiveConsultationsProps {
     id?: string;
@@ -72,29 +73,29 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                 onRecord={handleRepeatConsultation}
             />
 
-            <div className="archive-consultations__list">
+            <div className="consultations__list">
                 {consultations.map((consultation) => (
-                    <div key={consultation.id} className="archive-consultation-card">
-                        <div className="archive-consultation-card__time">
-                            <span className="archive-consultation-card__date">{consultation.date}</span>
-                            <span className="archive-consultation-card__hours">{consultation.durationTime}</span>
+                    <div key={consultation.id} className="consultation-card">
+                        <div className="consultation-card__time">
+                            <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
+                            <span className="consultation-card__hours">{consultation.durationTime}</span>
                         </div>
 
-                        <div className="archive-consultation-card__info">
-                            <div className="archive-consultation-card__specialist">
+                        <div className="consultation-card__info">
+                            <div className="consultation-card__specialist">
                                 Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
                             </div>
 
-                            <div className="archive-consultation-card__symptoms">
-                                Симптомы: <span>{consultation.Problems}</span>
+                            <div className="consultation-card__symptoms">
+                                Симптомы: <span>{consultation.Problems.map(p => p.toLowerCase()).join(", ")}</span>
                             </div>
 
-                            <div className="archive-consultation-card__details">
+                            <div className="consultation-card__details">
                                 Симптомы подробно: <span>{consultation.other_problem ? consultation.other_problem : "Не указано"}</span>
                             </div>
                         </div>
 
-                        <div className="archive-consultation-card__actions">
+                        <div className="consultation-card__actions">
                             {mode === "PATIENT" && (
                                 <>
                                     <RateModal
@@ -105,7 +106,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
 
 
                                     <button
-                                        className="archive-consultation-card__button arhive-consultation-card__button--rate"
+                                        className="consultation-card__button consultation-card__button--rate"
                                         onClick={() => handleClickButton(consultation, setModalRepeat)}
                                     >
                                         Оценить
@@ -114,13 +115,13 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                             )}
 
                             <button
-                                className="archive-consultation-card__button arhive-consultation-card__button--repeat"
+                                className="consultation-card__button consultation-card__button--repeat"
                                 onClick={() => setModalRepeat(true)}
                             >
                                 Повторить
                             </button>
 
-                            <div className="archive-consultation-card__recomendations">
+                            <div className="consultation-card__recomendations">
                                 {`Рекомендации: `}
                                 {consultation.recommendations ? (
                                     <a href={`${API_URL}/${consultation.recommendations}`}>
@@ -132,7 +133,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                             </div>
                         </div>
 
-                        <div className="archive-consultation-card__divider"></div>
+                        <div className="consultation-card__divider"></div>
                     </div>
                 ))}
             </div>
