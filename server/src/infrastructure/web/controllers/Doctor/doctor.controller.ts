@@ -146,20 +146,4 @@ export default class DoctorController {
             return next(ApiError.internal(e.message));
         }
     }
-
-    async getTimeSlotByDoctorId(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const doctor = await this.doctorRepository.findById(Number(id));
-
-            if (!doctor) {
-                return next(ApiError.badRequest('Доктор не найден'));
-            }
-
-            const timeSlots = await this.doctorRepository.getTimeSlots(doctor.id);
-            return res.status(200).json(timeSlots);
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
-        }
-    }
 }

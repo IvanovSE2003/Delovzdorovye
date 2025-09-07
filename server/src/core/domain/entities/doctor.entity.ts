@@ -6,6 +6,7 @@ export default class Doctor {
         public userId?: number,
         public user?: {
             id: number;
+            img: string,
             name: string | null;
             surname: string | null;
             patronymic: string | null;

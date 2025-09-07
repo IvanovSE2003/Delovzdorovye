@@ -296,6 +296,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             doctorModel.userId,
             doctorModel.user
                 ? {
+                    img: doctorModel.user.img,
                     id: doctorModel.user.id,
                     name: doctorModel.user.name,
                     surname: doctorModel.user.surname,
