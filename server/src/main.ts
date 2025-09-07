@@ -91,21 +91,25 @@ const start = async () => {
                     {
                         where: {
                             consultation_status: 'UPCOMING',
-                            [Op.and]: [
-                                { date: { [Op.lte]: nowMoscow.format('YYYY-MM-DD') } }
-                            ]
+                            date: { [Op.lt]: nowMoscow.format('YYYY-MM-DD') }
                         }
                     }
                 );
+
                 const consultations = await models.Consultation.findAll({
                     where: {
                         consultation_status: 'UPCOMING',
-                        date: { [Op.lte]: nowMoscow.format('YYYY-MM-DD') }
+                        date: { [Op.lt]: nowMoscow.format('YYYY-MM-DD') } 
                     }
                 });
 
                 for (const consult of consultations) {
-                    const consultDateTime = dayjs.tz(`${consult.date} ${consult.time}`, 'YYYY-MM-DD HH:mm', 'Europe/Moscow');
+                    const consultDateTime = dayjs.tz(
+                        `${consult.date} ${consult.time}`,
+                        'YYYY-MM-DD HH:mm',
+                        'Europe/Moscow'
+                    );
+
                     if (consultDateTime.isBefore(nowMoscow)) {
                         await consult.update({ consultation_status: 'ARCHIVE' });
                         console.log(`Консультация ${consult.id} завершена автоматически`);
@@ -118,6 +122,7 @@ const start = async () => {
         }, {
             timezone: 'Europe/Moscow'
         });
+
         server.listen(PORT, () => {
             console.log(`Сервер запустился на порте: ${PORT}`);
         });

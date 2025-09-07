@@ -129,6 +129,7 @@ export default class ConsultationController {
 
                 if (consultation.doctor) {
                     result.DoctorId = consultation.doctor.id;
+                    result.DoctorUserId = consultation.doctor.user.id;
                     result.DoctorName = consultation.doctor.user.name;
                     result.DoctorSurname = consultation.doctor.user.surname;
                     result.DoctorPatronymic = consultation.doctor.user.patronymic;

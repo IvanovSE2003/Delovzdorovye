@@ -1,0 +1,15 @@
+import { Model, Optional } from 'sequelize';
+
+interface INotificationAttributes {
+    id: number;
+    title: string;
+    message: string;
+    type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT";
+    isRead: boolean;
+    entityId: number | null;
+    entityType: string | null;
+    userId?: number;
+}
+
+export interface INotificationCreationAttributes extends Optional<INotificationAttributes, 'id'> { }
+export interface NotificationModelInterface extends Model<INotificationAttributes, INotificationCreationAttributes>, INotificationAttributes { }

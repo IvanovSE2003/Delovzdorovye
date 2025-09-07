@@ -1,0 +1,10 @@
+import Notification from "../entities/notification.entity"
+
+export default interface NotificationRepository {
+    findAll(page: number, limit: number): Promise<{ rows: Notification[], totalCount: number; totalPages: number }>;
+    findById(id: number): Promise<Notification | null>;
+    create(notification: Notification): Promise<Notification>;
+    update(notification: Notification): Promise<Notification>;
+    save(notification: Notification): Promise<Notification>;
+    delete(id: number): Promise<void>;
+}

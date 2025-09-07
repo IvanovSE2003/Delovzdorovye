@@ -10,6 +10,7 @@ import { TimeSlotmModelInterface } from './interfaces/timeSlot.model.js'
 import { ProblemModelInterface } from './interfaces/problem.model.js'
 import { ConsultationModelInterface } from './interfaces/consultation.model.js'
 import { ProfDataModelInterface } from './interfaces/profData.model.js'
+import { NotificationModelInterface } from './interfaces/notification.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -126,7 +127,6 @@ const DoctorSpecialization = sequelize.define('doctor_specializations', {
     specializationId: { type: DataType.INTEGER, allowNull: false, references: { model: SpecializationModel, key: 'id' } }
 });
 
-
 const ProblemSpecialization = sequelize.define('problem_specializations', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
 });
@@ -137,6 +137,16 @@ const ConsultationProblems = sequelize.define('consultation_problems', {
     problemId: { type: DataType.INTEGER, allowNull: false, field: 'problem_id' }
 }, {
     tableName: 'consultation_problems'
+});
+
+const Notification = sequelize.define<NotificationModelInterface>('notification', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    title: {type: DataType.STRING},
+    message: {type: DataType.TEXT},
+    type: {type: DataType.STRING},
+    isRead: {type: DataType.BOOLEAN, defaultValue: false},
+    entityId: {type: DataType.INTEGER, defaultValue: null},
+    entityType: {type: DataType.STRING, defaultValue: null}
 });
 
 
@@ -170,6 +180,9 @@ Transaction.belongsTo(UserModel)
 
 UserModel.hasOne(UserTelegramModel)
 UserTelegramModel.belongsTo(UserModel)
+
+UserModel.hasOne(Notification)
+Notification.belongsTo(UserModel)
 
 Consultation.hasOne(Transaction)
 Transaction.belongsTo(Consultation)
@@ -244,5 +257,6 @@ export default {
     ContentModel,
     ContentWithTitleModel,
     ConsultationProblems,
-    ProfDataModel
+    ProfDataModel,
+    Notification
 }
