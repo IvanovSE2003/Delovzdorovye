@@ -27,7 +27,8 @@ const TimeSheet = () => {
     return (
         <AccountLayout>
             <div className="page-container timesheet">
-                <h2 className="page-container__title">Расписание</h2>
+                <h2 className="page-container__title">Ваше расписание</h2>
+                <p className="timesheet__description">Настраивайте расписание как вам удобно</p>
 
                 <ScheduleGrid
                     onChange={handleScheduleChange}

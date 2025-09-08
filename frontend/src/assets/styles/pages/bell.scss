@@ -1,0 +1,81 @@
+@use '../variables.scss' as *;
+
+.notifications {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+
+    &__title {
+        font-size: 2rem;
+        font-weight: bolder;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: background-color 0.2s ease, border-left 0.2s ease;
+
+    &--unread {
+        border-left: 4px solid #3b82f6;
+        background-color: #ffffff;
+    }
+
+    &--read {
+        background-color: #f9fafb;
+    }
+
+    &__icon {
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    &__content {
+        flex: 1;
+    }
+
+    &__title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    &__message {
+        font-size: 14px;
+        color: #4b5563;
+    }
+
+    &__button {
+        align-self: center;
+        padding: 6px 12px;
+        font-size: 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: #f3f4f6;
+        }
+    }
+
+    &__empty {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+    }
+}

@@ -22,8 +22,8 @@ export default class ScheduleService {
         return $api.post('/schedule/createTimeSlot', { data });
     }
 
-    static deleteSlot(id: number): Promise<AxiosResponse<TypeResponse>> {
-        return $api.delete<TypeResponse>(`/schedule/deleteTimeSlot/${id}`);
+    static deleteSlot(id: number): Promise<void> {
+        return $api.delete(`/schedule/timeSlot/delete/${id}`);
     }
 
     static getScheduleWeek(start: string, end: string, userId: number) {

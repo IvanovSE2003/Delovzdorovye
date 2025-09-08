@@ -11,6 +11,7 @@ interface Specialization {
 
 interface UserDoctor {
     id: number;
+    img: string;
     name: string;
     surname: string;
     patronymic?: string;
@@ -60,7 +61,7 @@ const Specialists: React.FC = () => {
                             <div className="specialist-card__header">
                                 <div className="specialist-card__avatar">
                                     <img
-                                        src={doctor.userAvatar ? `${URL}/${doctor.userAvatar}` : '/default-avatar.png'}
+                                        src={doctor.user.img ? `${URL}/${doctor.user.img}` : '/default-avatar.png'}
                                         alt={`${doctor.user.surname} ${doctor.user.name}`}
                                     />
                                 </div>

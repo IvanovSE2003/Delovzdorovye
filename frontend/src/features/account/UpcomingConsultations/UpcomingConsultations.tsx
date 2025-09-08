@@ -105,7 +105,16 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
         fun(true);
     }
 
-    if (consultations.length === 0) return <div className="consultation__empty">Нет предстоящих консультаций</div>
+    if (consultations.length === 0) return (
+        <div className="consultation-card">
+            <div
+                style={{ textAlign: 'center' }}
+                className="consultation-card__specialist"
+            >
+                Здесь будут находиться ваши предстоящие консультации
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -125,7 +134,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
             {consultations.map(consultation => (
                 <div key={consultation.id} className="consultation-card">
-                    id: {consultation.id} {/*  Отладочная печать */}
                     <div className="consultation-card__time">
                         <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
                         <span className="consultation-card__hours">{consultation.durationTime}</span>

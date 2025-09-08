@@ -98,7 +98,7 @@ const Main: React.FC = () => {
                         ))
                     ) : (
                         <div className="main__nearest__block">
-                            <span style={{textAlign: 'center'}}>Нет ближайших консультаций</span>
+                            <span style={{textAlign: 'center'}}>Отсутствуют ближайшие консультации</span>
                         </div>
                     )}
                 </div>

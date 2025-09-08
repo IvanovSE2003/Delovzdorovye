@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { InfoBlock } from "../admin/EditUsefulInformations/EditUsefulInformations";
 import HomeService from "../../../services/HomeService";
 import AccountLayout from "../AccountLayout";
+import type { InfoBlock } from "../../../models/InfoBlock";
 
 const UsefulInfo = () => {
     const [data, setData] = useState<InfoBlock[]>([] as InfoBlock[]);
@@ -17,7 +17,7 @@ const UsefulInfo = () => {
 
     return (
         <AccountLayout>
-            <div className="page-container usefulinfo-patient">
+            <div className="page-container">
                 <h1 className="page-container__title">Полезная информация</h1>
                 {data && data.length > 0 ? data.map((p: any) =>
                     <div key={p.id} className="usefulinfo">

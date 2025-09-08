@@ -4,6 +4,7 @@ import type { IUserDataProfile, IUser, IAdminDataProfile } from "../models/Auth"
 import type { TypeResponse } from '../models/response/DefaultResponse';
 import type { PatientData } from '../models/PatientData';
 import type { Recomendations } from '../pages/account/patient/Recomendations';
+import type { INotification } from '../pages/account/Bell';
 
 export default class UserService {
 
@@ -62,5 +63,10 @@ export default class UserService {
 
     static async getRecomendation(id: number): Promise<AxiosResponse<Recomendations[]>>{
         return $api.get<Recomendations[]>(`/user/getRecomendation?userId=${id}`);
+    }
+
+
+    static async getNotifications(id: number): Promise<AxiosResponse<INotification[]>>{
+        return $api.get<INotification[]>(`/notification/user?userId=${id}`);
     }
 }

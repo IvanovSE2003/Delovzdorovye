@@ -328,43 +328,6 @@
   }
 }
 
-// Страница с уведомлениями
-.notifications {
-  padding: 2rem;
-  background-color: $doctor-color;
-  border-radius: 10px;
-
-  &__title {
-    color: white;
-    font-size: 1.8rem;
-    font-weight: bolder;
-    margin-bottom: 2rem;
-  }
-
-  &__blocks {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-
-    .block {
-      background-color: white;
-      border-radius: 10px;
-      padding: 1.5rem 2rem;
-
-      h3 {
-        font-size: 1.4rem;
-        text-align: left;
-        color: $text-color;
-      }
-
-      p {
-        font-size: 1.2rem;
-        color: $gray-color;
-      }
-    }
-  }
-}
-
 // Страница с консультациями
 .consultations {
   background-color: #F0EDD6;

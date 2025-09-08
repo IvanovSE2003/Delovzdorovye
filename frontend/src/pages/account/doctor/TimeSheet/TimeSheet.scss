@@ -1,3 +1,12 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
 .timesheet {
   background-color: #DDF0F5;
+
+  &__description {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: -20px;
+    color: $gray-color;
+  }
 }

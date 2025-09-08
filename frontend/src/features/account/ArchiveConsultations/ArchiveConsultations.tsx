@@ -62,7 +62,16 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
         fun(true);
     }
 
-    if (consultations.length === 0) return <div className="consultation__empty">Нет архивных консультаций</div>;
+    if (consultations.length === 0) return (
+        <div className="consultation-card">
+            <div
+                style={{ textAlign: 'center' }}
+                className="consultation-card__specialist"
+            >
+                Здесь будут находиться ваши посещенные консультации
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -87,7 +96,13 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                             </div>
 
                             <div className="consultation-card__symptoms">
-                                Симптомы: <span>{consultation.Problems.map(p => p.toLowerCase()).join(", ")}</span>
+                                {'Симптомы: '}
+                                {consultation.Problems.map((p, i) => (
+                                    <span key={i}>
+                                        {p.toLocaleLowerCase()}
+                                        {i < consultation.Problems.length - 1 ? ', ' : '.'}
+                                    </span>
+                                ))}
                             </div>
 
                             <div className="consultation-card__details">

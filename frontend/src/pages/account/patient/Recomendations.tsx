@@ -54,7 +54,13 @@ const Recomendations = () => {
                             </div>
                         </div>
                     )) : (
-                        <div className="consultation__empty">Рекомендации для пользователя не найдены</div>
+                        <div className="block">
+                            <h3
+                                style={{ textAlign: 'center' }}
+                            >
+                                Рекомендации для пользователя не найдены
+                            </h3>
+                        </div>
                     )}
                 </div>
             </div>

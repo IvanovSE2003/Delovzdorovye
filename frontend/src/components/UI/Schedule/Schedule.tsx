@@ -17,16 +17,13 @@ const hours = Array.from({ length: 24 }, (_, i) =>
 );
 
 const getWeekDays = (offset: number) => {
-  const startOfWeek = dayjs()
-    .add(offset, "week")
-    .startOf("week");
+  const startOfWeek = dayjs().add(offset, "week").startOf("week");
   const monday = startOfWeek.add(0, "day");
 
   return Array.from({ length: 7 }, (_, i) =>
     monday.add(i, "day").format("YYYY-MM-DD")
   );
 };
-
 
 type ModalData =
   | { day: string; time: string; reset?: false }
@@ -41,83 +38,56 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [maxId, setMaxId] = useState(0);
 
   const [modalData, setModalData] = useState<ModalData | null>(null);
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [hoveredCol, setHoveredCol] = useState<string | null>(null);
+
+  const today = dayjs().format("YYYY-MM-DD");
 
   // загрузка расписания
+  const fetchSchedule = async () => {
+    try {
+      const startDate = weekDays[0];
+      const endDate = weekDays[6];
+      const res = await ScheduleService.getScheduleWeek(
+        startDate,
+        endDate,
+        userId
+      );
+
+      const mapped: Record<string, SlotStatus> = {};
+      const idMap: Record<string, number> = {};
+      let localMax = 0;
+
+      res.data.forEach((slotObj: any) => {
+        const day = dayjs(slotObj.date).format("YYYY-MM-DD");
+        const time = slotObj.time.slice(0, 5);
+        const key = `${day}_${time}`;
+
+        let status: SlotStatus = "closed";
+        if (slotObj.status === "OPEN") status = "open";
+        if (slotObj.status === "BOOKED") status = "booked";
+
+        mapped[key] = status;
+        idMap[key] = slotObj.id;
+
+        if (slotObj.id > localMax) {
+          localMax = slotObj.id;
+        }
+      });
+
+      setSlots(mapped);
+      setSlotToId(idMap);
+      setMaxId(localMax);
+
+      if (onChange) onChange(mapped);
+    } catch (e) {
+      console.error("Ошибка при получении расписания:", e);
+    }
+  };
+
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const startDate = weekDays[0];
-        const endDate = weekDays[6];
-        const res = await ScheduleService.getScheduleWeek(startDate, endDate, userId);
-
-        const mapped: Record<string, SlotStatus> = {};
-        const idMap: Record<string, number> = {};
-        let localMax = maxId;
-
-        res.data.forEach((slotObj: any) => {
-          const day = dayjs(slotObj.date).format("YYYY-MM-DD");
-          const time = slotObj.time.slice(0, 5);
-          const key = `${day}_${time}`;
-
-          // статус из API
-          let status: SlotStatus = "closed";
-          if (slotObj.status === "OPEN") status = "open";
-          if (slotObj.status === "BOOKED") status = "booked";
-
-          mapped[key] = status;
-          idMap[key] = slotObj.id;
-
-          if (slotObj.id > localMax) {
-            localMax = slotObj.id;
-          }
-        });
-
-        setSlots(mapped);
-        setSlotToId(idMap);
-        setMaxId(localMax);
-        if (onChange) onChange(mapped);
-      } catch (e) {
-        console.error("Ошибка при получении расписания:", e);
-      }
-    };
-
     fetchSchedule();
   }, [weekOffset]);
-
-  const ensureSlotId = (day: string, time: string): number => {
-    const key = `${day}_${time}`;
-    if (slotToId[key]) return slotToId[key];
-
-    const newId = maxId + 1;
-    setSlotToId((prev) => ({ ...prev, [key]: newId }));
-    setMaxId(newId);
-    console.log(`Создан новый slotId=${newId} для ${key}`);
-    return newId;
-  };
-
-  const toggleSlot = (day: string, time: string, mode: "once" | "weekly") => {
-    setSlots((prev) => {
-      const updated = { ...prev };
-
-      if (mode === "once") {
-        const key = `${day}_${time}`;
-        const current = prev[key] || "closed";
-        updated[key] = current === "closed" ? "open" : "closed";
-      } else {
-        const weekday = dayjs(day).day();
-        weekDays.forEach((d) => {
-          if (dayjs(d).day() === weekday) {
-            const key = `${d}_${time}`;
-            const current = prev[key] || "closed";
-            updated[key] = current === "closed" ? "open" : "closed";
-          }
-        });
-      }
-
-      if (onChange) onChange(updated);
-      return updated;
-    });
-  };
 
   const getSlotStatus = (day: string, time: string): SlotStatus =>
     slots[`${day}_${time}`] || "closed";
@@ -168,7 +138,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
             <tr>
               <th className="schedule-grid__time"></th>
               {weekDays.map((d) => (
-                <th key={d} className="schedule-grid__day">
+                <th
+                  key={d}
+                  className={`schedule-grid__day ${
+                    d === today ? "schedule-grid__day--today" : ""
+                  } ${hoveredCol === d ? "highlight" : ""}`}
+                >
                   {dayjs(d).format("dd, DD MMMM")}
                 </th>
               ))}
@@ -176,15 +151,36 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
           </thead>
           <tbody>
             {hours.map((time) => (
-              <tr key={time} className="schedule-grid__row">
+              <tr
+                key={time}
+                className={`schedule-grid__row ${
+                  hoveredRow === time ? "highlight" : ""
+                }`}
+              >
                 <td className="schedule-grid__time">{time}</td>
                 {weekDays.map((day) => {
                   const status = getSlotStatus(day, time);
+                  const isToday = day === today;
                   return (
                     <td
                       key={day + time}
                       onClick={() => handleSlotClick(day, time)}
-                      className={`schedule-grid__slot schedule-grid__slot--${status}`}
+                      className={`schedule-grid__slot schedule-grid__slot--${status} 
+                        ${isToday ? "schedule-grid__slot--today" : ""}
+                        ${
+                          hoveredRow === time || hoveredCol === day
+                            ? "highlight"
+                            : ""
+                        }
+                      `}
+                      onMouseEnter={() => {
+                        setHoveredRow(time);
+                        setHoveredCol(day);
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredRow(null);
+                        setHoveredCol(null);
+                      }}
                     >
                       {status === "booked" && (
                         <span className="slot__icon">✔</span>
@@ -203,7 +199,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
         <div className="modal">
           <div className="modal__content">
             <h3>
-              {dayjs(modalData.day).format("DD MMMM YYYY")}, {modalData.time}
+              {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
+              {modalData.time}
             </h3>
             <p>Выберите режим:</p>
             <div className="modal__actions">
@@ -218,7 +215,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                       userId,
                       dayWeek
                     );
-                    toggleSlot(modalData.day, modalData.time, "once");
+                    await fetchSchedule();
                   } catch (e) {
                     console.error("Ошибка при установке дня:", e);
                   } finally {
@@ -239,7 +236,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                       userId,
                       dayWeek
                     );
-                    toggleSlot(modalData.day, modalData.time, "weekly");
+                    await fetchSchedule();
                   } catch (e) {
                     console.error("Ошибка при установке дня:", e);
                   } finally {
@@ -250,7 +247,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 Каждую неделю
               </button>
             </div>
-            <button className="modal__close" onClick={() => setModalData(null)}>
+            <button
+              className="modal__close"
+              onClick={() => setModalData(null)}
+            >
               Закрыть
             </button>
           </div>
@@ -262,16 +262,24 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
         <div className="modal">
           <div className="modal__content">
             <h3>
-              {dayjs(modalData.day).format("DD MMMM YYYY")}, {modalData.time}
+              {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
+              {modalData.time}
             </h3>
             <p>Хотите сбросить выбранную дату?</p>
             <div className="modal__actions">
               <button
                 onClick={async () => {
                   try {
-                    const slotId = ensureSlotId(modalData.day, modalData.time);
+                    const key = `${modalData.day}_${modalData.time}`;
+                    const slotId = slotToId[key];
+
+                    if (!slotId) {
+                      console.warn("Нет id для этого слота, сброс невозможен");
+                      return;
+                    }
+
                     await ScheduleService.deleteSlot(slotId);
-                    toggleSlot(modalData.day, modalData.time, "once");
+                    await fetchSchedule();
                   } catch (e) {
                     console.error("Ошибка при удалении слота:", e);
                   } finally {

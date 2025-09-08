@@ -3,8 +3,6 @@ import './DoctorInfo.scss';
 import { Context } from '../../../main';
 import { observer } from 'mobx-react-lite';
 import { URL } from '../../../http';
-import MyInputFile from '../../../components/UI/MyInput/MyInputFile';
-import FilePreview from '../../../components/UI/MyInput/FilePreview';
 import MyInput from '../../../components/UI/MyInput/MyInput';
 import Select from 'react-select';
 import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
@@ -13,14 +11,10 @@ import type { AxiosError } from 'axios';
 import DoctorService from '../../../services/DoctorService';
 
 interface SpecializationForm {
-    name: string;
-    diploma: File | null;
-    license: File | null;
-    existingDiploma?: string;
-    existingLicense?: string;
+    specialization: string;
+    diploma: string;
+    license: string;
 }
-
-type FileType = 'DIPLOMA' | 'LICENSE';
 
 const DoctorInfo = () => {
     const { store } = useContext(Context);
@@ -36,12 +30,10 @@ const DoctorInfo = () => {
             setExperienceYears(data.experienceYears || 0);
 
             // Преобразуем специализации в форму для редактирования
-            const transformedSpecs = data.specializations.map(spec => ({
-                name: spec.name,
-                diploma: null,
-                license: null,
-                existingDiploma: spec.diploma,
-                existingLicense: spec.license
+            const transformedSpecs = data.profData.map(spec => ({
+                specialization: spec.specialization,
+                diploma: spec.diploma,
+                license: spec.license
             }));
 
             setSpecializations(transformedSpecs);
@@ -65,27 +57,13 @@ const DoctorInfo = () => {
     };
 
     const addSpecialization = () => {
-        setSpecializations([...specializations, { name: '', diploma: null, license: null }]);
-    };
-
-    const removeSpecialization = (index: number) => {
-        setSpecializations(specializations.filter((_, i) => i !== index));
+        setSpecializations([...specializations, { specialization: "", diploma: "", license: "" }]);
     };
 
     const updateSpecialization = (index: number, field: keyof SpecializationForm, value: any) => {
         const updated = [...specializations];
         updated[index] = { ...updated[index], [field]: value };
         setSpecializations(updated);
-    };
-
-    const handleFileChange = (index: number, type: FileType, files: File[]) => {
-        if (files.length > 0) {
-            updateSpecialization(index, type.toLowerCase() as 'diploma' | 'license', files[0]);
-        }
-    };
-
-    const handleRemoveFile = (index: number, type: FileType) => {
-        updateSpecialization(index, type.toLowerCase() as 'diploma' | 'license', null);
     };
 
     const getSpecialization = async () => {
@@ -151,58 +129,12 @@ const DoctorInfo = () => {
                                         placeholder="Выберите специализацию"
                                         className="doctor-info__select"
                                         classNamePrefix="custom-select"
-                                        value={availableSpecializations.find(opt => opt.value === spec.name)}
+                                        value={availableSpecializations.find(opt => opt.value === spec.specialization)}
                                         onMenuOpen={getSpecialization}
                                         onChange={(selected) =>
-                                            updateSpecialization(index, 'name', selected?.value || '')
+                                            updateSpecialization(index, 'specialization', selected?.value || '')
                                         }
                                     />
-
-                                    <div className="documents-row">
-                                        <div className="document-upload">
-                                            {/* <MyInputFile
-                                                onChange={(files) => handleFileChange(index, 'DIPLOMA', files)}
-                                                accept=".pdf,.jpg,.jpeg,.png" 
-                                                id={'diploma'}
-                                                label={'Диплом'}
-                                            /> */}
-                                            {spec.existingDiploma && !spec.diploma && (
-                                                <div className="existing-file">
-                                                    <span>Текущий файл: </span>
-                                                    <a
-                                
-                                
-                                href={`${URL}/${spec.existingDiploma}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        Посмотреть
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="document-upload">
-                                            {/* <MyInputFile
-                                                onChange={(files) => handleFileChange(index, 'LICENSE')}
-                                                accept=".pdf,.jpg,.jpeg,.png" 
-                                                id={'license'}
-                                                label={'Лицензия'}
-                                            /> */}
-                                            {spec.existingLicense && !spec.license && (
-                                                <div className="existing-file">
-                                                    <span>Текущий файл: </span>
-                                                    <a
-                                                        href={`${URL}/${spec.existingLicense}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        Посмотреть
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -234,14 +166,14 @@ const DoctorInfo = () => {
                                     specializations.map((spec, index) => (
                                         <div key={index} className="specialization-item">
                                             <div className="specialization-item__header">
-                                                <h4 className="specialization-item__name">{spec.name}</h4>
+                                                <h4 className="specialization-item__name">{spec.specialization}</h4>
                                             </div>
                                             <div className="specialization-item__docs">
-                                                {spec.existingDiploma && (
+                                                {spec.diploma && (
                                                     <div className="doc-item">
                                                         <span className="doc-item__label">Диплом:</span>
                                                         <a
-                                                            href={`${URL}/${spec.existingDiploma}`}
+                                                            href={`${URL}/${spec.diploma}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="doc-item__link"
@@ -250,11 +182,11 @@ const DoctorInfo = () => {
                                                         </a>
                                                     </div>
                                                 )}
-                                                {spec.existingLicense && (
+                                                {spec.license && (
                                                     <div className="doc-item">
                                                         <span className="doc-item__label">Лицензия:</span>
                                                         <a
-                                                            href={`${URL}/${spec.existingLicense}`}
+                                                            href={`${URL}/${spec.license}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="doc-item__link"
