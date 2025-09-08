@@ -14,4 +14,9 @@ export default class Notification {
         this.type = type;
         return this;
     }
+
+    setRead(read: boolean) {
+        this.isRead = read;
+        return this;
+    }
 }

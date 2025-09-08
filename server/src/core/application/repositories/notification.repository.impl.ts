@@ -67,6 +67,16 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         })
     }
 
+    async countByUserId(userId: number, onlyUnread = false): Promise<number> {
+        const where: any = { userId };
+        if (onlyUnread) {
+            where.isRead = false;
+        }
+
+        const count = await models.Notification.count({ where });
+        return count;
+    }
+
     private mapToDomainNotification(notifactionModel: NotificationModelInterface) {
         return new Notification(
             notifactionModel.id,

@@ -37,17 +37,48 @@ export default class NotificationContorller {
 
     async deleteAllNotification(req: Request, res: Response, next: NextFunction) {
         try {
-            const {userId} = req.body;
+            const { userId } = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
-            if(!user) {
+            if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
             await this.notificationReposiotory.deleteByUser(user.id);
             res.status(204).send();
-        } catch(e: any) {
+        } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }
+
+    async readNotification(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.body;
+            const notifaction = await this.notificationReposiotory.findById(Number(id));
+            if (!notifaction) {
+                return next(ApiError.badRequest('Уведомление не найдено'));
+            }
+            await this.notificationReposiotory.save(notifaction.setRead(true));
+            return res.status(200).send();
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async getCountNotification(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId, unreadOnly } = req.query;
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest("Пользователь не найден"));
+            }
+
+            const count = await this.notificationReposiotory.countByUserId(user.id, unreadOnly === "true");
+
+            return res.status(200).json({ count });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
 }

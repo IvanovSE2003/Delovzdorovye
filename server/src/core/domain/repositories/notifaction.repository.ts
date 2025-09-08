@@ -9,4 +9,5 @@ export default interface NotificationRepository {
     save(notification: Notification): Promise<Notification>;
     delete(id: number): Promise<void>;
     deleteByUser(id: number): Promise<void>;
+    countByUserId(userId: number, onlyUnread: boolean): Promise<number>;
 }
