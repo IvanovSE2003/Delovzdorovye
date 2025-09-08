@@ -19,23 +19,35 @@ export function adjustTimeSlotToTimeZone(slot: TimeSlot, userTimeZone: ITimeZone
     );
 }
 
-export function adjustDateTime(date: string, time: string, hoursDiff: number): { newTime: string, newDate: string } {
+export function adjustDateTime(
+    date: string,
+    time: string,
+    hoursDiff: number
+): { newTime: string; newDate: string } {
+    if (!date || !time) {
+        throw new Error(`adjustDateTime: пустая дата или время (date=${date}, time=${time})`);
+    }
+
     const [hours, minutes] = time.split(":").map(Number);
+    if (isNaN(hours) || isNaN(minutes)) {
+        throw new Error(`adjustDateTime: неверный формат времени "${time}"`);
+    }
 
-    // создаём полноценный Date (UTC, чтобы избежать локальных сдвигов)
-    const jsDate = new Date(date + "T" + time + ":00Z");
+    // создаём Date в UTC безопасно
+    const [year, month, day] = date.split("-").map(Number);
+    const jsDate = new Date(Date.UTC(year, month - 1, day, hours, minutes));
 
-    // применяем сдвиг
-    jsDate.setHours(jsDate.getHours() + hoursDiff);
+    jsDate.setUTCHours(jsDate.getUTCHours() + hoursDiff);
 
-    // получаем новые значения
     const newHours = jsDate.getUTCHours();
     const newMinutes = jsDate.getUTCMinutes();
     const newDate = jsDate.toISOString().split("T")[0];
 
     return {
-        newTime: `${newHours.toString().padStart(2, "0")}:${newMinutes.toString().padStart(2, "0")}`,
-        newDate
+        newTime: `${newHours.toString().padStart(2, "0")}:${newMinutes
+            .toString()
+            .padStart(2, "0")}`,
+        newDate,
     };
 }
 

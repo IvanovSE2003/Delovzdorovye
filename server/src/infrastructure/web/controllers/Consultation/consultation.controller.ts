@@ -13,6 +13,7 @@ import FileService from "../../../../core/domain/services/file.service.js";
 import { convertUserTimeToMoscow } from "../../function/transferTime.js"
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js"
 import Notification from "../../../../core/domain/entities/notification.entity.js";
+import normalizeDate from "../../function/normDate.js";
 
 export default class ConsultationController {
     constructor(
@@ -184,7 +185,7 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctor.id, moscowDate, true);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctor.id, normalizeDate(moscowDate), true);
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка не найдена'));
             }

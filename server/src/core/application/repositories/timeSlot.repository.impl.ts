@@ -33,7 +33,7 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return slotModels ? this.mapToDomainTimeSlot(slotModels) : null
     }
 
-    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]> {
+    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]>  {
         const slotModels = await models.DoctorSlots.findAll({
             where: {
                 isRecurring: false,

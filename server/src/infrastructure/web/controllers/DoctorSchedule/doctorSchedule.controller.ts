@@ -30,7 +30,7 @@ export default class DoctorScheduleController {
 
             const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
-            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, moscowDate, isRecurring, dayWeek, "OPEN", doctor.id));
+            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(moscowDate), isRecurring, dayWeek, "OPEN", doctor.id));
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не удалось создать ячейку времени'));
             }
