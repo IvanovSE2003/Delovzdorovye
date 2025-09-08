@@ -9,10 +9,11 @@ import type { AxiosError } from 'axios';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import RateModal from '../../../components/UI/Modals/RateModal/RateModal';
 import { getDateLabel } from '../../../hooks/DateHooks';
+import type { Role } from '../../../models/Auth';
 
 interface ArchiveConsultationsProps {
     id?: string;
-    mode?: "ADMIN" | "PATIENT";
+    mode?: Role;
 }
 
 const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefined, mode = "ADMIN" }) => {
@@ -25,9 +26,10 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
     // Получение архивных консультаци
     const fetchConsultations = async () => {
         try {
-            const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", userId: id })
-            setConsultations(response.data.consultations);
-            console.log(response.data)
+            let response;
+            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", doctorId: id });
+            else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", userId: id });
+            response && setConsultations(response.data.consultations);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error('Ошибка при получение архивных консультации: ', error.response?.data.message)
@@ -91,9 +93,20 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                         </div>
 
                         <div className="consultation-card__info">
-                            <div className="consultation-card__specialist">
-                                Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
-                            </div>
+                            {mode === "PATIENT" && (
+                                <div className="consultation-card__specialist">
+                                    Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
+                                </div>
+                            )}
+
+                            {mode === "DOCTOR" && (
+                                <div className="consultation-card__specialist">
+                                    Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
+                                        ? <span> Анонимный пользователь </span>
+                                        : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
+                                    }
+                                </div>
+                            )}
 
                             <div className="consultation-card__symptoms">
                                 {'Симптомы: '}

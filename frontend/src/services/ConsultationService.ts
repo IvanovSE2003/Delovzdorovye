@@ -51,8 +51,9 @@ export default class ConsultationService {
         page = 1,
         filters: {
             userId?: string,
-            payment_status?: string;
-            consultation_status?: "UPCOMING" | "ARCHIVE";
+            doctorId?: string,
+            payment_status?: string,
+            consultation_status?: "UPCOMING" | "ARCHIVE",
         }
     ): Promise<AxiosResponse<ConsultationsResponse>> {
         return $api.post<ConsultationsResponse>('/consultation/all', { limit, page, filters })

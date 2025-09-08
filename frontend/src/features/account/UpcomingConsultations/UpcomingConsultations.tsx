@@ -8,6 +8,7 @@ import ConsultationService from '../../../services/ConsultationService';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import type { AxiosError } from 'axios';
 import { getDateLabel } from '../../../hooks/DateHooks';
+import type { Role } from '../../../models/Auth';
 
 export interface Consultation {
     id: number;
@@ -32,10 +33,9 @@ export interface Consultation {
 
 export interface UserConsultationsProps {
     id?: string;
-    mode?: "ADMIN" | "PATIENT";
+    mode?: Role;
     refreshTrigger?: number;
 }
-
 
 const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "ADMIN", refreshTrigger = 0 }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
@@ -49,8 +49,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     // Получение данных предстоящих консультаций
     const fetchConsultations = async () => {
         try {
-            const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
-            setConsultations(response.data.consultations);
+            let response;
+            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", doctorId: id });
+            else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
+            response && setConsultations(response.data.consultations);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error('Ошибка при получение предстоящих консультации: ', error.response?.data.message)
@@ -140,9 +142,20 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                     </div>
 
                     <div className="consultation-card__info">
-                        <div className="consultation-card__specialist">
-                            Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
-                        </div>
+                        {mode === "PATIENT" && (
+                            <div className="consultation-card__specialist">
+                                Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
+                            </div>
+                        )}
+
+                        {mode === "DOCTOR" && (
+                            <div className="consultation-card__specialist">
+                                Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
+                                    ? <span> Анонимный пользователь </span>
+                                    : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
+                                }
+                            </div>
+                        )}
 
                         <div className="consultation-card__symptoms">
                             {'Симптомы: '}
