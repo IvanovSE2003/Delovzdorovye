@@ -45,7 +45,7 @@ export default class DoctorScheduleController {
         try {
             const { id } = req.params;
             await this.timeSlotRepository.delete(Number(id));
-            res.status(200).send();
+            res.status(204).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

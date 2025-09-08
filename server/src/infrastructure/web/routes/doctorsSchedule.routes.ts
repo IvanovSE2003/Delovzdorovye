@@ -10,6 +10,6 @@ router.get('/getForDateDoctor', (req: Request, res: Response, next: NextFunction
 router.post('/createWithRepetitions', (req: Request, res: Response, next: NextFunction) => scheduleController.create(req, res, next));
 
 router.post('/timeSlot/create', (req: Request, res: Response, next: NextFunction) => scheduleController.create(req, res, next));
-router.delete('/timeSlot/delete/:id', (req: Request, res: Response, next: NextFunction) => scheduleController.delete(req, res, next))
+router.delete('/timeSlot/delete/:id', (req: Request, res: Response, next: NextFunction) => scheduleController.delete(req, res, next));
 
 export default router

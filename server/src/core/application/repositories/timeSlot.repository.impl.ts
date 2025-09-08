@@ -54,16 +54,18 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
 
         const recurringSlots: TimeSlot[] = [];
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dayOfWeek = d.getDay();
+            const jsDay = d.getDay();
+            const customDay = (jsDay + 6) % 7;
+
             const dateStr = d.toISOString().split("T")[0];
 
             recurringModels.forEach((m: TimeSlotmModelInterface) => {
-                if (m.dayWeek === dayOfWeek) {
+                if (m.dayWeek === customDay) {
                     recurringSlots.push(
                         new TimeSlot(
                             m.id,
                             m.time,
-                            dateStr,          
+                            dateStr,
                             m.isRecurring,
                             m.dayWeek,
                             m.status,
