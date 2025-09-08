@@ -28,9 +28,9 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Специалист не найден'));
             }
 
-            const moscowTime = convertUserTimeToMoscow(time, user.timeZone);
-            console.log(normalizeDate(date))
-            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(date), isRecurring, dayWeek, "OPEN", doctor.id));
+            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+
+            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, moscowDate, isRecurring, dayWeek, "OPEN", doctor.id));
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не удалось создать ячейку времени'));
             }
@@ -71,9 +71,7 @@ export default class DoctorScheduleController {
                 return res.status(200).json([]);
             }
 
-            const userTimeSlots = timeSlots.map(slot =>
-                adjustTimeSlotToTimeZone(slot, linker.timeZone)
-            );
+            const userTimeSlots = timeSlots.map(slot => adjustTimeSlotToTimeZone(slot, linker.timeZone));
 
             const result = userTimeSlots.map(slot => ({
                 doctorId: slot.doctorId,

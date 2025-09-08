@@ -6,10 +6,12 @@ const STORAGE_TIMEZONE = ITimeZones.MOSCOW;
 export function adjustTimeSlotToTimeZone(slot: TimeSlot, userTimeZone: ITimeZones): TimeSlot {
     const timeDifference = userTimeZone - STORAGE_TIMEZONE;
 
+    const { newTime, newDate } = adjustDateTime(slot.date, slot.time, timeDifference);
+
     return new TimeSlot(
         slot.id,
-        adjustTime(slot.time, timeDifference),
-        adjustDate(slot.date, timeDifference),
+        newTime,
+        newDate,
         slot.isRecurring,
         slot.dayWeek,
         slot.status,
@@ -17,28 +19,28 @@ export function adjustTimeSlotToTimeZone(slot: TimeSlot, userTimeZone: ITimeZone
     );
 }
 
-export function adjustTime(time: string, hoursDiff: number): string {
-    const [hours, minutes] = time.split(':').map(Number);
-    let newHours = hours + hoursDiff;
+export function adjustDateTime(date: string, time: string, hoursDiff: number): { newTime: string, newDate: string } {
+    const [hours, minutes] = time.split(":").map(Number);
 
-    if (newHours >= 24) {
-        newHours -= 24;
-    } else if (newHours < 0) {
-        newHours += 24;
-    }
+    // создаём полноценный Date (UTC, чтобы избежать локальных сдвигов)
+    const jsDate = new Date(date + "T" + time + ":00Z");
 
-    return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-}
-
-export function adjustDate(date: string, hoursDiff: number): string {
-    if (hoursDiff === 0) return date;
-
-    const jsDate = new Date(date);
+    // применяем сдвиг
     jsDate.setHours(jsDate.getHours() + hoursDiff);
-    return jsDate.toISOString().split('T')[0];
+
+    // получаем новые значения
+    const newHours = jsDate.getUTCHours();
+    const newMinutes = jsDate.getUTCMinutes();
+    const newDate = jsDate.toISOString().split("T")[0];
+
+    return {
+        newTime: `${newHours.toString().padStart(2, "0")}:${newMinutes.toString().padStart(2, "0")}`,
+        newDate
+    };
 }
 
-export function convertUserTimeToMoscow(time: string, userTimeZone: ITimeZones): string {
+// Используется при сохранении, чтобы привести в Москву
+export function convertUserTimeToMoscow(date: string, time: string, userTimeZone: ITimeZones): { newTime: string, newDate: string } {
     const hoursDiff = STORAGE_TIMEZONE - userTimeZone;
-    return adjustTime(time, hoursDiff);
+    return adjustDateTime(date, time, hoursDiff);
 }

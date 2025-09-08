@@ -7,8 +7,14 @@ export default class Notification {
         public isRead: boolean,
         public entity: object | null,
         public entityType: string | null,
-        public userId?: number
-    ) {}
+        public userId?: number,
+        public user?: {
+            name: string | null;
+            surname: string | null;
+            patronymic: string | null;
+            img: string;
+        } | null
+    ) { }
 
     setType(type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT") {
         this.type = type;

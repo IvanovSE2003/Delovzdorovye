@@ -32,8 +32,15 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         const notifactions = await models.Notification.findAll({
             where: {
                 userId: id
-            }
+            },
+            include: [
+                {
+                    model: models.UserModel,
+                    attributes: ["name", "surname", "patronymic", "img"]
+                }
+            ]
         })
+        console.log(notifactions[0])
         return notifactions.map(not => this.mapToDomainNotification(not));
     }
 
@@ -77,7 +84,7 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         return count;
     }
 
-    private mapToDomainNotification(notifactionModel: NotificationModelInterface) {
+    private mapToDomainNotification(notifactionModel: any) {
         return new Notification(
             notifactionModel.id,
             notifactionModel.title,
@@ -86,19 +93,25 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
             notifactionModel.isRead,
             notifactionModel.entity,
             notifactionModel.entityType,
-            notifactionModel.userId
+            notifactionModel.userId,
+            notifactionModel.user ? {
+                name: notifactionModel.user?.name,
+                surname: notifactionModel.user?.surname,
+                patronymic: notifactionModel.user?.patronymic,
+                img: notifactionModel.user?.img
+            } : null,
         );
     }
 
     private mapToPersistence(notifaction: Notification): INotificationCreationAttributes {
-        return {
-            title: notifaction.title,
-            message: notifaction.message,
-            type: notifaction.type,
-            isRead: notifaction.isRead,
-            entity: notifaction.entity,
-            entityType: notifaction.entityType,
-            userId: notifaction.userId
-        };
-    }
+    return {
+        title: notifaction.title,
+        message: notifaction.message,
+        type: notifaction.type,
+        isRead: notifaction.isRead,
+        entity: notifaction.entity,
+        entityType: notifaction.entityType,
+        userId: notifaction.userId
+    };
+}
 }
