@@ -61,13 +61,15 @@ export default class ConsultationService {
 
     // Создание консультации
     static async createAppointment(data: ConsultationData): Promise<AxiosResponse<AppointmentResponse>> {
-        return $api.post('/consultation/appointment', data);
+        return $api.post<AppointmentResponse>('/consultation/appointment', data);
     }
 
     // Перенос консультации
-    // static async shiftAppointment(data: ConsultationData) : Promise<AxiosResponse<>> {
-    //     return $api.post('/consultation/appoinment/shift', data);
-    // }
+    static async shiftAppointment(data: ConsultationData) : Promise<AxiosResponse<AppointmentResponse>> {
+        return $api.post<AppointmentResponse>(`/consultation/resheduleConsultation/${data.id}`, {
+            date: data.date, time: data.time, userId: data.userId, doctorId: data.doctorId
+        });
+    }
 
     // Отмена консультации
     // static async cancelAppointment(reason: string, id: number) : Promise<AxiosResponse<>> {

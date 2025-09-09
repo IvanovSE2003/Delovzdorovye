@@ -93,7 +93,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                         </div>
 
                         <div className="consultation-card__info">
-                            {mode === "PATIENT" && (
+                            {(mode === "PATIENT" || mode === "ADMIN") && (
                                 <div className="consultation-card__specialist">
                                     Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
                                 </div>
@@ -142,12 +142,14 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                                 </>
                             )}
 
-                            <button
-                                className="consultation-card__button consultation-card__button--repeat"
-                                onClick={() => setModalRepeat(true)}
-                            >
-                                Повторить
-                            </button>
+                            {(mode === "PATIENT" || mode === "ADMIN") && (
+                                <button
+                                    className="consultation-card__button consultation-card__button--repeat"
+                                    onClick={() => setModalRepeat(true)}
+                                >
+                                    Повторить
+                                </button>
+                            )}
 
                             <div className="consultation-card__recomendations">
                                 {`Рекомендации: `}

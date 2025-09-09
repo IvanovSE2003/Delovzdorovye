@@ -15,10 +15,14 @@ import { getDateLabel } from "../../../hooks/DateHooks";
 
 dayjs.locale("ru");
 
+const PAGE_SIZE = 4;
+
 const Main: React.FC = () => {
     const { store } = useContext(Context);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [upcomingConsultations, setUpcomingConsultations] = useState<Consultation[]>([]);
+    const [page, setPage] = useState<number>(1);
+    const [total, setTotal] = useState<number>(0);
 
     const handleRecordConsultation = async (data: ConsultationData) => {
         const RecordData = {
@@ -26,27 +30,21 @@ const Main: React.FC = () => {
             userId: store.user.id,
         };
 
-        console.log("Данные для записи на консультацию:", RecordData);
         await ConsultationService.createAppointment(RecordData);
-        fetchUpcomingConsultations();
+        fetchUpcomingConsultations(page);
     };
 
-    const fetchUpcomingConsultations = async () => {
+    const fetchUpcomingConsultations = async (currentPage: number) => {
         try {
-            const response = await ConsultationService.getAllConsultions(4, 1, {
+            const response = await ConsultationService.getAllConsultions(PAGE_SIZE, currentPage, {
                 userId: store.user.id.toString(),
                 consultation_status: "UPCOMING",
             });
 
-            const today = dayjs().startOf("day");
-            const tomorrow = today.add(1, "day");
+            // предполагаю, что API возвращает totalCount (проверь)
+            setTotal(response.data.totalCount ?? 0);
 
-            const filtered = response.data.consultations.filter((u: Consultation) => {
-                const consultationDate = dayjs(u.date).startOf("day");
-                return consultationDate.isSame(today) || consultationDate.isSame(tomorrow);
-            });
-
-            setUpcomingConsultations(filtered);
+            setUpcomingConsultations(response.data.consultations);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при получении ближайших консультаций: ", error.response?.data.message);
@@ -54,8 +52,10 @@ const Main: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchUpcomingConsultations();
-    }, []);
+        fetchUpcomingConsultations(page);
+    }, [page]);
+
+    const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
         <AccountLayout>
@@ -83,22 +83,45 @@ const Main: React.FC = () => {
                     <h2 className="main__nearest__title">Ближайшие консультации</h2>
 
                     {upcomingConsultations.length > 0 ? (
-                        upcomingConsultations.map((u) => (
-                            <div key={u.id} className="main__nearest__block">
-                                <span>
-                                    {getDateLabel(u.date)}, {u.durationTime}
-                                </span>
-                                <div className="main__nearest__specialist">
-                                    <strong>Специалист: </strong>
-                                    <Link target="_blank" to={`/profile/${u.DoctorUserId}`}>
-                                        {u.DoctorName} {u.DoctorSurname} {u?.DoctorPatronymic}
-                                    </Link>
+                        <>
+                            {upcomingConsultations.map((u) => (
+                                <div key={u.id} className="main__nearest__block">
+                                    <span>
+                                        {getDateLabel(u.date)}, {u.durationTime}
+                                    </span>
+                                    <div className="main__nearest__specialist">
+                                        <strong>Специалист: </strong>
+                                        <Link target="_blank" to={`/profile/${u.DoctorUserId}`}>
+                                            {u.DoctorName} {u.DoctorSurname} {u?.DoctorPatronymic}
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            ))}
+
+                            {/* Пагинация */}
+                            {totalPages > 1 && (
+                                <div className="main__pagination">
+                                    <button
+                                        disabled={page === 1}
+                                        onClick={() => setPage((p) => p - 1)}
+                                    >
+                                        Назад
+                                    </button>
+                                    <span>
+                                        Стр. {page} из {totalPages}
+                                    </span>
+                                    <button
+                                        disabled={page === totalPages}
+                                        onClick={() => setPage((p) => p + 1)}
+                                    >
+                                        Вперёд
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="main__nearest__block">
-                            <span style={{textAlign: 'center'}}>Отсутствуют ближайшие консультации</span>
+                            <span style={{ textAlign: "center" }}>Отсутствуют ближайшие консультации</span>
                         </div>
                     )}
                 </div>

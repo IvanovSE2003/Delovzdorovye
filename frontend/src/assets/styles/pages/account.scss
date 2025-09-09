@@ -287,7 +287,7 @@
     flex-direction: column;
     gap: 20px;
     padding: 1rem 2rem;
-    min-height: 500px;
+    min-height: 590px;
 
     &__title {
       text-align: center;
@@ -317,6 +317,29 @@
 
     &__specialist {
       font-size: 1.4rem;
+    }
+  }
+
+  &__pagination {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    button {
+      padding: 6px 12px;
+      font-size: 1.3rem;
+      border-radius: 10px;
+      border: none;
+      background: #9C62F3;
+      color: white;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
   }
 

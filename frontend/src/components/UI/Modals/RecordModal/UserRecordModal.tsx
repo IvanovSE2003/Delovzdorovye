@@ -54,6 +54,12 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
       doctorId: doctorId,
     });
 
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setOtherProblem("");
+    setDoctorId(undefined);
+    setSelectedProblems([]);
+
     onClose();
   };
 

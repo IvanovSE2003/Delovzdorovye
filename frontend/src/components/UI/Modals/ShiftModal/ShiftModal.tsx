@@ -2,15 +2,34 @@ import { useEffect, useState } from 'react';
 import type { ConsultationData } from '../EditModal/EditModal';
 import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
 import type { ModalProps } from '../CancelModal/CancelModal';
+import dayjs from "dayjs";
 
 import RecordForm from '../RecordModal/RecordForm';
 import './ShiftModal.scss'
+import { getDateLabel } from '../../../../hooks/DateHooks';
+import type { Role } from '../../../../models/Auth';
 
 interface ShiftModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
+    mode: Role;
 }
 
-const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, consultationData = {} as Consultation, }) => {
+const normalizeTime = (t: string) => {
+    // поддержка "4:00", "04:00", "04:00:00"
+    const m = t.match(/(\d{1,2}):(\d{2})/);
+    if (!m) return t;
+    const hh = m[1].padStart(2, "0");
+    const mm = m[2];
+    return `${hh}:${mm}`;
+};
+
+const getStartFromRange = (range: string) => {
+    // поддержка "-", "–", "—"
+    const start = range.split(/[–—-]/)[0]?.trim() ?? "";
+    return normalizeTime(start);
+};
+
+const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, consultationData = {} as Consultation, mode }) => {
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -22,19 +41,31 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
             return;
         }
 
+        // Сравнение даты корректно (без локалей/часовых поясов)
+        const sameDay = dayjs(consultationData.date).isSame(dayjs(selectedDate), "day");
+
+        // Сравнение только начала интервала
+        const currentStart = getStartFromRange(consultationData.durationTime);
+        const newStart = normalizeTime(selectedTime);
+
+        if (sameDay && currentStart === newStart) {
+            setError("Вы выбрали то же самое время, выберите другое");
+            return;
+        }
+
         onRecord({
             id: consultationData.id,
             date: selectedDate,
             time: selectedTime,
-            problems: [],
-            doctorId: 0
+            userId: consultationData.PatientUserId,
+            doctorId: consultationData.DoctorId,
         });
 
-        // Сброс формы
         setSelectedDate(null);
         setSelectedTime(null);
         setError("");
     };
+
 
     // Передача данные с RecordForm
     const onTimeDateSelect = (time: string | null, date: string | null) => {
@@ -49,6 +80,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
             setSelectedTime(null);
             setError("");
         }
+        console.log(consultationData)
     }, [isOpen]);
 
     if (!isOpen) return null;
@@ -66,15 +98,22 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы переносите консультацию: {consultationData.date}, {consultationData.durationTime}</p>
+                    <p>Вы переносите консультацию: {getDateLabel(consultationData.date)}, {consultationData.durationTime}</p>
                 </div>
 
 
-                <div className="shift-modal__client">
-                    <p className="consultation-modal__client">
-                        Клиент: {consultationData.PatientName} {consultationData.PatientSurname} {consultationData?.PatientPatronymic}, 8 888 888 88 88
-                    </p>
-                </div>
+                {mode === "ADMIN" && (
+                    <div className="shift-modal__client">
+                        <p className="consultation-modal__client">
+                            Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
+                                ? <span>Анонимный пользователь</span>
+                                : <span>
+                                    {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                                </span>
+                            }
+                        </p>
+                    </div>
+                )}
 
                 <RecordForm
                     onTimeDateSelect={onTimeDateSelect}
@@ -82,6 +121,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                         value: consultationData.DoctorId,
                         label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
                     }}
+                    userId={consultationData.PatientUserId.toString()}
                 />
 
                 <div className="shift-modal__result">

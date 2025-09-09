@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './CancelModal.scss'
 import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
+import { getDateLabel } from '../../../../hooks/DateHooks';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -46,7 +47,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы отменяете консультацию: {consultationData.date}, {consultationData.durationTime}</p>
+                    <p>Вы отменяете консультацию: {getDateLabel(consultationData.date)}, {consultationData.durationTime}</p>
                 </div>
 
                 <div className="shift-modal__client">

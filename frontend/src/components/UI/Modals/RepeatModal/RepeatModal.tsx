@@ -63,7 +63,12 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
 
 
                 <div className="shift-modal__client">
-                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic}, {consultationData.PatientPhone}
+                    Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
+                        ? <span>Анонимный пользователь</span>
+                        : <span>
+                            {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                        </span>
+                    }
                 </div>
 
                 <RecordForm
@@ -72,6 +77,7 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                         value: consultationData.DoctorId,
                         label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
                     }}
+                    userId={''}
                 />
 
                 <div className="shift-modal__result">

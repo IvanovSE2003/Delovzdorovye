@@ -19,6 +19,7 @@ export interface Consultation {
     DoctorSurname: string;
     DoctorPatronymic?: string;
     DoctorUserId: number;
+    PatientUserId: number;
     PatientName: string;
     PatientSurname: string;
     PatientPatronymic?: string;
@@ -70,11 +71,15 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     }, [refreshTrigger]);
 
     // Завершение переноса консультации
-    const handleShiftConsultation = (data: ConsultationData) => {
-        console.log("Данные для переноса консультации:", data);
-        // const response = await ConsultationService.shiftAppoinment(data);
-        // console.log(response.data);
-        setModalShift(false);
+    const handleShiftConsultation = async (data: ConsultationData) => {
+        try {
+            console.log("Данные для переноса консультации:", data);
+            await ConsultationService.shiftAppointment(data);
+            setModalShift(false);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при переносе консультации: ", error.response?.data.message);
+        }
     };
 
     // Завершение отмены консультации
@@ -125,6 +130,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 consultationData={selectedConsultation || {} as Consultation}
                 onClose={() => setModalShift(false)}
                 onRecord={handleShiftConsultation}
+                mode={mode}
             />
 
             <CancelModal
@@ -142,7 +148,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                     </div>
 
                     <div className="consultation-card__info">
-                        {mode === "PATIENT" && (
+                        {(mode === "PATIENT" || mode === "ADMIN") && (
                             <div className="consultation-card__specialist">
                                 Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
                             </div>
@@ -173,18 +179,23 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                     </div>
 
                     <div className="consultation-card__actions">
-                        <button
-                            className="consultation-card__button consultation-card__button--transfer"
-                            onClick={() => handleClickButton(consultation, setModalShift)}
-                        >
-                            Перенести
-                        </button>
-                        <button
-                            className="consultation-card__button consultation-card__button--cancel"
-                            onClick={() => handleClickButton(consultation, setModalCancel)}
-                        >
-                            Отменить
-                        </button>
+                        {(mode === "PATIENT" || mode === "ADMIN") && (
+                            <>
+                                <button
+                                    className="consultation-card__button consultation-card__button--transfer"
+                                    onClick={() => handleClickButton(consultation, setModalShift)}
+                                >
+                                    Перенести
+                                </button>
+                                <button
+                                    className="consultation-card__button consultation-card__button--cancel"
+                                    onClick={() => handleClickButton(consultation, setModalCancel)}
+                                >
+                                    Отменить
+                                </button>
+                            </>
+                        )}
+
                         {mode === "ADMIN" && (
                             <>
                                 <RepeatModal

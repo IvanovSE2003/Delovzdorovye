@@ -12,7 +12,7 @@ interface ConsultationFormProps {
   specialist?: OptionsResponse;
   slotsOverride?: Slot[];
   onTimeDateSelect: (time: string | null, date: string | null, doctorId?: number) => void;
-  userId: string;
+  userId?: string;
 }
 
 
@@ -42,6 +42,7 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     const loadSpecialistSchedule = async () => {
       if (!specialist?.value) return;
       try {
+        console.log(specialist.value);
         const schedule = await store.getSchedule(specialist.value, Number(userId));
         setSlots(schedule || []);
       } catch (error) {

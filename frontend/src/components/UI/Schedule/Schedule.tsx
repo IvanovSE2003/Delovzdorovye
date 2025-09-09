@@ -26,8 +26,15 @@ const getWeekDays = (offset: number) => {
 };
 
 type ModalData =
-  | { day: string; time: string; reset?: false }
-  | { day: string; time: string; reset: true };
+  | { day: string; time: string; type: "open" }
+  | { day: string; time: string; type: "reset" }
+  | { day: string; time: string; type: "booked" };
+
+interface ConsultationInfo {
+  clientName: string;
+  symptoms: string[];
+  details: string;
+}
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -38,6 +45,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [maxId, setMaxId] = useState(0);
 
   const [modalData, setModalData] = useState<ModalData | null>(null);
+  const [consultationInfo, setConsultationInfo] =
+    useState<ConsultationInfo | null>(null);
+
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [hoveredCol, setHoveredCol] = useState<string | null>(null);
 
@@ -92,14 +102,31 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const getSlotStatus = (day: string, time: string): SlotStatus =>
     slots[`${day}_${time}`] || "closed";
 
-  const handleSlotClick = (day: string, time: string) => {
+  const handleSlotClick = async (day: string, time: string) => {
     const normalizedDay = dayjs(day).format("YYYY-MM-DD");
     const status = getSlotStatus(normalizedDay, time);
 
     if (status === "closed") {
-      setModalData({ day: normalizedDay, time });
-    } else {
-      setModalData({ day: normalizedDay, time, reset: true });
+      setModalData({ day: normalizedDay, time, type: "open" });
+    } else if (status === "open") {
+      setModalData({ day: normalizedDay, time, type: "reset" });
+    } else if (status === "booked") {
+      try {
+        // ⚠️ тут будет реальный запрос
+        // const res = await ScheduleService.getConsultationInfo(normalizedDay, time, userId);
+        // setConsultationInfo(res.data);
+
+        // временный мок
+        setConsultationInfo({
+          clientName: "Иванов Иван Иванович",
+          symptoms: ["кашель", "повышенная температура"],
+          details: "Подробное описание симптомов пациента...",
+        });
+
+        setModalData({ day: normalizedDay, time, type: "booked" });
+      } catch (e) {
+        console.error("Ошибка при получении консультации:", e);
+      }
     }
   };
 
@@ -140,12 +167,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               {weekDays.map((d) => (
                 <th
                   key={d}
-                  className={`schedule-grid__day ${
-                    d === today ? "schedule-grid__day--today" : ""
-                  } ${hoveredCol === d ? "highlight" : ""}`}
+                  className={`schedule-grid__day 
+                    ${d === today ? "schedule-grid__day--today" : ""}
+                    ${hoveredCol === d ? "highlight" : ""}
+                  `}
                 >
                   {dayjs(d).format("dd, DD MMMM")}
                 </th>
+
               ))}
             </tr>
           </thead>
@@ -153,53 +182,62 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
             {hours.map((time) => (
               <tr
                 key={time}
-                className={`schedule-grid__row ${
-                  hoveredRow === time ? "highlight" : ""
-                }`}
               >
-                <td className="schedule-grid__time">{time}</td>
+                <td
+                  className={`schedule-grid__time ${hoveredRow === time ? "highlight" : ""
+                    }`}
+                >
+                  {time}
+                </td>
                 {weekDays.map((day) => {
                   const status = getSlotStatus(day, time);
                   const isToday = day === today;
+                  const slotDateTime = dayjs(`${day} ${time}`, "YYYY-MM-DD HH:mm");
+                  const isPast = slotDateTime.isBefore(dayjs());
+
                   return (
                     <td
                       key={day + time}
-                      onClick={() => handleSlotClick(day, time)}
+                      onClick={() => !isPast && handleSlotClick(day, time)}
                       className={`schedule-grid__slot schedule-grid__slot--${status} 
                         ${isToday ? "schedule-grid__slot--today" : ""}
-                        ${
-                          hoveredRow === time || hoveredCol === day
-                            ? "highlight"
-                            : ""
-                        }
+                        ${isPast ? "schedule-grid__slot--past" : ""}
                       `}
                       onMouseEnter={() => {
-                        setHoveredRow(time);
-                        setHoveredCol(day);
+                        if (!isPast) {
+                          setHoveredRow(time);
+                          setHoveredCol(day);
+                        }
                       }}
                       onMouseLeave={() => {
-                        setHoveredRow(null);
-                        setHoveredCol(null);
+                        if (!isPast) {
+                          setHoveredRow(null);
+                          setHoveredCol(null);
+                        }
                       }}
                     >
-                      {status === "booked" && (
+                      {status === "booked" && !isPast && (
                         <span className="slot__icon">✔</span>
                       )}
                     </td>
                   );
                 })}
               </tr>
+
             ))}
           </tbody>
         </table>
       </div>
 
       {/* Модалка открытия */}
-      {modalData && !modalData.reset && (
+      {modalData && modalData.type === "open" && (
         <div className="modal">
           <div className="modal__content">
             <h3>
-              {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
+              {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
+                c.toUpperCase()
+              )}
+              , {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
               {modalData.time}
             </h3>
             <p>Выберите режим:</p>
@@ -258,11 +296,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       )}
 
       {/* Модалка сброса */}
-      {modalData && modalData.reset && (
+      {modalData && modalData.type === "reset" && (
         <div className="modal">
           <div className="modal__content">
             <h3>
-              {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
+              {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
+                c.toUpperCase()
+              )}
+              , {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
               {modalData.time}
             </h3>
             <p>Хотите сбросить выбранную дату?</p>
@@ -290,6 +331,32 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 Сбросить
               </button>
               <button onClick={() => setModalData(null)}>Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модалка booked */}
+      {modalData && modalData.type === "booked" && consultationInfo && (
+        <div className="modal">
+          <div className="modal__content">
+            <h3>
+              Консультация:{" "}
+              {dayjs(modalData.day).format("dddd, DD MMMM YYYY")}{" "}
+              {modalData.time}
+            </h3>
+            <p>
+              <b>Клиент:</b> {consultationInfo.clientName}
+            </p>
+            <p>
+              <b>Симптомы:</b> {consultationInfo.symptoms.join(", ")}
+            </p>
+            <p>
+              <b>Подробно:</b> {consultationInfo.details}
+            </p>
+
+            <div className="modal__actions">
+              <button onClick={() => setModalData(null)}>Закрыть</button>
             </div>
           </div>
         </div>
