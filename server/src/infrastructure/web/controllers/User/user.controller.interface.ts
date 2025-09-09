@@ -11,6 +11,7 @@ import FileServiceImpt from "../../../../core/application/services/file.service.
 import BasicDataRepositoryImpl from "../../../../core/application/repositories/basicData.repository.impl.js"
 import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
+import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js"
 
 const fileService = new FileServiceImpt();
 const userRepository = new UserRepositoryImpl(fileService);
@@ -22,8 +23,9 @@ const SmsService = new SmsServiceImpl(TelegramServiceStart, userRepository);
 const twoFactorService = new TwoFactorServiceImpl(mailService, SmsService, process.env.TEMP_SECRET as string)
 const SpecializationRepository = new SpecializationsRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
+const notificationRepository = new NotificationRepositoryImpl();
 
 const authService = new AuthServiceImpl(userRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
-const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository, consultationRepository);
+const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository, consultationRepository, notificationRepository);
 
 export default userController;
