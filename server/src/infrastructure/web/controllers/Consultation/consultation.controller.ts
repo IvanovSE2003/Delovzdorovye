@@ -198,7 +198,7 @@ export default class ConsultationController {
 
             await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
             await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Консультация была назначена на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", user.id));
-            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Назначена новая консультация на ${consultation.date} в ${consultation.time} от клиента ${user.surname} ${user.surname} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Назначена новая консультация на ${consultation.date} в ${consultation.time} от клиента ${user.surname} ${user.name} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
@@ -308,7 +308,7 @@ export default class ConsultationController {
 
             const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
             await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${newConsult.date} в ${newConsult.time}`, "CONSULTATION", false, newConsult, "CONSULTATION", user.id));
-            await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${consultation.date} в ${consultation.time} клиента ${user.surname} ${user.surname} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${consultation.date} в ${consultation.time} клиента ${user.surname} ${user.name} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             
             return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${newConsult.date} на ${time}` });
         } catch (e: any) {
@@ -341,7 +341,7 @@ export default class ConsultationController {
                 updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
             }
             await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена у специалиста ${updateConsult.doctor?.user.surname} ${updateConsult.doctor?.user.name}`, "CONSULTATION", false, updateConsult, "CONSULTATION", updateConsult.userId));
-            await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена для клиента ${user?.surname} ${user?.surname} ${user?.patronymic} на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена для клиента ${user?.surname} ${user?.name} ${user?.patronymic} на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             return res.status(200).json({ success: true, message: "Консультация была отменена" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -382,7 +382,7 @@ export default class ConsultationController {
             );
 
             await this.notificationRepository.save(new Notification(0, "Повтор консультации", `Был сделан повтор на консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name}  на ${newConsultation.date} в ${newConsultation.time}`, "CONSULTATION", false, newConsultation, "CONSULTATION", newConsultation.userId));
-            await this.notificationRepository.save(new Notification(0, "Повтор консультации", `Клиент ${user?.surname} ${user?.surname} ${user?.patronymic} повторил(а) консультацию ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(new Notification(0, "Повтор консультации", `Клиент ${user?.surname} ${user?.name} ${user?.patronymic} повторил(а) консультацию ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             res.status(200).json({ success: true, message: `Вы повторили консультацию у специалиста ${user?.name} ${user?.name} ${user?.name} в ${newConsultation.date} на ${consultation.time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));

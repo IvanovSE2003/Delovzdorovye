@@ -29,18 +29,21 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
     }
 
     async findByUserId(id: number): Promise<Notification[]> {
-        const notifactions = await models.Notification.findAll({
-            where: {
-                userId: id
-            },
+        const notifications = await models.Notification.findAll({
+            where: { userId: id },
             include: [
                 {
                     model: models.UserModel,
                     attributes: ["name", "surname", "patronymic", "img"]
                 }
+            ],
+            order: [
+                ["isRead", "ASC"],      
+                ["createdAt", "DESC"]   
             ]
-        })
-        return notifactions.map(not => this.mapToDomainNotification(not));
+        });
+
+        return notifications.map(not => this.mapToDomainNotification(not));
     }
 
     async create(notification: Notification): Promise<Notification> {

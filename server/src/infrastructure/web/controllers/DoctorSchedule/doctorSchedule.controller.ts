@@ -56,8 +56,7 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Специалист не найден'));
             }
 
-            const { newTime: moscowTime, newDate: moscowDate } =
-                convertUserTimeToMoscow(date, time, user.timeZone);
+            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
             for (let i = 0; i < 10; i++) {
                 const slotDate = normalizeDate(addDays(new Date(moscowDate), i * 7).toString());
@@ -165,7 +164,7 @@ export default class DoctorScheduleController {
 
             const doctor = await this.doctorRepository.findById(Number(doctorId));
             if (!doctor) {
-                return next(ApiError.badRequest('Специалист не нейден'));
+                return next(ApiError.badRequest('Специалист не найден'));
             }
 
             const user = await this.userRepository.findByDoctorId(doctor.id);
@@ -175,13 +174,18 @@ export default class DoctorScheduleController {
 
             const timeSlots = await this.timeSlotRepository.findByDoctorDate(doctor.id, normDate);
             const results = timeSlots.map(timeSlot => {
-                time: adjustTimeSlotToTimeZone(timeSlot, user.timeZone);
-                date: timeSlot.date;
-                status: timeSlot.status;
-            })
+                const adjustedSlot = adjustTimeSlotToTimeZone(timeSlot, user.timeZone);
+                return {
+                    time: adjustedSlot.time,
+                    date: adjustedSlot.date,
+                    status: timeSlot.status
+                };
+            });
+
             res.status(200).json(results);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }
+
 }
