@@ -1,7 +1,7 @@
 import TimeSlot from "../entities/timeSlot.entity.js";
 
 export default interface TimeSlotRepository {
-    findByTimeDate(time: string, doctorId: number, date: string, isAvailable: boolean): Promise<TimeSlot | null>;
+    findByTimeDate(time: string, doctorId: number, date: string, status: "OPEN" | "CLOSE" | "BOOKED"): Promise<TimeSlot | null>;
     findById(id: number): Promise<TimeSlot | null>;
     findByDoctorId(id: number): Promise<TimeSlot[]>;
     findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]>;

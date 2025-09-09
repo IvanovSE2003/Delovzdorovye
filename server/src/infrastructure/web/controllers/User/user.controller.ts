@@ -14,6 +14,8 @@ import Doctor from "../../../../core/domain/entities/doctor.entity.js";
 import BasicData from "../../../../core/domain/entities/basicData.entity.js"
 import BasicDataRepository from "../../../../core/domain/repositories/basicData.repository.js"
 import ConsultationRepository from "../../../../core/domain/repositories/consultation.repository.js"
+import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js";
+import Notification from "../../../../core/domain/entities/notification.entity.js";
 
 export default class UserController {
     constructor(
@@ -23,7 +25,8 @@ export default class UserController {
         private readonly fileService: FileService,
         private readonly basicDataRepository: BasicDataRepository,
         private readonly doctorRepository: DoctorRepository,
-        private readonly consultationRepository: ConsultationRepository
+        private readonly consultationRepository: ConsultationRepository,
+        private readonly notificationRepository: NotificationRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -471,7 +474,6 @@ export default class UserController {
                 user: result,
             });
         } catch (e: any) {
-            console.error('Update error:', e);
             return next(ApiError.internal("Неизвестная ошибка"));
         }
     }
@@ -621,8 +623,6 @@ export default class UserController {
                 return next(ApiError.badRequest('Неизвестная роль'));
             }
 
-            console.log(user)
-
             if (newRole === 'DOCTOR') {
                 const doctor = await this.doctorRepository.save(new Doctor(0, 0, true, user.id));
                 if (!doctor) {
@@ -631,6 +631,8 @@ export default class UserController {
             }
 
             await this.userRepository.save(user.setRole(newRole));
+            await this.notificationRepository.save(new Notification(0, "Изменение роли", `Вы теперь стали специалистом на платоформе, загрузите пожалуйста свои данные о специализации(ях) в личном кабинете!`, "WARNING", false, null, "CHANGEROLE", user.id));
+
             return res.status(200).json({ success: true, message: `Роль пользователя была изменена на ${newRole}` });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));

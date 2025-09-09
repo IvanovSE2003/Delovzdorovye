@@ -6,6 +6,7 @@ import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
 import { adjustTimeSlotToTimeZone, convertUserTimeToMoscow } from "../../function/transferTime.js"
 import normalizeDate from "../../function/normDate.js";
+import { addDays, format, isBefore } from "date-fns";
 
 export default class DoctorScheduleController {
     constructor(
@@ -30,11 +31,37 @@ export default class DoctorScheduleController {
 
             const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
-            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(moscowDate), isRecurring, dayWeek, "OPEN", doctor.id));
+            const timeSlot = await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(moscowDate), dayWeek, "OPEN", doctor.id));
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не удалось создать ячейку времени'));
             }
 
+            return res.status(200).json({ success: true, message: "Запрос успешно выполнен" });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async createRecurning(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { time, date, dayWeek, userId } = req.body;
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const doctor = await this.doctorRepository.findByUserId(user.id);
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
+            }
+
+            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+
+            for (let i = 0; i < 10; i++) {
+                await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(moscowDate), dayWeek, "OPEN", doctor.id));
+            }
+            
             return res.status(200).json({ success: true, message: "Запрос успешно выполнен" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -66,17 +93,15 @@ export default class DoctorScheduleController {
             }
 
             const timeSlots = await this.timeSlotRepository.findByDoctorId(doctor.id);
-
             if (!timeSlots || timeSlots.length === 0) {
                 return res.status(200).json([]);
             }
 
-            const userTimeSlots = timeSlots.map(slot => adjustTimeSlotToTimeZone(slot, linker.timeZone));
-
-            const result = userTimeSlots.map(slot => ({
+            const result = timeSlots.map(slot => ({
                 doctorId: slot.doctorId,
                 time: slot.time,
-                date: slot.date
+                date: slot.date,
+                status: slot.status
             }));
 
             res.status(200).json(result);

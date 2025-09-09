@@ -4,6 +4,8 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import { Op } from 'sequelize';
 import UserRepositoryImpl from '../repositories/user.repository.impl.js';
 import UserRepository from '../../domain/repositories/user.repository.js';
+import FileServiceImpt from './file.service.impl.js';
+import FileService from '../../domain/services/file.service.js';
 
 const { UserTelegramModel } = models;
 
@@ -11,7 +13,8 @@ export default class TelegramServiceImpl implements TelegramService {
     private bot: Bot;
     private linkTokens = new Map<string, number>();
     private cleanupTimers = new Map<string, NodeJS.Timeout>();
-    private readonly userRepository: UserRepository = new UserRepositoryImpl(); 
+    private readonly fileService: FileService = new FileServiceImpt();
+    private readonly userRepository: UserRepository = new UserRepositoryImpl(this.fileService); 
 
     constructor() {
         this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
@@ -35,7 +38,6 @@ export default class TelegramServiceImpl implements TelegramService {
         try {
             await this.bot.api.sendMessage(telegram_chat_id, text, parse_mode);
         } catch (error) {
-            console.error('Telegram sendMessage error:', error);
             throw error;
         }
     }
@@ -112,7 +114,6 @@ export default class TelegramServiceImpl implements TelegramService {
 
                 await ctx.reply('✅ Аккаунт успешно привязан!');
             } catch (error) {
-                console.error('Linking error:', error);
                 await ctx.reply('❌ Ошибка привязки аккаунта');
             }
         });

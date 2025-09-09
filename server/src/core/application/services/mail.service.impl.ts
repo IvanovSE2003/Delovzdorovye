@@ -28,7 +28,6 @@ export default class MailServiceImpl implements MailService {
                 html: this.getActivationEmailHtml(activationUrl)
             });
         } catch (error) {
-            console.error('Ошибка отправки письма активации:', error);
             throw new Error('Ошибка отправки активационного письма');
         }
     }
@@ -44,7 +43,6 @@ export default class MailServiceImpl implements MailService {
                 html: this.getPasswordResetEmailHtml(resetUrl)
             });
         } catch (error) {
-            console.error('Ошибка отправки письма сброса пароля:', error);
             throw new Error('Ошибка отправки письма для сброса пароля');
         }
     }
@@ -61,7 +59,6 @@ export default class MailServiceImpl implements MailService {
                 html: this.getActivationEmailHtmlBot(botUrl, code)
             });
         } catch (error) {
-            console.error('Ошибка отправки письма активации:', error);
             throw new Error('Ошибка отправки активационного письма');
         }
     }
@@ -76,7 +73,6 @@ export default class MailServiceImpl implements MailService {
                 html: this.getTwoFactorEmailHtml(code)
             });
         } catch (error) {
-            console.error('Ошибка отправки кода 2FA:', error);
             throw new Error('Ошибка отправки кода подтверждения');
         }
     }

@@ -3,7 +3,6 @@ export default class TimeSlot {
         public id: number,
         public time: string,
         public date: string,
-        public isRecurring: boolean,
         public dayWeek: number,
         public status: "OPEN" | "CLOSE" | "BOOKED",
         public doctorId?: number

@@ -148,7 +148,7 @@ export default class UserRepositoryImpl implements UserRepository {
             try {
                 await this.fileService.deleteFile(user.img);
             } catch (err) {
-                console.error('Ошибка при удалении старого аватара:', err);
+                throw new Error('Ошибка при удалении старого аватара:', err);
             }
         }
 
@@ -166,7 +166,7 @@ export default class UserRepositoryImpl implements UserRepository {
             try {
                 await this.fileService.deleteFile(user.img);
             } catch (err) {
-                console.error('Ошибка при удалении старого аватара:', err);
+                throw new Error('Ошибка при удалении старого аватара:', err);
             }
         }
 

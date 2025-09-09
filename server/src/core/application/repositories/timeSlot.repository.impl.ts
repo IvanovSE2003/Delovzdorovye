@@ -22,64 +22,28 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return timeSlots.map(timeSlot => this.mapToDomainTimeSlot(timeSlot));
     }
 
-    async findByTimeDate(time: string, doctorId: number, date: string, isAvailable: boolean): Promise<TimeSlot | null> {
+    async findByTimeDate(time: string, doctorId: number, date: string, status: "OPEN" | "CLOSE" | "BOOKED"): Promise<TimeSlot | null> {
         const slotModels = await models.DoctorSlots.findOne({
             where: {
                 date: date,
                 time: time,
-                doctorId: doctorId
+                doctorId: doctorId,
+                status: status
             }
         })
         return slotModels ? this.mapToDomainTimeSlot(slotModels) : null
     }
 
-    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]>  {
+    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]> {
         const slotModels = await models.DoctorSlots.findAll({
             where: {
-                isRecurring: false,
                 date: {
                     [Op.between]: [startDate, endDate]
                 }
             }
         });
 
-        const recurringModels = await models.DoctorSlots.findAll({
-            where: {
-                isRecurring: true
-            }
-        });
-
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-
-        const recurringSlots: TimeSlot[] = [];
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const jsDay = d.getDay();
-            const customDay = (jsDay + 6) % 7;
-
-            const dateStr = d.toISOString().split("T")[0];
-
-            recurringModels.forEach((m: TimeSlotmModelInterface) => {
-                if (m.dayWeek === customDay) {
-                    recurringSlots.push(
-                        new TimeSlot(
-                            m.id,
-                            m.time,
-                            dateStr,
-                            m.isRecurring,
-                            m.dayWeek,
-                            m.status,
-                            m.doctorId
-                        )
-                    );
-                }
-            });
-        }
-
-        return [
-            ...slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m)),
-            ...recurringSlots
-        ];
+        return slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m));
     }
 
     async findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]> {
@@ -125,7 +89,6 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
             slotModel.id,
             slotModel.time,
             slotModel.date,
-            slotModel.isRecurring,
             slotModel.dayWeek,
             slotModel.status,
             slotModel.doctorId
@@ -136,7 +99,6 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return {
             time: slot.time,
             date: slot.date,
-            isRecurring: slot.isRecurring,
             dayWeek: slot.dayWeek,
             status: slot.status,
             doctorId: slot.doctorId

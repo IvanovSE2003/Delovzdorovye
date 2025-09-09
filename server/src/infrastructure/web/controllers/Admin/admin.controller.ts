@@ -129,7 +129,7 @@ export default class BatchController {
                 return next(ApiError.badRequest('Изменение не найдено'));
             }
 
-            console.log(rejection_reason);
+            await this.notificationRepository.save(new Notification(0, "Изменения не приняты", `Ваши изменения не приняты администратором. ${rejection_reason}`, "INFO", false, basicData, "BASICDATA", basicData.userId));
 
             await this.basicDataReposiotry.delete(basicData.id);
             return res.status(200).json({
@@ -181,7 +181,7 @@ export default class BatchController {
                 return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
             }
 
-            console.log(rejection_reason);
+            await this.notificationRepository.save(new Notification(0, "Изменения не приняты", `Ваши изменения не приняты администратором. ${rejection_reason}`, "INFO", false, profData, "BASICDATA", profData.userId || 0));
 
             await this.profDataRepository.delete(profData.id);
             return res.status(200).json({

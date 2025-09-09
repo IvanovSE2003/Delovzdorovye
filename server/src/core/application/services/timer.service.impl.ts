@@ -1,4 +1,3 @@
-// consultation.timer.service.ts
 import { Server } from 'socket.io';
 import TimerService from '../../domain/services/timer.service';
 import ConsultationRepository from '../../domain/repositories/consultation.repository';
@@ -58,18 +57,16 @@ export default class TimerServiceImpl implements TimerService {
     private async cancelConsultation(consultationId: number) {
         try {
             const consultation = await this.consultationRepository.findById(consultationId);
-            if (consultation && consultation.payment_status === 'pending') {
-                consultation.setPayStatus('cancelled');
-                consultation.setConsultStatus('cancelled');
-                await this.consultationRepository.update(consultation.id, consultation);
+            if (consultation && consultation.payment_status === "PAYMENT") {
+                await this.consultationRepository.update(consultation.setPayStatus("NOTPAID").setConsultStatus("ARCHIVE"));
 
-                if (consultation.timeSlotId) {
-                    const timeSlot = await this.timeSlotRepository.findById(consultation.timeSlotId);
-                    if (timeSlot) {
-                        timeSlot.isAvailable = true;
-                        await this.timeSlotRepository.update(timeSlot);
-                    }
-                }
+                // if (consultation.time) {
+                //     const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time,consultation.doctorId ,consultation.date);
+                //     if (timeSlot) {
+                //         timeSlot.status = "OPEN";
+                //         await this.timeSlotRepository.update(timeSlot);
+                //     }
+                // }
 
                 if (this.io) {
                     this.io.to(`consultation-${consultationId}`).emit('consultation-cancelled', {
@@ -79,7 +76,7 @@ export default class TimerServiceImpl implements TimerService {
                 }
             }
         } catch (error) {
-            console.error('Error cancelling consultation:', error);
+            throw error;
         }
     }
 

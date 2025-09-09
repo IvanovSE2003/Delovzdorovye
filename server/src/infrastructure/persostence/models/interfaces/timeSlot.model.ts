@@ -4,7 +4,6 @@ interface ITimeSlotAttributes {
     id: number;
     time: string;
     date: string;
-    isRecurring: boolean;
     dayWeek: number;
     status: "OPEN" | "CLOSE" | "BOOKED";
     doctorId?: number;

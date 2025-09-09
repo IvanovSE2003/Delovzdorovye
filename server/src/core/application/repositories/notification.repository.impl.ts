@@ -40,7 +40,6 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
                 }
             ]
         })
-        console.log(notifactions[0])
         return notifactions.map(not => this.mapToDomainNotification(not));
     }
 

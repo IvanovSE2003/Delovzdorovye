@@ -185,7 +185,7 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctor.id, normalizeDate(moscowDate), true);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctor.id, normalizeDate(moscowDate), "OPEN");
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка не найдена'));
             }
@@ -215,7 +215,6 @@ export default class ConsultationController {
             }
 
             const consultation = await this.consultationRepository.findById(Number(id));
-            console.log(consultation)
 
             if (!consultation) {
                 return next(ApiError.badRequest('Консультация не найдена'));
@@ -241,7 +240,6 @@ export default class ConsultationController {
                 }
             });
         } catch (e: any) {
-            console.error('Error in getTimeLeft:', e);
             return next(ApiError.internal('Ошибка при получении времени'));
         }
     }
@@ -291,14 +289,15 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультация не найдена'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, doctorId, date, true);
+            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctorId, date, "OPEN");
 
             if (!timeSlot) {
                 return next(ApiError.badRequest('Не свободной ячейки для записи на консультацию'));
             }
 
-            console.log(consultation.time, consultation.doctorId, consultation.date);
-            const timeSlotPrev = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, false);
+            const { newTime: moscowTimePrev, newDate: moscowDatePrev } = convertUserTimeToMoscow(consultation.date, consultation.time, user.timeZone);
+            const timeSlotPrev = await this.timeSlotRepository.findByTimeDate(moscowTimePrev, consultation.doctorId, consultation.date, "BOOKED");
 
             if (!timeSlotPrev) {
                 return next(ApiError.badRequest('Не найден предыдущий верменной слот'));
@@ -366,7 +365,7 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date, true);
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date, "OPEN");
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка занята или найдена'));
             }
@@ -496,9 +495,7 @@ export default class ConsultationController {
             }));
 
             await models.ConsultationProblems.bulkCreate(consultationProblems);
-
         } catch (error) {
-            console.error('Ошибка при добавлении проблем к консультации:', error);
             throw error;
         }
     }

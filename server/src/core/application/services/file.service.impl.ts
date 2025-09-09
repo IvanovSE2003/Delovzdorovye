@@ -32,10 +32,9 @@ export default class FileServiceImpt implements FileService  {
             if (fs.existsSync(filePath)) {
                 await fs.promises.unlink(filePath);
             } else {
-                console.warn(`Файл ${fileName} не найден в static`);
+                throw new Error(`Файл ${fileName} не найден в static`);
             }
         } catch (err) {
-            console.error(`Ошибка при удалении файла ${fileName}:`, err);
             throw new Error('Не удалось удалить файл');
         }
     }а

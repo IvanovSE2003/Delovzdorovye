@@ -92,7 +92,6 @@ export default class DoctorController {
                     const fileName = await this.fileService.saveFile(diplomaFile);
                     profDataRecord.new_diploma = fileName;
                 } catch (error) {
-                    console.error('Ошибка обработки файла диплома:', error);
                     return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
             } else if (data.diploma) {
@@ -108,7 +107,6 @@ export default class DoctorController {
                     const fileName = await this.fileService.saveFile(licenseFile);
                     profDataRecord.new_license = fileName;
                 } catch (error) {
-                    console.error('Ошибка обработки файла лицензии:', error);
                     return next(ApiError.internal('Ошибка загрузки лицензии'));
                 }
             } else if (data.license) {
