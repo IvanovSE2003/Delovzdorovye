@@ -86,20 +86,10 @@ const start = async () => {
         cron.schedule('*/5 * * * *', async () => {
             try {
                 const nowMoscow = dayjs().tz('Europe/Moscow');
-                const [updatedCount] = await models.Consultation.update(
-                    { consultation_status: 'ARCHIVE' },
-                    {
-                        where: {
-                            consultation_status: 'UPCOMING',
-                            date: { [Op.lt]: nowMoscow.format('YYYY-MM-DD') }
-                        }
-                    }
-                );
 
                 const consultations = await models.Consultation.findAll({
                     where: {
-                        consultation_status: 'UPCOMING',
-                        date: { [Op.lt]: nowMoscow.format('YYYY-MM-DD') } 
+                        consultation_status: 'UPCOMING'
                     }
                 });
 
@@ -110,7 +100,7 @@ const start = async () => {
                         'Europe/Moscow'
                     );
 
-                    if (consultDateTime.isBefore(nowMoscow)) {
+                    if (consultDateTime.add(2, 'hour').isBefore(nowMoscow)) {
                         await consult.update({ consultation_status: 'ARCHIVE' });
                         console.log(`Консультация ${consult.id} завершена автоматически`);
                     }
@@ -122,6 +112,7 @@ const start = async () => {
         }, {
             timezone: 'Europe/Moscow'
         });
+
 
         server.listen(PORT, () => {
             console.log(`Сервер запустился на порте: ${PORT}`);
