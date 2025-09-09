@@ -37,7 +37,7 @@ export default class NotificationContorller {
 
     async deleteAllNotification(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId } = req.body;
+            const { userId } = req.params;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
@@ -46,6 +46,21 @@ export default class NotificationContorller {
 
             await this.notificationReposiotory.deleteByUser(user.id);
             res.status(204).send();
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const notifaction = await this.notificationReposiotory.findById(Number(id));
+            if (!notifaction) {
+                return next(ApiError.badRequest('Уведомление не найдено'));
+            }
+
+            await this.notificationReposiotory.delete(notifaction.id);
+            res.status(204).send()
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -60,6 +75,24 @@ export default class NotificationContorller {
             }
             await this.notificationReposiotory.save(notifaction.setRead(true));
             return res.status(200).send();
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async readAllNotification(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.params;
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            const notifications = await this.notificationReposiotory.findByUserId(user.id)
+
+            notifications.map(async not => await this.notificationReposiotory.save(not.setRead(true)))            
+            res.status(200).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

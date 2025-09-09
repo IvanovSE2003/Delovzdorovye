@@ -268,7 +268,7 @@ export default class UserController {
                 return next(ApiError.notAuthorized('Пользователь не найден'));
             }
 
-            const countNot = await this.notificationRepository.countByUserId(user.id, false);
+            const countNot = await this.notificationRepository.countByUserId(user.id, true);
 
             const tokens = await this.tokenService.generateTokens({ ...user });
             await this.tokenService.saveToken(user.id, tokens.refreshToken);

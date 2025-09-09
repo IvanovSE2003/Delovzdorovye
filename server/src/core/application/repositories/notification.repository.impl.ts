@@ -103,14 +103,14 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
     }
 
     private mapToPersistence(notifaction: Notification): INotificationCreationAttributes {
-    return {
-        title: notifaction.title,
-        message: notifaction.message,
-        type: notifaction.type,
-        isRead: notifaction.isRead,
-        entity: notifaction.entity,
-        entityType: notifaction.entityType,
-        userId: notifaction.userId
-    };
-}
+        return {
+            title: notifaction.title,
+            message: notifaction.message,
+            type: notifaction.type,
+            isRead: notifaction.isRead,
+            entity: notifaction.entity,
+            entityType: notifaction.entityType,
+            userId: notifaction.userId
+        };
+    }
 }
