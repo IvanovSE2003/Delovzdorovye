@@ -12,7 +12,6 @@ export function adjustTimeSlotToTimeZone(slot: TimeSlot, userTimeZone: ITimeZone
         slot.id,
         newTime,
         newDate,
-        slot.isRecurring,
         slot.dayWeek,
         slot.status,
         slot.doctorId

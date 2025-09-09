@@ -17,7 +17,7 @@ export default class DoctorScheduleController {
 
     async create(req: Request, res: Response, next: NextFunction) {
         try {
-            const { time, date, isRecurring, dayWeek, userId } = req.body;
+            const { time, date, dayWeek, userId } = req.body;
 
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
@@ -56,13 +56,33 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Специалист не найден'));
             }
 
-            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+            const { newTime: moscowTime, newDate: moscowDate } =
+                convertUserTimeToMoscow(date, time, user.timeZone);
 
             for (let i = 0; i < 10; i++) {
-                await this.timeSlotRepository.save(new TimeSlot(0, moscowTime, normalizeDate(moscowDate), dayWeek, "OPEN", doctor.id));
+                const slotDate = normalizeDate(addDays(new Date(moscowDate), i * 7).toString());
+
+                const existing = await this.timeSlotRepository.findByTimeDate(
+                    moscowTime,
+                    doctor.id,
+                    slotDate,
+                    "OPEN"
+                );
+                if (existing) continue;
+
+                await this.timeSlotRepository.save(
+                    new TimeSlot(
+                        0,
+                        moscowTime,
+                        slotDate,
+                        dayWeek,
+                        "OPEN",
+                        doctor.id
+                    )
+                );
             }
-            
-            return res.status(200).json({ success: true, message: "Запрос успешно выполнен" });
+
+            return res.status(200).json({ success: true, message: "Слоты созданы на 10 недель вперёд" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -97,12 +117,15 @@ export default class DoctorScheduleController {
                 return res.status(200).json([]);
             }
 
-            const result = timeSlots.map(slot => ({
-                doctorId: slot.doctorId,
-                time: slot.time,
-                date: slot.date,
-                status: slot.status
-            }));
+            const result = timeSlots.map(slot => {
+                const adjustedSlot = adjustTimeSlotToTimeZone(slot, linker.timeZone);
+                return {
+                    doctorId: adjustedSlot.doctorId,
+                    time: adjustedSlot.time,
+                    date: adjustedSlot.date,
+                    status: adjustedSlot.status
+                };
+            });
 
             res.status(200).json(result);
         } catch (e: any) {
