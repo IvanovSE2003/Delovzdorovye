@@ -116,15 +116,15 @@ export default class DoctorScheduleController {
                 return res.status(200).json([]);
             }
 
-            const result = timeSlots.map(slot => {
-                const adjustedSlot = adjustTimeSlotToTimeZone(slot, linker.timeZone);
-                return {
+            const result = timeSlots
+                .map(slot => adjustTimeSlotToTimeZone(slot, linker.timeZone))
+                .map(adjustedSlot => ({
                     doctorId: adjustedSlot.doctorId,
                     time: adjustedSlot.time,
                     date: adjustedSlot.date,
                     status: adjustedSlot.status
-                };
-            });
+                }))
+                .sort((a, b) => a.time.localeCompare(b.time));
 
             res.status(200).json(result);
         } catch (e: any) {

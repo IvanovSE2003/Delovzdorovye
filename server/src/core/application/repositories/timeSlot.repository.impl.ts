@@ -16,7 +16,8 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     async findByDoctorId(id: number): Promise<TimeSlot[]> {
         const timeSlots = await models.DoctorSlots.findAll({
             where: {
-                doctorId: id
+                doctorId: id,
+                status: "OPEN"
             }
         })
         return timeSlots.map(timeSlot => this.mapToDomainTimeSlot(timeSlot));
