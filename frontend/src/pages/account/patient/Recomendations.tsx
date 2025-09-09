@@ -43,8 +43,8 @@ const Recomendations = () => {
                 <h2 className="page-container__title">Рекомендации от специалистов</h2>
 
                 <div className="recomendations__blocks">
-                    {recomendations.length > 0 ? recomendations.map(recomend => (
-                        <div className="block">
+                    {recomendations.length > 0 ? recomendations.map((recomend, index) => (
+                        <div key={index} className="block">
                             <h3>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic}
                                 {` (${recomend.specialization.join(", ")})`}
                             </h3>

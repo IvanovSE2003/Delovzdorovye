@@ -424,27 +424,20 @@
   }
 }
 
-
-// SVG-иконки на сайте
-.svg-link {
-  transition: all 0.3s ease;
-
-  &.active {
-    fill: $doctor-color;
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    display: block;
   }
 
-  &:hover {
-    filter: none;
+  80% {
+    opacity: 1;
   }
-}
 
-.icon {
-  transition: all 0.3s ease;
-}
-
-.svg-link:hover .icon {
-  fill: $primary-color;
-  cursor: pointer;
+  100% {
+    opacity: 0;
+    display: none;
+  }
 }
 
 // Страница рекомендаций

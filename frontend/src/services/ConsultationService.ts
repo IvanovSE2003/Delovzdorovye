@@ -3,6 +3,7 @@ import $api from "../http";
 import type { AppointmentResponse, OptionsResponse, Slot } from "../store/consultations-store";
 import type { Consultation } from "../features/account/UpcomingConsultations/UpcomingConsultations";
 import type { ConsultationData } from "../components/UI/Modals/EditModal/EditModal";
+import type { TypeResponse } from "../models/response/DefaultResponse";
 
 
 interface ConsultationsResponse {
@@ -65,8 +66,8 @@ export default class ConsultationService {
     }
 
     // Перенос консультации
-    static async shiftAppointment(data: ConsultationData) : Promise<AxiosResponse<AppointmentResponse>> {
-        return $api.post<AppointmentResponse>(`/consultation/resheduleConsultation/${data.id}`, {
+    static async shiftAppointment(data: ConsultationData) : Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`/consultation/resheduleConsultation/${data.id}`, {
             date: data.date, time: data.time, userId: data.userId, doctorId: data.doctorId
         });
     }

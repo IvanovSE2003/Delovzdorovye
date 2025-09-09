@@ -24,6 +24,7 @@ export default class Store {
     error = "";
     menuItems = [] as ImenuItems[];
     loading = false;
+    countMessage:number|null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -59,6 +60,10 @@ export default class Store {
     setLoading(bool: boolean) {
         this.loading = bool;
     }
+
+    setCountMessage(count: number|null) {
+        this.countMessage = count;
+    } 
 
     async withLoading<T>(asyncFunction: () => Promise<T>): Promise<T> {
         this.setLoading(true);
@@ -148,6 +153,7 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
+                this.setCountMessage(response.data.countMessage);
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 localStorage.removeItem('token');

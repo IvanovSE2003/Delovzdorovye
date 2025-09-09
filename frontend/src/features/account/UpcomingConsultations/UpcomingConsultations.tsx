@@ -168,7 +168,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                             {consultation.Problems.map((p, i) => (
                                 <span key={i}>
                                     {p.toLocaleLowerCase()}
-                                    {i < consultation.Problems.length - 1 ? ', ' : '.'}
+                                    {i < consultation.Problems.length - 1 ? ', ' : ''}
                                 </span>
                             ))}
                         </div>

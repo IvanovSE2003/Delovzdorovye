@@ -20,7 +20,7 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   specialist = {} as OptionsResponse,
   slotsOverride = undefined,
   onTimeDateSelect,
-  userId=undefined
+  userId = undefined
 }) => {
   const store = new ConsultationsStore();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -32,7 +32,7 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   useEffect(() => {
     if (slotsOverride !== undefined) {
       setSlots(slotsOverride);
-      if (slotsOverride.length == 0) {
+      if (slotsOverride.length === 0) {
         setSelectedDate(null);
         setSelectedTime(null);
       }
@@ -42,7 +42,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     const loadSpecialistSchedule = async () => {
       if (!specialist?.value) return;
       try {
-        console.log(specialist.value);
         const schedule = await store.getSchedule(specialist.value, Number(userId));
         setSlots(schedule || []);
       } catch (error) {
@@ -52,7 +51,8 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     };
 
     loadSpecialistSchedule();
-  }, [specialist, slotsOverride]);
+  }, [specialist?.value, slotsOverride, userId]);
+
 
   // Проверка доступных дат
   const availableDates: Date[] = Array.from(

@@ -66,7 +66,6 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
         setError("");
     };
 
-
     // Передача данные с RecordForm
     const onTimeDateSelect = (time: string | null, date: string | null) => {
         setSelectedTime(time);

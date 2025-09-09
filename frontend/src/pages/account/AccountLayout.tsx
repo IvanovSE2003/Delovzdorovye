@@ -34,6 +34,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({ children }) => {
           {children}
       </main>
       <RightPanel
+        countMessage={store.countMessage}
         role={store.user.role}
       />
     </div>
