@@ -18,6 +18,7 @@ export interface Slot {
     date: string;
     time: string;
     doctorId: number;
+    status: "BOOKED" | "OPEN" | "CLOSED";
 }
 
 export interface AppointmentRequest {
@@ -96,16 +97,6 @@ export default class ConsultationsStore {
         return slots;
     }
 
-    // async createAppointment(data: ): Promise<AppointmentResponse> {
-    //     try {
-    //         const response = await ConsultationService.createAppointment(data);
-    //         return response.data;
-    //     } catch (e) {
-    //         console.error(`Ошибка при создании консультации:`, e);
-    //         return {} as AppointmentResponse;
-    //     }
-    // }
-
     async deleteProblem(id: number): Promise<void> {
         try {
             await ConsultationService.deleteProblem(id);
@@ -129,14 +120,4 @@ export default class ConsultationsStore {
             console.error("Ошибка при создании проблемы: ", e);
         }
     }
-
-    // async findDays(problems: number[]): Promise<TypeResponse> {
-    //     let response;
-    //     try {
-    //         response = await ConsultationService.findDays(problems);
-    //         return response.data;
-    //     } catch (e) {
-    //         return { success: false, message: response?.data?.message||""}
-    //     }
-    // }
 } 

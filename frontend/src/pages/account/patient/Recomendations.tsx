@@ -49,7 +49,11 @@ const Recomendations = () => {
                                 {` (${recomend.specialization.join(", ")})`}
                             </h3>
                             <div className="block__info">
-                                <a target="_blank" href={`${API_URL}/${recomend.recomendation}`}>Документ</a>
+                                {recomend.recomendation && recomend.recomendation.length > 0 ? (
+                                    <a target="_blank" href={`${API_URL}/${recomend.recomendation}`}>Документ</a>
+                                ) : (
+                                    <div>Документ не был загружен</div>
+                                )}
                                 <div className="date">{getDateLabel(recomend.date)}, {recomend.time}</div>
                             </div>
                         </div>

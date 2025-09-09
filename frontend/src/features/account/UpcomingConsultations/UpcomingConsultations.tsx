@@ -83,7 +83,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     };
 
     // Завершение отмены консультации
-    const handleCancelConsultation = (reason: string, id: number) => {
+    const handleCancelConsultation = async (reason: string, id: number) => {
         console.log(`Данные для записи ${id}: `, reason);
         // const response = await ConsultationService.cancelAppoinment(reason, id);
         // console.log(response.data);

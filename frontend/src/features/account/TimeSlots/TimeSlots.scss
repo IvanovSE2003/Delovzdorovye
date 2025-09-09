@@ -20,7 +20,8 @@
     gap: 20px;
   }
 
-  &__none {
+  &__none,
+  &__not-select {
     color: black;
     font-size: 1.3rem;
     font-weight: bold;
@@ -30,6 +31,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+  }
+
+  &__none {
+    color: $red-color !important;
   }
 
   &__item {

@@ -5,7 +5,7 @@ import type { Role } from '../../../models/Auth';
 
 interface RigthPanelProps {
     role: Role;
-    countMessage: number|null;
+    countMessage: number;
 }
 
 const RightPanel: React.FC<RigthPanelProps> = ({ role, countMessage }) => {
@@ -55,7 +55,7 @@ const RightPanel: React.FC<RigthPanelProps> = ({ role, countMessage }) => {
                         />
                     </svg>
 
-                    {countMessage && countMessage > 0 && (
+                    {countMessage > 0 && (
                         <span className="notification-badge">{countMessage}</span>
                     )}
                 </Link>

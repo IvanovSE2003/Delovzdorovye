@@ -8,6 +8,7 @@ import ConsultationsPat from "../pages/account/patient/Consultations";
 import Recomendations from "../pages/account/patient/Recomendations";
 import MainPat from "../pages/account/patient/Main";
 import SpecialistsPat from "../pages/account/patient/Specialists/Specialists";
+import Payment from "../pages/account/patient/Payment";
 
 import ConsultationsDoc from "../pages/account/doctor/Consultations/Consultations";
 import TimeSheet from "../pages/account/doctor/TimeSheet/TimeSheet";
@@ -48,6 +49,7 @@ export const RouteNames = {
     SPECIALISTPAT: '/patient/specialist',
     USEFULINFOPAT: '/patient/useful-information',
     MAINPAT: '/patient/main',
+    PAYMENT: '/patient/payment',
 
     // Пути для доктора
     CONSULTATIONSDOC: '/doctor/consultations',
@@ -69,6 +71,7 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.RECOMENDATIONS, name: "Рекомендации" },
         { path: RouteNames.SPECIALISTPAT, name: "Специалисты" },
         { path: RouteNames.USEFULINFOPAT, name: "Полезная информация" },
+        { path: RouteNames.PAYMENT, name: "Текущие заявки"},
     ],
     DOCTOR: [
         { path: RouteNames.CONSULTATIONSDOC, name: "Консультации" },
@@ -105,14 +108,12 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.RECOMENDATIONS, element: Recomendations, roles: ['PATIENT'] },
     { path: RouteNames.SPECIALISTPAT, element: SpecialistsPat, roles: ['PATIENT'] },
     { path: RouteNames.USEFULINFOPAT, element: UsefulInfoPat, roles: ['PATIENT']},
+    { path: RouteNames.PAYMENT, element: Payment, roles: ['PATIENT']},
 
     // Маршруты для врачей
     { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc, roles: ['DOCTOR'] },
     { path: RouteNames.TIMESHEET, element: TimeSheet, roles: ['DOCTOR'] },
     { path: RouteNames.USEFULINFODOC, element: UsefulInfoDoc, roles: ['DOCTOR']},
-
-    // { path: RouteNames.HELP, element: Help, roles: ['DOCTOR'] },
-    // { path: RouteNames.FINANCE, element: Finance, roles: ['DOCTOR'] },
 
     // Маршруты для администраторов
     { path: RouteNames.SPECIALISTS, element: Specialists, roles: ['ADMIN'] },

@@ -51,7 +51,12 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                 </div>
 
                 <div className="shift-modal__client">
-                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData?.PatientPatronymic}, 8 888 888 88 88
+                    Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
+                        ? <span>Анонимный пользователь</span>
+                        : <span>
+                            {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                        </span>
+                    }
                 </div>
 
                 <div className="cancel-modal__reason">

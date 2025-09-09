@@ -24,7 +24,7 @@ export default class Store {
     error = "";
     menuItems = [] as ImenuItems[];
     loading = false;
-    countMessage:number|null = null;
+    countMessage = 0;
 
     constructor() {
         makeAutoObservable(this);
@@ -61,9 +61,13 @@ export default class Store {
         this.loading = bool;
     }
 
-    setCountMessage(count: number|null) {
+    setCountMessage(count: number) {
         this.countMessage = count;
     } 
+
+    decrimentCountMessage() {
+        this.countMessage--;
+    }
 
     async withLoading<T>(asyncFunction: () => Promise<T>): Promise<T> {
         this.setLoading(true);

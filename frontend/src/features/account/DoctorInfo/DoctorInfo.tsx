@@ -2,13 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 import './DoctorInfo.scss';
 import { Context } from '../../../main';
 import { observer } from 'mobx-react-lite';
-import $api, { API_URL, URL } from '../../../http';
+import { URL } from '../../../http';
 import MyInput from '../../../components/UI/MyInput/MyInput';
 import Select from 'react-select';
 import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import type { AxiosError } from 'axios';
 import DoctorService from '../../../services/DoctorService';
+import MyInputFile from '../../../components/UI/MyInput/MyInputFile';
 
 interface SpecializationForm {
     specialization: string;
@@ -24,6 +25,12 @@ const DoctorInfo = () => {
     const [experienceYears, setExperienceYears] = useState<number>(0);
     const [specializations, setSpecializations] = useState<SpecializationForm[]>([]);
     const [availableSpecializations, setAvailableSpecializations] = useState<any[]>([]);
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const [selectedSpecialization, setSelectedSpecialization] = useState<number | null>(null);
+
+    const toggle = (index: number) => {
+        setOpenIndex(openIndex === index ? null : index);
+    };
 
     const getDoctorInfo = async () => {
         try {
@@ -45,11 +52,10 @@ const DoctorInfo = () => {
 
     const saveChanges = async () => {
         try {
-            // Отправляем каждую специализацию отдельным запросом
             for (const spec of specializations) {
                 const formData = new FormData();
                 const dataToSend = {
-                    specialization: spec.specialization,
+                    specialization: selectedSpecialization,
                     diploma: spec.diploma instanceof File ? null : spec.diploma,
                     license: spec.license instanceof File ? null : spec.license
                 };
@@ -63,10 +69,8 @@ const DoctorInfo = () => {
                     formData.append('license', spec.license);
                 }
 
-                await fetch(`http://localhost:5000/api/doctor/${store.user.id}`, {
-                    method: 'PUT',
-                    body: formData
-                });
+                console.log(formData);
+                await DoctorService.saveChangeDoctorInfo(store.user.id, formData);
             }
 
             setEdit(false);
@@ -74,10 +78,6 @@ const DoctorInfo = () => {
             console.error('Ошибка сохранения:', error);
         }
     };
-
-
-
-
 
     const addSpecialization = () => {
         setSpecializations([...specializations, { specialization: "", diploma: "", license: "" }]);
@@ -103,6 +103,7 @@ const DoctorInfo = () => {
 
     useEffect(() => {
         getDoctorInfo();
+        getSpecialization();
     }, []);
 
     if (!store.user) {
@@ -124,12 +125,13 @@ const DoctorInfo = () => {
                 {edit ? (
                     <div className="doctor-info__edit">
                         <div className="form-section">
-                            <label className="form-section__label">Опыт работы (лет)</label>
                             <MyInput
                                 type="number"
                                 value={experienceYears.toString()}
                                 onChange={(e) => setExperienceYears(Number(e))}
-                                placeholder="Введите опыт работы" id={''} label={''}
+                                placeholder="Введите опыт работы"
+                                id="experienceYears"
+                                label="Опыт работы (лет)"
                             />
                         </div>
 
@@ -153,63 +155,38 @@ const DoctorInfo = () => {
                                             placeholder="Выберите специализацию"
                                             className="doctor-info__select"
                                             classNamePrefix="custom-select"
-                                            value={availableSpecializations.find(opt => opt.value === spec.specialization)}
-                                            onMenuOpen={getSpecialization}
-                                            onChange={(selected) =>
-                                                updateSpecialization(index, 'specialization', selected?.value || '')
-                                            }
+                                            value={availableSpecializations.find(opt => opt.label === spec.specialization) || null}
+                                            onChange={(selected) => {
+                                                updateSpecialization(index, 'specialization', selected?.label || '')
+                                                setSelectedSpecialization(selected?.value);
+                                            }}
                                         />
 
                                         <button
                                             type="button"
-                                            className="remove-button"
+                                            className="neg-button"
                                             onClick={() => {
                                                 setSpecializations(specializations.filter((_, i) => i !== index));
                                             }}
                                         >
-                                            ❌
+                                            Удалить
                                         </button>
                                     </div>
 
-                                    <div className="file-upload">
-                                        <label>Диплом:</label>
-                                        <input
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg"
-                                            onChange={(e) => {
-                                                if (e.target.files?.[0]) {
-                                                    updateSpecialization(index, 'diploma', e.target.files[0]);
-                                                }
-                                            }}
-                                        />
-                                        {spec.diploma && (
-                                            <span>
-                                                {typeof spec.diploma === "string"
-                                                    ? spec.diploma
-                                                    : (spec.diploma as File).name}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <MyInputFile
+                                        id="diploma"
+                                        label="Диплом"
+                                        value={spec.diploma}
+                                        onChange={(file) => updateSpecialization(index, "diploma", file ?? "")}
+                                    />
 
-                                    <div className="file-upload">
-                                        <label>Лицензия:</label>
-                                        <input
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg"
-                                            onChange={(e) => {
-                                                if (e.target.files?.[0]) {
-                                                    updateSpecialization(index, 'license', e.target.files[0]);
-                                                }
-                                            }}
-                                        />
-                                        {spec.license && (
-                                            <span>
-                                                {typeof spec.license === "string"
-                                                    ? spec.license
-                                                    : (spec.license as File).name}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <MyInputFile
+                                        id="license"
+                                        label="Лицензия"
+                                        value={spec.license}
+                                        onChange={(file) => updateSpecialization(index, "license", file ?? "")}
+                                    />
+
                                 </div>
                             ))}
 
@@ -241,37 +218,46 @@ const DoctorInfo = () => {
                                 {specializations.length > 0 ? (
                                     specializations.map((spec, index) => (
                                         <div key={index} className="specialization-item">
-                                            <div className="specialization-item__header">
-                                                <h4 className="specialization-item__name">{spec.specialization}</h4>
-                                            </div>
-                                            <div className="specialization-item__docs">
-                                                {spec.diploma && (
-                                                    <div className="doc-item">
-                                                        <span className="doc-item__label">Диплом:</span>
-                                                        <a
-                                                            href={`${URL}/${spec.diploma}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="doc-item__link"
-                                                        >
-                                                            Посмотреть документ
-                                                        </a>
+                                            <button
+                                                className="specialization-item__header"
+                                                onClick={() => toggle(index)}
+                                            >
+                                                <span className="specialization-item__name">
+                                                    {spec.specialization}
+                                                </span>
+                                                <span className="specialization-item__arrow">
+                                                    {openIndex === index ? "▲" : "▼"}
+                                                </span>
+                                            </button>
+
+                                            {openIndex === index && (
+                                                <div className="specialization-item__content">
+                                                    <div className="specialization-docs">
+                                                        <div className="specialization-docs__item">
+                                                            <span className="specialization-docs__label">Диплом:</span>
+                                                            <a
+                                                                href={`${URL}/${spec.diploma}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="specialization-docs__link"
+                                                            >
+                                                                Посмотреть документ
+                                                            </a>
+                                                        </div>
+                                                        <div className="specialization-docs__item">
+                                                            <span className="specialization-docs__label">Лицензия:</span>
+                                                            <a
+                                                                href={`${URL}/${spec.license}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="specialization-docs__link"
+                                                            >
+                                                                Посмотреть документ
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                )}
-                                                {spec.license && (
-                                                    <div className="doc-item">
-                                                        <span className="doc-item__label">Лицензия:</span>
-                                                        <a
-                                                            href={`${URL}/${spec.license}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="doc-item__link"
-                                                        >
-                                                            Посмотреть документ
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))
                                 ) : (
@@ -288,13 +274,16 @@ const DoctorInfo = () => {
             <div className="doctor-info__actions">
                 {edit ? (
                     <div className="action-buttons">
-                        <button className="action-button action-button--primary" onClick={saveChanges}>
+                        <button
+                            className="my-button"
+                            onClick={saveChanges}
+                        >
                             Сохранить изменения
                         </button>
                         <button
-                            className="action-button action-button--secondary"
+                            className="neg-button"
                             onClick={() => {
-                                getDoctorInfo(); // Сбрасываем изменения
+                                getDoctorInfo();
                                 setEdit(false);
                             }}
                         >
@@ -303,7 +292,7 @@ const DoctorInfo = () => {
                     </div>
                 ) : (
                     <button
-                        className="action-button action-button--primary"
+                        className="my-button"
                         onClick={() => setEdit(true)}
                     >
                         Редактировать профиль

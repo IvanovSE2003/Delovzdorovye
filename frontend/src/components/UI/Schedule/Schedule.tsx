@@ -147,7 +147,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
 
         <span className="schedule-grid__week-label">{weekLabel}</span>
 
-        <button onClick={() => setWeekOffset((prev) => prev + 1)}>→</button>
+        <button
+          onClick={() => setWeekOffset((prev) => Math.min(prev + 1, 4))}
+          disabled={weekOffset === 4}
+        >
+          →
+        </button>
 
         <button
           className="schedule-grid__today-btn"
@@ -246,10 +251,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 onClick={async () => {
                   try {
                     const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
-                    await ScheduleService.setschuduleDay(
+                    await ScheduleService.setSchuduleDay(
                       modalData.time,
                       modalData.day,
-                      false,
                       userId,
                       dayWeek
                     );
@@ -267,12 +271,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 onClick={async () => {
                   try {
                     const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
-                    await ScheduleService.setschuduleDay(
+                    await ScheduleService.setSchuduleDayRecurning(
                       modalData.time,
                       modalData.day,
-                      true,
-                      userId,
-                      dayWeek
+                      dayWeek,
+                      userId
                     );
                     await fetchSchedule();
                   } catch (e) {

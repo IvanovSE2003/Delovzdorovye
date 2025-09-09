@@ -8,6 +8,10 @@ export default class DoctorService {
         return $api.get<IDoctor>(`/doctor/${id}`);
     }
 
+    static async saveChangeDoctorInfo(id: number, data: FormData) {
+        return $api.put(`doctor/${id}`, data);
+    }
+
     static async getSpecializations(): Promise<AxiosResponse<Specializations[]>> {
         return $api.get<Specializations[]>('/specialization/all');
     }

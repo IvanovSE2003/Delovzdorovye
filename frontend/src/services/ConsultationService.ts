@@ -31,7 +31,7 @@ export default class ConsultationService {
         return $api.post<SpecialistResponse[]>('/consultation/specialistForProblems', { problems });
     }
 
-    static async getSchedule(doctorId: number, linkerId: number) {
+    static async getSchedule(doctorId: number, linkerId: number): Promise<AxiosResponse<Slot[]>> {
         return $api.get<Slot[]>(`/schedule/findSchedule?doctorId=${doctorId}&linkerId=${linkerId}`);
     }
 

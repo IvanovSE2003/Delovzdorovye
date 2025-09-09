@@ -1,10 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./MyInput.scss";
+import { URL } from "../../../http";
 
 interface FileInputProps {
   id: string;
   label: string;
-  onChange: (file: File | null) => void; // теперь принимает один файл или null
+  value?: string | File;
+  onChange: (file: File | null) => void;
   required?: boolean;
   accept?: string;
   className?: string;
@@ -16,6 +18,7 @@ const MyInputFile: React.FC<FileInputProps> = ({
   onChange,
   required = false,
   accept,
+  value,
   className = "",
 }) => {
   const [fileName, setFileName] = useState("");
@@ -37,13 +40,23 @@ const MyInputFile: React.FC<FileInputProps> = ({
   };
 
   const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation(); // предотвращаем срабатывание клика на контейнере
+    e.stopPropagation();
     setFileName("");
     onChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
+
+  useEffect(() => {
+    if (typeof value === "string") {
+      setFileName(value.split("/").pop() || "");
+    } else if (value instanceof File) {
+      setFileName(value.name);
+    } else {
+      setFileName("");
+    }
+  }, [value]);
 
   return (
     <div className={`file-input ${className}`}>
@@ -60,7 +73,18 @@ const MyInputFile: React.FC<FileInputProps> = ({
       <div className="file-input__container" onClick={handleClick}>
         <div className="file-input__button">Выбрать файл</div>
         <div className="file-input__text">
-          {fileName || label} {/* показываем имя файла или стандартный label */}
+          {fileName ? (
+            <a
+              target="_blank"
+              href={`${URL}/${fileName}`}
+              onClick={(e) => e.stopPropagation()}
+              title="Посмотреть файл"
+            >
+              {`${label} : ${fileName}`}
+            </a>
+          ) : (
+            label
+          )}
         </div>
         {fileName && (
           <button

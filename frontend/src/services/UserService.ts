@@ -70,11 +70,19 @@ export default class UserService {
         return $api.get<INotification[]>(`/notification/user?userId=${id}`);
     }
 
-    static async getNotificationCount(id: number): Promise<AxiosResponse<{count: number}>> {
-        return $api.get<{count: number}>(`/notification/count?userId=${id}`);
-    }
-
     static async readNotification(id: number): Promise<void> {
         return $api.put('/notification/read', {id})
+    }
+
+    static async readNotifciatonAll(userId: number): Promise<void> {
+        return $api.put(`/notification/read/all/${userId}`);
+    }
+
+    static async deleteNotification(id: number): Promise<void> {
+        return $api.delete(`/notification/delete/${id}`);
+    }
+
+    static async deleteNotificationAll(userId: number): Promise<void> {
+        return $api.delete(`/notification/delete/all/${userId}`)
     }
 }

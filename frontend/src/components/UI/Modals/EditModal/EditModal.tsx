@@ -15,7 +15,8 @@ export interface ConsultationData {
     id?: number;
     userId?: number;
     problems?: number[];
-    otherProblemText?: string;
+    otherProblem?: boolean;
+    descriptionProblem?: string;
     date: Date | string | undefined;
     time: string | null;
     doctorId: number;
@@ -100,9 +101,10 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
 
         onRecord({
             problems,
-            otherProblemText: otherProblemText,
+            descriptionProblem: otherProblemText,
             date: selectedDate,
-            time: selectedTime
+            time: selectedTime,
+            doctorId: 0
         });
 
         // Сброс формы

@@ -29,31 +29,54 @@ export interface INotification {
 const Bell: React.FC = () => {
     const { store } = useContext(Context);
     const [notifications, setNotifications] = useState<INotification[]>([]);
-    const [unreadCount, setUnreadCount] = useState<number>(0);
 
     const markAsRead = async (id: number) => {
-        await UserService.readNotification(id);
-        setNotifications(prev =>
-            prev.map(n =>
-                n.id === id ? { ...n, isRead: true } : n
-            )
-        );
-        setUnreadCount(prev => Math.max(prev - 1, 0));
+        try {
+            await UserService.readNotification(id);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error(`Ошибка прочтении уведомления с id: ${id}:`, error.response?.data.message);
+        }
     };
 
-    const deleteMessage = (id: number) => {
-
+    const deleteMessage = async (id: number) => {
+        try {
+            await UserService.deleteNotification(id);
+            store.decrimentCountMessage();
+            fetchNotifications();
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error(`Ошибка при удалении сообщения с id: ${id}: `, error.response?.data.message);
+        }
     }
+
+    const markAsReadAll = async () => {
+        try {
+            await UserService.readNotifciatonAll(store.user.id);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при прочтении всех уведомлений:", error.response?.data.message);
+        }
+    }
+
+    const deleteAllNotifications = async () => {
+        if (!window.confirm("Вы действительно хотите удалить все уведомления?")) return;
+
+        try {
+            await UserService.deleteNotificationAll(store.user.id);
+            store.setCountMessage(0);
+            fetchNotifications();
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при удалении всех уведомлений:", error.response?.data.message);
+        }
+    };
 
     // Получение всех уведомлений
     const fetchNotifications = async () => {
         try {
             const response = await UserService.getNotifications(store.user.id);
             setNotifications(response.data);
-
-            // Считаем непрочитанные
-            const count = response.data.filter((n: INotification) => !n.isRead).length;
-            setUnreadCount(count);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при получении уведомлений: ", error.response?.data.message);
@@ -68,8 +91,13 @@ const Bell: React.FC = () => {
         <AccountLayout>
             <div className="page-container notifications">
                 <h1 className="notifications__title">
-                    Уведомления {unreadCount > 0 && `(${unreadCount})`}
+                    Уведомления {notifications.length > 0 && `(${notifications.length})`}
                 </h1>
+
+                <div className="notifications__buttons">
+                    <button onClick={deleteAllNotifications}>Удалить все уведомления</button>
+                    <button onClick={markAsReadAll}>Прочитать все уведомления</button>
+                </div>
 
                 <div className="notifications__list">
                     {notifications.length > 0 ? notifications.map(n => (

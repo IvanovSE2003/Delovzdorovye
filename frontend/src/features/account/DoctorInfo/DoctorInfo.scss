@@ -39,6 +39,8 @@
     }
 
     &__select {
+        width: 90%;
+        box-sizing: border-box;
         margin-top: 20px;
         margin-bottom: 20px;
 
@@ -47,7 +49,7 @@
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
                 min-height: 48px;
-                font-size: 1.1rem;
+                font-size: 1.3rem;
                 transition: all 0.3s ease;
 
                 &:hover {
@@ -127,55 +129,28 @@
     &__value {
         color: $gray-color;
         font-weight: bolder;
-    }
-}
-
-// Специализации
-.specialization-item {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-
-    &__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    &__name {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        margin: 0;
-    }
-
-    &__docs {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        font-size: 1.4rem;
     }
 }
 
 .doc-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    margin-top: 10px;
 
     &__label {
-        font-weight: 600;
-        color: #7f8c8d;
+        font-size: 1.2rem;
+        font-weight: bolder;
+        color: $gray-color;
         min-width: 80px;
     }
 
     &__link {
-        color: #3498db;
+        color: black;
+        font-size: 1.1rem;
+        font-weight: bold;
         text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
+        margin-left: 15px;
     }
 }
 
@@ -192,15 +167,13 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
-        font-size: 1.5rem;
         font-weight: bolder;
     }
 
     &__label {
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 8px;
-        display: block;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: black;
     }
 }
 
@@ -208,30 +181,13 @@
     background: #27ae60;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 0.9rem 1.2rem;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.3rem;
 
     &:hover {
         background: #229954;
-    }
-}
-
-.remove-button {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-        background: #c0392b;
     }
 }
 
@@ -246,6 +202,7 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 12px;
+        gap: 20px;
 
         h4 {
             font-size: 1.4rem;
@@ -254,96 +211,7 @@
     }
 }
 
-.specialization-select {
-    margin-bottom: 16px;
-}
-
-.documents-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-    }
-}
-
-.document-upload {
-    &__label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #2c3e50;
-    }
-}
-
-.existing-file {
-    margin-top: 8px;
-    font-size: 14px;
-    color: #7f8c8d;
-
-    a {
-        color: #3498db;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
-
-// Кнопки действий
 .action-buttons {
     display: flex;
     gap: 12px;
-
-    @media (max-width: 768px) {
-        flex-direction: column;
-    }
 }
-
-.action-button {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &--primary {
-        background: #3498db;
-        color: white;
-
-        &:hover {
-            background: #2980b9;
-        }
-    }
-
-    &--secondary {
-        background: #95a5a6;
-        color: white;
-
-        &:hover {
-            background: #7f8c8d;
-        }
-    }
-}
-
-// Адаптивность
-@media (max-width: 768px) {
-    .doctor-info {
-        padding: 16px;
-    }
-
-    .info-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-
-    .documents-row {
-        grid-template-columns: 1fr;
-    }
-}
-
