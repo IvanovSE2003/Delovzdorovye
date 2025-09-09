@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import './DoctorInfo.scss';
 import { Context } from '../../../main';
 import { observer } from 'mobx-react-lite';
-import { URL } from '../../../http';
+import $api, { API_URL, URL } from '../../../http';
 import MyInput from '../../../components/UI/MyInput/MyInput';
 import Select from 'react-select';
 import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
@@ -12,9 +12,10 @@ import DoctorService from '../../../services/DoctorService';
 
 interface SpecializationForm {
     specialization: string;
-    diploma: string;
-    license: string;
+    diploma: string | File;
+    license: string | File;
 }
+
 
 const DoctorInfo = () => {
     const { store } = useContext(Context);
@@ -44,17 +45,39 @@ const DoctorInfo = () => {
 
     const saveChanges = async () => {
         try {
-            // Здесь будет логика сохранения изменений
-            console.log({
-                experienceYears,
-                specializations
-            });
+            // Отправляем каждую специализацию отдельным запросом
+            for (const spec of specializations) {
+                const formData = new FormData();
+                const dataToSend = {
+                    specialization: spec.specialization,
+                    diploma: spec.diploma instanceof File ? null : spec.diploma,
+                    license: spec.license instanceof File ? null : spec.license
+                };
+
+                formData.append('data', JSON.stringify(dataToSend));
+
+                if (spec.diploma instanceof File) {
+                    formData.append('diploma', spec.diploma);
+                }
+                if (spec.license instanceof File) {
+                    formData.append('license', spec.license);
+                }
+
+                await fetch(`http://localhost:5000/api/doctor/${store.user.id}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+            }
 
             setEdit(false);
         } catch (error) {
             console.error('Ошибка сохранения:', error);
         }
     };
+
+
+
+
 
     const addSpecialization = () => {
         setSpecializations([...specializations, { specialization: "", diploma: "", license: "" }]);
@@ -124,19 +147,72 @@ const DoctorInfo = () => {
 
                             {specializations.map((spec, index) => (
                                 <div key={index} className="specialization-form">
-                                    <Select
-                                        options={availableSpecializations}
-                                        placeholder="Выберите специализацию"
-                                        className="doctor-info__select"
-                                        classNamePrefix="custom-select"
-                                        value={availableSpecializations.find(opt => opt.value === spec.specialization)}
-                                        onMenuOpen={getSpecialization}
-                                        onChange={(selected) =>
-                                            updateSpecialization(index, 'specialization', selected?.value || '')
-                                        }
-                                    />
+                                    <div className="specialization-form__header">
+                                        <Select
+                                            options={availableSpecializations}
+                                            placeholder="Выберите специализацию"
+                                            className="doctor-info__select"
+                                            classNamePrefix="custom-select"
+                                            value={availableSpecializations.find(opt => opt.value === spec.specialization)}
+                                            onMenuOpen={getSpecialization}
+                                            onChange={(selected) =>
+                                                updateSpecialization(index, 'specialization', selected?.value || '')
+                                            }
+                                        />
+
+                                        <button
+                                            type="button"
+                                            className="remove-button"
+                                            onClick={() => {
+                                                setSpecializations(specializations.filter((_, i) => i !== index));
+                                            }}
+                                        >
+                                            ❌
+                                        </button>
+                                    </div>
+
+                                    <div className="file-upload">
+                                        <label>Диплом:</label>
+                                        <input
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg"
+                                            onChange={(e) => {
+                                                if (e.target.files?.[0]) {
+                                                    updateSpecialization(index, 'diploma', e.target.files[0]);
+                                                }
+                                            }}
+                                        />
+                                        {spec.diploma && (
+                                            <span>
+                                                {typeof spec.diploma === "string"
+                                                    ? spec.diploma
+                                                    : (spec.diploma as File).name}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="file-upload">
+                                        <label>Лицензия:</label>
+                                        <input
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg"
+                                            onChange={(e) => {
+                                                if (e.target.files?.[0]) {
+                                                    updateSpecialization(index, 'license', e.target.files[0]);
+                                                }
+                                            }}
+                                        />
+                                        {spec.license && (
+                                            <span>
+                                                {typeof spec.license === "string"
+                                                    ? spec.license
+                                                    : (spec.license as File).name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
+
                         </div>
                     </div>
                 ) : (

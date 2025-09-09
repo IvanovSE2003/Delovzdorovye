@@ -4,13 +4,15 @@ import ProfDataRespository from "../../../../core/domain/repositories/profData.r
 import ApiError from "../../error/ApiError.js";
 import FileService from "../../../../core/domain/services/file.service.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
+import SpecializationRepository from "../../../../core/domain/repositories/specializations.repository.js"
 
 export default class DoctorController {
     constructor(
         private readonly doctorRepository: DoctorRepository,
         private readonly profDataRepository: ProfDataRespository,
         private readonly fileService: FileService,
-        private readonly userRepository: UserRepository
+        private readonly userRepository: UserRepository,
+        private readonly specializationRepository: SpecializationRepository
     ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -73,7 +75,13 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Неверный формат данных"));
             }
 
-            const doctor = await this.doctorRepository.findById(Number(id));
+            const user = await this.userRepository.findById(Number(id));
+            if (!user) {
+                return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
+            }
+
+
+            const doctor = await this.doctorRepository.findByUserId(user.id);
             if (!doctor) {
                 return next(ApiError.badRequest("Специалист не найден"));
             }
@@ -117,14 +125,12 @@ export default class DoctorController {
                 profDataRecord.new_experience_years = data.experienceYears;
             }
 
-            if(data.specialization !== undefined) {
-                profDataRecord.new_specialization = data.specialization;
+            if (data.specialization !== undefined) {
+                const specializationModel = await this.specializationRepository.findById(data.specialization)
+                profDataRecord.new_specialization = specializationModel?.name;
             }
 
-            const user = await this.userRepository.findByDoctorId(doctor.id);
-            if (!user) {
-                return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
-            }
+
             profDataRecord.userId = user.id;
             await this.profDataRepository.save(profDataRecord);
 
