@@ -55,3 +55,11 @@ export function convertUserTimeToMoscow(date: string, time: string, userTimeZone
     const hoursDiff = STORAGE_TIMEZONE - userTimeZone;
     return adjustDateTime(date, time, hoursDiff);
 }
+
+export function formatEndTime(startTime: string, duration: number): string {
+    const [hours, minutes] = startTime.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + duration;
+    const endHours = Math.floor(totalMinutes / 60) % 24;
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`;
+}

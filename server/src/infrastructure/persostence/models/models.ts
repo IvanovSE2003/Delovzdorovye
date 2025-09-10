@@ -11,6 +11,7 @@ import { ProblemModelInterface } from './interfaces/problem.model.js'
 import { ConsultationModelInterface } from './interfaces/consultation.model.js'
 import { ProfDataModelInterface } from './interfaces/profData.model.js'
 import { NotificationModelInterface } from './interfaces/notification.model.js'
+import { OtherProblemModelInterface } from './interfaces/otherProblem.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -149,6 +150,12 @@ const Notification = sequelize.define<NotificationModelInterface>('notification'
     userId: { type: DataType.INTEGER, allowNull: false }
 });
 
+const OtherProblem = sequelize.define<OtherProblemModelInterface>('other_problem', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    time: {type: DataType.STRING},
+    date: {type: DataType.STRING},
+    description_problem: {type: DataType.TEXT}
+})
 
 // Таблицы с контентом на сайте
 
@@ -172,26 +179,29 @@ SpecializationModel.belongsToMany(ProblemModel, { through: ProblemSpecialization
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
 
-UserModel.hasOne(DoctorModel)
-DoctorModel.belongsTo(UserModel)
+UserModel.hasOne(DoctorModel);
+DoctorModel.belongsTo(UserModel);
 
-UserModel.hasOne(Transaction)
-Transaction.belongsTo(UserModel)
+UserModel.hasOne(Transaction);
+Transaction.belongsTo(UserModel);
 
-UserModel.hasOne(UserTelegramModel)
-UserTelegramModel.belongsTo(UserModel)
+UserModel.hasOne(UserTelegramModel);
+UserTelegramModel.belongsTo(UserModel);
+
+UserModel.hasMany(OtherProblem);
+OtherProblem.belongsTo(UserModel);
 
 UserModel.hasMany(Notification, { foreignKey: "userId" });
 Notification.belongsTo(UserModel, { foreignKey: "userId" });
 
-Consultation.hasOne(Transaction)
-Transaction.belongsTo(Consultation)
+Consultation.hasOne(Transaction);
+Transaction.belongsTo(Consultation);
 
-DoctorModel.hasOne(Consultation)
-Consultation.belongsTo(DoctorModel)
+DoctorModel.hasOne(Consultation);
+Consultation.belongsTo(DoctorModel);
 
-DoctorSlots.hasOne(Consultation)
-Consultation.belongsTo(DoctorSlots)
+DoctorSlots.hasOne(Consultation);
+Consultation.belongsTo(DoctorSlots);
 
 UserModel.hasOne(Consultation);
 Consultation.belongsTo(UserModel);
@@ -258,5 +268,6 @@ export default {
     ContentWithTitleModel,
     ConsultationProblems,
     ProfDataModel,
-    Notification
+    Notification,
+    OtherProblem
 }

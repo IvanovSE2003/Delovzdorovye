@@ -19,6 +19,6 @@ router.put('/problem/:id', (req: Request, res: Response, next: NextFunction) => 
 router.delete('/problem/:id', (req: Request, res: Response, next: NextFunction) => consultationController.deleteProblem(req, res, next));
 router.post('/problem/create', (req: Request, res: Response, next: NextFunction) => consultationController.createProblem(req, res, next));
 
-router.post('/rating/create', (req: Request, res: Response, next: NextFunction) => consultationController.sendRatingComment(req, res, next));
+router.post('/rating/create/:id', (req: Request, res: Response, next: NextFunction) => consultationController.sendRatingComment(req, res, next));
 
 export default router;

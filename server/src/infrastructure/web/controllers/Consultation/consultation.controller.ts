@@ -10,10 +10,11 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
-import { convertUserTimeToMoscow } from "../../function/transferTime.js"
+import { adjustDateTime, adjustTimeSlotToTimeZone, convertUserTimeToMoscow, formatEndTime } from "../../function/transferTime.js"
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js"
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import normalizeDate from "../../function/normDate.js";
+import { ITimeZones } from "../../../../../../frontend/src/models/TimeZones.js";
 
 export default class ConsultationController {
     constructor(
@@ -100,32 +101,26 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультации не найдены'));
             }
 
-            const formatTimeRange = (startTime: string, duration: number): string => {
-                if (!startTime || !duration) return 'Не указано';
+            const formattedConsultations: any[] = [];
 
-                try {
-                    const [hours, minutes] = startTime.split(':').map(Number);
+            for (const consultation of consultations.consultations) {
+                const user = await this.userRepository.findById(consultation.userId);
 
-                    const totalMinutes = hours * 60 + minutes + duration;
-                    const endHours = Math.floor(totalMinutes / 60) % 24;
-                    const endMinutes = totalMinutes % 60;
+                // Преобразуем время консультации из московского в локальное
+                const adjustedTime = user
+                    ? adjustDateTime(consultation.date, consultation.time, user.timeZone - ITimeZones.MOSCOW)
+                    : { newTime: consultation.time, newDate: consultation.date };
 
-                    const formattedStart = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                    const formattedEnd = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+                const durationTime = consultation.duration
+                    ? `${adjustedTime.newTime} - ${formatEndTime(adjustedTime.newTime, consultation.duration)}`
+                    : 'Не указано';
 
-                    return `${formattedStart} - ${formattedEnd}`;
-                } catch {
-                    return 'Неверный формат';
-                }
-            };
-
-            const formattedConsultations = consultations.consultations.map(consultation => {
                 const result: any = {
                     id: consultation.id,
                     other_problem: consultation.other_problem,
                     recommendations: consultation.recommendations,
-                    durationTime: formatTimeRange(consultation.time || '', consultation.duration || 0),
-                    date: consultation.date,
+                    durationTime,
+                    date: adjustedTime.newDate,
                     score: consultation.score,
                     comment: consultation.comment,
                     reason_cancel: consultation.reason_cancel,
@@ -151,8 +146,8 @@ export default class ConsultationController {
                     result.Problems = consultation.problems.map((p: any) => p.name);
                 }
 
-                return result;
-            });
+                formattedConsultations.push(result);
+            }
 
             return res.status(200).json({
                 consultations: formattedConsultations,
@@ -309,7 +304,7 @@ export default class ConsultationController {
             const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
             await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${newConsult.date} в ${newConsult.time}`, "CONSULTATION", false, newConsult, "CONSULTATION", user.id));
             await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${consultation.date} в ${consultation.time} клиента ${user.surname} ${user.name} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
-            
+
             return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${newConsult.date} на ${time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -444,7 +439,8 @@ export default class ConsultationController {
 
     async sendRatingComment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { id, rating, comment } = req.body;
+            const { id } = req.params;
+            const { rating, comment } = req.body;
             const consultation = await this.consultationRepository.findById(Number(id));
 
             if (!consultation) {
@@ -455,9 +451,9 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультация еще не прошла'));
             }
 
-            const updateConsultation = await this.consultationRepository.save(consultation.setComment(comment).setScore(rating));
+            await this.consultationRepository.save(consultation.setComment(comment).setScore(rating));
 
-            return res.status(200).json(updateConsultation);
+            return res.status(200).json({success: true, message: "Оценка успешно сохранена"});
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
