@@ -104,7 +104,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     model: UserModel,
                     where: userWhere,
                     required: true,
-                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender', 'timeZone']
+                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender', 'time_zone']
                 },
                 {
                     model: SpecializationModel,
