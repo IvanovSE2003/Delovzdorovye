@@ -33,6 +33,7 @@ const Bell: React.FC = () => {
     const markAsRead = async (id: number) => {
         try {
             await UserService.readNotification(id);
+            fetchNotifications();
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error(`Ошибка прочтении уведомления с id: ${id}:`, error.response?.data.message);
@@ -53,6 +54,7 @@ const Bell: React.FC = () => {
     const markAsReadAll = async () => {
         try {
             await UserService.readNotifciatonAll(store.user.id);
+            fetchNotifications();
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при прочтении всех уведомлений:", error.response?.data.message);
@@ -85,6 +87,7 @@ const Bell: React.FC = () => {
 
     useEffect(() => {
         fetchNotifications();
+        console.log(notifications);
     }, []);
 
     return (

@@ -18,10 +18,11 @@ export interface Recomendations {
     specialization: string[];
 }
 
-const Recomendations = () => {
+const Recomendations: React.FC = () => {
     const { store } = useContext(Context);
     const [recomendations, setRecomendations] = useState<Recomendations[]>([] as Recomendations[])
 
+    // Получение данных о рекомендациях
     const fetchRecomendation = async () => {
         try {
             const response = await UserService.getRecomendation(store.user.id);
@@ -32,6 +33,7 @@ const Recomendations = () => {
         }
     }
 
+    // Получение данных при открытии страницы
     useEffect(() => {
         fetchRecomendation();
     }, [])
@@ -54,7 +56,9 @@ const Recomendations = () => {
                                 ) : (
                                     <div>Документ не был загружен</div>
                                 )}
-                                <div className="date">{getDateLabel(recomend.date)}, {recomend.time}</div>
+                                <div className="date">
+                                    {getDateLabel(recomend.date)}, {recomend.time.slice(0, 5)}
+                                </div>
                             </div>
                         </div>
                     )) : (

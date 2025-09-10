@@ -11,3 +11,11 @@ export const getDateLabel = (date: string) => {
     if (consultationDate.isSame(yesterday)) return "Вчера";
     return consultationDate.format("DD.MM.YYYY");
 };
+
+export const formatDateWithoutYear = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long"
+    });
+};

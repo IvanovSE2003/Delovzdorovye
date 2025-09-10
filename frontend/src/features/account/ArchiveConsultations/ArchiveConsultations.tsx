@@ -28,7 +28,9 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
         try {
             let response;
             if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", doctorId: id });
+            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultions(2, 1, { consultation_status: "ARCHIVE", userId: id });
             else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", userId: id });
+
             response && setConsultations(response.data.consultations);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -50,12 +52,16 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
     };
 
     // Завершение оценки консультации
-    const handleRateConsultation = (score: number, review: string, id: number) => {
-        console.log(`Оценка для консультации: ${id}: `, score);
-        console.log(`Отзыв для консультации: ${id}: `, review);
-        // const response = await ConsultationService.rateAppoinment(data);
-        // console.log(response.data);
-        setModalRate(false);
+    const handleRateConsultation = async (score: number, review: string, id: number) => {
+        try {
+            const response = await ConsultationService.rateAppointment(id, score, review);
+            console.log(response.data);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при оценки консультации: ", error.response?.data.message);
+        } finally {
+            setModalRate(false);
+        }
     }
 
     // Нажатие на кнопки карточек консультаций
@@ -84,7 +90,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                 onRecord={handleRepeatConsultation}
             />
 
-            <div className="consultations__list">
+            <div className={`consultations__list ${mode === "PATIENT" && "consultations__archives"}`}>
                 {consultations.map((consultation) => (
                     <div key={consultation.id} className="consultation-card">
                         <div className="consultation-card__time">
@@ -93,34 +99,39 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                         </div>
 
                         <div className="consultation-card__info">
-                            {(mode === "PATIENT" || mode === "ADMIN") && (
-                                <div className="consultation-card__specialist">
-                                    Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
-                                </div>
-                            )}
-
-                            {mode === "DOCTOR" && (
+                            {mode === "DOCTOR" ? (
                                 <div className="consultation-card__specialist">
                                     Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
                                         ? <span> Анонимный пользователь </span>
                                         : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
                                     }
                                 </div>
+                            ) : (
+                                <div className="consultation-card__specialist">
+                                    {"Специалист: "}
+                                    <a target='_blank' href={`/profile/${consultation.DoctorUserId}`}>
+                                        {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
+                                    </a>
+                                </div>
                             )}
 
-                            <div className="consultation-card__symptoms">
-                                {'Симптомы: '}
-                                {consultation.Problems.map((p, i) => (
-                                    <span key={i}>
-                                        {p.toLocaleLowerCase()}
-                                        {i < consultation.Problems.length - 1 ? ', ' : '.'}
-                                    </span>
-                                ))}
-                            </div>
+                            {mode !== "PATIENT" && (
+                                <>
+                                    <div className="consultation-card__symptoms">
+                                        {'Симптомы: '}
+                                        {consultation.Problems.map((p, i) => (
+                                            <span key={i}>
+                                                {p.toLocaleLowerCase()}
+                                                {i < consultation.Problems.length - 1 ? ', ' : '.'}
+                                            </span>
+                                        ))}
+                                    </div>
 
-                            <div className="consultation-card__details">
-                                Симптомы подробно: <span>{consultation.other_problem ? consultation.other_problem : "Не указано"}</span>
-                            </div>
+                                    <div className="consultation-card__details">
+                                        Симптомы подробно: <span>{consultation.other_problem ? consultation.other_problem : "Не указано"}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className="consultation-card__actions">
@@ -128,14 +139,15 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                                 <>
                                     <RateModal
                                         isOpen={modalRate}
-                                        onClose={() => handleClickButton(consultation, setModalRate)}
+                                        consultationId={consultation.id}
+                                        onClose={() => setModalRate(false)}
                                         onRecord={handleRateConsultation}
                                     />
 
 
                                     <button
                                         className="consultation-card__button consultation-card__button--rate"
-                                        onClick={() => handleClickButton(consultation, setModalRepeat)}
+                                        onClick={() => handleClickButton(consultation, setModalRate)}
                                     >
                                         Оценить
                                     </button>
@@ -145,22 +157,24 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
                             {(mode === "PATIENT" || mode === "ADMIN") && (
                                 <button
                                     className="consultation-card__button consultation-card__button--repeat"
-                                    onClick={() => setModalRepeat(true)}
+                                    onClick={() => handleClickButton(consultation, setModalRepeat)}
                                 >
                                     Повторить
                                 </button>
                             )}
 
-                            <div className="consultation-card__recomendations">
-                                {`Рекомендации: `}
-                                {consultation.recommendations ? (
-                                    <a href={`${API_URL}/${consultation.recommendations}`}>
-                                        Файл
-                                    </a>
-                                ) : (
-                                    "Файл не приложен"
-                                )}
-                            </div>
+                            {mode !== "PATIENT" && (
+                                <div className="consultation-card__recomendations">
+                                    {`Рекомендации: `}
+                                    {consultation.recommendations ? (
+                                        <a href={`${API_URL}/${consultation.recommendations}`}>
+                                            Файл
+                                        </a>
+                                    ) : (
+                                        "Файл не приложен"
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="consultation-card__divider"></div>

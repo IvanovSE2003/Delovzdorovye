@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import './CancelModal.scss'
 import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
-import { getDateLabel } from '../../../../hooks/DateHooks';
+import { formatDateWithoutYear, getDateLabel } from '../../../../hooks/DateHooks';
+import type { Role } from '../../../../models/Auth';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -11,9 +12,10 @@ export interface ModalProps {
 
 interface CancelModalProps extends ModalProps {
     onRecord: (reasons: string, id: number) => void;
+    mode?: Role;
 }
 
-const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
+const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode }) => {
     const [reasons, setReasons] = useState<string>("");
     const [error, setError] = useState<string>("");
 
@@ -36,7 +38,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
 
     return (
         <div className="modal">
-            <div className='shift-modal'>
+            <div className='shift-modal cancel-modal'>
                 <h2 className="consultation-modal__title">Отмена консультации</h2>
 
                 <button
@@ -47,22 +49,28 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы отменяете консультацию: {getDateLabel(consultationData.date)}, {consultationData.durationTime}</p>
+                    <p>Вы отменяете консультацию: {formatDateWithoutYear(consultationData.date)}, {consultationData.durationTime}</p>
                 </div>
 
-                <div className="shift-modal__client">
-                    Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
-                        ? <span>Анонимный пользователь</span>
-                        : <span>
-                            {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
-                        </span>
-                    }
-                </div>
+                {mode === "ADMIN" && (
+                    <div className="shift-modal__client">
+                        Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
+                            ? <span>Анонимный пользователь</span>
+                            : <span>
+                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                            </span>
+                        }
+                    </div>
+                )}
+
+                <p className="consultation-modal__description">
+                    Если вам удобно, поделитесь причиной отмены (это поможет нам стать лучше):
+                </p>
 
                 <div className="cancel-modal__reason">
                     <textarea
                         id="reasons"
-                        placeholder='Причина отказа (не менее 10 символов)'
+                        placeholder='Причина отмены'
                         value={reasons}
                         onChange={(e) => setReasons(e.target.value)}
                     />
@@ -78,7 +86,6 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
 
                 <button
                     className='shift-modal__submit'
-                    disabled={reasons.length <= 10}
                     onClick={handleSubmit}
                 >
                     Отменить

@@ -52,6 +52,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
         try {
             let response;
             if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", doctorId: id });
+            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultions(1, 1, { consultation_status: "UPCOMING", userId: id });
             else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
             response && setConsultations(response.data.consultations);
         } catch (e) {
@@ -84,10 +85,20 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
     // Завершение отмены консультации
     const handleCancelConsultation = async (reason: string, id: number) => {
-        console.log(`Данные для записи ${id}: `, reason);
-        // const response = await ConsultationService.cancelAppoinment(reason, id);
-        // console.log(response.data);
-        setModalCancel(false);
+        try {
+            await ConsultationService.cancelAppointment(reason, id);
+
+            // Убираем отменённую консультацию из локального стейта
+            setConsultations(prev => prev.filter(c => c.id !== id));
+
+            setModalCancel(false);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при отмене консультации: ", error.response?.data.message);
+        } finally {
+            // на всякий случай можно подгрузить ещё раз, если нужно синхронизировать с бэком
+            fetchConsultations();
+        }
     };
 
     // Завершение повторения консультации
@@ -138,6 +149,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 consultationData={selectedConsultation || {} as Consultation}
                 onClose={() => setModalCancel(false)}
                 onRecord={handleCancelConsultation}
+                mode={mode}
             />
 
             {consultations.map(consultation => (
@@ -148,34 +160,43 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                     </div>
 
                     <div className="consultation-card__info">
-                        {(mode === "PATIENT" || mode === "ADMIN") && (
-                            <div className="consultation-card__specialist">
-                                Специалист: <span>{consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}</span>
-                            </div>
-                        )}
-
-                        {mode === "DOCTOR" && (
+                        {mode === "DOCTOR" ? (
                             <div className="consultation-card__specialist">
                                 Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
                                     ? <span> Анонимный пользователь </span>
                                     : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
                                 }
                             </div>
+                        ) : (
+                            <div className="consultation-card__specialist">
+                                {"Специалист: "}
+                                <a target='_blank' href={`/profile/${consultation.DoctorUserId}`}>
+                                    {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
+                                </a>
+                            </div>
                         )}
 
-                        <div className="consultation-card__symptoms">
-                            {'Симптомы: '}
-                            {consultation.Problems.map((p, i) => (
-                                <span key={i}>
-                                    {p.toLocaleLowerCase()}
-                                    {i < consultation.Problems.length - 1 ? ', ' : ''}
-                                </span>
-                            ))}
-                        </div>
+                        {mode !== "PATIENT" ? (
+                            <>
+                                <div className="consultation-card__symptoms">
+                                    {'Симптомы: '}
+                                    {consultation.Problems.map((p, i) => (
+                                        <span key={i}>
+                                            {p.toLocaleLowerCase()}
+                                            {i < consultation.Problems.length - 1 ? ', ' : ''}
+                                        </span>
+                                    ))}
+                                </div>
 
-                        <div className="consultation-card__details">
-                            Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
-                        </div>
+                                <div className="consultation-card__details">
+                                    Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="consultation-card__symptoms">
+                                Условия:<span> Бесплатные отмена и перенос более чем за 12 часов</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="consultation-card__actions">

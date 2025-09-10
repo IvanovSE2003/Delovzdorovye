@@ -30,8 +30,13 @@ const Main: React.FC = () => {
             userId: store.user.id,
         };
 
-        await ConsultationService.createAppointment(RecordData);
-        fetchUpcomingConsultations(page);
+        if (RecordData.otherProblem) {
+            console.log("Была выбрана другая проблема!");
+            return;
+        } else {
+            await ConsultationService.createAppointment(RecordData);
+            fetchUpcomingConsultations(page);
+        }
     };
 
     const fetchUpcomingConsultations = async (currentPage: number) => {

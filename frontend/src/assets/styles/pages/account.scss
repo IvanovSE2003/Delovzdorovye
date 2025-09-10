@@ -404,6 +404,17 @@
       }
     }
   }
+  
+  &__archives {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+
+    & .consultation-card {
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+  }
 }
 
 .icons {
@@ -549,6 +560,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: rgba(0, 0, 0, 0.425);
   z-index: 1000;
   animation: fadeIn 0.3s ease-out forwards;
 

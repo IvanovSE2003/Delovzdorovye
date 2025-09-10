@@ -11,7 +11,7 @@ import ConsultationsStore from "../../../../store/consultations-store";
 interface ConsultationFormProps {
   specialist?: OptionsResponse;
   slotsOverride?: Slot[];
-  freeMode?: boolean; // полный доступ без фильтрации
+  freeMode?: boolean;
   onTimeDateSelect: (time: string | null, date: string | null, doctorId?: number) => void;
   userId?: string;
 }
@@ -88,7 +88,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   // Передаём выбранные время и дату наверх
   useEffect(() => {
     if (!selectedDate || !selectedTime) {
-      onTimeDateSelect(null, null, undefined);
       return;
     }
 
@@ -119,10 +118,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     }
     return result;
   }
-
-  useEffect(() => {
-    console.log(slotsForSelectedDate)
-  }, [slotsForSelectedDate])
 
   return (
     <div>

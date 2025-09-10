@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./RateModal.scss";
 
 interface ModalProps {
@@ -8,26 +8,39 @@ interface ModalProps {
 
 interface RateModalProps extends ModalProps {
     onRecord: (score: number, review: string, id: number) => void;
+    consultationId: number;
 }
 
-const RateModal: React.FC<RateModalProps> = ({ isOpen, onClose, onRecord}) => {
+const RateModal: React.FC<RateModalProps> = ({ isOpen, onClose, onRecord, consultationId }) => {
     const [score, setScore] = useState<number>(0);
     const [hover, setHover] = useState<number>(0);
     const [review, setReview] = useState<string>("");
+    const [error, setError] = useState<string>("");
 
     // Отправка данных об оценки консултации
     const handleSubmit = () => {
-        console.log("Оценка:", score);
-        console.log("Отзыв:", review);
-        onRecord(score, review, 0);
+        if (score === 0) {
+            setError("Укажите оценку")
+            return;
+        }
+        onRecord(score, review, consultationId);
     };
+
+    // Отчистка формы после закрытия модалки
+    useEffect(() => {
+        if (!isOpen) {
+            setReview("");
+            setScore(0);
+            setError("");
+        }
+    }, [isOpen])
 
     if (!isOpen) return;
 
     return (
         <div className="modal">
-            <div className="rate-modal">
-                <h2 className="rate-modal__title">Выберите оценку</h2>
+            <div className='consultation-modal shift-modal rate-modal'>
+                <h2 className="consultation-modal__title">Выберите оценку</h2>
 
                 <button
                     className="rate-modal__close"
@@ -53,15 +66,16 @@ const RateModal: React.FC<RateModalProps> = ({ isOpen, onClose, onRecord}) => {
 
                 <textarea
                     className="rate-modal__textarea"
-                    placeholder="Отзыв (не менее 10 символов)"
+                    placeholder="Если хотите оставьте отзыв"
                     value={review}
                     onChange={(e) => setReview(e.target.value)}
                 />
 
+                {error && <div className="consultation-modal__error">{error}</div>}
+
                 <button
                     className="rate-modal__button"
                     onClick={handleSubmit}
-                    disabled={review.length<=10}
                 >
                     Отправить
                 </button>

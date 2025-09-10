@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
-import $api, { API_URL, URL } from "../../../../http";
 import AccountLayout from "../../AccountLayout";
 import './Specialists.scss';
+import { getTimeZoneLabel } from "../../../../models/TimeZones";
+import { formatExperienceYears } from "../../../../hooks/NumberHooks";
+import DoctorService from "../../../../services/DoctorService";
+import type { TypeResponse } from "../../../../models/response/DefaultResponse";
+import type { AxiosError } from "axios";
+import { URL } from "../../../../http";
 
 interface Specialization {
     specialization: string;
@@ -24,11 +29,21 @@ export interface IDoctor {
     profData: Specialization[];
     user: UserDoctor;
     userAvatar?: string;
+    timeZone: number;
+}
+
+interface Pagination {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
 }
 
 const Specialists: React.FC = () => {
     const [doctors, setDoctors] = useState<IDoctor[]>([]);
     const [expandedSpecializations, setExpandedSpecializations] = useState<{ [key: string]: boolean }>({});
+    const [pagination, setPagination] = useState<Pagination | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     const toggleSpecialization = (doctorId: number, specIndex: number) => {
         const key = `${doctorId}-${specIndex}`;
@@ -38,18 +53,20 @@ const Specialists: React.FC = () => {
         }));
     };
 
+    const fetchSpecialists = async (page: number = 1, limit: number = 10) => {
+        try {
+            const response = await DoctorService.getAllDoctors(page, limit);
+            setDoctors(response.data.data);
+            setPagination(response.data.pagination);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при получении специалистов: ", error.response?.data.message);
+        }
+    };
+
     useEffect(() => {
-        $api.get(`${API_URL}/doctor/all`)
-            .then(response => {
-                setDoctors(response.data.data);
-            })
-            .catch(error => {
-                if (error.response) {
-                    console.error('Ошибка сервера:', error.response.status);
-                    throw new Error("Ошибка при загрузке специалистов!");
-                }
-            });
-    }, []);
+        fetchSpecialists(currentPage);
+    }, [currentPage]);
 
     return (
         <AccountLayout>
@@ -71,16 +88,18 @@ const Specialists: React.FC = () => {
                                         {doctor.user.surname} {doctor.user.name} {doctor.user?.patronymic}
                                     </h2>
                                     <p className="specialist-card__experience">
-                                        Опыт работы: {doctor.experienceYears} {doctor.experienceYears === 1 ? 'год' :
-                                            doctor.experienceYears < 5 ? 'года' : 'лет'}
+                                        Опыт работы: {formatExperienceYears(doctor.experienceYears)}
                                     </p>
                                     <p className="specialist-card__status">
                                         Статус: {doctor.isActivated ? 'Активен' : 'Не активен'}
                                     </p>
+                                    <p className="specialist-card__status">
+                                        Часовой пояс: {getTimeZoneLabel(doctor.timeZone)}
+                                    </p>
                                 </div>
                             </div>
 
-                            {doctor.profData ? (
+                            {doctor.profData && doctor.profData.length > 0 ? (
                                 <div className="specialist-card__specializations">
                                     <h3 className="specialist-card__specializations-title">
                                         Специализации ({doctor.profData.length})
@@ -132,11 +151,31 @@ const Specialists: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="consultation__empty">Для вас рекомендаций не найдено</div>
+                                <div className="consultation__empty">Специализации не найдены</div>
                             )}
                         </div>
                     ))}
                 </div>
+
+                {pagination && pagination.totalPages > 1 && (
+                    <div className="pagination">
+                        <button
+                            disabled={pagination.currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        >
+                            Назад
+                        </button>
+                        <span>
+                            Страница {pagination.currentPage} из {pagination.totalPages}
+                        </span>
+                        <button
+                            disabled={pagination.currentPage === pagination.totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.totalPages))}
+                        >
+                            Вперёд
+                        </button>
+                    </div>
+                )}
             </div>
         </AccountLayout>
     );

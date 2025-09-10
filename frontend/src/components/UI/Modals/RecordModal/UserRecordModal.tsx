@@ -76,7 +76,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({
   
   // Записаться на консультацию
   const handleSubmit = () => {
-    if (!selectedDate || !selectedTime || !doctorId) {
+    if (!selectedDate || !selectedTime) {
       setError("Дата или время не выбраны");
       return;
     }

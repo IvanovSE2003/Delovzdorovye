@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 
 import RecordForm from '../RecordModal/RecordForm';
 import './ShiftModal.scss'
-import { getDateLabel } from '../../../../hooks/DateHooks';
+import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
 import type { Role } from '../../../../models/Auth';
 
 interface ShiftModalProps extends ModalProps {
@@ -97,7 +97,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                 </button>
 
                 <div className="shift-modal__information">
-                    <p>Вы переносите консультацию: {getDateLabel(consultationData.date)}, {consultationData.durationTime}</p>
+                    <p>Вы переносите консультацию: {formatDateWithoutYear(consultationData.date)}, {consultationData.durationTime}</p>
                 </div>
 
 
@@ -125,7 +125,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
 
                 <div className="shift-modal__result">
                     <p className="shift-modal__selected-time">
-                        <strong>Вы выбрали: </strong> {selectedDate && selectedTime ? `${selectedTime}, ${new Date(selectedDate).toLocaleDateString()}` : "не выбрано"}
+                        <strong>Вы выбрали: </strong> {selectedDate && selectedTime ? `${formatDateWithoutYear(selectedDate)}, ${selectedTime}` : "не выбрано"}
                     </p>
                     <p className='shift-modal__selected-specialist'>
                         <strong>Специалист: </strong> {consultationData.DoctorSurname} {consultationData.DoctorName} {consultationData?.DoctorPatronymic}

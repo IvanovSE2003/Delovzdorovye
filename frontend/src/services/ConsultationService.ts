@@ -73,9 +73,9 @@ export default class ConsultationService {
     }
 
     // Отмена консультации
-    // static async cancelAppointment(reason: string, id: number) : Promise<AxiosResponse<>> {
-    //     return $api.post('/consultation/appoinment/cancel', {reason, id});
-    // }
+    static async cancelAppointment(reason: string, id: number) : Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`consultation/cancelConsultation/${id}`, {reason});
+    }
 
     // Редактирование консультации
     // static async editAppointment(newData: ConsultationData) : Promise<AxiosResponse<>> {
@@ -88,7 +88,7 @@ export default class ConsultationService {
     // }
 
     // Оценить консультацию
-    // static async rateAppointment(score: number, id: number) : Promise<AxiosResponse<>> {
-    //     return $api.post('/consultation/appoinment/rate', {score, id});
-    // }
+    static async rateAppointment(id: number, score: number, review: string) : Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`consultation/rating/create/${id}`, {rating: score, comment: review});
+    }
 }

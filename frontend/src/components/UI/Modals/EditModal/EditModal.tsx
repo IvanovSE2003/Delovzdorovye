@@ -19,7 +19,7 @@ export interface ConsultationData {
     descriptionProblem?: string;
     date: Date | string | undefined;
     time: string | null;
-    doctorId: number;
+    doctorId?: number;
 }
 
 const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {

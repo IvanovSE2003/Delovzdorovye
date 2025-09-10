@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
-import { type OptionsResponse } from '../../../../store/consultations-store';
-import type { MultiValue } from 'react-select';
 import type { ModalProps } from '../CancelModal/CancelModal';
 import type { ConsultationData } from '../EditModal/EditModal';
 
 import RecordForm from '../RecordModal/RecordForm';
 import './RepeatModal.scss';
+import type { Role } from '../../../../models/Auth';
+import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
 
 interface RepeatModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
+    mode?: Role;
 }
 
-const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
+const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode }) => {
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [doctorId, setDoctorId] = useState<number|undefined>(undefined);
 
     const handleSubmit = () => {
         if (!selectedDate || !selectedTime) {
@@ -25,19 +27,22 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
         onRecord({
             date: selectedDate,
             time: selectedTime,
-            doctorId: 0
+            doctorId: doctorId,
         });
     };
 
     // Получение даты и времени из 
-    const onTimeDateSelect = (time: string | null, date: string | null) => {
+    const onTimeDateSelect = (time: string | null, date: string | null, doctorId: number | undefined) => {
         setSelectedTime(time);
         setSelectedDate(date);
+        setDoctorId(doctorId);
     }
 
     // Сброс формы при закрытии
     useEffect(() => {
         if (!isOpen) {
+            setSelectedDate(null);
+            setSelectedTime(null);
             setError("");
         }
     }, [isOpen]);
@@ -61,15 +66,17 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                     <p>{consultationData.DoctorSurname} {consultationData.DoctorName} {consultationData?.DoctorPatronymic}</p>
                 </div>
 
+                {mode === "ADMIN" && (
+                    <div className="shift-modal__client">
+                        Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
+                            ? <span>Анонимный пользователь</span>
+                            : <span>
+                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                            </span>
+                        }
+                    </div>
+                )}
 
-                <div className="shift-modal__client">
-                    Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
-                        ? <span>Анонимный пользователь</span>
-                        : <span>
-                            {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
-                        </span>
-                    }
-                </div>
 
                 <RecordForm
                     onTimeDateSelect={onTimeDateSelect}
@@ -77,12 +84,12 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                         value: consultationData.DoctorId,
                         label: `${consultationData.DoctorSurname} ${consultationData.DoctorName} ${consultationData?.DoctorPatronymic || ""}`
                     }}
-                    userId={''}
+                    userId={consultationData.PatientUserId.toString()}
                 />
 
                 <div className="shift-modal__result">
                     <p className="shift-modal__selected-time">
-                        Вы выбрали: {selectedDate && selectedTime ? <>{selectedDate} {selectedTime} </> : "не выбрано"}
+                        Вы выбрали: {selectedDate && selectedTime ? <>{formatDateWithoutYear(selectedDate)}, {selectedTime} </> : "не выбрано"}
                     </p>
                 </div>
 
@@ -93,6 +100,7 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                 <button
                     className="shift-modal__submit"
                     onClick={handleSubmit}
+                    disabled={!selectedDate || !selectedTime}
                 >
                     Повторить
                 </button>
