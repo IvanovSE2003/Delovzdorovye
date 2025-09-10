@@ -10,6 +10,7 @@ export default class Doctor {
             name: string | null;
             surname: string | null;
             patronymic: string | null;
+            time_zone: number | null;
         } | null,
         public profData?: Array<{
             id: number;

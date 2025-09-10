@@ -300,7 +300,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     id: doctorModel.user.id,
                     name: doctorModel.user.name,
                     surname: doctorModel.user.surname,
-                    patronymic: doctorModel.user.patronymic
+                    patronymic: doctorModel.user.patronymic,
+                    time_zone: doctorModel.user.time_zone
                 }
                 : null,
             profData
