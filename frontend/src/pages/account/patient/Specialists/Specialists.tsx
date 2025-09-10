@@ -20,6 +20,7 @@ interface UserDoctor {
     name: string;
     surname: string;
     patronymic?: string;
+    time_zone: number;
 }
 
 export interface IDoctor {
@@ -29,7 +30,6 @@ export interface IDoctor {
     profData: Specialization[];
     user: UserDoctor;
     userAvatar?: string;
-    timeZone: number;
 }
 
 interface Pagination {
@@ -94,7 +94,7 @@ const Specialists: React.FC = () => {
                                         Статус: {doctor.isActivated ? 'Активен' : 'Не активен'}
                                     </p>
                                     <p className="specialist-card__status">
-                                        Часовой пояс: {getTimeZoneLabel(doctor.timeZone)}
+                                        Часовой пояс: {getTimeZoneLabel(doctor.user.time_zone)}
                                     </p>
                                 </div>
                             </div>
