@@ -49,21 +49,21 @@ app.use(errorHandler);
 
 
 io.on('connection', (socket) => {
-    console.log('✅ Клиент подключился:', socket.id);
+    console.log('Клиент подключился:', socket.id);
 
     socket.on('join-consultation', (consultationId: number) => {
         socket.join(`consultation-${consultationId}`);
-        console.log(`👥 Клиент ${socket.id} присоединился к консультации ${consultationId}`);
+        console.log(`Клиент ${socket.id} присоединился к консультации ${consultationId}`);
     });
 
     socket.on('leave-consultation', (consultationId: number) => {
         socket.leave(`consultation-${consultationId}`);
-        console.log(`👋 Клиент ${socket.id} покинул консультацию ${consultationId}`);
+        console.log(`Клиент ${socket.id} покинул консультацию ${consultationId}`);
     });
 
     socket.on('payment-success', (data: { consultationId: number }) => {
         timerService.stopTimer(data.consultationId);
-        console.log(`💳 Оплата успешна для консультации: ${data.consultationId}`);
+        console.log(`Оплата успешна для консультации: ${data.consultationId}`);
 
         socket.to(`consultation-${data.consultationId}`).emit('payment-confirmed', {
             consultationId: data.consultationId,
@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('❌ Клиент отключился:', socket.id);
+        console.log('Клиент отключился:', socket.id);
     });
 });
 
@@ -105,6 +105,33 @@ const start = async () => {
                         console.log(`Консультация ${consult.id} завершена автоматически`);
                     }
                 }
+
+                // const expiredConsultations = await models.Consultation.findAll({
+                //     where: {
+                //         consultation_status: 'UPCOMING',
+                //         payment_status: 'PAYMENT',
+                //         reservation_expires_at: { [Op.lt]: now.toDate() }
+                //     }
+                // });
+
+                // for (const consult of expiredConsultations) {
+                //     const slot = await models.DoctorSlots.findOne({
+                //         where: {
+                //             doctorId: consult.doctorId,
+                //             date: consult.date,
+                //             time: consult.time
+                //         }
+                //     });
+
+                //     if (slot) {
+                //         await slot.update({ status: 'OPEN' });
+                //     }
+
+                //     // 3️⃣ Обновляем консультацию
+                //     await consult.update({ payment_status: 'NOTPAID' });
+
+                //     console.log(`⏰ Сброшена бронь консультации ${consult.id}, слот освобождён`);
+                // }
 
             } catch (e) {
                 console.error('Ошибка при авто-завершении консультаций:', e);

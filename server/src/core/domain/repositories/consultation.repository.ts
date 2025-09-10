@@ -14,7 +14,7 @@ export default interface ConsultationRepository {
         totalPages: number;
     }>
     findTimeSlotForDateProblem(problems: number[], date: string): Promise<string[]>;
-    findByUserId(id: number): Promise<Consultation[]>;
+    findByUserId(id: number, page: number, limit: number): Promise<Consultation[]>;
     create(consultationData: Consultation): Promise<Consultation>;
     update(consult: Consultation): Promise<Consultation>;
     save(consult: Consultation): Promise<Consultation> 

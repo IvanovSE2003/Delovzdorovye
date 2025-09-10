@@ -644,13 +644,17 @@ export default class UserController {
 
     async getRecomendation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId } = req.query;
+            const { userId, page, limit } = req.query;
+
+            const pageRec = page ? page : 1;
+            const limitRec = limit ? limit : 1;
+
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
-            const consultations = await this.consultationRepository.findByUserId(user.id);
+            const consultations = await this.consultationRepository.findByUserId(user.id, Number(pageRec), Number(limitRec));
             if (consultations && consultations.length === 0) {
                 return next(ApiError.badRequest('Консультации для пользователя не найдены'));
             }

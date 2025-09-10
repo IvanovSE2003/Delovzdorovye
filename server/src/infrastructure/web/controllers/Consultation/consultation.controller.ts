@@ -106,7 +106,6 @@ export default class ConsultationController {
             for (const consultation of consultations.consultations) {
                 const user = await this.userRepository.findById(consultation.userId);
 
-                // Преобразуем время консультации из московского в локальное
                 const adjustedTime = user
                     ? adjustDateTime(consultation.date, consultation.time, user.timeZone - ITimeZones.MOSCOW)
                     : { newTime: consultation.time, newDate: consultation.date };
@@ -140,6 +139,7 @@ export default class ConsultationController {
                     result.PatientSurname = consultation.user.surname;
                     result.PatientPatronymic = consultation.user.patronymic;
                     result.PatientPhone = consultation.user.phone;
+                    result.PatientScore = consultation.score;
                 }
 
                 if (consultation.problems) {
@@ -329,12 +329,22 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
+
+            console.log(consultation.time, consultation.doctorId, consultation.date)
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED");
+            if (!timeSlot) {
+                return next(ApiError.badRequest('Временная ячейка для данной консультации не найдена'));
+            }
+
             let updateConsult: Consultation;
             if (reason) {
                 updateConsult = await this.consultationRepository.save(consultation.setReason(reason).setConsultStatus("ARCHIVE"));
             } else {
                 updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
             }
+
+            await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
+
             await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена у специалиста ${updateConsult.doctor?.user.surname} ${updateConsult.doctor?.user.name}`, "CONSULTATION", false, updateConsult, "CONSULTATION", updateConsult.userId));
             await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена для клиента ${user?.surname} ${user?.name} ${user?.patronymic} на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             return res.status(200).json({ success: true, message: "Консультация была отменена" });
@@ -354,13 +364,19 @@ export default class ConsultationController {
                 return next(ApiError.badRequest('Консультация не найдена'));
             }
 
-            const user = await this.userRepository.findByDoctorId(consultation.doctorId);
+            const user = await this.userRepository.findById(consultation.userId);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
             const doctorUser = await this.userRepository.findByDoctorId(consultation.doctorId);
             if (!doctorUser) {
                 return next(ApiError.badRequest('Пользователь не нейден'));
             }
 
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(time, consultation.doctorId || 0, date, "OPEN");
+            const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, consultation.doctorId, moscowDate, "OPEN");
             if (!timeSlot) {
                 return next(ApiError.badRequest('Временная ячейка занята или найдена'));
             }
@@ -453,7 +469,7 @@ export default class ConsultationController {
 
             await this.consultationRepository.save(consultation.setComment(comment).setScore(rating));
 
-            return res.status(200).json({success: true, message: "Оценка успешно сохранена"});
+            return res.status(200).json({ success: true, message: "Оценка успешно сохранена" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -483,6 +499,31 @@ export default class ConsultationController {
         }
     }
 
+    async cancelPayment(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+
+            const consultation = await this.consultationRepository.findById(Number(id));
+            if (!consultation) {
+                return next(ApiError.badRequest('Консультация не найдена'));
+            }
+
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED")
+
+            if (timeSlot === undefined || !timeSlot) {
+                return next(ApiError.badRequest('Временная ячейка не найдена для этой консультации'));
+            }
+
+            await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
+
+            await this.consultationRepository.save(consultation.setPayStatus("NOTPAID"));
+            return res.json({ success: true, message: 'Оплата отменена' });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+
     private async addProblemsToConsultation(consultationId: number, problemIds: number[]): Promise<void> {
         try {
             const consultationProblems = problemIds.map(problemId => ({
@@ -496,4 +537,3 @@ export default class ConsultationController {
         }
     }
 }
-

@@ -250,9 +250,12 @@ export default class BatchController {
 
     async getUserConsultation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { page, limit } = req.body;
+            const { page, limit } = req.query;
 
-            const result = await this.userRepository.findAll(page, limit, { role: "PATIENT" });
+            const pageUser = page ? page : 1;
+            const limitUser = limit ? limit : 1;
+
+            const result = await this.userRepository.findAll(Number(pageUser), Number(limitUser), { role: "PATIENT" });
 
             if (!result || !result.users || result.users.length === 0) {
                 return next(ApiError.badRequest('Пользователи не найдены'));
@@ -276,8 +279,12 @@ export default class BatchController {
 
     async getConsultaions(req: Request, res: Response, next: NextFunction) {
         try {
-            const { page, limit } = req.body;
-            const result = await this.consultationRepository.findAll(page, limit);
+            const { page, limit } = req.query;
+
+            const pageUser = page ? page : 1;
+            const limitUser = limit ? limit : 1;
+
+            const result = await this.consultationRepository.findAll(Number(pageUser), Number(limitUser));
             if (!result) {
                 return next(ApiError.badRequest('Консультации не найдены'));
             }

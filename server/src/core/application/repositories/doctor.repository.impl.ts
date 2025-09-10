@@ -15,7 +15,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [
                 {
                     model: SpecializationModel,
-                    through: { attributes: ['diploma', 'license'] }, // Теперь включаем атрибуты связующей таблицы
+                    through: { attributes: ['diploma', 'license'] }, 
                     attributes: ['name']
                 }
             ]
@@ -104,7 +104,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     model: UserModel,
                     where: userWhere,
                     required: true,
-                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender']
+                    attributes: ['id', 'name', 'surname', 'patronymic', 'img', 'gender', 'timeZone']
                 },
                 {
                     model: SpecializationModel,

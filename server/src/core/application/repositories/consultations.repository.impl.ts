@@ -54,10 +54,22 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             include: [
                 {
                     model: models.DoctorModel,
-                    include: [{
-                        model: models.UserModel,
-                        attributes: ['id', 'name', 'surname', 'patronymic']
-                    }]
+                    include: [
+                        {
+                            model: models.UserModel,
+                            attributes: ['id', 'name', 'surname', 'patronymic']
+                        },
+                        {
+                            model: models.DoctorSpecialization,
+                            as: "profData",
+                            include: [
+                                {
+                                    model: models.SpecializationModel,
+                                    attributes: ["id", "name"]
+                                }
+                            ]
+                        }
+                    ]
                 },
                 {
                     model: models.UserModel,
@@ -133,10 +145,10 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         return availableSlots;
     }
 
-    async findByUserId(id: number): Promise<Consultation[]> {
+    async findByUserId(id: number, page: number, limit: number): Promise<Consultation[]> {
         const consultations = await models.Consultation.findAll({
-            where: 
-            { 
+            where:
+            {
                 userId: id,
                 consultation_status: "ARCHIVE"
             },
@@ -170,12 +182,17 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
                     as: "problems",
                     through: { attributes: [] }
                 }
+            ],
+            limit,
+            offset: (page - 1) * limit,
+            order: [
+                ['date', 'DESC'],
+                ['time', 'DESC']
             ]
         });
 
         return consultations.map(consult => this.mapToDomainConsultation(consult));
     }
-
 
     async create(consultationData: Consultation): Promise<Consultation> {
         const createdConsult = await models.Consultation.create(this.mapToPersistence(consultationData));
