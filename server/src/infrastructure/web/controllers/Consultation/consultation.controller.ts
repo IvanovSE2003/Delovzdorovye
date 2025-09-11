@@ -407,7 +407,18 @@ export default class ConsultationController {
 
             let problemIds: number[] = [];
 
-            problemIds = Array.isArray(problems) ? problems.map(p => Number(p)) : []
+            if (typeof problems === "string") {
+                try {
+                    const parsed = JSON.parse(problems);
+                    problemIds = Array.isArray(parsed)
+                        ? parsed.map((p: any) => Number(p))
+                        : [Number(parsed)];
+                } catch {
+                    problemIds = problems.split(",").map(p => Number(p.trim()));
+                }
+            } else if (Array.isArray(problems)) {
+                problemIds = problems.map(p => Number(p));
+            }
 
             const doctors = await this.doctorReposiotry.findByProblems(problemIds);
             if (doctors && doctors.length === 0) {
