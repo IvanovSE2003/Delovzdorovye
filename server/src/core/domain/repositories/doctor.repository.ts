@@ -19,6 +19,7 @@ export default interface DoctorRepository {
         totalPages: number;
     }>;
     findByUserIds(userIds: number[]): Promise<Doctor[]>;
+    findByProblems(problems: number[]): Promise<Doctor[]>;
     getDoctorsWithSpecializations(userIds: number[]): Promise<Doctor[]>;
     update(doctor: Doctor): Promise<Doctor>;
     create(doctor: Doctor): Promise<Doctor>;

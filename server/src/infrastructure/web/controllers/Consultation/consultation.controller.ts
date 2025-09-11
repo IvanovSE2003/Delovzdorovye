@@ -403,52 +403,21 @@ export default class ConsultationController {
 
     async findSpecialistForProblem(req: Request, res: Response, next: NextFunction) {
         try {
-            const { problems } = req.body as { problems: number[] };
+            const { problems } = req.query;
 
-            const problemEntities = await models.ProblemModel.findAll({
-                where: { id: problems },
-                include: [
-                    {
-                        model: models.SpecializationModel,
-                        through: { attributes: [] }
-                    }
-                ]
-            });
+            let problemIds: number[] = [];
 
-            if (!problemEntities || problemEntities.length === 0) {
-                return next(ApiError.badRequest("Проблемы не найдены"));
+            problemIds = Array.isArray(problems) ? problems.map(p => Number(p)) : []
+
+            const doctors = await this.doctorReposiotry.findByProblems(problemIds);
+            if (doctors && doctors.length === 0) {
+                return next(ApiError.badRequest('Специалисты не надены'));
             }
 
-            const specializationIds = [
-                ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
-            ];
-
-            if (specializationIds.length === 0) {
-                return next(ApiError.badRequest("Нет подходящих специалистов"));
-            }
-
-            const doctors = await models.DoctorModel.findAll({
-                where: {
-                    isActivated: true,
-                },
-                include: [
-                    {
-                        model: models.UserModel,
-                        attributes: ['id', 'name', 'surname', 'patronymic']
-                    },
-                    {
-                        model: models.SpecializationModel,
-                        where: {
-                            id: specializationIds
-                        },
-                        through: { attributes: [] },
-                        required: true
-                    }
-                ],
-                attributes: ['id', 'experience_years']
-            });
-
-            res.status(200).json(doctors);
+            res.status(200).json(doctors.map(doctor => ({
+                value: doctor.id,
+                label: `${doctor.user?.surname} ${doctor.user?.name} ${doctor.user?.patronymic}`
+            })));
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

@@ -15,7 +15,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [
                 {
                     model: SpecializationModel,
-                    through: { attributes: ['diploma', 'license'] }, 
+                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['name']
                 }
             ]
@@ -37,6 +37,52 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         });
 
         return doctor ? this.mapToDomainDoctor(doctor) : null;
+    }
+
+    async findByProblems(problems: number[]): Promise<Doctor[]> {
+        const problemEntities = await models.ProblemModel.findAll({
+            where: { id: problems },
+            include: [
+                {
+                    model: models.SpecializationModel,
+                    through: { attributes: [] }
+                }
+            ]
+        });
+
+        if (!problemEntities || problemEntities.length === 0) {
+            throw new Error("Проблемы не найдены");
+        }
+
+        const specializationIds = [
+            ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
+        ];
+
+        if (specializationIds.length === 0) {
+            throw new Error("Нет подходящих специалистов");
+        }
+
+        const doctors = await models.DoctorModel.findAll({
+            where: {
+                isActivated: true,
+            },
+            include: [
+                {
+                    model: models.UserModel,
+                    attributes: ['id', 'name', 'surname', 'patronymic']
+                },
+                {
+                    model: models.SpecializationModel,
+                    where: {
+                        id: specializationIds
+                    },
+                    through: { attributes: [] },
+                    required: true
+                }
+            ],
+            attributes: ['id', 'experience_years']
+        });
+        return doctors.map(doctor => this.mapToDomainDoctor(doctor));
     }
 
     async findAll(
