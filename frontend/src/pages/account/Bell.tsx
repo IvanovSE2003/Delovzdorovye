@@ -112,7 +112,7 @@ const Bell: React.FC = () => {
                             <div className={`notification ${n.isRead ? "notification--read" : "notification--unread"}`}>
                                 <div className="notification__icon">{typeIcons[n.type] || typeIcons.default}</div>
                                 <div className="notification__content">
-                                    <h2 className="notification__header">{n.title}</h2>
+                                    <h1 className="notification__header">{n.title}</h1>
                                     <p className="notification__message">{n.message}</p>
                                 </div>
                                 {!n.isRead && (

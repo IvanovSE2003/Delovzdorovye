@@ -5,30 +5,38 @@ import "./ArchiveConsultations.scss";
 import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
 import ConsultationService from "../../../../services/ConsultationService";
 import { API_URL } from "../../../../http";
+import { getDateLabel } from "../../../../hooks/DateHooks";
+import type { TypeResponse } from "../../../../models/response/DefaultResponse";
+import type { AxiosError } from "axios";
 
+const PAGE_SIZE = 8;
 
-const ArchiveConsultations = () => {
+const ArchiveConsultations: React.FC = () => {
   const [search, setSearch] = useState("");
   const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[]);
-
-  const handleReviewChange = (id: number, value: string) => {
-    setConsultations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, review: value } : c))
-    );
-  };
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const filteredConsultations = consultations.filter((c) =>
     `${c.PatientName} ${c.PatientSurname} ${c?.PatientPatronymic} ${c.DoctorName} ${c.DoctorSurname} ${c?.DoctorPatronymic}`.toLowerCase().includes(search.toLowerCase())
   );
 
-  const fetchConsultations = async () => {
-    const response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE" });
-    setConsultations(response.data.consultations);
-  }
+  const fetchConsultations = async (pageNumber: number) => {
+    try {
+      const response = await ConsultationService.getAllConsultations(PAGE_SIZE, pageNumber, {
+        consultation_status: "ARCHIVE",
+      });
+      setConsultations(response.data.consultations);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (e) {
+      const error = e as AxiosError<TypeResponse>;
+      console.error("Ошибка загрузки консультаций", error.response?.data.message);
+    }
+  };
 
   useEffect(() => {
-    fetchConsultations();
-  }, [])
+    fetchConsultations(page);
+  }, [page]);
 
   return (
     <AccountLayout>
@@ -48,38 +56,55 @@ const ArchiveConsultations = () => {
               <div key={c.id} className="archive__card">
                 <div className="archive__right">
                   <div className="archive__time">
-                    <span className="archive__date">{c.date}</span>
+                    <span className="archive__date">{getDateLabel(c.date)}</span>
                     <span className="archive__hours">{c.durationTime}</span>
                   </div>
 
                   <div className="archive__info">
                     <p>
                       <strong>Клиент: </strong>
-                      {`${c.PatientName} ${c.PatientSurname} ${c?.PatientPatronymic}`}
+                      {`${c.PatientSurname} ${c.PatientName} ${c?.PatientPatronymic}`}
                     </p>
                     <p>
                       <strong>Специалист: </strong>
-                      {`${c.DoctorName} ${c.DoctorSurname} ${c?.DoctorPatronymic}`}
+                      {`${c.DoctorSurname} ${c.DoctorName} ${c?.DoctorPatronymic}`}
                     </p>
                     <p>
                       <strong>Рекомендации: </strong>{" "}
-                      <a href={`${API_URL}/{c.recommendations}`}>Файл</a>
+                      {c.recommendations ? (
+                        <a href={`${API_URL}/${c.recommendations}`}>Файл</a>
+                      ) : (
+                        <span>Файл не загружен</span>
+                      )}
                     </p>
                   </div>
                 </div>
 
                 <div className="archive__left">
-                  <span className={`archive__rating archive__rating--${c.score}`}>
-                    Оценка: {c.score}
-                  </span>
+                  {c.score && c.score > 0 ? (
+                    <>
+                      <span className={`archive__rating archive__rating--${c.score}`}>
+                        Оценка: {c.score}
+                      </span>
 
-                  <textarea
-                    className="archive__review"
-                    placeholder="Отзыв"
-                    readOnly
-                    value={c.comment || ""}
-                    onChange={(e) => handleReviewChange(c.id, e.target.value)}
-                  />
+                      <textarea
+                        className="archive__review"
+                        placeholder="Отзыв"
+                        readOnly
+                        value={c.comment || ""}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <span className="archive__rating">
+                        Оценку еще не поставили
+                      </span>
+
+                      <div className="archive__rating">
+                        Отзыва нет
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))
@@ -87,8 +112,53 @@ const ArchiveConsultations = () => {
             <div className="archive__none">Архивных консультаций не найдено!</div>
           )}
         </div>
+
+        {/* Пагинация */}
+        {totalPages > 1 && (
+          <div className="archive__pagination">
+            <button
+              disabled={page === 1}
+              className="my-button"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            >
+              Назад
+            </button>
+
+            <button
+              className={`my-button numbers ${page === 1 ? "active" : ""}`}
+              onClick={() => setPage(1)}
+            >
+              1
+            </button>
+
+            {page > 3 && <span className="dots">...</span>}
+
+            {page > 2 && page < totalPages && (
+              <button className="my-button numbers active">{page}</button>
+            )}
+
+            {page < totalPages - 2 && <span className="dots">...</span>}
+
+            {totalPages > 1 && (
+              <button
+                className={`my-button numbers ${page === totalPages ? "active" : ""}`}
+                onClick={() => setPage(totalPages)}
+              >
+                {totalPages}
+              </button>
+            )}
+
+            <button
+              disabled={page === totalPages}
+              className="my-button"
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            >
+              Вперед
+            </button>
+          </div>
+        )}
       </div>
-    </AccountLayout >
+    </AccountLayout>
   );
 };
 

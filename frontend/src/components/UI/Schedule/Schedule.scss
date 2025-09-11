@@ -147,9 +147,15 @@
         background: #fff;
         padding: 20px;
         border-radius: 12px;
-        max-width: 400px;
+        max-width: 500px;
         width: 100%;
         text-align: center;
+
+        p {
+            text-align: left;
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
     }
 
     &__actions {
@@ -165,7 +171,7 @@
             cursor: pointer;
             background: #1976d2;
             color: #fff;
-            font-size: 14px;
+            font-size: 1.2rem;
 
             &:hover {
                 background: #125ea3;

@@ -16,7 +16,6 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
     const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [doctorId, setDoctorId] = useState<number|undefined>(undefined);
 
     const handleSubmit = () => {
         if (!selectedDate || !selectedTime) {
@@ -27,15 +26,14 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
         onRecord({
             date: selectedDate,
             time: selectedTime,
-            doctorId: doctorId,
+            id: consultationData.id,
         });
     };
 
     // Получение даты и времени из 
-    const onTimeDateSelect = (time: string | null, date: string | null, doctorId: number | undefined) => {
+    const onTimeDateSelect = (time: string | null, date: string | null) => {
         setSelectedTime(time);
         setSelectedDate(date);
-        setDoctorId(doctorId);
     }
 
     // Сброс формы при закрытии

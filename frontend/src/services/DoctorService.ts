@@ -12,8 +12,8 @@ export default class DoctorService {
         return $api.put(`/doctor/${id}`, data);
     }
 
-    static async getAllDoctors(page: number, limit: number): Promise<AxiosResponse<IDoctor[]>> {
-        return $api.get<IDoctor[]>('/doctor/all');
+    static async getAllDoctors(page: number, limit: number) {
+        return $api.get('/doctor/all');
     }
 
     static async getSpecializations(): Promise<AxiosResponse<Specializations[]>> {

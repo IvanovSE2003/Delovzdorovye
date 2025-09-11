@@ -41,7 +41,7 @@ const Main: React.FC = () => {
 
     const fetchUpcomingConsultations = async (currentPage: number) => {
         try {
-            const response = await ConsultationService.getAllConsultions(PAGE_SIZE, currentPage, {
+            const response = await ConsultationService.getAllConsultations(PAGE_SIZE, currentPage, {
                 userId: store.user.id.toString(),
                 consultation_status: "UPCOMING",
             });

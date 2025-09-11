@@ -27,9 +27,9 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
     const fetchConsultations = async () => {
         try {
             let response;
-            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", doctorId: id });
-            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultions(2, 1, { consultation_status: "ARCHIVE", userId: id });
-            else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "ARCHIVE", userId: id });
+            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "ARCHIVE", doctorId: id });
+            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultations(2, 1, { consultation_status: "ARCHIVE", userId: id });
+            else response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "ARCHIVE", userId: id });
 
             response && setConsultations(response.data.consultations);
         } catch (e) {
@@ -44,11 +44,16 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id = undefi
     }, [])
 
     // Завершение повтора консультации
-    const handleRepeatConsultation = (data: ConsultationData) => {
-        console.log("Данные для повтора консультации:", data);
-        // const response = await ConsultationService.repeatAppoinment(data);
-        // console.log(response.data);
-        setModalRepeat(false);
+    const handleRepeatConsultation = async (data: ConsultationData) => {
+        try {
+            const response = await ConsultationService.repeatAppointment(data);
+            console.log(response.data);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при повторе консультации: ", error.response?.data.message);
+        } finally {
+            setModalRepeat(false);
+        }
     };
 
     // Завершение оценки консультации

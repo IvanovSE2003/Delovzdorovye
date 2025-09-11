@@ -47,18 +47,34 @@ export default class ConsultationService {
         return $api.post('/consultation/problem/create', { name: newData });
     }
 
-    static async getAllConsultions(
+    static async getAllConsultations(
         limit = 10,
         page = 1,
         filters: {
-            userId?: string,
-            doctorId?: string,
-            payment_status?: string,
-            consultation_status?: "UPCOMING" | "ARCHIVE",
-        }
+            date?: string;
+            userId?: string;
+            doctorId?: string;
+            doctorUserId?: number;
+            payment_status?: string;
+            consultation_status?: "UPCOMING" | "ARCHIVE";
+        } = {}
     ): Promise<AxiosResponse<ConsultationsResponse>> {
-        return $api.post<ConsultationsResponse>('/consultation/all', { limit, page, filters })
+        const params: Record<string, string | number> = {
+            page,
+            limit,
+        };
+
+        if (filters.date) params.date = filters.date;
+        if (filters.userId) params.userId = filters.userId;
+        if (filters.doctorId) params.doctorId = filters.doctorId;
+        if (filters.doctorUserId) params.doctorUserId = filters.doctorUserId;
+        if (filters.payment_status) params.payment_status = filters.payment_status;
+        if (filters.consultation_status) params.consultation_status = filters.consultation_status;
+
+
+        return $api.get<ConsultationsResponse>("/consultation/all", { params });
     }
+
 
     // Создание консультации
     static async createAppointment(data: ConsultationData): Promise<AxiosResponse<AppointmentResponse>> {
@@ -66,15 +82,15 @@ export default class ConsultationService {
     }
 
     // Перенос консультации
-    static async shiftAppointment(data: ConsultationData) : Promise<AxiosResponse<TypeResponse>> {
+    static async shiftAppointment(data: ConsultationData): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>(`/consultation/resheduleConsultation/${data.id}`, {
             date: data.date, time: data.time, userId: data.userId, doctorId: data.doctorId
         });
     }
 
     // Отмена консультации
-    static async cancelAppointment(reason: string, id: number) : Promise<AxiosResponse<TypeResponse>> {
-        return $api.post<TypeResponse>(`consultation/cancelConsultation/${id}`, {reason});
+    static async cancelAppointment(reason: string, id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`consultation/cancelConsultation/${id}`, { reason });
     }
 
     // Редактирование консультации
@@ -83,12 +99,12 @@ export default class ConsultationService {
     // }
 
     // Повторить консультацию
-    // static async repeatAppointment(data: ConsultationData) : Promise<AxiosResponse<>> {
-    //     return $api.post('/consultation/appoinment/repeat', data);
-    // }
+    static async repeatAppointment(data: ConsultationData): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`/consultation/repeatConsultation/${data.id}`, { date: data.date, time: data.time });
+    }
 
     // Оценить консультацию
-    static async rateAppointment(id: number, score: number, review: string) : Promise<AxiosResponse<TypeResponse>> {
-        return $api.post<TypeResponse>(`consultation/rating/create/${id}`, {rating: score, comment: review});
+    static async rateAppointment(id: number, score: number, review: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`consultation/rating/create/${id}`, { rating: score, comment: review });
     }
 }

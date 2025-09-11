@@ -4,6 +4,8 @@ import "dayjs/locale/ru";
 dayjs.locale("ru");
 import "./Schedule.scss";
 import ScheduleService from "../../../services/ScheduleService";
+import ConsultationService from "../../../services/ConsultationService";
+import type { Consultation } from "../../../features/account/UpcomingConsultations/UpcomingConsultations";
 
 export type SlotStatus = "closed" | "open" | "booked";
 
@@ -30,12 +32,6 @@ type ModalData =
   | { day: string; time: string; type: "reset" }
   | { day: string; time: string; type: "booked" };
 
-interface ConsultationInfo {
-  clientName: string;
-  symptoms: string[];
-  details: string;
-}
-
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [weekOffset, setWeekOffset] = useState(0);
   const weekDays = getWeekDays(weekOffset);
@@ -46,7 +42,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
 
   const [modalData, setModalData] = useState<ModalData | null>(null);
   const [consultationInfo, setConsultationInfo] =
-    useState<ConsultationInfo | null>(null);
+    useState<Consultation[] | null>(null);
 
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [hoveredCol, setHoveredCol] = useState<string | null>(null);
@@ -112,17 +108,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       setModalData({ day: normalizedDay, time, type: "reset" });
     } else if (status === "booked") {
       try {
-        // ⚠️ тут будет реальный запрос
-        // const res = await ScheduleService.getConsultationInfo(normalizedDay, time, userId);
-        // setConsultationInfo(res.data);
-
-        // временный мок
-        setConsultationInfo({
-          clientName: "Иванов Иван Иванович",
-          symptoms: ["кашель", "повышенная температура"],
-          details: "Подробное описание симптомов пациента...",
-        });
-
+        const res = await ConsultationService.getAllConsultations(1, 1, { date: normalizedDay, doctorUserId: userId });
+        setConsultationInfo(res.data.consultations);
         setModalData({ day: normalizedDay, time, type: "booked" });
       } catch (e) {
         console.error("Ошибка при получении консультации:", e);
@@ -349,13 +336,17 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               {modalData.time}
             </h3>
             <p>
-              <b>Клиент:</b> {consultationInfo.clientName}
+              <b>Клиент:</b> {consultationInfo[0].PatientSurname} {consultationInfo[0].PatientName} {consultationInfo[0]?.PatientPatronymic}
             </p>
             <p>
-              <b>Симптомы:</b> {consultationInfo.symptoms.join(", ")}
+              <b>Симптомы:</b> {consultationInfo[0].Problems.join(", ")}
             </p>
             <p>
-              <b>Подробно:</b> {consultationInfo.details}
+              <b>Подробно:</b> {consultationInfo[0].other_problem ? (
+                consultationInfo[0].other_problem
+              ) : (
+                "Не указано"
+              )}
             </p>
 
             <div className="modal__actions">

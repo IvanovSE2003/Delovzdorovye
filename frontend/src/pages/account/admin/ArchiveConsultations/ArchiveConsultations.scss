@@ -102,4 +102,22 @@
     font-size: 1.4rem;
     font-weight: bolder;
   }
+
+  &__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 10px;
+
+    .numbers {
+      padding: 0.6rem !important;
+    }
+
+    .active {
+      color: white;
+      background: $button-gradient;
+      box-shadow: 0 0 10px $shadow-color;;
+    }
+  }
 }

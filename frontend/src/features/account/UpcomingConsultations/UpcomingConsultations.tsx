@@ -51,9 +51,9 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     const fetchConsultations = async () => {
         try {
             let response;
-            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", doctorId: id });
-            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultions(1, 1, { consultation_status: "UPCOMING", userId: id });
-            else response = await ConsultationService.getAllConsultions(10, 1, { consultation_status: "UPCOMING", userId: id });
+            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "UPCOMING", doctorId: id });
+            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultations(1, 1, { consultation_status: "UPCOMING", userId: id });
+            else response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "UPCOMING", userId: id });
             response && setConsultations(response.data.consultations);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -102,11 +102,16 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     };
 
     // Завершение повторения консультации
-    const handleRepeatConsultation = (data: ConsultationData) => {
-        console.log("Данные для записи:", data);
-        // const response = await ConsultationService.repeatAppoinment(data);
-        // console.log(response.data);
-        setModalRepeat(false);
+    const handleRepeatConsultation = async (data: ConsultationData) => {
+        try {
+            const response = await ConsultationService.repeatAppointment(data);
+            console.log(response.data);
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при повторе консультации: ", error.response?.data.message);
+        } finally {
+            setModalRepeat(false);
+        }
     };
 
     // Завершение редактирование консультации
