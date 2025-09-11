@@ -7,6 +7,8 @@ export default interface ConsultationRepository {
         consultation_status?: string;
         userId?: number;
         doctorId?: number;
+        time?: string;
+        date?: string;
     }
     ): Promise<{
         consultations: Consultation[];

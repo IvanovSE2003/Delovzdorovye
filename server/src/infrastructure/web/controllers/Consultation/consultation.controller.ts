@@ -94,8 +94,12 @@ export default class ConsultationController {
 
     async findAll(req: Request, res: Response, next: NextFunction) {
         try {
-            const { page, limit, filters } = req.body;
-            const consultations = await this.consultationRepository.findAll(page, limit, filters);
+            const { page, limit, ...filters } = req.query;
+
+            const pageConsult = page ? page : 1;
+            const limitConsult = limit ? limit : 10;
+
+            const consultations = await this.consultationRepository.findAll(Number(pageConsult), Number(limitConsult), filters);
 
             if (!consultations || consultations.consultations.length === 0) {
                 return next(ApiError.badRequest('Консультации не найдены'));
@@ -188,12 +192,12 @@ export default class ConsultationController {
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 60, null, null, reservationExpiresAt, null, time, date, user.id, doctor.id));
+            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 60, null, null, reservationExpiresAt, null, moscowTime, moscowDate, user.id, doctor.id));
             await this.addProblemsToConsultation(consultation.id, problems);
 
             await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
             await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Консультация была назначена на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", user.id));
-            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Назначена новая консультация на ${consultation.date} в ${consultation.time} от клиента ${user.surname} ${user.name} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Клиент ${user.surname} ${user.name} ${user.patronymic} записался на консультацию на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
             // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
@@ -239,17 +243,14 @@ export default class ConsultationController {
         }
     }
 
-    private formatTime(ms: number): string {
-        if (ms <= 0) return '00:00';
-        const minutes = Math.floor(ms / 60000);
-        const seconds = Math.floor((ms % 60000) / 1000);
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
     async findSpecialistAll(req: Request, res: Response, next: NextFunction) {
         try {
-            const { page, limit, filters } = req.body;
-            const result = await this.doctorReposiotry.findAll(page, limit, filters);
+            const { page, limit, ...filters } = req.query;
+
+            const pageDoctor = page ? page : 1;
+            const limitDoctor = limit ? limit : 10;
+
+            const result = await this.doctorReposiotry.findAll(Number(pageDoctor), Number(limitDoctor), filters);
 
             const formattedDoctors = result.doctors.map(doctor => ({
                 value: doctor.id,
@@ -523,6 +524,12 @@ export default class ConsultationController {
         }
     }
 
+    private formatTime(ms: number): string {
+        if (ms <= 0) return '00:00';
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
 
     private async addProblemsToConsultation(consultationId: number, problemIds: number[]): Promise<void> {
         try {
