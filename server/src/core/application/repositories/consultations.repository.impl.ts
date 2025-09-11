@@ -19,6 +19,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         consultation_status?: string;
         userId?: number;
         doctorId?: number;
+        doctorUserId?: number;
         date?: string;
     }
     ): Promise<{
@@ -46,6 +47,13 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
 
         if (filters?.date !== undefined && filters?.date !== null) {
             where.date = filters.date;
+        }
+
+        if (filters?.doctorUserId !== undefined && filters?.doctorUserId !== null) {
+            const doctor =  await models.DoctorModel.findOne({
+                where: {userId: filters.doctorUserId}
+            })
+            where.doctorId = doctor?.id;
         }
 
         const totalCount = await models.Consultation.count({
