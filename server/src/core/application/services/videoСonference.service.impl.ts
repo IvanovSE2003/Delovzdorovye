@@ -57,13 +57,60 @@ export default class VideoConferenceServiceImpl implements VideoConferenceServic
     }
 
     async startConsultation(consultationId: number): Promise<string> {
-        const room = await this.consultationRoomRepository.findByConsultationId(consultationId);
+        let room = await this.consultationRoomRepository.findByConsultationId(consultationId);
+
         if (!room) {
-            throw new Error('Комната не найдена');
+            // Если комнаты нет, создаем новую
+            room = await this.consultationRoomRepository.create(
+                new ConsultationRoom(
+                    0, // id создается в базе
+                    consultationId,
+                    this.generateRoomId(), // сгенерировать уникальный roomId
+                    'PENDING',
+                    null,
+                    null,
+                    []
+                )
+            );
         }
 
+        // Ставим статус ACTIVE
         const updatedRoom = await this.consultationRoomRepository.save(room.startRoom());
         return updatedRoom.roomId;
+    }
+
+    async addParticipant(consultationId: number, userId: number, role: "PATIENT" | "DOCTOR") {
+        const room = await this.consultationRoomRepository.findByConsultationId(consultationId);
+        if (!room) throw new Error("Комната не найдена");
+
+        const updatedRoom = await this.consultationRoomRepository.addParticipant(room.id, userId, role);
+
+        // ⚡ Отправляем в комнату событие о новом участнике
+        this.io.to(updatedRoom.roomId).emit("participantJoined", { userId, role });
+
+        return updatedRoom;
+    }
+
+    async removeParticipant(consultationId: number, userId: number) {
+        const room = await this.consultationRoomRepository.findByConsultationId(consultationId);
+        if (!room) throw new Error("Комната не найдена");
+
+        const updatedRoom = await this.consultationRoomRepository.removeParticipant(room.id, userId);
+
+        console.log(updatedRoom.roomId)
+        // ⚡ Сообщаем всем, что участник вышел
+        this.io.to(updatedRoom.roomId).emit("participantLeft", { userId });
+
+        return updatedRoom;
+    } 
+
+    async getAllRooms(): Promise<Array<{ roomId: string; consultationId: number; status: string }>> {
+        const rooms = await this.consultationRoomRepository.findAll(); // возвращает все комнаты из БД
+        return rooms.map((r: { roomId: any; consultationId: any; status: any; }) => ({
+            roomId: r.roomId,
+            consultationId: r.consultationId,
+            status: r.status
+        }));
     }
 
     private setupSocketHandlers() {

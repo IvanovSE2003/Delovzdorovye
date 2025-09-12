@@ -62,14 +62,14 @@ export default class ConsultationsStore {
     }
 
     // Получаем специалистов, связанных с проблемами
-    async findSpecialists(problems: number[]): Promise<SpecialistResponse[]> {
+    async findSpecialists(problems: number[]): Promise<OptionsResponse[]> {
         try {
             const response = await ConsultationService.getSpecialists(problems);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при поиске специалистов: ", error.response?.data.message);
-            return [];
+            return [] as OptionsResponse[];
         }
     }
 
@@ -90,8 +90,8 @@ export default class ConsultationsStore {
         let slots: Slot[] = [];
 
         for (const doc of specialists) {
-            const docSlots = await this.getSchedule(doc.id, linkerId);
-            slots = slots.concat(docSlots.map(s => ({ ...s, doctorId: doc.id })));
+            const docSlots = await this.getSchedule(doc.value, linkerId);
+            slots = slots.concat(docSlots.map(s => ({ ...s, doctorId: doc.value })));
         }
 
         return slots;

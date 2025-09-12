@@ -1,11 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import VideoConferenceService from "../../../../core/domain/services/videoConference.service";
 import ApiError from "../../error/ApiError";
+import ConsultationRoomRepository from "../../../../core/domain/repositories/consulationRoom.repository";
+import ConsultationRoom from "../../../../core/domain/entities/consultationRoom.entity";
 
 export default class VideoConferenceController {
     constructor(
-        private readonly videoConferenceService: VideoConferenceService
-    ) {}
+        private readonly videoConferenceService: VideoConferenceService,
+        private readonly consultaionRoomRepository: ConsultationRoomRepository
+    ) { }
 
     async createRoom(req: Request, res: Response, next: NextFunction) {
         try {
@@ -118,6 +121,53 @@ export default class VideoConferenceController {
             const participants = await this.videoConferenceService.getParticipants(consultationId);
 
             return res.json({ participants });
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
+        }
+    }
+
+    async addParticipant(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { consultationId } = req.params;
+            const { userId, userRole } = req.body;
+
+            // Проверка доступа (по желанию, если нужно)
+            const hasAccess = await this.videoConferenceService.validateAccess(Number(userId), Number(consultationId), userRole);
+            if (!hasAccess) {
+                return next(ApiError.internal("Доступ к консультации запрещен"));
+            }
+
+            // Добавление участника через сервис
+            const updatedRoom = await this.videoConferenceService.addParticipant(
+                Number(consultationId),
+                Number(userId),
+                userRole
+            );
+
+            return res.status(200).json({ participant: { userId, userRole }, roomId: updatedRoom.roomId });
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
+        }
+    }
+
+    async getAllRooms(req: Request, res: Response, next: NextFunction) {
+        try {
+            const rooms = await this.videoConferenceService.getAllRooms(); // метод в сервисе
+            return res.json({ rooms });
+        } catch (e: any) {
+            next(ApiError.internal(e.message));
+        }
+    }
+
+    async removeParticipant(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { consultationId } = req.params;
+            const { userId } = req.body;
+
+            // Найти комнату
+            const updatedRoom = await this.videoConferenceService.removeParticipant(Number(consultationId), Number(userId));
+
+            return res.status(200).json({ message: "Пользователь отключен", roomId: updatedRoom.roomId });
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }

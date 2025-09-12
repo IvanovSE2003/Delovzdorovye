@@ -27,8 +27,15 @@ export default class ConsultationService {
         return $api.get<OptionsResponse[]>('/consultation/problem/all');
     }
 
-    static async getSpecialists(problems: number[]): Promise<AxiosResponse<SpecialistResponse[]>> {
-        return $api.post<SpecialistResponse[]>('/consultation/specialistForProblems', { problems });
+    static async getSpecialists(
+        problems: number[]
+    ): Promise<AxiosResponse<OptionsResponse[]>> {
+        return $api.get<OptionsResponse[]>("/consultation/specialistForProblems", {
+            params: { problems },
+            paramsSerializer: {
+                indexes: null,
+            },
+        });
     }
 
     static async getSchedule(doctorId: number, linkerId: number): Promise<AxiosResponse<Slot[]>> {
@@ -107,4 +114,42 @@ export default class ConsultationService {
     static async rateAppointment(id: number, score: number, review: string): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>(`consultation/rating/create/${id}`, { rating: score, comment: review });
     }
+
+    static async createConsultation(consultationId: number) {
+        return $api.post(`/room/${consultationId}`);
+    }
+
+    static createRoom = async (consultationId: number, userId: number, userRole: string) => {
+        const response = await $api.post(`/conference/room/${consultationId}`, { userId, userRole });
+        return response.data;
+    };
+
+    static startRoom = async (consultationId: number, userId: number, userRole: string) => {
+        const response = await $api.post(`/conference/room/${consultationId}/start`, { userId, userRole });
+        return response.data;
+    };
+
+    static endRoom = async (consultationId: number, userId: number, userRole: string) => {
+        const response = await $api.post(`/conference/room/${consultationId}/end`, { userId, userRole });
+        return response.data;
+    };
+
+    static getParticipants = async (consultationId: number) => {
+        const response = await $api.get(`/conference/room/${consultationId}/participants`);
+        return response.data.participants;
+    };
+
+    static joinRoom(consultationId: number, userId: number, userRole: string) {
+        return $api.post(`/conference/room/${consultationId}/participants`, { userId, userRole });
+    }
+
+    static async getRooms(): Promise<{ roomId: string; consultationId: number }[]> {
+        const response = await $api.get("/conference/rooms");
+        return response.data.rooms; // сервер должен возвращать { rooms: [...] }
+    }
+
+    static leaveRoom = (roomId: number, userId: number) => {
+        return $api.post(`/conference/room/${roomId}/leave`, { userId });
+    };
+
 }

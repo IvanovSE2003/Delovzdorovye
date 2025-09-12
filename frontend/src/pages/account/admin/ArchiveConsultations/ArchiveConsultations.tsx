@@ -8,6 +8,7 @@ import { API_URL } from "../../../../http";
 import { getDateLabel } from "../../../../hooks/DateHooks";
 import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
+import Pagination from "../../../../components/UI/Pagination/Pagination";
 
 const PAGE_SIZE = 8;
 
@@ -113,50 +114,11 @@ const ArchiveConsultations: React.FC = () => {
           )}
         </div>
 
-        {/* Пагинация */}
-        {totalPages > 1 && (
-          <div className="archive__pagination">
-            <button
-              disabled={page === 1}
-              className="my-button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            >
-              Назад
-            </button>
-
-            <button
-              className={`my-button numbers ${page === 1 ? "active" : ""}`}
-              onClick={() => setPage(1)}
-            >
-              1
-            </button>
-
-            {page > 3 && <span className="dots">...</span>}
-
-            {page > 2 && page < totalPages && (
-              <button className="my-button numbers active">{page}</button>
-            )}
-
-            {page < totalPages - 2 && <span className="dots">...</span>}
-
-            {totalPages > 1 && (
-              <button
-                className={`my-button numbers ${page === totalPages ? "active" : ""}`}
-                onClick={() => setPage(totalPages)}
-              >
-                {totalPages}
-              </button>
-            )}
-
-            <button
-              disabled={page === totalPages}
-              className="my-button"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            >
-              Вперед
-            </button>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={(page) => setPage(page)}
+        />
       </div>
     </AccountLayout>
   );

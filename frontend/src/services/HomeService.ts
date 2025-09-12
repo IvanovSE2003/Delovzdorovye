@@ -1,6 +1,6 @@
 import type { AxiosResponse } from "axios";
-import type { InfoBlock } from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
 import $api from "../http";
+import type { InfoBlock } from "../models/InfoBlock";
 
 export default class HomeService {
     static async getContent(type: string): Promise<AxiosResponse<InfoBlock[]>> {

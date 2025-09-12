@@ -36,7 +36,7 @@ export default class AdminService {
     }
 
     static async userConsult(limit=10, page=1): Promise<AxiosResponse<UserConsult>> {
-        return $api.post<UserConsult>('/admin/userConsult/all', {limit, page});
+        return $api.get<UserConsult>(`/admin/userConsult/all?page=${page}&limit=${limit}`);
     } 
 
     static async getClientUsefulBlock(limit=10, page=1): Promise<AxiosResponse<getUsefulBlock[]>> {

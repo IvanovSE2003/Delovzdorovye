@@ -18,6 +18,8 @@ const Consultations: React.FC = () => {
                     id={store.user.id.toString()}
                     mode={"PATIENT"}
                 />
+                <br/>
+                <br/>
 
                 <h2 className="consultations__title">Архив консультации</h2>
                 <ArchiveConsultations

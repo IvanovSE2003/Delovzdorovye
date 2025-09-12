@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Select, { type MultiValue } from "react-select";
 import RecordForm from "./RecordForm";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import './RecordModal.scss'
+import { observer } from "mobx-react-lite";
 
 interface AdminConsultationModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface AdminConsultationModalProps {
   onRecord: (data: any) => void;
 }
 
-const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClose, onRecord, userId=undefined }) => {
+const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClose, onRecord, userId = undefined }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
   const [specialists, setSpecialists] = useState<OptionsResponse[]>([] as OptionsResponse[]);
   const [doctorId, setDoctorId] = useState<number | undefined>(undefined);
@@ -42,13 +43,7 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
 
     const ids = selected.map(opt => opt.value);
     const specs = await store.findSpecialists(ids);
-
-    const specialistsOptions: OptionsResponse[] = specs.map(spec => ({
-      value: spec.id,
-      label: `${spec.user.surname} ${spec.user.name} ${spec.user.patronymic}`
-    }));
-
-    setSpecialists(specialistsOptions);
+    setSpecialists(specs);
   };
 
   // Затемнение некоторые полей
@@ -100,10 +95,9 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
   return (
     <div className="modal">
       <div className="consultation-modal">
-        <h2 className="consultation-modal__title">Запись клиента</h2>
+        <h2 className="consultation-modal__title">Запись клиента на консультацию</h2>
         <button className="consultation-modal__close" onClick={onClose}>X</button>
 
-        {/* Проблемы */}
         <Select
           isMulti
           options={problems}
@@ -117,7 +111,6 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
           noOptionsMessage={() => "Нет доступных проблем"}
         />
 
-        {/* Специалисты */}
         <Select
           options={specialists}
           value={selectedSpecialist}
@@ -136,16 +129,16 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
         <RecordForm
           specialist={selectedSpecialist}
           onTimeDateSelect={selectTimeDate}
-          userId={userId||""}
+          userId={userId || ""}
         />
 
         <div className="consultation-modal__other-problem">
-          <p>Подробно о проблеме: </p>
+          <p className="consultation-modal__description">Если вы хотите уточнить детали - опишите это подробно в поле ниже:</p>
           <textarea
             name="other-problem"
             id="other-problem"
             className="consultation-modal__textarea"
-            placeholder="Если хотите, опишите вашу проблему подробнее..."
+            placeholder="Подробное описание проблемы..."
             value={otherProblem}
             onChange={(e) => setOtherProblem(e.target.value)}
           />
@@ -158,11 +151,11 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
           onClick={handleSubmit}
           disabled={!selectedDate || !selectedTime}
         >
-          Записать
+          Записать на консультацию
         </button>
       </div>
     </div>
   );
 };
 
-export default AdminRecordModal;
+export default observer(AdminRecordModal);

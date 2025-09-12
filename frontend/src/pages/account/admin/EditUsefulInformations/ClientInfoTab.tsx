@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { InfoBlock } from "../../../../models/InfoBlock";
+import HomeService from "../../../../services/HomeService";
 
 const ClientInfoTab: React.FC = () => {
   const [blocks, setBlocks] = useState<InfoBlock[]>([]);
@@ -35,37 +36,88 @@ const ClientInfoTab: React.FC = () => {
     }
   };
 
+  const fetchClientInfo = async () => {
+    try {
+      const response = await HomeService.getContent("useful_info_patient");
+      setBlocks(response.data);
+    } catch (e) {
+      console.error("Ошибка при получениир полезной информации для ЛК пациента: ", e);
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingBlock(null);
+    setNewHeader("");
+    setNewText("");
+  };
+
+  useEffect(() => {
+    fetchClientInfo();
+  }, [])
+
   return (
     <div>
-      <button className="edit-info__add-btn" onClick={handleAddBlock}>
+      <button className="my-button edit-info__btn" onClick={handleAddBlock}>
         Добавить блок
       </button>
 
-      {blocks.map(block => (
-        <div key={block.id} className="edit-info__block">
-          {editingBlock === block.id ? (
-            <>
-              <input
-                value={newHeader}
-                onChange={e => setNewHeader(e.target.value)}
-                className="edit-info__input"
-              />
-              <textarea
-                value={newText}
-                onChange={e => setNewText(e.target.value)}
-                className="edit-info__textarea"
-              />
-              <button onClick={handleSave}>Сохранить</button>
-            </>
-          ) : (
-            <>
-              <h2>{block.header}</h2>
-              <p>{block.text}</p>
-              <button onClick={() => handleEdit(block.id)}>Редактировать</button>
-            </>
-          )}
+      <div className="edit-info__blocks">
+        {blocks.map(block => (
+          <div key={block.id} className="edit-info__block">
+            {editingBlock === block.id ? (
+              <>
+                <input
+                  value={newHeader}
+                  onChange={e => setNewHeader(e.target.value)}
+                  className="edit-info__input"
+                />
+                <textarea
+                  value={newText}
+                  onChange={e => setNewText(e.target.value)}
+                  className="edit-info__textarea"
+                />
+                <div className="edit-info__actions">
+                  <button
+                    className="edit-info__btn my-button"
+                    onClick={handleSave}>
+                    Сохранить
+                  </button>
+                  <button
+                    className="edit-info__btn neg-button"
+                    onClick={handleCancelEdit}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="edit-info__header"> {block.header} </h2>
+                <p className="edit-info__text"> {block.text} </p>
+                <div className="edit-info__actions">
+                  <button
+                    className="edit-info__btn my-button"
+                    onClick={() => handleEdit(block.id)}
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    className="edit-info__btn neg-button"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {blocks.length === 0 && (
+        <div className="consultation__empty">
+            Нет информационных блоков. Добавьте первый блок.
         </div>
-      ))}
+      )}
     </div>
   );
 };

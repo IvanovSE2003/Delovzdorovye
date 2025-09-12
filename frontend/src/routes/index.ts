@@ -22,6 +22,7 @@ import Bell from "../pages/account/Bell";
 import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsultation";
 import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations/ArchiveConsultations";
 import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
+import AnotherProblem from "../pages/account/admin/Conference";
 
 export interface IRoute {
     path: string;
@@ -43,6 +44,8 @@ export const RouteNames = {
     PROFILE: '/profile/:id',
     BELL: '/notifications',
 
+    VIDEOCONF: '/consultation/:roomId',
+
     // Пути для пациента
     CONSULTATIONSPAT: '/patient/consultations',
     RECOMENDATIONS: '/patient/recomendations',
@@ -62,6 +65,7 @@ export const RouteNames = {
     MAKECONSULTATION: '/admin/make-consultation',
     ARCHIVECONSULTATIONS: '/admin/archive-consultation',
     EDITUSEFULINFO: '/admin/edit-useful-information',
+    ANOTHERPROBLEM: '/admin/another-problem',
 } as const;
 
 export const menuConfig: Record<string, { path: string; name: string }[]> = {
@@ -84,6 +88,7 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
         { path: RouteNames.EDITUSEFULINFO, name: 'Полезная информация'},
+        { path: RouteNames.ANOTHERPROBLEM, name: "Особые заявки"},
     ],
 };
 
@@ -121,4 +126,5 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.MAKECONSULTATION, element: MakeConsultation, roles: ['ADMIN']},
     { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN']},
     { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN']},
+    { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN']},
 ];

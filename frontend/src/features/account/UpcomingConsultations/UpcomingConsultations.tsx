@@ -9,6 +9,7 @@ import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import type { AxiosError } from 'axios';
 import { getDateLabel } from '../../../hooks/DateHooks';
 import type { Role } from '../../../models/Auth';
+import Pagination from '../../../components/UI/Pagination/Pagination';
 
 export interface Consultation {
     id: number;
@@ -38,6 +39,8 @@ export interface UserConsultationsProps {
     refreshTrigger?: number;
 }
 
+const PAGE_SIZE = 4;
+
 const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "ADMIN", refreshTrigger = 0 }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
@@ -47,29 +50,65 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[])
     const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
 
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [isVisible, setIsVisible] = useState(true);
+
     // Получение данных предстоящих консультаций
     const fetchConsultations = async () => {
         try {
+
             let response;
-            if (mode === "DOCTOR") response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "UPCOMING", doctorId: id });
-            else if (mode === "PATIENT") response = await ConsultationService.getAllConsultations(1, 1, { consultation_status: "UPCOMING", userId: id });
-            else response = await ConsultationService.getAllConsultations(10, 1, { consultation_status: "UPCOMING", userId: id });
-            response && setConsultations(response.data.consultations);
+            if (mode === "DOCTOR")
+                response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
+                    consultation_status: "UPCOMING",
+                    doctorId: id
+                });
+            else if (mode === "PATIENT")
+                response = await ConsultationService.getAllConsultations(1, page, {
+                    consultation_status: "UPCOMING",
+                    userId: id
+                });
+            else
+                response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
+                    consultation_status: "UPCOMING",
+                    userId: id
+                });
+
+            if (response) {
+                setConsultations(response.data.consultations);
+                setTotal(response.data.totalPages || 0);
+            }
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error('Ошибка при получение предстоящих консультации: ', error.response?.data.message)
+        } finally {
+            setIsVisible(true);
         }
     }
 
-    // Получаем данные при заходе на страницу
+    // Загружаем при заходе и при изменении страницы
     useEffect(() => {
-        fetchConsultations();
-    }, [])
+        const loadData = async () => {
+            setIsVisible(false);
+            await new Promise(resolve => setTimeout(resolve, 150)); // Небольшая задержка перед загрузкой
+            await fetchConsultations();
+        };
+        loadData();
+    }, [page]);
 
     // Обновление данных по сигналу извне
     useEffect(() => {
         fetchConsultations();
     }, [refreshTrigger]);
+
+    // Обработчик изменения страницы
+    const handlePageChange = (newPage: number) => {
+        setIsVisible(false);
+        setTimeout(() => {
+            setPage(newPage);
+        }, 150);
+    };
 
     // Завершение переноса консультации
     const handleShiftConsultation = async (data: ConsultationData) => {
@@ -134,7 +173,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 style={{ textAlign: 'center' }}
                 className="consultation-card__specialist"
             >
-                Здесь будут находиться ваши предстоящие консультации
+                Здесь будут находиться предстоящие консультации
             </div>
         </div>
     );
@@ -157,103 +196,111 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 mode={mode}
             />
 
-            {consultations.map(consultation => (
-                <div key={consultation.id} className="consultation-card">
-                    <div className="consultation-card__time">
-                        <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
-                        <span className="consultation-card__hours">{consultation.durationTime}</span>
-                    </div>
+            <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'}`}>
+                {consultations.map(consultation => (
+                    <div key={consultation.id} className="consultation-card">
+                        <div className="consultation-card__time">
+                            <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
+                            <span className="consultation-card__hours">{consultation.durationTime}</span>
+                        </div>
 
-                    <div className="consultation-card__info">
-                        {mode === "DOCTOR" ? (
-                            <div className="consultation-card__specialist">
-                                Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
-                                    ? <span> Анонимный пользователь </span>
-                                    : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
-                                }
-                            </div>
-                        ) : (
-                            <div className="consultation-card__specialist">
-                                {"Специалист: "}
-                                <a target='_blank' href={`/profile/${consultation.DoctorUserId}`}>
-                                    {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
-                                </a>
-                            </div>
-                        )}
+                        <div className="consultation-card__info">
+                            {mode === "DOCTOR" ? (
+                                <div className="consultation-card__specialist">
+                                    Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
+                                        ? <span> Анонимный пользователь </span>
+                                        : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
+                                    }
+                                </div>
+                            ) : (
+                                <div className="consultation-card__specialist">
+                                    {"Специалист: "}
+                                    <a target='_blank' href={`/profile/${consultation.DoctorUserId}`}>
+                                        {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
+                                    </a>
+                                </div>
+                            )}
 
-                        {mode !== "PATIENT" ? (
-                            <>
+                            {mode !== "PATIENT" ? (
+                                <>
+                                    <div className="consultation-card__symptoms">
+                                        {'Симптомы: '}
+                                        {consultation.Problems.map((p, i) => (
+                                            <span key={i}>
+                                                {p.toLocaleLowerCase()}
+                                                {i < consultation.Problems.length - 1 ? ', ' : ''}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="consultation-card__details">
+                                        Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
+                                    </div>
+                                </>
+                            ) : (
                                 <div className="consultation-card__symptoms">
-                                    {'Симптомы: '}
-                                    {consultation.Problems.map((p, i) => (
-                                        <span key={i}>
-                                            {p.toLocaleLowerCase()}
-                                            {i < consultation.Problems.length - 1 ? ', ' : ''}
-                                        </span>
-                                    ))}
+                                    Условия:<span> Бесплатные отмена и перенос более чем за 12 часов</span>
                                 </div>
+                            )}
+                        </div>
 
-                                <div className="consultation-card__details">
-                                    Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="consultation-card__symptoms">
-                                Условия:<span> Бесплатные отмена и перенос более чем за 12 часов</span>
-                            </div>
-                        )}
+                        <div className="consultation-card__actions">
+                            {(mode === "PATIENT" || mode === "ADMIN") && (
+                                <>
+                                    <button
+                                        className="consultation-card__button consultation-card__button--transfer"
+                                        onClick={() => handleClickButton(consultation, setModalShift)}
+                                    >
+                                        Перенести
+                                    </button>
+                                    <button
+                                        className="consultation-card__button consultation-card__button--cancel"
+                                        onClick={() => handleClickButton(consultation, setModalCancel)}
+                                    >
+                                        Отменить
+                                    </button>
+                                </>
+                            )}
+
+                            {mode === "ADMIN" && (
+                                <>
+                                    <RepeatModal
+                                        isOpen={modalRepeat}
+                                        consultationData={selectedConsultation || {} as Consultation}
+                                        onClose={() => setModalRepeat(false)}
+                                        onRecord={handleRepeatConsultation}
+                                    />
+
+                                    <EditModal
+                                        isOpen={modalEdit}
+                                        onClose={() => setModalEdit(false)}
+                                        onRecord={handleEditConsultation}
+                                    />
+
+                                    <button
+                                        className="consultation-card__button consultation-card__button--repeat"
+                                        onClick={() => setModalRepeat(true)}
+                                    >
+                                        Повторить
+                                    </button>
+                                    <button
+                                        className="consultation-card__button consultation-card__button--edit"
+                                        onClick={() => setModalEdit(true)}
+                                    >
+                                        Редактировать
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
+                ))}
+            </div>
 
-                    <div className="consultation-card__actions">
-                        {(mode === "PATIENT" || mode === "ADMIN") && (
-                            <>
-                                <button
-                                    className="consultation-card__button consultation-card__button--transfer"
-                                    onClick={() => handleClickButton(consultation, setModalShift)}
-                                >
-                                    Перенести
-                                </button>
-                                <button
-                                    className="consultation-card__button consultation-card__button--cancel"
-                                    onClick={() => handleClickButton(consultation, setModalCancel)}
-                                >
-                                    Отменить
-                                </button>
-                            </>
-                        )}
-
-                        {mode === "ADMIN" && (
-                            <>
-                                <RepeatModal
-                                    isOpen={modalRepeat}
-                                    consultationData={selectedConsultation || {} as Consultation}
-                                    onClose={() => setModalRepeat(false)}
-                                    onRecord={handleRepeatConsultation}
-                                />
-
-                                <EditModal
-                                    isOpen={modalEdit}
-                                    onClose={() => setModalEdit(false)}
-                                    onRecord={handleEditConsultation}
-                                />
-
-                                <button
-                                    className="consultation-card__button consultation-card__button--repeat"
-                                    onClick={() => setModalRepeat(true)}
-                                >
-                                    Повторить
-                                </button>
-                                <button
-                                    className="consultation-card__button consultation-card__button--edit"
-                                    onClick={() => setModalEdit(true)}
-                                >
-                                    Редактировать
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            ))}
+            <Pagination
+                page={page}
+                totalPages={total}
+                onChange={handlePageChange}
+            />
         </>
     );
 }

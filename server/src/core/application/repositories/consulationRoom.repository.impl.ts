@@ -11,6 +11,11 @@ export default class ConsultationRoomRepositoryImpl implements ConsultationRoomR
         return room ? this.mapToDomainConsulationRoom(room) : null;
     }
 
+    async findAll(): Promise<ConsultationRoom[]> {
+        const rooms = await models.ConsultationRoomModel.findAll();
+        return rooms.map(room => this.mapToDomainConsulationRoom(room)); // ✅ добавлен this
+    }
+
     async create(room: ConsultationRoom): Promise<ConsultationRoom> {
         const created = await models.ConsultationRoomModel.create(this.mapToPersistence(room));
         return this.mapToDomainConsulationRoom(created);
@@ -46,28 +51,40 @@ export default class ConsultationRoomRepositoryImpl implements ConsultationRoomR
         return room.participants || [];
     }
 
-
-    async addParticipant(roomId: number, userId: number, role: 'PATIENT' | 'DOCTOR'): Promise<ConsultationRoom> {
+    async removeParticipant(roomId: number, userId: number): Promise<ConsultationRoom> {
         const room = await models.ConsultationRoomModel.findByPk(roomId);
-        if (!room) {
-            throw new Error('Комната не найдена');
-        }
+        if (!room) throw new Error("Комната не найдена");
 
         const participants = room.participants || [];
 
-        const existing = participants.find((p: any) => p.userId === userId && p.leftAt === null);
-        if (!existing) {
-            participants.push({
-                userId,
-                joinedAt: new Date(),
-                leftAt: null,
-                role
-            });
-        }
+        const updatedParticipants = participants.map((p: any) =>
+            p.userId === userId && p.leftAt === null
+                ? { ...p, leftAt: new Date() }
+                : p
+        );
 
-        const updated = await room.update({ participants });
+        const updated = await room.update({ participants: updatedParticipants });
         return this.mapToDomainConsulationRoom(updated);
     }
+
+
+
+    async addParticipant(roomId: number, userId: number, role: 'PATIENT' | 'DOCTOR'): Promise<ConsultationRoom> {
+        const room = await models.ConsultationRoomModel.findByPk(roomId);
+        if (!room) throw new Error('Комната не найдена');
+
+        const participants = room.participants || [];
+        const existing = participants.find(p => p.userId === userId && p.leftAt === null);
+
+        if (!existing) {
+            const newParticipant = { userId, joinedAt: new Date(), leftAt: null, role };
+            const updated = await room.update({ participants: [...participants, newParticipant] }); // ✅ создаём новый массив
+            return this.mapToDomainConsulationRoom(updated);
+        }
+
+        return this.mapToDomainConsulationRoom(room);
+    }
+
 
     private mapToDomainConsulationRoom(roomModel: any): ConsultationRoom {
         return new ConsultationRoom(

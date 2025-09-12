@@ -32,6 +32,13 @@
     gap: 15px;
   }
 
+  &__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
   &__block {
     display: flex;
     flex-direction: column;
@@ -41,6 +48,7 @@
     border-radius: 8px;
 
     input {
+      margin-top: 10px;
       border: none;
       border-radius: 10px;
       padding: 1rem 1.5rem;
@@ -82,36 +90,25 @@
     }
   }
 
-  &__text-header {
-    font-size: 1.6rem;
+  &__header {
+    font-size: 2rem;
     font-weight: bolder;
-    color: black;
+    margin-bottom: 0;
   }
 
   &__text {
-    margin: 0 0 20px 0;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
     white-space: pre-line;
   }
 
   &__btn {
-    background: $button-color;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 0.8rem 2rem;
-    font-size: 1.5rem;
-    margin-right: 20px;
-    cursor: pointer;
-    align-self: center;
-
-    &:hover {
-      background: $button-color-hover;
-    }
+    width: 100% !important;
   }
 
   &__actions {
     display: flex;
+    gap: 20px;
   }
 
   &__add-btn {

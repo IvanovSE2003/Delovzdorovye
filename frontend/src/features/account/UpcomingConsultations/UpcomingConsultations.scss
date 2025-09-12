@@ -15,6 +15,28 @@
     }
 }
 
+.consultations-container {
+    transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+    
+    &.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    &.hidden {
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+    }
+}
+
+.consultations-loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.4rem;
+    color: $gray-color;
+}
+
 .consultation-card {
     border: 2px solid black;
     border-radius: 10px;
@@ -24,6 +46,7 @@
     max-width: 80%;
     margin: 20px auto;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
 
     &__time {
         display: flex;

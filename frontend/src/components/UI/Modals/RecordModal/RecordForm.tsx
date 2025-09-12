@@ -64,8 +64,8 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   const availableDates: Date[] = freeMode
     ? [] // все даты доступны
     : Array.from(
-        new Set(slots.map(slot => new Date(slot.date).toDateString()))
-      ).map(str => new Date(str));
+      new Set(slots.map(slot => new Date(slot.date).toDateString()))
+    ).map(str => new Date(str));
 
   const isDateAvailable = (date: Date) => freeMode || availableDates.some(
     availableDate => availableDate.toDateString() === date.toDateString()
@@ -102,19 +102,17 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     onTimeDateSelect(selectedTime, dateStr, matchedSlot?.doctorId);
   }, [selectedDate, selectedTime, slots]);
 
-  // Генерация слотов для freeMode (каждые 30 минут с 9:00 до 18:00)
+  // Генерация слотов для freeMode (каждый час с 9:00 до 18:00)
   function generateAllSlotsForDay(date: Date | null): Slot[] {
     if (!date) return [];
     const result: Slot[] = [];
     for (let hour = 9; hour <= 18; hour++) {
-      for (let min of [0, 30]) {
-        result.push({
-          date: date.toISOString(),
-          time: `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
-          doctorId: 0,
-          status: "OPEN"
-        });
-      }
+      result.push({
+        date: date.toISOString(),
+        time: `${String(hour).padStart(2, "0")}:00`,
+        doctorId: 0,
+        status: "OPEN"
+      });
     }
     return result;
   }

@@ -17,4 +17,11 @@ router.get("/consultation/:consultationId/access", (req: Request<{ consultationI
 
 router.get("/users/:consultationId", (req: Request, res: Response, next: NextFunction) => videoConferenceController.getParticipants(req, res, next));
 
+router.post("/room/:consultationId/participants", (req: Request<{ consultationId: string }>, res: Response, next: NextFunction) => videoConferenceController.addParticipant(req, res, next));
+
+router.get("/rooms", (req: Request, res: Response, next: NextFunction) => videoConferenceController.getAllRooms(req, res, next));
+
+router.post("/room/:consultationId/leave", (req: Request<{ consultationId: string }>, res: Response, next: NextFunction) => videoConferenceController.removeParticipant(req, res, next));
+
+
 export default router;
