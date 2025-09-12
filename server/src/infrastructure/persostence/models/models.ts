@@ -12,6 +12,7 @@ import { ConsultationModelInterface } from './interfaces/consultation.model.js'
 import { ProfDataModelInterface } from './interfaces/profData.model.js'
 import { NotificationModelInterface } from './interfaces/notification.model.js'
 import { OtherProblemModelInterface } from './interfaces/otherProblem.model.js'
+import { ConsulationRoomModelInterface } from './interfaces/consulationRoom.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -157,6 +158,17 @@ const OtherProblem = sequelize.define<OtherProblemModelInterface>('other_problem
     description_problem: {type: DataType.TEXT}
 })
 
+const ConsultationRoomModel = sequelize.define<ConsulationRoomModelInterface>('consultation_room', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    consultationId: { type: DataType.INTEGER, allowNull: false },
+    roomId: { type: DataType.STRING, unique: true },
+    status: { type: DataType.STRING, defaultValue: 'PENDING' },
+    startTime: { type: DataType.DATE, allowNull: true },
+    endTime: { type: DataType.DATE, allowNull: true },
+    participants: { type: DataType.JSONB, defaultValue: [] }
+});
+
+
 // Таблицы с контентом на сайте
 
 const ContentModel = sequelize.define('content', {
@@ -172,6 +184,9 @@ const ContentWithTitleModel = sequelize.define('content_with_title', {
     type: { type: DataType.STRING, allowNull: false }
 });
 
+
+Consultation.hasOne(ConsultationRoomModel, { foreignKey: 'consultationId' });
+ConsultationRoomModel.belongsTo(Consultation, { foreignKey: 'consultationId' });
 
 ProblemModel.belongsToMany(SpecializationModel, { through: ProblemSpecialization });
 SpecializationModel.belongsToMany(ProblemModel, { through: ProblemSpecialization });
@@ -269,5 +284,6 @@ export default {
     ConsultationProblems,
     ProfDataModel,
     Notification,
-    OtherProblem
+    OtherProblem,
+    ConsultationRoomModel
 }

@@ -13,10 +13,10 @@ import { Server } from 'socket.io';
 import { timerService } from './socket/timer.service.init.js'
 import cron from 'node-cron';
 import models from './infrastructure/persostence/models/models.js';
-import { Op } from 'sequelize';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import videoConferenceService from './socket/videoConferenceService.js'
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -28,11 +28,12 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173"],
         methods: ["GET", "POST"]
     }
 });
 
+videoConferenceService.setIo(io);
 timerService.setIo(io);
 
 app.use(cors({
@@ -46,36 +47,6 @@ app.use(cookieParser());
 app.use('/api', router);
 
 app.use(errorHandler);
-
-
-io.on('connection', (socket) => {
-    console.log('Клиент подключился:', socket.id);
-
-    socket.on('join-consultation', (consultationId: number) => {
-        socket.join(`consultation-${consultationId}`);
-        console.log(`Клиент ${socket.id} присоединился к консультации ${consultationId}`);
-    });
-
-    socket.on('leave-consultation', (consultationId: number) => {
-        socket.leave(`consultation-${consultationId}`);
-        console.log(`Клиент ${socket.id} покинул консультацию ${consultationId}`);
-    });
-
-    socket.on('payment-success', (data: { consultationId: number }) => {
-        timerService.stopTimer(data.consultationId);
-        console.log(`Оплата успешна для консультации: ${data.consultationId}`);
-
-        socket.to(`consultation-${data.consultationId}`).emit('payment-confirmed', {
-            consultationId: data.consultationId,
-            message: 'Оплата подтверждена'
-        });
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Клиент отключился:', socket.id);
-    });
-});
-
 
 const start = async () => {
     try {
