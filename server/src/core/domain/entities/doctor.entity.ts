@@ -2,6 +2,7 @@ export default class Doctor {
     constructor(
         public id: number,
         public isActivated: boolean,
+        public competencies: number[],
         public userId?: number,
         public user?: {
             id: number;

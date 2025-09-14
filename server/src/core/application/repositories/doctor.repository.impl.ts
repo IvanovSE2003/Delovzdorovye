@@ -3,7 +3,7 @@ import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 
 const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
 
@@ -30,7 +30,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 {
                     model: SpecializationModel,
                     through: { attributes: ['diploma', 'license'] },
-                    attributes: ['id','name'],
+                    attributes: ['id', 'name'],
                 }
             ]
         });
@@ -39,49 +39,39 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async findByProblems(problems: number[]): Promise<Doctor[]> {
-        const problemEntities = await models.ProblemModel.findAll({
-            where: { id: problems },
+        if (!problems || problems.length === 0) {
+            throw new Error("Нужен хотя бы один id проблемы");
+        }
+
+        const doctors = await DoctorModel.findAll({
+            where: {
+                isActivated: true,
+                competencies: {
+                    [Op.overlap]: problems
+                }
+            },
             include: [
                 {
-                    model: models.SpecializationModel,
-                    through: { attributes: [] }
+                    model: UserModel,
+                    attributes: ["id", "name", "surname", "patronymic", "img", "time_zone"]
+                },
+                {
+                    model: SpecializationModel,
+                    through: { attributes: ["diploma", "license"] },
+                    attributes: ["id", "name"]
                 }
             ]
         });
 
-        if (!problemEntities || problemEntities.length === 0) {
-            throw new Error("Проблемы не найдены");
-        }
+        const sortedDoctors = doctors
+            .map(d => ({
+                doctor: d,
+                matchCount: d.competencies.filter(c => problems.includes(c)).length
+            }))
+            .sort((a, b) => b.matchCount - a.matchCount)
+            .map(d => this.mapToDomainDoctor(d.doctor));
 
-        const specializationIds = [
-            ...new Set(problemEntities.flatMap(p => p.specializations?.map((s: { id: any; }) => s.id) || []))
-        ];
-
-        if (specializationIds.length === 0) {
-            throw new Error("Нет подходящих специалистов");
-        }
-
-        const doctors = await models.DoctorModel.findAll({
-            where: {
-                isActivated: true,
-            },
-            include: [
-                {
-                    model: models.UserModel,
-                    attributes: ['id', 'name', 'surname', 'patronymic']
-                },
-                {
-                    model: models.SpecializationModel,
-                    where: {
-                        id: specializationIds
-                    },
-                    through: { attributes: [] },
-                    required: true
-                }
-            ],
-            attributes: ['id', 'experience_years']
-        });
-        return doctors.map(doctor => this.mapToDomainDoctor(doctor));
+        return sortedDoctors;
     }
 
     async findAll(
@@ -91,8 +81,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             specialization?: string;
             isActive?: boolean;
             gender?: string;
-            experienceMin?: number;
-            experienceMax?: number;
         }
     ): Promise<{
         doctors: Doctor[];
@@ -108,16 +96,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
         if (filters?.isActive !== undefined) {
             where.activate = filters.isActive;
-        }
-
-        if (filters?.experienceMin !== undefined || filters?.experienceMax !== undefined) {
-            where.experience_years = {};
-            if (filters?.experienceMin !== undefined) {
-                where.experience_years[Op.gte] = filters.experienceMin;
-            }
-            if (filters?.experienceMax !== undefined) {
-                where.experience_years[Op.lte] = filters.experienceMax;
-            }
         }
 
         if (filters?.gender) {
@@ -160,7 +138,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             ],
             limit,
             offset: (page - 1) * limit,
-            order: [['experience_years', 'DESC'], ['id', 'ASC']]
+            order: [['id', 'ASC']]
         });
 
         return {
@@ -267,6 +245,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 return new Doctor(
                     createdDoctor.id,
                     createdDoctor.isActivated,
+                    [],
                     createdDoctor.userId,
                     null,
                     []
@@ -329,6 +308,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return new Doctor(
             doctorModel.id,
             doctorModel.isActivated,
+            doctorModel.competencies,
             doctorModel.userId,
             doctorModel.user
                 ? {
@@ -347,7 +327,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
         return {
             isActivated: doctor.isActivated,
-            userId: doctor.userId
+            userId: doctor.userId,
+            competencies: doctor.competencies
         };
     }
 }

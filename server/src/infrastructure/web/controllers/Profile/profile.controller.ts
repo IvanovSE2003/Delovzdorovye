@@ -49,6 +49,7 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
+                        profData: doctor?.profData
                     },
                     default: baseData
                 },

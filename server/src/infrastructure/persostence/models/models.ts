@@ -54,7 +54,8 @@ const TokenModel = sequelize.define<TokenModelInterface>('token', {
 
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    isActivated: { type: DataType.BOOLEAN, defaultValue: false }
+    isActivated: { type: DataType.BOOLEAN, defaultValue: false },
+    competencies: {type: DataType.ARRAY(DataType.INTEGER), defaultValue: []}
 });
 
 const SpecializationModel = sequelize.define<SpecializationModelInterface>('specialization', {
@@ -126,10 +127,6 @@ const DoctorSpecialization = sequelize.define('doctor_specializations', {
     specializationId: { type: DataType.INTEGER, allowNull: false, references: { model: SpecializationModel, key: 'id' } }
 });
 
-const ProblemSpecialization = sequelize.define('problem_specializations', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true }
-});
-
 const ConsultationProblems = sequelize.define('consultation_problems', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultationId: { type: DataType.INTEGER, allowNull: false, field: 'consultation_id' },
@@ -185,9 +182,6 @@ const ContentWithTitleModel = sequelize.define('content_with_title', {
 
 Consultation.hasOne(ConsultationRoomModel, { foreignKey: 'consultationId' });
 ConsultationRoomModel.belongsTo(Consultation, { foreignKey: 'consultationId' });
-
-ProblemModel.belongsToMany(SpecializationModel, { through: ProblemSpecialization });
-SpecializationModel.belongsToMany(ProblemModel, { through: ProblemSpecialization });
 
 UserModel.hasOne(ModerationBatchModel);
 ModerationBatchModel.belongsTo(UserModel);
@@ -276,7 +270,6 @@ export default {
     SpecializationModel,
     ProblemModel,
     DoctorSpecialization,
-    ProblemSpecialization,
     ContentModel,
     ContentWithTitleModel,
     ConsultationProblems,

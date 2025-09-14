@@ -167,37 +167,83 @@ export default class ConsultationController {
     async appointment(req: Request, res: Response, next: NextFunction) {
         try {
             const { date, time, problems, doctorId, userId, otherProblemText } = req.body;
-            const user = await this.userRepository.findById(Number(userId));
-            if (!user) {
-                return next(ApiError.badRequest('Пользователь не нейден'));
-            }
+
+            const [user, doctor] = await Promise.all([
+                this.userRepository.findById(Number(userId)),
+                this.doctorReposiotry.findById(Number(doctorId))
+            ]);
+
+            if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+            if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
+
+            const doctorUser = await this.userRepository.findByDoctorId(doctor.id);
+            if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
 
             const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
-            const doctor = await this.doctorReposiotry.findById(Number(doctorId));
-            if (!doctor) {
-                return next(ApiError.badRequest('Специалист не найден'));
-            }
-
-            const doctorUser = await this.userRepository.findByDoctorId(doctor.id);
-            if (!doctorUser) {
-                return next(ApiError.badRequest('Пользователь не нейден'));
-            }
-
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctor.id, normalizeDate(moscowDate), "OPEN");
-            if (!timeSlot) {
-                return next(ApiError.badRequest('Временная ячейка не найдена'));
-            }
+            const timeSlot = await this.timeSlotRepository.findByTimeDate(
+                moscowTime,
+                doctor.id,
+                normalizeDate(moscowDate),
+                "OPEN"
+            );
+            if (!timeSlot) return next(ApiError.badRequest('Временная ячейка не найдена'));
 
             const reservationExpiresAt = new Date();
             reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
-            const consultation = await this.consultationRepository.create(new Consultation(0, "UPCOMING", "PAYMENT", otherProblemText, null, 60, null, null, reservationExpiresAt, null, moscowTime, moscowDate, user.id, doctor.id));
-            await this.addProblemsToConsultation(consultation.id, problems);
+            const consultation = await this.consultationRepository.create(
+                new Consultation(
+                    0,
+                    "UPCOMING",
+                    "PAYMENT",
+                    otherProblemText,
+                    null,
+                    60,
+                    null,
+                    null,
+                    reservationExpiresAt,
+                    null,
+                    moscowTime,
+                    moscowDate,
+                    user.id,
+                    doctor.id
+                )
+            );
+
+            if (problems && problems.length) {
+                await this.addProblemsToConsultation(consultation.id, problems);
+            }
 
             await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
-            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Консультация была назначена на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", user.id));
-            await this.notificationRepository.save(new Notification(0, "Назначена консультация", `Клиент ${user.surname} ${user.name} ${user.patronymic} записался на консультацию на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+
+            const timeSlotDoctor = adjustTimeSlotToTimeZone(timeSlot, doctorUser.timeZone);
+            const timeSlotUser = adjustTimeSlotToTimeZone(timeSlot, user.timeZone);
+
+            const notifications = [
+                new Notification(
+                    0,
+                    "Назначена консультация",
+                    `Консультация была назначена на ${timeSlotUser.date} в ${timeSlotUser.time}`,
+                    "CONSULTATION",
+                    false,
+                    consultation,
+                    "CONSULTATION",
+                    user.id
+                ),
+                new Notification(
+                    0,
+                    "Назначена консультация",
+                    `Клиент ${user.surname} ${user.name} ${user.patronymic} записался на консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}`,
+                    "CONSULTATION",
+                    false,
+                    consultation,
+                    "CONSULTATION",
+                    doctorUser.id
+                )
+            ];
+
+            await Promise.all(notifications.map(n => this.notificationRepository.save(n)));
             // this.timerService.startTimer(consultation.id, reservationExpiresAt);
             return res.status(200).json(consultation);
         } catch (e: any) {
@@ -268,45 +314,64 @@ export default class ConsultationController {
             const { id } = req.params;
             const { date, time, userId, doctorId } = req.body;
 
-            const user = await this.userRepository.findById(Number(userId));
+            const [user, doctorUser, consultation] = await Promise.all([
+                this.userRepository.findById(Number(userId)),
+                this.userRepository.findByDoctorId(Number(doctorId)),
+                this.consultationRepository.findById(Number(id))
+            ]);
 
-            if (!user) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
-
-            const doctorUser = await this.userRepository.findByDoctorId(Number(doctorId));
-            if (!doctorUser) {
-                return next(ApiError.badRequest('Пользователь не нейден'));
-            }
-
-            const consultation = await this.consultationRepository.findById(Number(id));
-
-            if (!consultation) {
-                return next(ApiError.badRequest('Консультация не найдена'));
-            }
+            if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+            if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
+            if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
             const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
-            const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctorId, date, "OPEN");
+            console.log(consultation.date, consultation.time)
 
-            if (!timeSlot) {
-                return next(ApiError.badRequest('Не свободной ячейки для записи на консультацию'));
-            }
+            const [timeSlot, timeSlotPrev] = await Promise.all([
+                this.timeSlotRepository.findByTimeDate(moscowTime, doctorId, moscowDate, "OPEN"),
+                this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED")
+            ]);
 
-            const { newTime: moscowTimePrev, newDate: moscowDatePrev } = convertUserTimeToMoscow(consultation.date, consultation.time, user.timeZone);
-            const timeSlotPrev = await this.timeSlotRepository.findByTimeDate(moscowTimePrev, consultation.doctorId, consultation.date, "BOOKED");
+            if (!timeSlot) return next(ApiError.badRequest('Нет свободной ячейки для записи на консультацию'));
+            if (!timeSlotPrev) return next(ApiError.badRequest('Не найден предыдущий временной слот'));
 
-            if (!timeSlotPrev) {
-                return next(ApiError.badRequest('Не найден предыдущий верменной слот'));
-            }
+            const timeSlotDoctor = adjustTimeSlotToTimeZone(timeSlot, doctorUser.timeZone);
+            const timeSlotUser = adjustTimeSlotToTimeZone(timeSlot, user.timeZone);
 
-            await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
-            await this.timeSlotRepository.save(timeSlotPrev.setStatus("BOOKED"));
+            await Promise.all([
+                this.timeSlotRepository.save(timeSlot.setStatus("BOOKED")),
+                this.timeSlotRepository.save(timeSlotPrev.setStatus("OPEN"))
+            ]);
 
             const newConsult = await this.consultationRepository.save(consultation.setTimeDate(timeSlot.time, date));
-            await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${newConsult.date} в ${newConsult.time}`, "CONSULTATION", false, newConsult, "CONSULTATION", user.id));
-            await this.notificationRepository.save(new Notification(0, "Перенесена консультация", `Консультация была перенесена на ${consultation.date} в ${consultation.time} клиента ${user.surname} ${user.name} ${user.patronymic}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
 
-            return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${newConsult.date} на ${time}` });
+            await this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Перенесена консультация",
+                    `Консультация была перенесена на ${timeSlotUser.date} в ${timeSlotUser.time}`,
+                    "CONSULTATION",
+                    false,
+                    newConsult,
+                    "CONSULTATION",
+                    user.id
+                )
+
+            );
+            await this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Перенесена консультация",
+                    `Клиент ${user.surname} ${user.name} ${user.patronymic} перенес консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}`,
+                    "CONSULTATION",
+                    false,
+                    consultation,
+                    "CONSULTATION",
+                    doctorUser.id
+                )
+            );
+
+            return res.status(200).json({ success: true, message: `Ваша консультация перенесена на ${timeSlotUser.date} на ${timeSlotUser.time}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -318,36 +383,54 @@ export default class ConsultationController {
             const { reason } = req.body;
 
             const consultation = await this.consultationRepository.findById(Number(id));
+            if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
-            if (!consultation) {
-                return next(ApiError.badRequest('Консультация не найдена'));
-            }
+            const [user, doctorUser] = await Promise.all([
+                this.userRepository.findById(consultation.userId),
+                this.userRepository.findByDoctorId(consultation.doctorId)
+            ]);
 
-            const user = await this.userRepository.findById(consultation.userId);
+            if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+            if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
 
-            const doctorUser = await this.userRepository.findByDoctorId(consultation.doctorId);
-            if (!doctorUser) {
-                return next(ApiError.badRequest('Пользователь не нейден'));
-            }
-
-
-            console.log(consultation.time, consultation.doctorId, consultation.date)
             const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED");
-            if (!timeSlot) {
-                return next(ApiError.badRequest('Временная ячейка для данной консультации не найдена'));
-            }
+            if (!timeSlot) return next(ApiError.badRequest('Временная ячейка для данной консультации не найдена'));
 
-            let updateConsult: Consultation;
-            if (reason) {
-                updateConsult = await this.consultationRepository.save(consultation.setReason(reason).setConsultStatus("ARCHIVE"));
-            } else {
-                updateConsult = await this.consultationRepository.save(consultation.setConsultStatus("ARCHIVE"));
-            }
+            const updatedConsultation = await this.consultationRepository.save(
+                consultation
+                    .setConsultStatus("ARCHIVE")
+                    .setReason(reason || consultation.reason_cancel)
+            );
 
             await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
+            const timeSlotDoctor = adjustTimeSlotToTimeZone(timeSlot, doctorUser.timeZone);
 
-            await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена у специалиста ${updateConsult.doctor?.user.surname} ${updateConsult.doctor?.user.name}`, "CONSULTATION", false, updateConsult, "CONSULTATION", updateConsult.userId));
-            await this.notificationRepository.save(new Notification(0, "Отменена консультация", `Консультация была отменена для клиента ${user?.surname} ${user?.name} ${user?.patronymic} на ${consultation.date} в ${consultation.time}`, "CONSULTATION", false, consultation, "CONSULTATION", doctorUser.id));
+            await this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Отменена консультация",
+                    `Консультация была отменена`,
+                    "CONSULTATION",
+                    false,
+                    updatedConsultation,
+                    "CONSULTATION",
+                    updatedConsultation.userId
+                )
+            );
+
+            await this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Отменена консультация",
+                    `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена`,
+                    "WARNING",
+                    false,
+                    consultation,
+                    "CONSULTATION",
+                    doctorUser.id
+                )
+            );
+
             return res.status(200).json({ success: true, message: "Консультация была отменена" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));

@@ -4,6 +4,7 @@ interface IDoctortAttributes {
     id: number;
     isActivated: boolean;
     userId?: number;
+    competencies: number[];
 }
 
 export interface IDoctorCreationAttributes extends Optional<IDoctortAttributes, 'id'> { }

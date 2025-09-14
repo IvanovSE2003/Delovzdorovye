@@ -32,7 +32,6 @@ export function adjustDateTime(
         throw new Error(`adjustDateTime: неверный формат времени "${time}"`);
     }
 
-    // создаём Date в UTC безопасно
     const [year, month, day] = date.split("-").map(Number);
     const jsDate = new Date(Date.UTC(year, month - 1, day, hours, minutes));
 
@@ -50,7 +49,6 @@ export function adjustDateTime(
     };
 }
 
-// Используется при сохранении, чтобы привести в Москву
 export function convertUserTimeToMoscow(date: string, time: string, userTimeZone: ITimeZones): { newTime: string, newDate: string } {
     const hoursDiff = STORAGE_TIMEZONE - userTimeZone;
     return adjustDateTime(date, time, hoursDiff);

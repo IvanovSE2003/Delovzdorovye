@@ -66,24 +66,16 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { data: dataString } = req.body as { data: string; comment?: string; type?: "ADD" | "DELETE" };
+            const { type, specializationId, license, diploma, comment } = req.body;
 
-            let data: any
-            try {
-                data = JSON.parse(dataString);
-            } catch (parseError) {
-                return next(ApiError.badRequest("Неверный формат данных"));
-            }
-
-            if(!data.specialization) {
+            if (!specializationId) {
                 return res.status(204).send()
-            } 
+            }
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
                 return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
             }
-
 
             const doctor = await this.doctorRepository.findByUserId(user.id);
             if (!doctor) {
@@ -103,8 +95,8 @@ export default class DoctorController {
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
-            } else if (data.diploma) {
-                profDataRecord.new_diploma = data.diploma;
+            } else if (diploma) {
+                profDataRecord.new_diploma = diploma;
             }
 
             if (req.files?.license) {
@@ -118,12 +110,12 @@ export default class DoctorController {
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки лицензии'));
                 }
-            } else if (data.license) {
-                profDataRecord.new_license = data.license;
+            } else if (license) {
+                profDataRecord.new_license = license;
             }
 
-            if (data.specialization !== undefined) {
-                const specializationModel = await this.specializationRepository.findById(data.specialization)
+            if (specializationId !== undefined) {
+                const specializationModel = await this.specializationRepository.findById(specializationId)
                 profDataRecord.new_specialization = specializationModel?.name;
             }
 

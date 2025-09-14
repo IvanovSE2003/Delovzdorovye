@@ -627,7 +627,7 @@ export default class UserController {
             }
 
             if (newRole === 'DOCTOR') {
-                const doctor = await this.doctorRepository.save(new Doctor(0, true, user.id));
+                const doctor = await this.doctorRepository.save(new Doctor(0, true, [], user.id));
                 if (!doctor) {
                     return next(ApiError.internal('Ошибка изменения роли пользователя на специалиста'));
                 }
