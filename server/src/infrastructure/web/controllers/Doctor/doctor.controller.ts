@@ -66,7 +66,7 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { data: dataString, comment, type } = req.body as { data: string; comment?: string; type?: "ADD" | "DELETE" };
+            const { data: dataString } = req.body as { data: string; comment?: string; type?: "ADD" | "DELETE" };
 
             let data: any
             try {
@@ -74,6 +74,10 @@ export default class DoctorController {
             } catch (parseError) {
                 return next(ApiError.badRequest("Неверный формат данных"));
             }
+
+            if(!data.specialization) {
+                return res.status(204).send()
+            } 
 
             const user = await this.userRepository.findById(Number(id));
             if (!user) {
@@ -86,10 +90,7 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Специалист не найден"));
             }
 
-            const profDataRecord: any = {
-                comment: comment || null,
-                type: type || 'ADD'
-            };
+            const profDataRecord: any = {};
 
             if (req.files?.diploma) {
                 const diplomaFile = Array.isArray(req.files.diploma)
