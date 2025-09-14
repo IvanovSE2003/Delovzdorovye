@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import ConsultationService, { type SpecialistResponse } from "../services/ConsultationService";
+import ConsultationService from "../services/ConsultationService";
 import { AxiosError } from "axios";
 import type { TypeResponse } from "../models/response/DefaultResponse";
 

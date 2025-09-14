@@ -3,7 +3,6 @@ import './DoctorInfo.scss';
 import { Context } from '../../../main';
 import { observer } from 'mobx-react-lite';
 import { URL } from '../../../http';
-import MyInput from '../../../components/UI/MyInput/MyInput';
 import Select from 'react-select';
 import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
@@ -17,12 +16,10 @@ interface SpecializationForm {
     license: string | File;
 }
 
-
 const DoctorInfo = () => {
     const { store } = useContext(Context);
 
     const [edit, setEdit] = useState<boolean>(false);
-    const [experienceYears, setExperienceYears] = useState<number>(0);
     const [specializations, setSpecializations] = useState<SpecializationForm[]>([]);
     const [availableSpecializations, setAvailableSpecializations] = useState<any[]>([]);
     const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -35,9 +32,8 @@ const DoctorInfo = () => {
     const getDoctorInfo = async () => {
         try {
             const data: IDoctor = await store.getDoctorInfo(store.user.id);
-            setExperienceYears(data.experienceYears || 0);
 
-            // Преобразуем специализации в форму для редактирования
+            if(!data.profData) return;
             const transformedSpecs = data.profData.map(spec => ({
                 specialization: spec.specialization,
                 diploma: spec.diploma,
@@ -69,7 +65,6 @@ const DoctorInfo = () => {
                     formData.append('license', spec.license);
                 }
 
-                console.log(formData);
                 await DoctorService.saveChangeDoctorInfo(store.user.id, formData);
             }
 
@@ -94,12 +89,11 @@ const DoctorInfo = () => {
             const response = await DoctorService.getSpecializations();
             const specializations = response.data.map(item => ({ value: item.id, label: item.name }));
             setAvailableSpecializations(specializations);
-            console.log(response.data.map(value => value.name));
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при получении списка специализации: ", error.response?.data.message)
+            console.error("Ошибка при получении списка специализации: ", error.response?.data.message);
         }
-    }
+    };
 
     useEffect(() => {
         getDoctorInfo();
@@ -125,17 +119,6 @@ const DoctorInfo = () => {
                 {edit ? (
                     <div className="doctor-info__edit">
                         <div className="form-section">
-                            <MyInput
-                                type="number"
-                                value={experienceYears.toString()}
-                                onChange={(e) => setExperienceYears(Number(e))}
-                                placeholder="Введите опыт работы"
-                                id="experienceYears"
-                                label="Опыт работы (лет)"
-                            />
-                        </div>
-
-                        <div className="form-section">
                             <div className="form-section__header">
                                 <label className="form-section__label">Специализации</label>
                                 <button
@@ -157,7 +140,7 @@ const DoctorInfo = () => {
                                             classNamePrefix="custom-select"
                                             value={availableSpecializations.find(opt => opt.label === spec.specialization) || null}
                                             onChange={(selected) => {
-                                                updateSpecialization(index, 'specialization', selected?.label || '')
+                                                updateSpecialization(index, 'specialization', selected?.label || '');
                                                 setSelectedSpecialization(selected?.value);
                                             }}
                                         />
@@ -186,29 +169,12 @@ const DoctorInfo = () => {
                                         value={spec.license}
                                         onChange={(file) => updateSpecialization(index, "license", file ?? "")}
                                     />
-
                                 </div>
                             ))}
-
                         </div>
                     </div>
                 ) : (
                     <div className="doctor-info__view">
-                        <div className="info-section">
-                            <div className="info-section__header">
-                                <div className="info-section__icon">⚒️</div>
-                                <h3 className="info-section__title">Опыт работы</h3>
-                            </div>
-                            <div className="info-section__content">
-                                <div className="info-item">
-                                    <span className="info-item__value">
-                                        {experienceYears} {experienceYears === 1 ? 'год' :
-                                            experienceYears < 5 ? 'года' : 'лет'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
                         <div className="info-section">
                             <div className="info-section__header">
                                 <div className="info-section__icon">💼</div>

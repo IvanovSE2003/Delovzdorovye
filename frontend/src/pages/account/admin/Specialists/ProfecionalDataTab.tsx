@@ -113,7 +113,6 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                         <th>Специалист</th>
                         <th>Диплом</th>
                         <th>Лицензия</th>
-                        <th>Опыт</th>
                         <th>Специализация</th>
                         <th>Комментарий</th>
                         <th>Действия</th>
@@ -138,7 +137,6 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                         Документ
                                     </Link>
                                 </td>
-                                <td>{data.new_experience_years}</td>
                                 <td>{data.new_specialization}</td>
                                 <td>{data.comment || <span style={{ color: "red" }}>Комментарий отсутсвует</span>}</td>
                                 <td>

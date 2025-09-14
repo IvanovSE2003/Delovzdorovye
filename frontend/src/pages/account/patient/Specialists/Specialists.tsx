@@ -87,9 +87,6 @@ const Specialists: React.FC = () => {
                                     <h2 className="specialist-card__name">
                                         {doctor.user.surname} {doctor.user.name} {doctor.user?.patronymic}
                                     </h2>
-                                    <p className="specialist-card__experience">
-                                        Опыт работы: {formatExperienceYears(doctor.experienceYears)}
-                                    </p>
                                     <p className="specialist-card__status">
                                         Статус: {doctor.isActivated ? 'Активен' : 'Не активен'}
                                     </p>

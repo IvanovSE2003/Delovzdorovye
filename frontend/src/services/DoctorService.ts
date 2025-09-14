@@ -1,7 +1,12 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
 import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
-import type { Specializations } from "../pages/account/admin/EditUsefulInformations/SpecializationsTab";
+
+export interface Specializations {
+    id: number;
+    name: string;
+}
+
 
 export default class DoctorService {
     static async getDoctorInfo(id: number): Promise<AxiosResponse<IDoctor>> {

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import AccountLayout from '../../AccountLayout';
 import './SpecialConsultations.scss';
-import type { TypeResponse } from '../../../../models/response/DefaultResponse';
 import { processError } from '../../../../helpers/processError';
+import ShowError from '../../../../components/UI/ShowError/ShowError';
 
 const SpecialConsultation = () => {
-    const [error, setError] = useState<string>("");
+    const [error, setError] = useState<{ id: number; message: string } | null>(null);
 
 
     // Загрузка данных
-    const fetchSpecialConsultation = () => {
+    const fetchSpecialConsultation = async () => {
         try {
 
         } catch (e) {
@@ -27,7 +27,9 @@ const SpecialConsultation = () => {
             <div className='page-container'>
                 <h1 className="page-container__title">Особые заявки</h1>
 
-                {error && (<div>{error}</div>)}
+                <ShowError
+                    msg={error}
+                />
 
             </div>
         </AccountLayout>
