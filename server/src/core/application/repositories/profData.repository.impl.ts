@@ -70,7 +70,6 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
             profModel.id,
             profModel.new_diploma,
             profModel.new_license,
-            profModel.new_experience_years,
             profModel.new_specialization,
             profModel.comment,
             profModel.type,
@@ -90,7 +89,6 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
         return {
             new_diploma: profData.new_diploma,
             new_license: profData.new_license,
-            new_experience_years: profData.new_experience_years,
             new_specialization: profData.new_specialization,
             comment: profData.comment,
             type: profData.type,

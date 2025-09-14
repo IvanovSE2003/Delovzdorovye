@@ -1,7 +1,6 @@
 export default class Doctor {
     constructor(
         public id: number,
-        public experienceYears: number,
         public isActivated: boolean,
         public userId?: number,
         public user?: {
@@ -19,9 +18,4 @@ export default class Doctor {
             license?: string | null;
         }> | null
     ) {}
-
-    setYear(year: number) {
-        this.experienceYears = year;
-        return this;
-    }
 }

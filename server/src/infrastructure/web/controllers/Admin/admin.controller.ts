@@ -83,7 +83,6 @@ export default class BatchController {
                 id: data.id,
                 new_diploma: data.new_diploma,
                 new_license: data.new_license,
-                new_experience_years: data.new_experience_years,
                 new_specialization: data.new_specialization,
                 comment: data.comment,
                 type: data.type,
@@ -187,17 +186,20 @@ export default class BatchController {
                 return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
             }
 
-            const doctor = await this.doctorRepository.findByUserId(profData.userId || 0);
+            const user = await this.userRepository.findById(profData.userId || 0);
+            if(!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
 
+            const doctor = await this.doctorRepository.findByUserId(user.id);
             if (!doctor) {
                 return next(ApiError.badRequest('Специалист не найден'));
             }
 
-            const newDoctor = await this.doctorRepository.save(doctor.setYear(profData.new_experience_years));
-            console.log(newDoctor)
             await this.doctorRepository.saveLisinseDiploma(doctor, profData.new_license, profData.new_diploma, profData.new_specialization);
-
             await this.profDataRepository.delete(profData.id);
+
+            await this.userRepository.save(user.setSentChanges(false));
 
             await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, profData, "PROFDATA"));
             return res.status(200).json({

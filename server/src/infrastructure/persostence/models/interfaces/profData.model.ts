@@ -5,7 +5,6 @@ interface IProfDataAttributes {
     id: number;
     new_diploma: string;
     new_license: string;
-    new_experience_years: number;
     new_specialization: string;
     comment: string | null;
     type: "ADD" | "DELETE";

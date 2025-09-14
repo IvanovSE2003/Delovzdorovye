@@ -37,5 +37,5 @@ export default class FileServiceImpt implements FileService  {
         } catch (err) {
             throw new Error('Не удалось удалить файл');
         }
-    }а
+    }
 }

@@ -2,7 +2,6 @@ import { Model, Optional } from 'sequelize';
 
 interface IDoctortAttributes {
     id: number;
-    experience_years: number;
     isActivated: boolean;
     userId?: number;
 }

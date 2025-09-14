@@ -1,9 +1,8 @@
 import models from '../../../infrastructure/persostence/models/models.js';
 import DoctorRepository from '../../domain/repositories/doctor.repository.js';
-import { DoctorModelInterface, IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
+import { IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
-import TimeSlot from '../../domain/entities/timeSlot.entity.js';
 import { Op } from "sequelize";
 
 const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
@@ -31,7 +30,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 {
                     model: SpecializationModel,
                     through: { attributes: ['diploma', 'license'] },
-                    attributes: ['name']
+                    attributes: ['id','name'],
                 }
             ]
         });
@@ -202,12 +201,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async update(doctor: Doctor): Promise<Doctor> {
-        if (!doctor.id) {
-            throw new Error("ID доктора не найдено для обновления");
-        }
-
         const transaction = await sequelize.transaction();
-
         try {
             const [affectedCount, updatedDoctors] = await DoctorModel.update(
                 this.mapToPersistence(doctor),
@@ -243,9 +237,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     attributes: ['name']
                 }]
             });
-
             return this.mapToDomainDoctor(fullDoctor!);
-
         } catch (error) {
             await transaction.rollback();
             throw error;
@@ -274,7 +266,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             if (!fullDoctor) {
                 return new Doctor(
                     createdDoctor.id,
-                    createdDoctor.experience_years,
                     createdDoctor.isActivated,
                     createdDoctor.userId,
                     null,
@@ -295,12 +286,9 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
-        console.log(specialization)
         let specializationModel = await models.SpecializationModel.findOne({
             where: { name: specialization }
         });
-
-        console.log(specializationModel)
 
         if (!specializationModel) {
             throw new Error('Специализация не найдена');
@@ -340,7 +328,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
         return new Doctor(
             doctorModel.id,
-            doctorModel.experience_years,
             doctorModel.isActivated,
             doctorModel.userId,
             doctorModel.user
@@ -359,7 +346,6 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     private mapToPersistence(doctor: Doctor): IDoctorCreationAttributes {
         return {
-            experience_years: doctor.experienceYears,
             isActivated: doctor.isActivated,
             userId: doctor.userId
         };

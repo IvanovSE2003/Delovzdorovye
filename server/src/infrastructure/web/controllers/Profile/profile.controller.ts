@@ -49,9 +49,6 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        experienceYears: doctor?.experienceYears,
-                        // license: doctor?.license,
-                        // specializations: doctor?.specialization
                     },
                     default: baseData
                 },
@@ -64,8 +61,7 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        // diploma: doctor?.diploma,
-                        // specializations: doctor?.specialization
+                        profData: doctor?.profData
                     },
                     default: baseData
                 },
@@ -81,10 +77,7 @@ export default class ProfileController {
                     DOCTOR: {
                         ...baseData,
                         gender: user.gender,
-                        experienceYears: doctor?.experienceYears,
-                        // diploma: doctor?.diploma,
-                        // license: doctor?.license,
-                        // specializations: doctor?.specialization
+                        profData: doctor?.profData
                     },
                     default: {
                         ...baseData,

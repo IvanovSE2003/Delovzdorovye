@@ -54,7 +54,6 @@ const TokenModel = sequelize.define<TokenModelInterface>('token', {
 
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    experience_years: { type: DataType.INTEGER },
     isActivated: { type: DataType.BOOLEAN, defaultValue: false }
 });
 
@@ -115,7 +114,6 @@ const ProfDataModel = sequelize.define<ProfDataModelInterface>('prof_data_record
     new_diploma: { type: DataType.STRING },
     new_license: { type: DataType.STRING },
     new_specialization: { type: DataType.STRING },
-    new_experience_years: { type: DataType.INTEGER },
     comment: { type: DataType.TEXT, allowNull: true },
     type: { type: DataType.STRING, defaultValue: 'ADD' }
 });

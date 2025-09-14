@@ -121,15 +121,10 @@ export default class DoctorController {
                 profDataRecord.new_license = data.license;
             }
 
-            if (data.experienceYears !== undefined) {
-                profDataRecord.new_experience_years = data.experienceYears;
-            }
-
             if (data.specialization !== undefined) {
                 const specializationModel = await this.specializationRepository.findById(data.specialization)
                 profDataRecord.new_specialization = specializationModel?.name;
             }
-
 
             profDataRecord.userId = user.id;
             await this.profDataRepository.save(profDataRecord);
@@ -140,7 +135,7 @@ export default class DoctorController {
                 success: true,
                 message: "Изменения отправлены на модерацию",
                 changes: {
-                    experienceYears: data.experienceYears !== undefined,
+                    specialization: profDataRecord.specialization !== undefined,
                     diploma: profDataRecord.new_diploma !== undefined,
                     license: profDataRecord.new_license !== undefined
                 }
