@@ -39,13 +39,13 @@ export default class DoctorService {
 
     static async deleteProfInfo(userId: number, data: Specialization) {
         return $api.put(`/doctor/${userId}`,
-            { type: "DELETE", specialization: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
+            { type: "DELETE", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
         )
     }
 
     static async addProfInfo(userId: number, data: Specialization) {
         return $api.put(`/doctor/${userId}`,
-            { type: "ADD", specialization: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
+            { type: "ADD", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
         )
     }
 
