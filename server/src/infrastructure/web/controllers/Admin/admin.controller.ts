@@ -194,7 +194,8 @@ export default class BatchController {
             }
 
             const newDoctor = await this.doctorRepository.save(doctor.setYear(profData.new_experience_years));
-            await this.doctorRepository.saveLisinseDiploma(newDoctor, profData.new_license, profData.new_diploma, profData.new_specialization);
+            console.log(newDoctor)
+            await this.doctorRepository.saveLisinseDiploma(doctor, profData.new_license, profData.new_diploma, profData.new_specialization);
 
             await this.profDataRepository.delete(profData.id);
 

@@ -29,9 +29,16 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         setShowRejectModal(true);
     };
 
-    const confirm = (id: number) => {
-        setMessage("Данные подтверждены");
-        setProfecionalDatas(prev => prev.filter(p => p.id !== id));
+    const confirm = async (id: number) => {
+        const res = await store.confirmProfData(id);
+        if (res.success) {
+            setMessage("Данные подтверждены")
+            console.log(res)
+        }
+        else {
+            setError(`Неудалось выполнить действие: ${res.message}`);
+            console.log(res)
+        }
     };
 
     const closeRejectModal = () => {

@@ -23,6 +23,7 @@ import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsul
 import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations/ArchiveConsultations";
 import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
 import AnotherProblem from "../pages/account/admin/Conference";
+import SpecialConsultation from "../pages/account/admin/SpecialConsultations/SpecialConsultations";
 
 export interface IRoute {
     path: string;
@@ -65,6 +66,7 @@ export const RouteNames = {
     MAKECONSULTATION: '/admin/make-consultation',
     ARCHIVECONSULTATIONS: '/admin/archive-consultation',
     EDITUSEFULINFO: '/admin/edit-useful-information',
+    SPECIALCONSUL: '/admin/special-consultations',
     ANOTHERPROBLEM: '/admin/another-problem',
 } as const;
 
@@ -88,7 +90,8 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
         { path: RouteNames.EDITUSEFULINFO, name: 'Полезная информация'},
-        { path: RouteNames.ANOTHERPROBLEM, name: "Особые заявки"},
+        { path: RouteNames.SPECIALCONSUL, name: "Особые заявки"},
+        { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование "},
     ],
 };
 
@@ -127,4 +130,5 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN']},
     { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN']},
     { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN']},
+    { path: RouteNames.SPECIALCONSUL, element: SpecialConsultation, roles: ['ADMIN']},
 ];

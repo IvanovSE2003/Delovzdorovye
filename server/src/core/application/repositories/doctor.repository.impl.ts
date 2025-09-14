@@ -295,12 +295,15 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     }
 
     async saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
+        console.log(specialization)
         let specializationModel = await models.SpecializationModel.findOne({
             where: { name: specialization }
         });
 
+        console.log(specializationModel)
+
         if (!specializationModel) {
-            specializationModel = await models.SpecializationModel.create({ name: specialization });
+            throw new Error('Специализация не найдена');
         }
 
         let doctorSpecialization = await models.DoctorSpecialization.findOne({

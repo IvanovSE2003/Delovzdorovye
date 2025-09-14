@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import type { TypeResponse } from "../../../../models/response/DefaultResponse";
-import type { AxiosError } from "axios";
 import DoctorService from "../../../../services/DoctorService";
+import { processError } from "../../../../helpers/processError";
 
 export interface Specializations {
     id: number;
@@ -32,20 +31,13 @@ const SpecializationsTab: React.FC = () => {
         }, 5000);
     };
 
-    // Вывод ошибки с сервера
-    const handleError = (e: unknown, message: string) => {
-        const error = e as AxiosError<TypeResponse>;
-        const msg = `${message} ${error.response?.data.message ?? ""}`;
-        showError(msg);
-    };
-
     // Загрузка данных
     const loadSpecializations = async () => {
         try {
             const response = await DoctorService.getSpecializations();
             setSpecializations(sortSpecializations(response.data));
         } catch (e) {
-            handleError(e, "Ошибка при получении специализаций:");
+            processError(e, "Ошибка при получении специализаций:", showError);
         }
     };
 
@@ -55,7 +47,7 @@ const SpecializationsTab: React.FC = () => {
             await DoctorService.deleteSpecialization(id);
             setSpecializations(prev => prev.filter(s => s.id !== id));
         } catch (e) {
-            handleError(e, "Ошибка при удалении специализации:");
+            processError(e, "Ошибка при получении специализаций:", showError);
         }
     };
 
@@ -78,7 +70,7 @@ const SpecializationsTab: React.FC = () => {
                 prev.map(s => (s.id === tempId ? { ...s, id: response.data.id } : s))
             );
         } catch (e) {
-            handleError(e, "Ошибка при создании специализации:");
+            processError(e, "Ошибка при получении специализаций:", showError);
         }
     };
 
@@ -102,7 +94,7 @@ const SpecializationsTab: React.FC = () => {
                 )
             );
         } catch (e) {
-            handleError(e, "Ошибка при изменении специализации:");
+            processError(e, "Ошибка при получении специализаций:", showError);
         } finally {
             setEditing(null);
         }

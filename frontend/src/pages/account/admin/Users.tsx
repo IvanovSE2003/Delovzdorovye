@@ -152,7 +152,7 @@ const Users = () => {
                     </a>
                   ) : 'Нет фото'}
                 </td>
-                <td>{user.gender}</td>
+                <td>{user.gender || "Не указано"}</td>
                 <td>{user.phone}</td>
                 <td>{user.email}</td>
                 <td>{user.specialization || "-"}</td>

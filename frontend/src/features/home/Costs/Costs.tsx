@@ -1,11 +1,11 @@
 import './Costs.scss'
 import AnimatedBlock from '../../../components/AnimatedBlock';
 import { useEffect, useState } from 'react';
-import type { InfoBlock } from '../../../pages/account/admin/EditUsefulInformations/EditUsefulInformations';
 import type { AxiosError } from 'axios';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import HomeService from '../../../services/HomeService';
 import type { Role } from '../../../models/Auth';
+import type { InfoBlock } from '../../../models/InfoBlock';
 
 interface CostsProps {
     role: Role;
@@ -86,7 +86,6 @@ const Costs: React.FC<CostsProps> = ({ role }) => {
     const handleDelete = async (id: number) => {
         try {
             // await HomeService.deleteContent("cost_consultation", id);
-
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при удалении блока: ", error.response?.data.message);
