@@ -1,272 +1,254 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from "react";
+import { Context } from "../../../main";
+import { observer } from "mobx-react-lite";
 import './DoctorInfo.scss';
-import { Context } from '../../../main';
-import { observer } from 'mobx-react-lite';
-import { URL } from '../../../http';
+import { processError } from "../../../helpers/processError";
+import DoctorService, { type Specialization, type Specializations } from "../../../services/DoctorService";
+import { URL } from "../../../http";
+import { Link } from "react-router";
+import MyInput from "../../../components/UI/MyInput/MyInput";
 import Select from 'react-select';
-import type { IDoctor } from '../../../pages/account/patient/Specialists/Specialists';
-import type { TypeResponse } from '../../../models/response/DefaultResponse';
-import type { AxiosError } from 'axios';
-import DoctorService from '../../../services/DoctorService';
-import MyInputFile from '../../../components/UI/MyInput/MyInputFile';
-
-interface SpecializationForm {
-    specialization: string;
-    diploma: string | File;
-    license: string | File;
-}
+import MyInputFile from "../../../components/UI/MyInput/MyInputFile";
 
 const DoctorInfo = () => {
     const { store } = useContext(Context);
-
+    const [doctorInfo, setDoctorInfo] = useState<Specialization[]>([] as Specialization[]);
     const [edit, setEdit] = useState<boolean>(false);
-    const [specializations, setSpecializations] = useState<SpecializationForm[]>([]);
-    const [availableSpecializations, setAvailableSpecializations] = useState<any[]>([]);
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const [selectedSpecialization, setSelectedSpecialization] = useState<number | null>(null);
+    const [modal, setModal] = useState<{ state: boolean, data: Specialization }>({ state: false, data: {} as Specialization });
+    const [comment, setComment] = useState<string>("");
+    const [addBlock, setAddBlock] = useState<boolean>(false);
 
-    const toggle = (index: number) => {
-        setOpenIndex(openIndex === index ? null : index);
-    };
+    const [specializations, setSpecializations] = useState<Specializations[]>([] as Specializations[])
+    const [selectedSpecializationId, setSelectedSpecializationId] = useState<number|null>(null);
+    const [diploma, setDiploma] = useState<File | null>(null)
+    const [license, setLicense] = useState<File | null>(null)
 
-    const getDoctorInfo = async () => {
+    // Получение данных
+    const fetchProfData = async () => {
         try {
-            const data: IDoctor = await store.getDoctorInfo(store.user.id);
-
-            if(!data.profData) return;
-            const transformedSpecs = data.profData.map(spec => ({
-                specialization: spec.specialization,
-                diploma: spec.diploma,
-                license: spec.license
-            }));
-
-            setSpecializations(transformedSpecs);
-        } catch (error) {
-            console.error('Ошибка загрузки данных:', error);
+            const response = await DoctorService.getDoctorInfo(store.user.id);
+            setDoctorInfo(response.data.profData);
+        } catch (e) {
+            processError(e, "Ошибка при получении профессональных данных доктора: ");
         }
-    };
+    }
 
-    const saveChanges = async () => {
+    // Удаление специализации
+    const deleteSpecialization = async (info: Specialization) => {
         try {
-            for (const spec of specializations) {
-                const formData = new FormData();
-                const dataToSend = {
-                    specialization: selectedSpecialization,
-                    diploma: spec.diploma instanceof File ? null : spec.diploma,
-                    license: spec.license instanceof File ? null : spec.license
-                };
-
-                formData.append('data', JSON.stringify(dataToSend));
-
-                if (spec.diploma instanceof File) {
-                    formData.append('diploma', spec.diploma);
-                }
-                if (spec.license instanceof File) {
-                    formData.append('license', spec.license);
-                }
-
-                await DoctorService.saveChangeDoctorInfo(store.user.id, formData);
-            }
-
-            setEdit(false);
-        } catch (error) {
-            console.error('Ошибка сохранения:', error);
+            const response = await DoctorService.deleteProfInfo(store.user.id, info);
+            console.log(response.data);
+        } catch (e) {
+            processError(e, "Ошибка при удалении профессиональной информации: ");
+        } finally {
+            setModal({ state: false, data: {} as Specialization })
         }
-    };
+    }
 
-    const addSpecialization = () => {
-        setSpecializations([...specializations, { specialization: "", diploma: "", license: "" }]);
-    };
+    // Добавление специализации
+    const addSpecialization = async (info: Specialization) => {
+        try {
+            const response = await DoctorService.addProfInfo(store.user.id, info);
+            console.log(response.data);
+        } catch (e) {
+            processError(e, "Ошибка при добавлении нового блока: ");
+        } finally {
+            fetchProfData();
+        }
+    }
 
-    const updateSpecialization = (index: number, field: keyof SpecializationForm, value: any) => {
-        const updated = [...specializations];
-        updated[index] = { ...updated[index], [field]: value };
-        setSpecializations(updated);
-    };
-
+    // Получение специализация для селекта
     const getSpecialization = async () => {
         try {
             const response = await DoctorService.getSpecializations();
-            const specializations = response.data.map(item => ({ value: item.id, label: item.name }));
-            setAvailableSpecializations(specializations);
+            setSpecializations(response.data);
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при получении списка специализации: ", error.response?.data.message);
+            processError(e, "Ошибка при получении всех специлазаций: ");
+        } finally {
+            fetchProfData();
         }
-    };
-
-    useEffect(() => {
-        getDoctorInfo();
-        getSpecialization();
-    }, []);
-
-    if (!store.user) {
-        return <div>Загрузка...</div>;
     }
 
+    // Загрузка данных при прогрузке информации
+    useEffect(() => {
+        getSpecialization();
+        fetchProfData();
+    }, [])
+
     return (
-        <div className='doctor-info'>
-            <div className="doctor-info__header">
-                <h1 className="doctor-info__title">
-                    {edit ? "Редактирование профиля" : "Профиль специалиста"}
-                </h1>
-                <p className="doctor-info__subtitle">
-                    {edit ? "Обновите вашу профессиональную информацию" : "Ваша профессиональная информация"}
-                </p>
-            </div>
+        <div className="doctor-info">
+            <h1 className="doctor-info__title">Специализации доктора</h1>
+            <p className="doctor-info__subtitle">Здесь находится список всех ваших специализаций</p>
 
-            <div className='doctor-info__content'>
-                {edit ? (
-                    <div className="doctor-info__edit">
-                        <div className="form-section">
-                            <div className="form-section__header">
-                                <label className="form-section__label">Специализации</label>
-                                <button
-                                    type="button"
-                                    className="add-button"
-                                    onClick={addSpecialization}
-                                >
-                                    + Добавить специализацию
-                                </button>
-                            </div>
+            {/* Блок для добавления */}
+            {addBlock && (
+                <div className="doctor-info__flex-column doctor-info__add">
+                    <h1 className="doctor-info__add-title">Добавление новой специализации</h1>
 
-                            {specializations.map((spec, index) => (
-                                <div key={index} className="specialization-form">
-                                    <div className="specialization-form__header">
-                                        <Select
-                                            options={availableSpecializations}
-                                            placeholder="Выберите специализацию"
-                                            className="doctor-info__select"
-                                            classNamePrefix="custom-select"
-                                            value={availableSpecializations.find(opt => opt.label === spec.specialization) || null}
-                                            onChange={(selected) => {
-                                                updateSpecialization(index, 'specialization', selected?.label || '');
-                                                setSelectedSpecialization(selected?.value);
-                                            }}
-                                        />
+                    <Select
+                        options={specializations.map(spec => ({ value: spec.id, label: spec.name }))}
+                        placeholder="Выберите специализацию"
+                        className="doctor-info__select"
+                        classNamePrefix="custom-select"
+                        onChange={(selected) => setSelectedSpecializationId(selected?.value||null)}
+                    />
 
-                                        <button
-                                            type="button"
-                                            className="neg-button"
-                                            onClick={() => {
-                                                setSpecializations(specializations.filter((_, i) => i !== index));
-                                            }}
-                                        >
-                                            Удалить
-                                        </button>
-                                    </div>
+                    <MyInputFile
+                        id="diploma"
+                        label="Диплом"
+                        value={diploma || ""}
+                        className="doctor-info__input"
+                        onChange={setDiploma}
+                    />
 
-                                    <MyInputFile
-                                        id="diploma"
-                                        label="Диплом"
-                                        value={spec.diploma}
-                                        onChange={(file) => updateSpecialization(index, "diploma", file ?? "")}
-                                    />
+                    <MyInputFile
+                        id="license"
+                        label="Лицинзия"
+                        className="doctor-info__input"
+                        value={license || ""}
+                        onChange={setLicense}
+                    />
 
-                                    <MyInputFile
-                                        id="license"
-                                        label="Лицензия"
-                                        value={spec.license}
-                                        onChange={(file) => updateSpecialization(index, "license", file ?? "")}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                    <MyInput
+                        id="comment"
+                        label="Комментарий"
+                        className="doctor-info__input"
+                        value={comment}
+                        onChange={setComment}
+                    />
+
+                    <button
+                        className="doctor-info__add-button"
+                        onClick={() => {
+                            const info: Specialization = {
+                                id: Date.now(),
+                                specializationId: selectedSpecializationId || 0,
+                                diploma: diploma?.name || "",
+                                license: license?.name || "",
+                                comment: comment
+                            }
+                            addSpecialization(info);
+                        }}
+                    >
+                        Добавить
+                    </button>
+
+                    <button
+                        className="my-button doctor-info__button"
+                        onClick={() => setAddBlock(false)}
+                    >
+                        Назад
+                    </button>
+
+                </div>
+            )}
+
+            {doctorInfo && !addBlock && doctorInfo.map((info: Specialization) => (
+                <div key={info.id} className="info-section">
+                    <div className="info-section__header">
+                        <div className="info-section__title">{info.specialization}</div>
                     </div>
-                ) : (
-                    <div className="doctor-info__view">
-                        <div className="info-section">
-                            <div className="info-section__header">
-                                <div className="info-section__icon">💼</div>
-                                <h3 className="info-section__title">Специализации</h3>
-                            </div>
-                            <div className="info-section__content">
-                                {specializations.length > 0 ? (
-                                    specializations.map((spec, index) => (
-                                        <div key={index} className="specialization-item">
-                                            <button
-                                                className="specialization-item__header"
-                                                onClick={() => toggle(index)}
-                                            >
-                                                <span className="specialization-item__name">
-                                                    {spec.specialization}
-                                                </span>
-                                                <span className="specialization-item__arrow">
-                                                    {openIndex === index ? "▲" : "▼"}
-                                                </span>
-                                            </button>
 
-                                            {openIndex === index && (
-                                                <div className="specialization-item__content">
-                                                    <div className="specialization-docs">
-                                                        <div className="specialization-docs__item">
-                                                            <span className="specialization-docs__label">Диплом:</span>
-                                                            <a
-                                                                href={`${URL}/${spec.diploma}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="specialization-docs__link"
-                                                            >
-                                                                Посмотреть документ
-                                                            </a>
-                                                        </div>
-                                                        <div className="specialization-docs__item">
-                                                            <span className="specialization-docs__label">Лицензия:</span>
-                                                            <a
-                                                                href={`${URL}/${spec.license}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="specialization-docs__link"
-                                                            >
-                                                                Посмотреть документ
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="info-item">
-                                        <span className="info-item__value">Специализации не добавлены</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                    <div className="info-item">
+                        <div className="info-item__label">Диплом: </div>
+                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.diploma}`}>
+                            Посмотреть документ
+                        </Link>
                     </div>
-                )}
-            </div>
 
-            <div className="doctor-info__actions">
-                {edit ? (
-                    <div className="action-buttons">
+                    <div className="info-item">
+                        <div className="info-item__label">Лицензия: </div>
+                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.license}`}>
+                            Посмотреть документ
+                        </Link>
+                    </div>
+
+                    {edit && (
                         <button
-                            className="my-button"
-                            onClick={saveChanges}
+                            className="neg-button doctor-info__button"
+                            onClick={() => setModal({ state: true, data: info })}
                         >
-                            Сохранить изменения
+                            Удалить
                         </button>
-                        <button
-                            className="neg-button"
-                            onClick={() => {
-                                getDoctorInfo();
-                                setEdit(false);
-                            }}
-                        >
-                            Отмена
-                        </button>
-                    </div>
-                ) : (
+                    )}
+                </div>
+            ))}
+
+            {edit && (
+                <button
+                    className="my-button doctor-info__button"
+                    onClick={() => setEdit(false)}
+                >
+                    Назад
+                </button>
+            )}
+
+            {!edit && !addBlock && (
+                <div className="doctor-info__buttons">
                     <button
                         className="my-button"
                         onClick={() => setEdit(true)}
                     >
-                        Редактировать профиль
+                        Отредактировать
                     </button>
-                )}
-            </div>
+
+                    <button
+                        className="my-button"
+                        onClick={() => {
+                            setEdit(false);
+                            setAddBlock(true)
+                        }}
+                    >
+                        Добавить новый блок
+                    </button>
+                </div>
+            )}
+
+            {modal.state && (
+                <div className="modal">
+                    <div className="consultation-modal">
+                        <div className="doctor-info__flex-column">
+                            <h1>Удаляются следующие данные: </h1>
+
+                            <div>
+                                <p>Название: {specializations[modal.data.specializationId].name}</p>
+                                <p>Диплом: {modal.data.diploma}</p>
+                                <p>Лицензия: {modal.data.license}</p>
+                            </div>
+
+                            <p>Напишите причину удаления этих данных: </p>
+                            <MyInput
+                                id="comment"
+                                label="Причина удаления"
+                                value={comment}
+                                onChange={setComment}
+                            />
+
+                            <div className="doctor-info__buttons">
+                                <button
+                                    className="neg-button"
+                                    onClick={() => deleteSpecialization({ ...modal.data, comment })}
+                                    disabled={comment.length <= 10}
+                                >
+                                    Удалить
+                                </button>
+                                <button
+                                    className="my-button"
+                                    onClick={() => {
+                                        setModal({ state: false, data: {} as Specialization });
+                                        setComment("");
+                                    }}
+                                >
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
-    );
-};
+    )
+}
 
 export default observer(DoctorInfo);

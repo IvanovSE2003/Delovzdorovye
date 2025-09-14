@@ -2,35 +2,10 @@ import { useEffect, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import './Specialists.scss';
 import { getTimeZoneLabel } from "../../../../models/TimeZones";
-import { formatExperienceYears } from "../../../../hooks/NumberHooks";
-import DoctorService from "../../../../services/DoctorService";
+import DoctorService, { type IDoctor } from "../../../../services/DoctorService";
 import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import { URL } from "../../../../http";
-
-interface Specialization {
-    specialization: string;
-    diploma: string;
-    license: string;
-}
-
-interface UserDoctor {
-    id: number;
-    img: string;
-    name: string;
-    surname: string;
-    patronymic?: string;
-    time_zone: number;
-}
-
-export interface IDoctor {
-    id: number;
-    experienceYears: number;
-    isActivated: boolean;
-    profData: Specialization[];
-    user: UserDoctor;
-    userAvatar?: string;
-}
 
 interface Pagination {
     currentPage: number;

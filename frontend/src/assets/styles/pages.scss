@@ -66,6 +66,17 @@
     background-color: $button-color-hover;
     cursor: pointer;
   }
+
+  &:disabled {
+    background-color: $gray-color;
+    color: $text-color;
+    cursor: no-drop;
+
+    &:hover {
+      background-color: $gray-color-hover;
+      cursor: no-drop;
+    }
+  }
 }
 
 .neg-button {

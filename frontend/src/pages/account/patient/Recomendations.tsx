@@ -48,7 +48,7 @@ const Recomendations: React.FC = () => {
                     {recomendations.length > 0 ? recomendations.map((recomend, index) => (
                         <div key={index} className="block">
                             <h3>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic}
-                                {` (${recomend.specialization.join(", ")})`}
+                                {` (${recomend.specialization?.join(", ")})`}
                             </h3>
                             <div className="block__info">
                                 {recomend.recomendation && recomend.recomendation.length > 0 ? (

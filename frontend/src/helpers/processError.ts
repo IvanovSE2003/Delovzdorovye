@@ -9,6 +9,6 @@ export const processError = (
 ) => {
     const error = e as AxiosError<TypeResponse>;
     const msg = `${message} ${error.response?.data.message ?? ""}`.trim();
-
+    console.error(msg)
     showError && showError({ id: Date.now(), message: msg });
 };

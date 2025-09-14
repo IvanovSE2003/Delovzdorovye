@@ -59,7 +59,7 @@ const MyInputFile: React.FC<FileInputProps> = ({
   }, [value]);
 
   return (
-    <div className={`file-input ${className}`}>
+    <div className={`${className} file-input`}>
       <input
         id={id}
         ref={fileInputRef}
