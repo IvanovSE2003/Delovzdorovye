@@ -14,7 +14,7 @@ import ConsultationsDoc from "../pages/account/doctor/Consultations/Consultation
 import TimeSheet from "../pages/account/doctor/TimeSheet/TimeSheet";
 import UsefulInfoDoc from "../pages/account/doctor/UsefulInfo";
 
-import Specialists from "../pages/account/admin/Specialists";
+import Specialists from "../pages/account/admin/Specialists/Specialists";
 import Users from '../pages/account/admin/Users';
 
 import Profile from "../pages/account/SomeProfile";

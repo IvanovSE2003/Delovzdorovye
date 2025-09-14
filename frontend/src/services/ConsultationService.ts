@@ -23,13 +23,10 @@ export interface SpecialistResponse {
 }
 
 export default class ConsultationService {
-    static async getProblems(): Promise<AxiosResponse<OptionsResponse[]>> {
-        return $api.get<OptionsResponse[]>('/consultation/problem/all');
-    }
 
-    static async getSpecialists(
-        problems: number[]
-    ): Promise<AxiosResponse<OptionsResponse[]>> {
+    //---------------------------РАСПИСАНИЕ-------------------------------
+    // Получить всех специалистов по проблемами
+    static async getSpecialists(problems: number[]): Promise<AxiosResponse<OptionsResponse[]>> {
         return $api.get<OptionsResponse[]>("/consultation/specialistForProblems", {
             params: { problems },
             paramsSerializer: {
@@ -38,22 +35,36 @@ export default class ConsultationService {
         });
     }
 
+    //Получение расписание доктора
     static async getSchedule(doctorId: number, linkerId: number): Promise<AxiosResponse<Slot[]>> {
         return $api.get<Slot[]>(`/schedule/findSchedule?doctorId=${doctorId}&linkerId=${linkerId}`);
     }
 
+    //-----------------------------ПРОБЛЕМЫ----------------------------------
+
+    // Получить проблему
+    static async getProblems(): Promise<AxiosResponse<OptionsResponse[]>> {
+        return $api.get<OptionsResponse[]>('/consultation/problem/all');
+    }
+
+    // Удалить проблему
     static async deleteProblem(id: number) {
         return $api.delete(`/consultation/problem/${id}`);
     }
 
+    // Изменить проблему
     static async updateProblem(id: number, newData: string) {
         return $api.put(`/consultation/problem/${id}`, { name: newData });
     }
 
+    // Создать проблему
     static async createProblem(newData: string) {
         return $api.post('/consultation/problem/create', { name: newData });
     }
 
+
+    //----------------------------КОНСУЛЬТАЦИИ---------------------------------
+    // Получение всех консультаций по фильтру
     static async getAllConsultations(
         limit = 10,
         page = 1,
@@ -82,10 +93,16 @@ export default class ConsultationService {
         return $api.get<ConsultationsResponse>("/consultation/all", { params });
     }
 
-
     // Создание консультации
     static async createAppointment(data: ConsultationData): Promise<AxiosResponse<AppointmentResponse>> {
         return $api.post<AppointmentResponse>('/consultation/appointment', data);
+    }
+
+    // Создание особой консультации (временной)
+    static async createSpecificConsultation(data: ConsultationData) {
+        return $api.post(`/otherProblem/create`, 
+            {textOtherProblem: data.otherProblem, time: data.time, date: data.date, userId: data.userId}
+        )
     }
 
     // Перенос консультации
@@ -100,11 +117,6 @@ export default class ConsultationService {
         return $api.post<TypeResponse>(`consultation/cancelConsultation/${id}`, { reason });
     }
 
-    // Редактирование консультации
-    // static async editAppointment(newData: ConsultationData) : Promise<AxiosResponse<>> {
-    //     return $api.put('/consultation/appoinment/edit', newData);
-    // }
-
     // Повторить консультацию
     static async repeatAppointment(data: ConsultationData): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>(`/consultation/repeatConsultation/${data.id}`, { date: data.date, time: data.time });
@@ -115,6 +127,12 @@ export default class ConsultationService {
         return $api.post<TypeResponse>(`consultation/rating/create/${id}`, { rating: score, comment: review });
     }
 
+    // Редактирование консультации
+    // static async editAppointment(newData: ConsultationData) : Promise<AxiosResponse<>> {
+    //     return $api.put('/consultation/appoinment/edit', newData);
+    // }
+
+    // ----------------------------ВИДЕОКОНФЕРЕНЦИЯ------------------------------
     static async createConsultation(consultationId: number) {
         return $api.post(`/room/${consultationId}`);
     }
@@ -145,7 +163,7 @@ export default class ConsultationService {
 
     static async getRooms(): Promise<{ roomId: string; consultationId: number }[]> {
         const response = await $api.get("/conference/rooms");
-        return response.data.rooms; // сервер должен возвращать { rooms: [...] }
+        return response.data.rooms;
     }
 
     static leaveRoom = (roomId: number, userId: number) => {

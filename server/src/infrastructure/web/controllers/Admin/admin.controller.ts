@@ -40,29 +40,66 @@ export default class BatchController {
         try {
             const limit = req.query.limit || 10;
             const page = req.query.page || 1;
-            const batches = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
+            const basicData = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
 
-            if (!batches || batches.batches.length === 0) {
+            if (!basicData || basicData.batches.length === 0) {
                 return next(ApiError.badRequest('Изменения не найдены'));
             }
 
-            const formattedBatches = batches.batches.map(batch => ({
-                id: batch.id,
-                field_name: batch.field_name,
-                old_value: batch.old_value,
-                new_value: batch.new_value,
-                userName: batch.userName,
-                userSurname: batch.userSurname,
-                userPatronymic: batch.userPatronymic
+            const formattedBatches = basicData.batches.map(data => ({
+                id: data.id,
+                field_name: data.field_name,
+                old_value: data.old_value,
+                new_value: data.new_value,
+                userId: data.userId,
+                userName: data.userName,
+                userSurname: data.userSurname,
+                userPatronymic: data.userPatronymic
             }));
 
             return res.status(200).json({
-                batches: formattedBatches,
-                totalCount: batches.totalCount,
-                totalPage: batches.totalPage
+                basicDatas: formattedBatches,
+                totalCount: basicData.totalCount,
+                totalPage: basicData.totalPage
             });
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
+        }
+    }
+
+    async getAllProfData(req: Request, res: Response, next: NextFunction) {
+        try {
+            const limit = req.query.limit || 10;
+            const page = req.query.page || 1;
+            const filters = req.query.filters || {}
+
+            const profDatas = await this.profDataRepository.findAll(Number(page), Number(limit), filters);
+
+            if (!profDatas) {
+                return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
+            }
+
+            const formattedProfData = profDatas.profData.map(data => ({
+                id: data.id,
+                new_diploma: data.new_diploma,
+                new_license: data.new_license,
+                new_experience_years: data.new_experience_years,
+                new_specialization: data.new_specialization,
+                comment: data.comment,
+                type: data.type,
+                userId: data.userId,
+                userName: data.userName,
+                userSurname: data.userSurname,
+                userPatronymic: data.userPatronymic
+            }));
+
+            res.status(200).json({
+                profDatas: formattedProfData,
+                totalCount: profDatas.totalCount,
+                totalPage: profDatas.totalPage
+            })
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
         }
     }
 
@@ -290,22 +327,6 @@ export default class BatchController {
             }
 
             return res.status(200).json(result);
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
-    }
-
-    async getAllProfData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const limit = req.query.limit || 10;
-            const page = req.query.page || 1;
-            const filters = req.query.filters || {}
-
-            const profDatas = await this.profDataRepository.findAll(Number(limit), Number(page), filters);
-            if (!profDatas) {
-                return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
-            }
-            res.status(200).json(profDatas)
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

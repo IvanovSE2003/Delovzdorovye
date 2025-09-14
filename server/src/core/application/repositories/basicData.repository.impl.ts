@@ -1,73 +1,69 @@
-import Batch from "../../domain/entities/basicData.entity.js";
+import BasicData from "../../domain/entities/basicData.entity.js";
 import BatchRepository from "../../domain/repositories/basicData.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
-const { ModerationBatchModel, UserModel } = models;
 
 export default class BatchRepositoryImpl implements BatchRepository {
-    async findById(id: number): Promise<Batch | null> {
-        const batchModel = await ModerationBatchModel.findByPk(id);
-        return batchModel ? this.mapToDomainBatch(batchModel) : null;
+    async findById(id: number): Promise<BasicData | null> {
+        const basicDataModel = await models.ModerationBatchModel.findByPk(id);
+        return basicDataModel ? this.mapToDomainBasicData(basicDataModel) : null;
     }
 
-    async findAllByUserId(userId: number): Promise<Batch[]> {
-        const batchesModel = await models.ModerationBatchModel.findAll({ where: { userId } });
-
-        const batches: Batch[] = batchesModel.map(batch => this.mapToDomainBatch(batch));
-
-        return batches;
+    async findAllByUserId(userId: number): Promise<BasicData[]> {
+        const basicDataModel = await models.ModerationBatchModel.findAll({ where: { userId } });
+        return basicDataModel.map(data => this.mapToDomainBasicData(data));
     }
 
-    async findAll(page: number, limit: number): Promise<{ batches: Batch[]; totalCount: number; totalPage: number; }> {
+    async findAll(page: number, limit: number): Promise<{ batches: BasicData[]; totalCount: number; totalPage: number; }> {
         const offset = (page - 1) * limit;
-        const { count, rows } = await ModerationBatchModel.findAndCountAll({
+        const { count, rows } = await models.ModerationBatchModel.findAndCountAll({
             limit,
             offset,
             include: [{
-                model: UserModel,
+                model: models.UserModel,
                 attributes: ['name', 'surname', 'patronymic']
             }]
         });
 
         return {
-            batches: rows.map(batch => this.mapToDomainBatch(batch)),
+            batches: rows.map(batch => this.mapToDomainBasicData(batch)),
             totalCount: count,
             totalPage: Math.ceil(count / limit)
         };
     }
 
-    async create(batch: Batch): Promise<Batch> {
-        const batchModel = await ModerationBatchModel.create(this.mapToPersistence(batch));
-        return this.mapToDomainBatch(batchModel);
+    async create(basicData: BasicData): Promise<BasicData> {
+        const basicDataModel = await models.ModerationBatchModel.create(this.mapToPersistence(basicData));
+        return this.mapToDomainBasicData(basicDataModel);
     }
 
-    async update(batch: Batch): Promise<Batch> {
-        const [affectedCount] = await ModerationBatchModel.update(this.mapToPersistence(batch), {
-            where: { id: batch.id }
+    async update(basicData: BasicData): Promise<BasicData> {
+        const [affectedCount] = await models.ModerationBatchModel.update(this.mapToPersistence(basicData), {
+            where: { id: basicData.id }
         });
 
         if (affectedCount === 0) {
             throw new Error("Batch not found");
         }
 
-        const updatedBatch = await ModerationBatchModel.findByPk(batch.id);
-        return this.mapToDomainBatch(updatedBatch!);
+        const updatedBasicData = await models.ModerationBatchModel.findByPk(basicData.id);
+        return this.mapToDomainBasicData(updatedBasicData!);
     }
 
-    async save(batch: Batch): Promise<Batch> {
-        return batch.id ? this.update(batch) : this.create(batch);
+    async save(basicData: BasicData): Promise<BasicData> {
+        return basicData.id ? this.update(basicData) : this.create(basicData);
     }
 
-    async delete(batchId: number): Promise<void> {
-        await ModerationBatchModel.destroy({ where: { id: batchId } });
+    async delete(id: number): Promise<void> {
+        await models.ModerationBatchModel.destroy({ where: { id } });
     }
 
     async createBatchWithChangesUser(userId: number, changes: Array<{
         field_name: string;
         old_value: string | null;
         new_value: string;
-    }>): Promise<Batch[]> {
-        const transaction = await ModerationBatchModel.sequelize!.transaction();
+    }>): Promise<BasicData[]> {
+        const transaction = await models.ModerationBatchModel.sequelize!.transaction();
         try {
             const filteredChanges = changes.filter(change => {
                 const oldVal = change.old_value?.trim() ?? '';
@@ -80,17 +76,17 @@ export default class BatchRepositoryImpl implements BatchRepository {
                 return [];
             }
 
-            const createdBatches: Batch[] = [];
+            const createdBasicDatas: BasicData[] = [];
 
             for (const change of filteredChanges) {
-                const existingBatch = await ModerationBatchModel.findOne({
+                const existingBatch = await models.ModerationBatchModel.findOne({
                     where: {
                         userId: userId,
                         field_name: change.field_name,
                         status: 'pending'
                     },
                     transaction,
-                    include: [UserModel]
+                    include: [models.UserModel]
                 });
 
                 if (existingBatch) {
@@ -98,9 +94,9 @@ export default class BatchRepositoryImpl implements BatchRepository {
                         old_value: change.old_value ?? '',
                         new_value: change.new_value
                     }, { transaction });
-                    createdBatches.push(this.mapToDomainBatch(existingBatch));
+                    createdBasicDatas.push(this.mapToDomainBasicData(existingBatch));
                 } else {
-                    const newBatch = await ModerationBatchModel.create({
+                    const newBatch = await models.ModerationBatchModel.create({
                         userId: userId,
                         status: 'pending',
                         is_urgent: false,
@@ -108,50 +104,50 @@ export default class BatchRepositoryImpl implements BatchRepository {
                         old_value: change.old_value ?? '',
                         new_value: change.new_value,
                         rejection_reason: ''
-                    }, { transaction, include: [UserModel] });
+                    }, { transaction, include: [models.UserModel] });
 
-                    createdBatches.push(this.mapToDomainBatch(newBatch));
+                    createdBasicDatas.push(this.mapToDomainBasicData(newBatch));
                 }
             }
 
             await transaction.commit();
-            return createdBatches;
+            return createdBasicDatas;
         } catch (error) {
             await transaction.rollback();
             throw error;
         }
     }
 
-    private mapToDomainBatch(batchModel: BatchModelInterface): Batch {
-        const batch = new Batch(
-            batchModel.id,
-            batchModel.status,
-            batchModel.rejection_reason,
-            batchModel.is_urgent,
-            batchModel.field_name,
-            batchModel.old_value,
-            batchModel.new_value,
-            batchModel.userId
+    private mapToDomainBasicData(basicDataModel: BatchModelInterface): BasicData {
+        const basicData = new BasicData(
+            basicDataModel.id,
+            basicDataModel.status,
+            basicDataModel.rejection_reason,
+            basicDataModel.is_urgent,
+            basicDataModel.field_name,
+            basicDataModel.old_value,
+            basicDataModel.new_value,
+            basicDataModel.userId
         );
 
-        if (batchModel.user) {
-            batch.userName = batchModel.user.name ?? "";
-            batch.userSurname = batchModel.user.surname ?? "";
-            batch.userPatronymic = batchModel.user.patronymic ?? "";
+        if (basicDataModel.user) {
+            basicData.userName = basicDataModel.user.name ?? "";
+            basicData.userSurname = basicDataModel.user.surname ?? "";
+            basicData.userPatronymic = basicDataModel.user.patronymic ?? "";
         }
 
-        return batch;
+        return basicData;
     }
 
-    private mapToPersistence(batch: Batch): IBatchCreationAttributes {
+    private mapToPersistence(basicData: BasicData): IBatchCreationAttributes {
         return {
-            status: batch.status,
-            rejection_reason: batch.rejection_reason || null,
-            is_urgent: batch.is_urgent,
-            field_name: batch.field_name,
-            old_value: batch.old_value || null,
-            new_value: batch.new_value,
-            userId: batch.userId
+            status: basicData.status,
+            rejection_reason: basicData.rejection_reason || null,
+            is_urgent: basicData.is_urgent,
+            field_name: basicData.field_name,
+            old_value: basicData.old_value || null,
+            new_value: basicData.new_value,
+            userId: basicData.userId
         } as IBatchCreationAttributes;
     }
 }

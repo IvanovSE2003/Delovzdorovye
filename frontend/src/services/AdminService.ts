@@ -19,20 +19,32 @@ interface getUsefulBlock {
 
 export default class AdminService {
 
-    static async getBatchAll(limit: number, page: number) {
-        return $api.post('/admin/all', { limit, page });
+    static async getBasicDataAll(limit: number, page: number) {
+        return $api.get(`/admin/basicData/all?page=${page}&limit=${limit}`);
     }
 
-    static async confirmChange(id: number): Promise<AxiosResponse<TypeResponse>> {
-        return $api.put<TypeResponse>(`/admin/confirm/${id}`);
+    static async confirmBasicData(id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/admin/basicData/confirm/${id}`);
     }
 
-    static async rejectChange(id: number, message: string): Promise<AxiosResponse<TypeResponse>> {
-        return $api.put<TypeResponse>(`/admin/reject/${id}`, {rejection_reason: message});
+    static async rejectBasicData(id: number, message: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/admin/basicData/reject/${id}`, {rejection_reason: message});
+    }
+
+    static async getProfDataAll(limit: number, page: number) {
+        return $api.get(`/admin/profData/all?page=${page}&limit=${limit}`);
+    }
+
+    static async confirmProfData(id: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/admin/profData/confirm/${id}`);
+    }
+
+    static async rejectProfData(id: number, message: string): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/admin/profData/reject/${id}`, {rejection_reason: message});
     }
 
     static async getUsersAll(): Promise<AxiosResponse<User[]>> {
-        return $api.get<User[]>('/admin/get-all-user');
+        return $api.get<User[]>('/admin/user/all');
     }
 
     static async userConsult(limit=10, page=1): Promise<AxiosResponse<UserConsult>> {

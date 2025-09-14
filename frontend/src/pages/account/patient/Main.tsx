@@ -1,19 +1,23 @@
+import "dayjs/locale/ru";
+
+import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
-import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
-import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
+import { useContext, useEffect, useState } from "react";
+
+import type { AxiosError } from "axios";
+
 import { Context } from "../../../main";
 import AccountLayout from "../AccountLayout";
-import { useContext, useEffect, useState } from "react";
-import ConsultationService from "../../../services/ConsultationService";
-import type { TypeResponse } from "../../../models/response/DefaultResponse";
-import type { AxiosError } from "axios";
-import type { Consultation } from "../../../features/account/UpcomingConsultations/UpcomingConsultations";
-import { Link } from "react-router";
-import dayjs from "dayjs";
-import "dayjs/locale/ru";
+
 import { getDateLabel } from "../../../hooks/DateHooks";
 
-dayjs.locale("ru");
+import type { TypeResponse } from "../../../models/response/DefaultResponse";
+import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
+import type { Consultation } from "../../../features/account/UpcomingConsultations/UpcomingConsultations";
+
+import ConsultationService from "../../../services/ConsultationService";
+import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
+
 
 const PAGE_SIZE = 4;
 
@@ -24,6 +28,7 @@ const Main: React.FC = () => {
     const [page, setPage] = useState<number>(1);
     const [total, setTotal] = useState<number>(0);
 
+    // Завершение записи на консультацию
     const handleRecordConsultation = async (data: ConsultationData) => {
         const RecordData = {
             ...data,
@@ -32,13 +37,14 @@ const Main: React.FC = () => {
 
         if (RecordData.otherProblem) {
             console.log("Была выбрана другая проблема!");
-            return;
+            await ConsultationService.createSpecificConsultation(RecordData)
         } else {
             await ConsultationService.createAppointment(RecordData);
             fetchUpcomingConsultations(page);
         }
     };
 
+    // Получение данных
     const fetchUpcomingConsultations = async (currentPage: number) => {
         try {
             const response = await ConsultationService.getAllConsultations(PAGE_SIZE, currentPage, {
@@ -56,6 +62,7 @@ const Main: React.FC = () => {
         }
     };
 
+    // Получение данных при открытии страницы
     useEffect(() => {
         fetchUpcomingConsultations(page);
     }, [page]);
@@ -131,7 +138,7 @@ const Main: React.FC = () => {
                     )}
                 </div>
 
-                <div className="main__other">{/* Дополнительный контент */}</div>
+                <div className="main__other">{/* Пока неизсвестно что здесь будет */}</div>
             </div>
         </AccountLayout>
     );

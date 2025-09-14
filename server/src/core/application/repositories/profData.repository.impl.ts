@@ -4,28 +4,21 @@ import ProfDataRepository from "../../domain/repositories/profData.repository";
 import models from "../../../infrastructure/persostence/models/models";
 
 export default class ProfDataRepositoryImpl implements ProfDataRepository {
-
-    async findAll(page: number, limit: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPages: number }> {
-        const where: any = {};
-
-        if (filters.type !== undefined && filters.type !== null) {
-            where.type = filters.type;
-        }
-
-        const totalCount = await models.ProfDataModel.count({ where });
-        const totalPages = Math.ceil(totalCount / limit);
-
-        const profDatas = await models.ProfDataModel.findAll({
-            where,
+    async findAll(page: number, limit: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPage: number }> {
+        const offset = (page - 1) * limit;
+        const { count, rows } = await models.ProfDataModel.findAndCountAll({
             limit,
-            offset: (page - 1) * limit,
-            order: [['id', 'ASC']],
+            offset,
+            include: [{
+                model: models.UserModel,
+                attributes: ['name', 'surname', 'patronymic']
+            }]
         });
 
         return {
-            profData: profDatas.map(p => this.mapToDomainProfData(p)),
-            totalCount,
-            totalPages,
+            profData: rows.map(data => this.mapToDomainProfData(data)),
+            totalCount: count,
+            totalPage: Math.ceil(count / limit)
         };
     }
 
@@ -73,7 +66,7 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
     }
 
     private mapToDomainProfData(profModel: ProfDataModelInterface): ProfData {
-        return new ProfData(
+        const profData = new ProfData(
             profModel.id,
             profModel.new_diploma,
             profModel.new_license,
@@ -83,6 +76,14 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
             profModel.type,
             profModel.userId
         )
+
+        if (profModel.user) {
+            profData.userName = profModel.user.name ?? "";
+            profData.userSurname = profModel.user.surname ?? "";
+            profData.userPatronymic = profModel.user.patronymic ?? "";
+        }
+
+        return profData;
     }
 
     private mapToPersistence(profData: ProfData): IProfDataCreationAttributes {

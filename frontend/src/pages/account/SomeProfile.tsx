@@ -84,7 +84,7 @@ const Profile = () => {
                             mode={profile.role}
                         />
                     </div>
-                    {store.user.role === "ADMIN" && (
+                    {store.user.role === "ADMIN" && profile.role === "PATIENT" && (
                         <button
                             className="neg-button width100"
                             style={{ marginTop: '30px' }}

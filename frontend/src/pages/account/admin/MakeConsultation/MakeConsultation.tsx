@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import AccountLayout from "../../AccountLayout";
 import './MakeConsultation.scss';
-import BatchService from '../../../../services/AdminService';
+import AdminService from '../../../../services/AdminService';
 import SearchInput from '../../../../components/UI/Search/Search';
 import { Link } from 'react-router';
 
@@ -13,7 +13,7 @@ export interface UserCon {
     phone: string;
 }
 
-const MakeConsultation = () => {
+const MakeConsultation:React.FC = () => {
     const [users, setUsers] = useState<UserCon[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserCon[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -33,7 +33,7 @@ const MakeConsultation = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await BatchService.userConsult();
+            const response = await AdminService.userConsult();
             setUsers(response.data.users);
         } catch (error) {
             console.error('Ошибка при загрузке пользователей:', error);

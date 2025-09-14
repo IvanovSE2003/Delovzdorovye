@@ -7,6 +7,9 @@ export default class ProfData {
         public new_specialization: string,
         public comment: string | null,
         public type: "ADD" | "DELETE",
-        public userId?: number | null
-    ) {}
+        public userId?: number | null,
+        public userName?: string,
+        public userSurname?: string,
+        public userPatronymic?: string
+    ) { }
 }

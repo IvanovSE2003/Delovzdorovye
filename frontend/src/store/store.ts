@@ -8,7 +8,7 @@ import axios from "axios";
 import type { AuthResponse, LoginResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
-import BatchService from "../services/AdminService";
+import AdminService from "../services/AdminService";
 import DoctorService from "../services/DoctorService";
 import { menuConfig } from "../routes/index";
 import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
@@ -258,7 +258,7 @@ export default class Store {
     // Получить всех пользователей
     async getUsersAll(): Promise<User[]> {
         try {
-            const response = await BatchService.getUsersAll();
+            const response = await AdminService.getUsersAll();
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -319,10 +319,10 @@ export default class Store {
         }
     }
 
-    // Получить все изменения у специалиста
-    async getBatchAll(limit: number, page: number) {
+    // Получить все изменения базовых данных у специалиста
+    async getBasicDataAll(limit: number, page: number) {
         try {
-            const response = await BatchService.getBatchAll(limit, page);
+            const response = await AdminService.getBasicDataAll(limit, page);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -330,10 +330,10 @@ export default class Store {
         }
     }
 
-    // Принять изменения
-    async confirmChange(id: number): Promise<TypeResponse> {
+    // Принять изменения базовых данных
+    async confirmBasicData(id: number): Promise<TypeResponse> {
         try {
-            const response = await BatchService.confirmChange(id);
+            const response = await AdminService.confirmBasicData(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -342,10 +342,10 @@ export default class Store {
         }
     }
 
-    // Отклонить изменения
-    async rejectChange(id: number, message: string): Promise<TypeResponse> {
+    // Отклонить изменения базовых данных
+    async rejectBasicData(id: number, message: string): Promise<TypeResponse> {
         try {
-            const response = await BatchService.rejectChange(id, message);
+            const response = await AdminService.rejectBasicData(id, message);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
@@ -354,4 +354,38 @@ export default class Store {
         }
     }
 
+    // Получить все изменения профессиональных данных у специалиста
+    async getProfDataAll(limit: number, page: number) {
+        try {
+            const response = await AdminService.getProfDataAll(limit, page);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка");
+        }
+    }
+
+     // Принять изменения профессиональных данных
+    async confirmProfData(id: number): Promise<TypeResponse> {
+        try {
+            const response = await AdminService.confirmProfData(id);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при подтверждении изменений!");
+            return { success: false, message: this.error };
+        }
+    }
+
+    // Отклонить изменения профессиональных данных
+    async rejectProfData(id: number, message: string): Promise<TypeResponse> {
+        try {
+            const response = await AdminService.rejectProfData(id, message);
+            return response.data;
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            this.setError(error.response?.data?.message || "Ошибка при отмене изменений!");
+            return { success: false, message: this.error };
+        }
+    }
 }

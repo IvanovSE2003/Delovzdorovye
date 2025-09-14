@@ -1,4 +1,5 @@
 import { Model, Optional } from 'sequelize';
+import { UserModelInterface } from './user.model';
 
 interface IProfDataAttributes {
     id: number;
@@ -9,6 +10,7 @@ interface IProfDataAttributes {
     comment: string | null;
     type: "ADD" | "DELETE";
     userId?: number | null;
+    user?: UserModelInterface;
 }
 
 export interface IProfDataCreationAttributes extends Optional<IProfDataAttributes, 'id'> {}
