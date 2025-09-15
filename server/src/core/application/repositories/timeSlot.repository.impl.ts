@@ -57,6 +57,26 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return timeSlots.map(timsSlot => this.mapToDomainTimeSlot(timsSlot));
     }
 
+    async takeBreak(startDate: string, endDate: string, doctorId: number): Promise<void> {
+        await models.BreakModel.create({
+            startDate,
+            endDate,
+            doctorId
+        });
+        await models.DoctorSlots.update(
+            { status: "CLOSE" },
+            {
+                where: {
+                    doctorId: doctorId,
+                    date: {
+                        [Op.between]: [startDate, endDate]
+                    },
+                    status: "OPEN"
+                }
+            }
+        );
+    }
+
     async save(timeSlot: TimeSlot): Promise<TimeSlot> {
         return timeSlot.id ? await this.update(timeSlot) : await this.create(timeSlot);
     }
@@ -84,6 +104,7 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
             throw new Error('Ячейка вермени для удаления не найдена');
         }
     }
+
 
     private mapToDomainTimeSlot(slotModel: TimeSlotmModelInterface): TimeSlot {
         return new TimeSlot(

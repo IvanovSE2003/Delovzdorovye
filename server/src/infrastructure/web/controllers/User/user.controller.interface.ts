@@ -14,7 +14,7 @@ import ConsultationRepositoryImpl from "../../../../core/application/repositorie
 import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js"
 
 const fileService = new FileServiceImpt();
-const userRepository = new UserRepositoryImpl(fileService);
+const userRepository = new UserRepositoryImpl();
 const basicDataRepository = new BasicDataRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const tokenService = new TokenServiceImpl(process.env.SECRET_KEY_ACCESS as string, process.env.SECRET_KEY_REFRESH as string);
@@ -25,7 +25,26 @@ const SpecializationRepository = new SpecializationsRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
 const notificationRepository = new NotificationRepositoryImpl();
 
-const authService = new AuthServiceImpl(userRepository, doctorRepository, tokenService, mailService, SmsService, twoFactorService, TelegramServiceStart, SpecializationRepository);
-const userController = new UserController(authService, userRepository, tokenService, fileService, basicDataRepository, doctorRepository, consultationRepository, notificationRepository);
+const authService = new AuthServiceImpl(
+    userRepository,
+    doctorRepository,
+    tokenService,
+    mailService,
+    SmsService,
+    twoFactorService,
+    TelegramServiceStart,
+    SpecializationRepository
+);
+
+const userController = new UserController(
+    authService,
+    userRepository,
+    tokenService,
+    fileService,
+    basicDataRepository,
+    doctorRepository,
+    consultationRepository,
+    notificationRepository
+);
 
 export default userController;

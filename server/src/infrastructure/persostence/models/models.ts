@@ -163,6 +163,13 @@ const ConsultationRoomModel = sequelize.define<ConsulationRoomModelInterface>('c
     participants: { type: DataType.JSONB, defaultValue: [] }
 });
 
+const BreakModel = sequelize.define('break', {
+    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
+    startDate: { type: DataType.DATEONLY },
+    endDate: { type: DataType.DATEONLY },
+    doctorId: { type: DataType.INTEGER }
+});
+
 
 // Таблицы с контентом на сайте
 
@@ -276,5 +283,6 @@ export default {
     ProfDataModel,
     Notification,
     OtherProblem,
-    ConsultationRoomModel
+    ConsultationRoomModel,
+    BreakModel
 }

@@ -187,5 +187,4 @@ export default class DoctorScheduleController {
             return next(ApiError.internal(e.message));
         }
     }
-
 }

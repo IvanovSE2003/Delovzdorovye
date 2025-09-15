@@ -3,7 +3,6 @@ import DoctorRepositoryImpl from "../../../../core/application/repositories/doct
 import ProblemRepositoryImpl from "../../../../core/application/repositories/problem.repository.impl.js";
 import TimeSlotRepositoryImpl from "../../../../core/application/repositories/timeSlot.repository.impl.js";
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
-import { timerService } from "../../../../socket/timer.service.init.js";
 import ConsultationController from "./consultation.controller.js";
 import FileServiceImpl from "../../../../core/application/services/file.service.impl.js"
 import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js";
@@ -11,7 +10,7 @@ import NotificationRepositoryImpl from "../../../../core/application/repositorie
 const problemRepository = new ProblemRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
 const fileService = new FileServiceImpl();
-const userRepository = new UserRepositoryImpl(fileService);
+const userRepository = new UserRepositoryImpl();
 const doctorRepository = new DoctorRepositoryImpl();
 const timeSlotRepository = new TimeSlotRepositoryImpl();
 const notificationRepository = new NotificationRepositoryImpl();

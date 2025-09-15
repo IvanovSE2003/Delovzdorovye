@@ -5,6 +5,9 @@ import ApiError from "../../error/ApiError.js";
 import FileService from "../../../../core/domain/services/file.service.js";
 import UserRepository from "../../../../core/domain/repositories/user.repository.js";
 import SpecializationRepository from "../../../../core/domain/repositories/specializations.repository.js"
+import ProfData from "../../../../core/domain/entities/profData.entity.js";
+import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js"
+import normalizeDate from "../../function/normDate.js";
 
 export default class DoctorController {
     constructor(
@@ -12,7 +15,8 @@ export default class DoctorController {
         private readonly profDataRepository: ProfDataRespository,
         private readonly fileService: FileService,
         private readonly userRepository: UserRepository,
-        private readonly specializationRepository: SpecializationRepository
+        private readonly specializationRepository: SpecializationRepository,
+        private readonly timeSlotRepository: TimeSlotRepository
     ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -66,7 +70,7 @@ export default class DoctorController {
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { type, specializationId, license, diploma, comment } = req.body;
+            const { type, specializationId, comment } = req.body;
 
             if (!specializationId) {
                 return res.status(204).send()
@@ -82,21 +86,18 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Специалист не найден"));
             }
 
-            const profDataRecord: any = {};
-
+            let diplomaFileName, licenseFileName;
             if (req.files?.diploma) {
                 const diplomaFile = Array.isArray(req.files.diploma)
                     ? req.files.diploma[0]
                     : req.files.diploma;
-
                 try {
-                    const fileName = await this.fileService.saveFile(diplomaFile);
-                    profDataRecord.new_diploma = fileName;
+                    diplomaFileName = await this.fileService.saveFile(diplomaFile);
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
-            } else if (diploma) {
-                profDataRecord.new_diploma = diploma;
+            } else {
+                diplomaFileName = "";
             }
 
             if (req.files?.license) {
@@ -105,35 +106,54 @@ export default class DoctorController {
                     : req.files.license;
 
                 try {
-                    const fileName = await this.fileService.saveFile(licenseFile);
-                    profDataRecord.new_license = fileName;
+                    licenseFileName = await this.fileService.saveFile(licenseFile);
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки лицензии'));
                 }
-            } else if (license) {
-                profDataRecord.new_license = license;
+            } else {
+                licenseFileName = "";
             }
 
-            if (specializationId !== undefined) {
-                const specializationModel = await this.specializationRepository.findById(specializationId)
-                profDataRecord.new_specialization = specializationModel?.name;
-            }
+            const specialization = await this.specializationRepository.findById(specializationId);
+            if (!specialization) return next(ApiError.badRequest('Специализация не найдена'))
 
-            profDataRecord.userId = user.id;
-            await this.profDataRepository.save(profDataRecord);
-
+            await this.profDataRepository.save(new ProfData(0, diplomaFileName, licenseFileName, specialization.name, comment, type, user.id));
             await this.userRepository.save(user.setSentChanges(true));
 
             return res.json({
                 success: true,
-                message: "Изменения отправлены на модерацию",
-                changes: {
-                    specialization: profDataRecord.specialization !== undefined,
-                    diploma: profDataRecord.new_diploma !== undefined,
-                    license: profDataRecord.new_license !== undefined
-                }
+                message: "Изменения отправлены на модерацию"
             });
 
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async TakeBreak(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { startDate, endDate } = req.body;
+            const { userId } = req.params;
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const now = new Date();
+            
+            if (start < now) {
+                return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
+            } 
+
+            if(start > end) {
+                return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
+            }
+
+            const doctor = await this.doctorRepository.findByUserId(Number(userId));
+            if (!doctor) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
+            res.status(200).json({ success: true, message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}` });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

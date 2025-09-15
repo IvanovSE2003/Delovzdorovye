@@ -549,8 +549,7 @@ export default class UserController {
             const { userId } = req.body;
             const img = req.files?.img;
 
-            const numericUserId = Number(userId);
-            const user = await this.userRepository.findById(numericUserId);
+            const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
@@ -566,13 +565,18 @@ export default class UserController {
             let updatedUser: User;
             const fileName = await this.fileService.saveFile(img);
             if (user.role === 'DOCTOR') {
-                const result = await this.userRepository.uploadAvatar(numericUserId, fileName);
-                const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, result.img, user.id);
+                if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
+                    await this.fileService.deleteFile(user.img);
+                }
 
+                updatedUser = await this.userRepository.save(user.updateAvatar(fileName).setSentChanges(true));
+                const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, updatedUser.img, updatedUser.id);
                 await this.basicDataRepository.create(basicData);
-                updatedUser = await this.userRepository.save(user.setSentChanges(true));
             } else {
-                updatedUser = await this.userRepository.uploadAvatar(numericUserId, fileName);
+                if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
+                    await this.fileService.deleteFile(user.img);
+                }
+                updatedUser = await this.userRepository.save(user.updateAvatar(fileName));
             }
 
             const result = {
@@ -596,18 +600,29 @@ export default class UserController {
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
-            const userDelete = await this.userRepository.deleteAvatar(Number(userId));
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
+                await this.fileService.deleteFile(user.img);
+            }
+
+            const defaultAvatar = user.gender === 'Женщина' ? 'girl.png' : 'man.png';
+            const updatedUser = await this.userRepository.save(user.updateAvatar(defaultAvatar));
 
             return res.status(200).json({
-                img: userDelete.img,
-                surname: userDelete.surname,
-                name: userDelete.name,
-                patronymic: userDelete.patronymic,
-                gender: userDelete.gender,
-                dateBirth: userDelete.dateBirth,
-                timeZone: userDelete.timeZone,
-                phone: userDelete.phone,
-                email: userDelete.email
+                img: updatedUser.img,
+                surname: updatedUser.surname,
+                name: updatedUser.name,
+                patronymic: updatedUser.patronymic,
+                gender: updatedUser.gender,
+                dateBirth: updatedUser.dateBirth,
+                timeZone: updatedUser.timeZone,
+                phone: updatedUser.phone,
+                email: updatedUser.email
             })
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
@@ -666,7 +681,7 @@ export default class UserController {
                 date: consult.date,
                 time: consult.time,
                 recomendation: consult.recommendations,
-                specialization: consult.doctor?.profData.map(p => p.specialization) 
+                specialization: consult.doctor?.profData.map(p => p.specialization)
             })));
         } catch (e: any) {
             return next(ApiError.internal(e.message));

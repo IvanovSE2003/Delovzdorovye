@@ -5,15 +5,9 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import { UserModelInterface, IUserCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/user.model.js';
 import FileService from '../../domain/services/file.service.js';
 
-const { UserModel } = models;
-
 export default class UserRepositoryImpl implements UserRepository {
-    constructor(
-        private readonly fileService: FileService
-    ) { }
-
     async findByEmailOrPhone(credential: string): Promise<User | null> {
-        const user = await UserModel.findOne({
+        const user = await models.UserModel.findOne({
             where: {
                 [Op.or]: [
                     { email: credential },
@@ -25,23 +19,23 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async findById(id: number): Promise<User | null> {
-        const user = await UserModel.findByPk(id);
+        const user = await models.UserModel.findByPk(id);
         return user ? this.mapToDomainUser(user) : null;
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        const user = await UserModel.findOne({ where: { email } });
+        const user = await models.UserModel.findOne({ where: { email } });
         return user ? this.mapToDomainUser(user) : null;
     }
 
     async findByPhone(phone: string): Promise<User | null> {
-        const user = await UserModel.findOne({ where: { phone } });
+        const user = await models.UserModel.findOne({ where: { phone } });
         return user ? this.mapToDomainUser(user) : null;
     }
 
     async findByDoctorId(doctorId: number): Promise<User | null> {
         const doctor = await models.DoctorModel.findByPk(doctorId);
-        const user = await UserModel.findOne({ where: { id: doctor?.userId } });
+        const user = await models.UserModel.findOne({ where: { id: doctor?.userId } });
         return user ? this.mapToDomainUser(user) : null;
     }
 
@@ -62,13 +56,13 @@ export default class UserRepositoryImpl implements UserRepository {
             where.role = filters.role;
         }
 
-        const totalCount = await UserModel.count({
+        const totalCount = await models.UserModel.count({
             where
         });
 
         const totalPages = Math.ceil(totalCount / limit);
 
-        const users = await UserModel.findAll({
+        const users = await models.UserModel.findAll({
             where,
             limit,
             offset: (page - 1) * limit,
@@ -83,12 +77,12 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async create(user: User): Promise<User> {
-        const createdUser = await UserModel.create(this.mapToPersistence(user));
+        const createdUser = await models.UserModel.create(this.mapToPersistence(user));
         return this.mapToDomainUser(createdUser);
     }
 
     async update(user: User): Promise<User> {
-        const [affectedCount, affectedRows] = await UserModel.update(this.mapToPersistence(user), { where: { id: user.id }, returning: true });
+        const [affectedCount, affectedRows] = await models.UserModel.update(this.mapToPersistence(user), { where: { id: user.id }, returning: true });
         if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
             throw new Error('Пользователь не был обновлен');
         }
@@ -97,7 +91,7 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async delete(id: number): Promise<void> {
-        const deletedCount = await UserModel.destroy({ where: { id } });
+        const deletedCount = await models.UserModel.destroy({ where: { id } });
         if (deletedCount === 0) {
             throw new Error('Пользователь не найден или не был удален');
         }
@@ -108,7 +102,7 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async findByActivationLink(link: string): Promise<User | null> {
-        const user = await UserModel.findOne({ where: { activationLink: link } });
+        const user = await models.UserModel.findOne({ where: { activationLink: link } });
         return user ? this.mapToDomainUser(user) : null;
     }
 
@@ -117,19 +111,19 @@ export default class UserRepositoryImpl implements UserRepository {
         if (email) where.email = email;
         if (phone) where.phone = phone;
 
-        const count = await UserModel.count({ where });
+        const count = await models.UserModel.count({ where });
         return count > 0;
     }
 
     async verifyPinCode(userId: number, pinCode: number): Promise<boolean> {
-        const user = await UserModel.findOne({
+        const user = await models.UserModel.findOne({
             where: { id: userId, pin_code: pinCode }
         });
         return !!user;
     }
 
     async findByResetToken(resetToken: string): Promise<User | null> {
-        const user = await UserModel.findOne({
+        const user = await models.UserModel.findOne({
             where: {
                 resetToken,
                 resetTokenExpires: { [Op.gt]: new Date() }
@@ -138,45 +132,8 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
-    async uploadAvatar(userId: number, fileName: string): Promise<User> {
-        const user = await this.findById(userId);
-        if (!user) {
-            throw new Error('Пользователь не найден');
-        }
-
-        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
-            try {
-                await this.fileService.deleteFile(user.img);
-            } catch (err) {
-                throw new Error('Ошибка при удалении старого аватара');
-            }
-        }
-
-        const updatedUser = await this.save(user.updateAvatar(fileName));
-        return updatedUser;
-    }
-
-    async deleteAvatar(userId: number): Promise<User> {
-        const user = await this.findById(userId);
-        if (!user) {
-            throw new Error('Пользователь не найден');
-        }
-
-        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
-            try {
-                await this.fileService.deleteFile(user.img);
-            } catch (err) {
-                throw new Error('Ошибка при удалении старого аватара');
-            }
-        }
-
-        const defaultAvatar = user.gender === 'Женщина' ? 'girl.png' : 'man.png';
-        const updatedUser = await this.save(user.updateAvatar(defaultAvatar));
-        return updatedUser;
-    }
-
     async getAll(): Promise<User[]> {
-        const users = await UserModel.findAll();
+        const users = await models.UserModel.findAll();
         return users.map(user => this.mapToDomainUser(user));
     }
 

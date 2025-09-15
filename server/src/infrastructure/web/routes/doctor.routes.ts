@@ -8,4 +8,6 @@ router.get('/all',(req: Request, res: Response, next: NextFunction) => docotrCon
 router.get('/:id',authMiddlewareInstance,(req: Request, res: Response, next: NextFunction) => docotrController.getOne(req, res, next));
 router.put('/:id', (req: Request, res: Response, next: NextFunction) => docotrController.updateDoctor(req, res, next));
 
+router.post('/break/create/:userId',(req: Request, res: Response, next: NextFunction) => docotrController.TakeBreak(req, res, next));
+
 export default router;
