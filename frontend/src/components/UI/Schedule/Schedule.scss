@@ -128,15 +128,20 @@
             filter: brightness(0.95);
         }
 
-        &--today {
-            background-color: rgba(178, 222, 236, 0.703);
-        }
+        // &--today {
+        //     background-color: rgba(178, 222, 236, 0.703);
+        // }
 
         &--past {
             background-color: black !important;
             color: #999;
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        &--selected {
+            outline: 2px solid $primary-color;
+            background-color: rgba(0, 123, 255, 0.2);
         }
     }
 }

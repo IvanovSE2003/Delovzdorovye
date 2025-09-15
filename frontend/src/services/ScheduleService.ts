@@ -30,11 +30,11 @@ export default class ScheduleService {
         return $api.get(`/schedule/getBetweenSchedule?startDate=${start}&endDate=${end}&userId=${userId}`);
     }
     
-    static setSchuduleDay(time: string, date: string, userId: number, dayWeek: number): Promise<AxiosResponse<TypeResponse>>{
+    static setSchuduleDay(time: string|string[], date: string, userId: number, dayWeek: number): Promise<AxiosResponse<TypeResponse>>{
         return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, {time, date, userId, dayWeek});
     }
 
-    static setSchuduleDayRecurning(time: string, date: string, dayWeek: number, userId: number) {
+    static setSchuduleDayRecurning(time: string|string[], date: string, dayWeek: number, userId: number) {
         return $api.post('/schedule/timeSlot/create/recurning', {time, date, dayWeek, userId});
     }
 }

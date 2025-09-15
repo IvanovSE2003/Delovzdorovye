@@ -38,7 +38,7 @@
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
                 min-height: 48px;
-                font-size: 1.3rem;
+                font-size: 1.5rem;
                 transition: all 0.3s ease;
 
                 &:hover {
@@ -55,6 +55,7 @@
                 z-index: 1000 !important;
                 color: black;
                 text-align: left;
+                font-size: 1.5rem;
             }
 
             &__multi-value {
@@ -104,6 +105,23 @@
 
     &__input {
         margin: 0 !important;
+        font-size: 1.4rem;
+    }
+
+    &__textarea {
+        font-size: 1.4rem;
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        background-color: white;
+        resize: vertical;
+        width: 100%;
+        border: none;
+        box-sizing: border-box;
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4)
+        }
     }
 
     &__buttons {
@@ -116,6 +134,24 @@
     &__button {
         width: 100%;
         margin: 0 !important;
+    }
+}
+
+.delete-modal {
+    background-color: $primary-color;
+    padding: 2rem 3rem;
+    border-radius: 20px;
+
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bolder;
+        margin-bottom: 0;
+    }
+
+    p {
+        font-size: 1.4rem;
+        font-weight: bold;
     }
 }
 

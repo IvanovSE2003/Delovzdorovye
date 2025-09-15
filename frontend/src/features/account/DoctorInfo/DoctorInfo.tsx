@@ -19,7 +19,7 @@ const DoctorInfo = () => {
     const [addBlock, setAddBlock] = useState<boolean>(false);
 
     const [specializations, setSpecializations] = useState<Specializations[]>([] as Specializations[])
-    const [selectedSpecializationId, setSelectedSpecializationId] = useState<number|null>(null);
+    const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
     const [diploma, setDiploma] = useState<File | null>(null)
     const [license, setLicense] = useState<File | null>(null)
 
@@ -54,6 +54,7 @@ const DoctorInfo = () => {
             processError(e, "Ошибка при добавлении нового блока: ");
         } finally {
             fetchProfData();
+            setAddBlock(false);
         }
     }
 
@@ -90,7 +91,7 @@ const DoctorInfo = () => {
                         placeholder="Выберите специализацию"
                         className="doctor-info__select"
                         classNamePrefix="custom-select"
-                        onChange={(selected) => setSelectedSpecializationId(selected?.value||null)}
+                        onChange={(selected) => setSelectedSpecializationId(selected?.value || null)}
                     />
 
                     <MyInputFile
@@ -109,12 +110,12 @@ const DoctorInfo = () => {
                         onChange={setLicense}
                     />
 
-                    <MyInput
+                    <textarea
                         id="comment"
-                        label="Комментарий"
-                        className="doctor-info__input"
                         value={comment}
-                        onChange={setComment}
+                        className="doctor-info__textarea"
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Комментарий"
                     />
 
                     <button
@@ -206,22 +207,17 @@ const DoctorInfo = () => {
 
             {modal.state && (
                 <div className="modal">
-                    <div className="consultation-modal">
+                    <div className='delete-modal'>
                         <div className="doctor-info__flex-column">
-                            <h1>Удаляются следующие данные: </h1>
-
-                            <div>
-                                <p>Название: {specializations[modal.data.specializationId].name}</p>
-                                <p>Диплом: {modal.data.diploma}</p>
-                                <p>Лицензия: {modal.data.license}</p>
-                            </div>
+                            <h1>Удаление данных</h1>
 
                             <p>Напишите причину удаления этих данных: </p>
-                            <MyInput
+                            <textarea
                                 id="comment"
-                                label="Причина удаления"
                                 value={comment}
-                                onChange={setComment}
+                                className="doctor-info__textarea"
+                                onChange={(e) => setComment(e.target.value)}
+                                placeholder="Причина удаления (не менее 10 символов)"
                             />
 
                             <div className="doctor-info__buttons">

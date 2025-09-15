@@ -21,16 +21,14 @@ const hours = Array.from({ length: 24 }, (_, i) =>
 const getWeekDays = (offset: number) => {
   const startOfWeek = dayjs().add(offset, "week").startOf("week");
   const monday = startOfWeek.add(0, "day");
-
   return Array.from({ length: 7 }, (_, i) =>
     monday.add(i, "day").format("YYYY-MM-DD")
   );
 };
 
 type ModalData =
-  | { day: string; time: string; type: "open" }
-  | { day: string; time: string; type: "reset" }
-  | { day: string; time: string; type: "booked" };
+  | { type: "open" | "reset" | "booked"; day: string; time: string }
+  | { type: "range"; day: string; times: string[] };
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -48,6 +46,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [hoveredCol, setHoveredCol] = useState<string | null>(null);
 
   const today = dayjs().format("YYYY-MM-DD");
+
+  // drag-select
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [startDay, setStartDay] = useState<string | null>(null);
 
   // загрузка расписания
   const fetchSchedule = async () => {
@@ -95,10 +98,24 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
     fetchSchedule();
   }, [weekOffset]);
 
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isSelecting) {
+        setIsSelecting(false);
+        if (selectedSlots.length > 1 && startDay) {
+          setModalData({ type: "range", day: startDay, times: selectedSlots.map(s => s.split("_")[1]) });
+        }
+      }
+      setStartDay(null);
+    };
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
+  }, [isSelecting, selectedSlots, startDay]);
+
   const getSlotStatus = (day: string, time: string): SlotStatus =>
     slots[`${day}_${time}`] || "closed";
 
-  const handleSlotClick = async (day: string, time: string) => {
+  const handleSingleClick = async (day: string, time: string) => {
     const normalizedDay = dayjs(day).format("YYYY-MM-DD");
     const status = getSlotStatus(normalizedDay, time);
 
@@ -108,7 +125,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       setModalData({ day: normalizedDay, time, type: "reset" });
     } else if (status === "booked") {
       try {
-        const res = await ConsultationService.getAllConsultations(1, 1, { date: normalizedDay, doctorUserId: userId });
+        const res = await ConsultationService.getAllConsultations(1, 1, {
+          date: normalizedDay,
+          doctorUserId: userId,
+        });
         setConsultationInfo(res.data.consultations);
         setModalData({ day: normalizedDay, time, type: "booked" });
       } catch (e) {
@@ -122,7 +142,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   ).format("DD MMMM")}`;
 
   return (
-    <div className="schedule-grid">
+    <div className="schedule-grid" style={{ userSelect: "none" }}>
       {/* Переключатель недель */}
       <div className="schedule-grid__week-switcher">
         <button
@@ -166,15 +186,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 >
                   {dayjs(d).format("dd, DD MMMM")}
                 </th>
-
               ))}
             </tr>
           </thead>
           <tbody>
             {hours.map((time) => (
-              <tr
-                key={time}
-              >
+              <tr key={time}>
                 <td
                   className={`schedule-grid__time ${hoveredRow === time ? "highlight" : ""
                     }`}
@@ -184,18 +201,31 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 {weekDays.map((day) => {
                   const status = getSlotStatus(day, time);
                   const isToday = day === today;
-                  const slotDateTime = dayjs(`${day} ${time}`, "YYYY-MM-DD HH:mm");
+                  const slotDateTime = dayjs(
+                    `${day} ${time}`,
+                    "YYYY-MM-DD HH:mm"
+                  );
                   const isPast = slotDateTime.isBefore(dayjs());
+                  const key = `${day}_${time}`;
+                  const isSelected = selectedSlots.includes(key);
 
                   return (
                     <td
-                      key={day + time}
-                      onClick={() => !isPast && handleSlotClick(day, time)}
-                      className={`schedule-grid__slot schedule-grid__slot--${status} 
-                        ${isToday ? "schedule-grid__slot--today" : ""}
-                        ${isPast ? "schedule-grid__slot--past" : ""}
-                      `}
+                      key={key}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        if (!isPast) {
+                          setIsSelecting(true);
+                          setSelectedSlots([key]);
+                          setStartDay(day);
+                        }
+                      }}
                       onMouseEnter={() => {
+                        if (isSelecting && !isPast && startDay === day) {
+                          setSelectedSlots((prev) =>
+                            prev.includes(key) ? prev : [...prev, key]
+                          );
+                        }
                         if (!isPast) {
                           setHoveredRow(time);
                           setHoveredCol(day);
@@ -207,6 +237,16 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                           setHoveredCol(null);
                         }
                       }}
+                      onClick={() => {
+                        if (!isPast && selectedSlots.length <= 1) {
+                          handleSingleClick(day, time);
+                        }
+                      }}
+                      className={`schedule-grid__slot schedule-grid__slot--${status} 
+                        ${isToday ? "schedule-grid__slot--today" : ""}
+                        ${isPast ? "schedule-grid__slot--past" : ""}
+                        ${isSelected ? "schedule-grid__slot--selected" : ""}
+                      `}
                     >
                       {status === "booked" && !isPast && (
                         <span className="slot__icon">✔</span>
@@ -215,11 +255,83 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   );
                 })}
               </tr>
-
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Модалки */}
+      {modalData && modalData.type === "range" && (
+        <div className="modal">
+          <div className="modal__content">
+            <h3>
+              Выбранный диапазон:{" "}
+              {dayjs(modalData.day).format("DD.MM.YYYY")},{" "}
+              {modalData.times.sort()[0]} –{" "}
+              {modalData.times.sort()[modalData.times.length - 1]}
+            </h3>
+            <p>Выберите режим для выделенных ячеек:</p>
+            <div className="modal__actions">
+              <button
+                onClick={async () => {
+                  try {
+                    const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
+                    const timeGap = modalData.times.sort(); // полный диапазон
+
+                    await ScheduleService.setSchuduleDay(
+                      timeGap,
+                      modalData.day,
+                      userId,
+                      dayWeek
+                    );
+                    await fetchSchedule();
+                  } catch (e) {
+                    console.error("Ошибка при установке дня:", e);
+                  } finally {
+                    setModalData(null);
+                    setSelectedSlots([]);
+                  }
+                }}
+              >
+                Только для этой даты
+              </button>
+
+              <button
+                onClick={async () => {
+                  try {
+                    const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
+                    const timeGap = modalData.times.sort(); // полный диапазон
+
+                    await ScheduleService.setSchuduleDayRecurning(
+                      timeGap,
+                      modalData.day,
+                      dayWeek,
+                      userId
+                    );
+                    await fetchSchedule();
+                  } catch (e) {
+                    console.error("Ошибка при установке дня:", e);
+                  } finally {
+                    setModalData(null);
+                    setSelectedSlots([]);
+                  }
+                }}
+              >
+                Каждую неделю
+              </button>
+
+              <button
+                onClick={() => {
+                  setModalData(null);
+                  setSelectedSlots([]);
+                }}
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Модалка открытия */}
       {modalData && modalData.type === "open" && (
@@ -336,17 +448,18 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               {modalData.time}
             </h3>
             <p>
-              <b>Клиент:</b> {consultationInfo[0].PatientSurname} {consultationInfo[0].PatientName} {consultationInfo[0]?.PatientPatronymic}
+              <b>Клиент:</b> {consultationInfo[0].PatientSurname}{" "}
+              {consultationInfo[0].PatientName}{" "}
+              {consultationInfo[0]?.PatientPatronymic}
             </p>
             <p>
               <b>Симптомы:</b> {consultationInfo[0].Problems.join(", ")}
             </p>
             <p>
-              <b>Подробно:</b> {consultationInfo[0].other_problem ? (
-                consultationInfo[0].other_problem
-              ) : (
-                "Не указано"
-              )}
+              <b>Подробно:</b>{" "}
+              {consultationInfo[0].other_problem
+                ? consultationInfo[0].other_problem
+                : "Не указано"}
             </p>
 
             <div className="modal__actions">
