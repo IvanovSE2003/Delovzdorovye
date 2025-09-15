@@ -7,7 +7,9 @@ import UserRepository from "../../../../core/domain/repositories/user.repository
 import SpecializationRepository from "../../../../core/domain/repositories/specializations.repository.js"
 import ProfData from "../../../../core/domain/entities/profData.entity.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js"
+import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js"
 import normalizeDate from "../../function/normDate.js";
+import Notification from "../../../../core/domain/entities/notification.entity.js";
 
 export default class DoctorController {
     constructor(
@@ -16,7 +18,8 @@ export default class DoctorController {
         private readonly fileService: FileService,
         private readonly userRepository: UserRepository,
         private readonly specializationRepository: SpecializationRepository,
-        private readonly timeSlotRepository: TimeSlotRepository
+        private readonly timeSlotRepository: TimeSlotRepository,
+        private readonly notificationReposiotory: NotificationRepository
     ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -120,11 +123,23 @@ export default class DoctorController {
             await this.profDataRepository.save(new ProfData(0, diplomaFileName, licenseFileName, specialization.name, comment, type, user.id));
             await this.userRepository.save(user.setSentChanges(true));
 
+            await this.notificationReposiotory.save(
+                new Notification(
+                    0,
+                    "Обновление данных",
+                    "Ваши обновлённые данные отправлены на модерацию. Это займёт от одного часа до трёх дней.",
+                    "INFO",
+                    false,
+                    null,
+                    null,
+                    user.id
+                )
+            )
+
             return res.json({
                 success: true,
                 message: "Изменения отправлены на модерацию"
             });
-
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -138,12 +153,12 @@ export default class DoctorController {
             const start = new Date(startDate);
             const end = new Date(endDate);
             const now = new Date();
-            
+
             if (start < now) {
                 return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
-            } 
+            }
 
-            if(start > end) {
+            if (start > end) {
                 return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
             }
 
@@ -153,7 +168,22 @@ export default class DoctorController {
             }
 
             await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
-            res.status(200).json({ success: true, message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}` });
+            await this.notificationReposiotory.save(
+                new Notification(
+                    0,
+                    "Перерыв",
+                    `${doctor.user?.name} ${doctor.user?.patronymic}, вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
+                    "INFO",
+                    false,
+                    null,
+                    null,
+                    Number(userId)
+                )
+            );
+            res.status(200).json({
+                success: true,
+                message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`
+            });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
