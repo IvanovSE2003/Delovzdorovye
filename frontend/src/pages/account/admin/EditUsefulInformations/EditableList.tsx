@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import ShowError from "../../../../components/UI/ShowError/ShowError";
+import Search from "../../../../components/UI/Search/Search";
 
 interface EditableListProps<T> {
-    title: string; // заголовок кнопки "Добавить"
+    title: string;
     loadItems: () => Promise<T[]>;
     createItem: (label: string) => Promise<void>;
     updateItem: (id: number | string, label: string) => Promise<void>;
@@ -26,11 +27,11 @@ export function EditableList<T>({
     const [error, setError] = useState<{ id: number; message: string } | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [newItem, setNewItem] = useState("");
+    const [search, setSearch] = useState("");
 
     const load = async () => {
         try {
             const data = await loadItems();
-            // сортировка по алфавиту
             setItems([...data].sort((a, b) =>
                 getLabel(a).localeCompare(getLabel(b), "ru", { sensitivity: "base" })
             ));
@@ -91,8 +92,20 @@ export function EditableList<T>({
         }
     };
 
+    // Фильтруем элементы по поиску
+    const filteredItems = items.filter(i =>
+        getLabel(i).toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className="lists">
+            <Search
+                placeholder="Введите название"
+                value={search}
+                onChange={setSearch}
+                className="lists__search"
+            />
+
             <ShowError msg={error} />
 
             {!isAdding ? (
@@ -126,7 +139,7 @@ export function EditableList<T>({
                 </div>
             )}
 
-            {items.map(i => {
+            {filteredItems.map(i => {
                 const id = getId(i);
                 const label = getLabel(i);
                 return (

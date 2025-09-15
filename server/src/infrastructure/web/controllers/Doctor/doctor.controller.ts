@@ -162,6 +162,13 @@ export default class DoctorController {
                 return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
             }
 
+            const diffInMs = end.getTime() - start.getTime();
+            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+            if (diffInDays > 61) {
+                return next(ApiError.badRequest('Перерыв не может длиться более двух месяцев'));
+            }
+
             const doctor = await this.doctorRepository.findByUserId(Number(userId));
             if (!doctor) {
                 return next(ApiError.badRequest('Пользователь не найден'));
@@ -172,7 +179,7 @@ export default class DoctorController {
                 new Notification(
                     0,
                     "Перерыв",
-                    `${doctor.user?.name} ${doctor.user?.patronymic}, вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
+                    `Вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
                     "INFO",
                     false,
                     null,

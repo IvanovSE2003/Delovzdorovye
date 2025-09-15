@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
-import { useContext } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Context } from "../main";
 import {
   privateRoutes,
@@ -10,6 +10,24 @@ import {
 } from "../routes";
 
 import "../assets/styles/pages.scss";
+
+const LastVisitedTracker: React.FC = () => {
+  const location = useLocation();
+  const { store } = useContext(Context);
+
+  useEffect(() => {
+    if (location.pathname !== RouteNames.LOGIN) {
+      // если путь не из списка роутов, не сохраняем
+      const allPaths = [...privateRoutes, ...publicRoutes].map(r => r.path);
+      if (allPaths.includes(location.pathname)) {
+        store.setLastVisited(location.pathname);
+        localStorage.setItem("lastVisited", location.pathname);
+      }
+    }
+  }, [location.pathname, store]);
+
+  return null;
+};
 
 const AppRouter: React.FC = () => {
   const { store } = useContext(Context);
@@ -21,45 +39,57 @@ const AppRouter: React.FC = () => {
     return requiredRoles.includes(userRole);
   };
 
+  const lastVisited = store.lastVisited || localStorage.getItem("lastVisited") || RouteNames.PERSONAL;
+  const availablePaths = privateRoutes
+    .filter((r) => hasRoleAccess((r as ProtectedRoute).roles))
+    .map((r) => r.path);
+
+  const safeLastVisited =
+    availablePaths.includes(lastVisited) ? lastVisited : RouteNames.PERSONAL;
+
   return (
-    <Routes>
-      {isAuth ? (
-        <>
-          {privateRoutes.map((route) => {
-            const protectedRoute = route as ProtectedRoute;
-            const Component = protectedRoute.element;
-            return hasRoleAccess(protectedRoute.roles) ? (
-              <Route
-                key={protectedRoute.path}
-                path={protectedRoute.path}
-                element={<Component />}
-              />
-            ) : (
-              <Route
-                key={protectedRoute.path}
-                path={protectedRoute.path}
-                element={<Navigate to={RouteNames.PERSONAL} replace />}
-              />
-            );
-          })}
-          <Route path="*" element={<Navigate to={RouteNames.PERSONAL} replace />} />
-        </>
-      ) : (
-        <>
-          {publicRoutes.map((route) => {
-            const Component = route.element;
-            return (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={<Component />}
-              />
-            );
-          })}
-          <Route path="*" element={<Navigate to={RouteNames.LOGIN} replace />} />
-        </>
-      )}
-    </Routes>
+    <>
+      <LastVisitedTracker />
+
+      <Routes>
+        {isAuth ? (
+          <>
+            {privateRoutes.map((route) => {
+              const protectedRoute = route as ProtectedRoute;
+              const Component = protectedRoute.element;
+              return hasRoleAccess(protectedRoute.roles) ? (
+                <Route
+                  key={protectedRoute.path}
+                  path={protectedRoute.path}
+                  element={<Component />}
+                />
+              ) : (
+                <Route
+                  key={protectedRoute.path}
+                  path={protectedRoute.path}
+                  element={<Navigate to={RouteNames.PERSONAL} />}
+                />
+              );
+            })}
+            <Route path="*" element={<Navigate to={safeLastVisited} />} />
+          </>
+        ) : (
+          <>
+            {publicRoutes.map((route) => {
+              const Component = route.element;
+              return (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={<Component />}
+                />
+              );
+            })}
+            <Route path="*" element={<Navigate to={RouteNames.LOGIN} />} />
+          </>
+        )}
+      </Routes>
+    </>
   );
 };
 

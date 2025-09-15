@@ -5,11 +5,12 @@ import ClientInfoTab from "./ClientInfoTab";
 import SpecialistInfoTab from "./SpecialistInfoTab";
 import ProblemsTab from "./ProblemsTab";
 import SpecializationsTab from "./SpecializationsTab";
+import MainTab from "./MainTab";
 
-type TabType = "client" | "specialist" | "problems"| "specializations";
+type TabType = "client" | "specialist" | "problems"| "specializations" | "main";
 
 const EditUsefulInformations: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("client");
+  const [activeTab, setActiveTab] = useState<TabType>("main");
 
   return (
     <AccountLayout>
@@ -17,6 +18,13 @@ const EditUsefulInformations: React.FC = () => {
         <h1 className="admin-page__title">Редактирование полезной информации</h1>
 
         <div className="edit-info__tabs">
+          <button
+            className={`edit-info__tab ${activeTab === "main" ? "edit-info__tab--active" : ""}`}
+            onClick={() => setActiveTab("main")}
+          >
+            Главная страница
+          </button>
+
           <button
             className={`edit-info__tab ${activeTab === "client" ? "edit-info__tab--active" : ""}`}
             onClick={() => setActiveTab("client")}
@@ -33,7 +41,7 @@ const EditUsefulInformations: React.FC = () => {
             className={`edit-info__tab ${activeTab === "problems" ? "edit-info__tab--active" : ""}`}
             onClick={() => setActiveTab("problems")}
           >
-            Форма записи
+            Проблемы
           </button>
           <button
             className={`edit-info__tab ${activeTab === "specializations" ? "edit-info__tab--active" : ""}`}
@@ -48,6 +56,7 @@ const EditUsefulInformations: React.FC = () => {
           {activeTab === "specialist" && <SpecialistInfoTab />}
           {activeTab === "problems" && <ProblemsTab />}
           {activeTab === "specializations" && <SpecializationsTab/>}
+          {activeTab === "main" && <MainTab/>}
         </div>
       </div>
     </AccountLayout>

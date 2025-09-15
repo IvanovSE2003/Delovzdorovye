@@ -187,7 +187,7 @@ export default class BatchController {
             }
 
             const user = await this.userRepository.findById(profData.userId || 0);
-            if(!user) {
+            if (!user) {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
@@ -301,14 +301,21 @@ export default class BatchController {
                 return next(ApiError.badRequest('Пользователи не найдены'));
             }
 
+            const usersWithFlag = await this.userRepository.findOtherProblem(result.users);
+
             return res.status(200).json({
-                users: result.users.map(user => ({
-                    id: user.id,
-                    name: user.name,
-                    surname: user.surname,
-                    patronymic: user.patronymic,
-                    phone: user.phone
-                })),
+                users: result.users.map(user => {
+                    const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);
+
+                    return {
+                        id: user.id,
+                        name: user.name,
+                        surname: user.surname,
+                        patronymic: user.patronymic,
+                        phone: user.phone,
+                        hasOtherProblem: hasOtherProblem 
+                    };
+                }),
                 totalCount: result.totalCount,
                 totalPages: result.totalPages
             });

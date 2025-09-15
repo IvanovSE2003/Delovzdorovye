@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import AccountLayout from "../../AccountLayout";
-import Search from "../../../../components/UI/Search/Search"
+import Search from "../../../../components/UI/Search/Search";
 import "./ArchiveConsultations.scss";
 import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
 import ConsultationService from "../../../../services/ConsultationService";
@@ -9,18 +9,24 @@ import { getDateLabel } from "../../../../hooks/DateHooks";
 import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import Pagination from "../../../../components/UI/Pagination/Pagination";
+import { Link } from "react-router-dom";
 
 const PAGE_SIZE = 8;
 
 const ArchiveConsultations: React.FC = () => {
   const [search, setSearch] = useState("");
-  const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[]);
+  const [scoreFilter, setScoreFilter] = useState<"all" | 1 | 2 | 3 | 4 | 5>("all");
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const filteredConsultations = consultations.filter((c) =>
-    `${c.PatientName} ${c.PatientSurname} ${c?.PatientPatronymic} ${c.DoctorName} ${c.DoctorSurname} ${c?.DoctorPatronymic}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredConsultations = consultations
+    .filter((c) =>
+      `${c.PatientName} ${c.PatientSurname} ${c?.PatientPatronymic} ${c.DoctorName} ${c.DoctorSurname} ${c?.DoctorPatronymic}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    )
+    .filter((c) => scoreFilter === "all" || c.score === scoreFilter);
 
   const fetchConsultations = async (pageNumber: number) => {
     try {
@@ -44,12 +50,26 @@ const ArchiveConsultations: React.FC = () => {
       <div className="page-container archive">
         <h1 className="admin-page__title">Архив консультаций</h1>
 
-        <Search
-          placeholder="Введите телефон, имя, фамилию пользователя"
-          value={search}
-          onChange={setSearch}
-          className="archive__search"
-        />
+        <div className="archive__filters">
+          <Search
+            placeholder="Введите телефон, имя, фамилию пользователя"
+            value={search}
+            onChange={setSearch}
+            className="archive__search"
+          />
+
+          <div className="archive__tabs">
+            {["all", 1, 2, 3, 4, 5].map((score) => (
+              <button
+                key={score}
+                className={`archive__tab ${scoreFilter === score ? "archive__tab--active" : ""}`}
+                onClick={() => setScoreFilter(score === "all" ? "all" : (score as 1 | 2 | 3 | 4 | 5))}
+              >
+                {score === "all" ? "Все" : score}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="archive__list">
           {filteredConsultations.length > 0 ? (
@@ -64,16 +84,20 @@ const ArchiveConsultations: React.FC = () => {
                   <div className="archive__info">
                     <p>
                       <strong>Клиент: </strong>
-                      {`${c.PatientSurname} ${c.PatientName} ${c?.PatientPatronymic}`}
+                      {<Link to={`/profile/${c.PatientUserId}`}>
+                        ${c.PatientSurname} ${c.PatientName} ${c?.PatientPatronymic}`
+                      </Link>}
                     </p>
                     <p>
                       <strong>Специалист: </strong>
-                      {`${c.DoctorSurname} ${c.DoctorName} ${c?.DoctorPatronymic}`}
+                      {<Link to={`/profile/${c.DoctorUserId}`}>
+                        ${c.DoctorSurname} ${c.DoctorName} ${c?.DoctorPatronymic}`
+                      </Link>}
                     </p>
                     <p>
                       <strong>Рекомендации: </strong>{" "}
                       {c.recommendations ? (
-                        <a href={`${API_URL}/${c.recommendations}`}>Файл</a>
+                        <Link to={`${API_URL}/${c.recommendations}`}>Файл</Link>
                       ) : (
                         <span>Файл не загружен</span>
                       )}
@@ -97,13 +121,8 @@ const ArchiveConsultations: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span className="archive__rating">
-                        Оценку еще не поставили
-                      </span>
-
-                      <div className="archive__rating">
-                        Отзыва нет
-                      </div>
+                      <span className="archive__rating">Оценку еще не поставили</span>
+                      <div className="archive__rating">Отзыва нет</div>
                     </>
                   )}
                 </div>
@@ -114,11 +133,7 @@ const ArchiveConsultations: React.FC = () => {
           )}
         </div>
 
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onChange={(page) => setPage(page)}
-        />
+        <Pagination page={page} totalPages={totalPages} onChange={(page) => setPage(page)} />
       </div>
     </AccountLayout>
   );

@@ -158,6 +158,10 @@
     }
   }
 
+  &__search {
+    margin-bottom: 0 !important;
+  }
+
   &__button {
     background-color: $button-color;
     border: none;

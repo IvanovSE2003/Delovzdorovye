@@ -52,6 +52,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [startDay, setStartDay] = useState<string | null>(null);
 
+
+  const [showInfo, setShowInfo] = useState(false);
+
   // загрузка расписания
   const fetchSchedule = async () => {
     try {
@@ -263,14 +266,47 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       {/* Модалки */}
       {modalData && modalData.type === "range" && (
         <div className="modal">
-          <div className="modal__content">
-            <h3>
+          <div className="timesheet__modal">
+            <h1 className="consultation-modal__title">
               Выбранный диапазон:{" "}
               {dayjs(modalData.day).format("DD.MM.YYYY")},{" "}
               {modalData.times.sort()[0]} –{" "}
               {modalData.times.sort()[modalData.times.length - 1]}
-            </h3>
-            <p>Выберите режим для выделенных ячеек:</p>
+            </h1>
+
+            <button className="consultation-modal__close" onClick={() => {
+              setModalData(null);
+              setShowInfo(false);
+              setSelectedSlots([]);
+            }}>
+              X
+            </button>
+
+            <div className="timesheet__reshim">
+              <p style={{ color: 'white' }}>Выберите режим:</p>
+
+              <button
+                onClick={() => setShowInfo(!showInfo)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  margin: '10px 0',
+                  color: "white"
+                }}
+              >
+                ⓘ
+              </button>
+            </div>
+
+            {/* Условный рендеринг информации */}
+            {showInfo && (
+              <div className="timesheet__reshim-info">
+                <strong><span style={{ color: "black" }}>- Только для даты:</span> откроет ячейку только для этой даты в указаное время</strong>
+                <strong><span style={{ color: "black" }}>- Каждую неделю:</span> откроет ячейки на два месяца вперед на указанный день недели и время</strong>
+              </div>
+            )}
             <div className="modal__actions">
               <button
                 onClick={async () => {
@@ -293,7 +329,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   }
                 }}
               >
-                Только для этой даты
+                Только для {dayjs(modalData.day).format("DD.MM.YYYY")}
               </button>
 
               <button
@@ -317,16 +353,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   }
                 }}
               >
-                Каждую неделю
-              </button>
-
-              <button
-                onClick={() => {
-                  setModalData(null);
-                  setSelectedSlots([]);
-                }}
-              >
-                Закрыть
+                Каждую неделю ({dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
+                  c.toUpperCase()
+                )})
               </button>
             </div>
           </div>
@@ -336,15 +365,48 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       {/* Модалка открытия */}
       {modalData && modalData.type === "open" && (
         <div className="modal">
-          <div className="modal__content">
-            <h3>
+          <div className="timesheet__modal">
+            <h1 className="consultation-modal__title">
               {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
                 c.toUpperCase()
               )}
               , {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
               {modalData.time}
-            </h3>
-            <p>Выберите режим:</p>
+            </h1>
+
+            <button className="consultation-modal__close" onClick={() => {
+              setModalData(null);
+              setShowInfo(false);
+            }}>
+              X
+            </button>
+
+            <div className="timesheet__reshim">
+              <p style={{ color: 'white' }}>Выберите режим:</p>
+
+              <button
+                onClick={() => setShowInfo(!showInfo)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                  margin: '10px 0',
+                  color: "white"
+                }}
+              >
+                ⓘ
+              </button>
+            </div>
+
+            {/* Условный рендеринг информации */}
+            {showInfo && (
+              <div className="timesheet__reshim-info">
+                <strong><span style={{ color: "black" }}>- Только для даты:</span> откроет ячейку только для этой даты в указаное время</strong>
+                <strong><span style={{ color: "black" }}>- Каждую неделю:</span> откроет ячейки на два месяца вперед на указанный день недели и время</strong>
+              </div>
+            )}
+
             <div className="modal__actions">
               <button
                 onClick={async () => {
@@ -364,7 +426,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   }
                 }}
               >
-                Только для этой даты
+                Только для {dayjs(modalData.day).format("DD MMMM YYYY")}
               </button>
               <button
                 onClick={async () => {
@@ -384,15 +446,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   }
                 }}
               >
-                Каждую неделю
+                Каждую неделю ({dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
+                  c.toUpperCase()
+                )})
               </button>
             </div>
-            <button
-              className="modal__close"
-              onClick={() => setModalData(null)}
-            >
-              Закрыть
-            </button>
           </div>
         </div>
       )}
@@ -400,17 +458,21 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       {/* Модалка сброса */}
       {modalData && modalData.type === "reset" && (
         <div className="modal">
-          <div className="modal__content">
-            <h3>
+          <div className="timesheet__modal">
+            <h1 className="consultation-modal__title">
               {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
                 c.toUpperCase()
               )}
               , {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
               {modalData.time}
-            </h3>
-            <p>Хотите сбросить выбранную дату?</p>
+            </h1>
+
+            <button className="consultation-modal__close" onClick={() => setModalData(null)}>X</button>
+
+            <p style={{ color: 'white', textAlign: 'center', fontSize: '1.4rem' }}>Хотите сбросить выбранную дату?</p>
             <div className="modal__actions">
               <button
+                style={{ backgroundColor: "green" }}
                 onClick={async () => {
                   try {
                     const key = `${modalData.day}_${modalData.time}`;
@@ -430,9 +492,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                   }
                 }}
               >
-                Сбросить
+                Да
               </button>
-              <button onClick={() => setModalData(null)}>Отмена</button>
+              <button
+                style={{ backgroundColor: "darkred" }}
+                onClick={() => setModalData(null)}
+              >
+                Нет
+              </button>
             </div>
           </div>
         </div>
@@ -441,12 +508,15 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
       {/* Модалка booked */}
       {modalData && modalData.type === "booked" && consultationInfo && (
         <div className="modal">
-          <div className="modal__content">
-            <h3>
+          <div className="timesheet__modal">
+            <h1 className="consutation-modal__title">
               Консультация:{" "}
               {dayjs(modalData.day).format("dddd, DD MMMM YYYY")}{" "}
               {modalData.time}
-            </h3>
+            </h1>
+
+            <button className="consultation-modal__close" onClick={() => setModalData(null)}>X</button>
+
             <p>
               <b>Клиент:</b> {consultationInfo[0].PatientSurname}{" "}
               {consultationInfo[0].PatientName}{" "}
@@ -461,10 +531,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 ? consultationInfo[0].other_problem
                 : "Не указано"}
             </p>
-
-            <div className="modal__actions">
-              <button onClick={() => setModalData(null)}>Закрыть</button>
-            </div>
           </div>
         </div>
       )}

@@ -14,9 +14,7 @@ const App:React.FC = () => {
   }, [store])
 
   return (
-    <>
       <AppRouter/>
-    </>
   )
 }
 

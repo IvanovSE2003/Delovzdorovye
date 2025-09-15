@@ -325,7 +325,6 @@ export default class ConsultationController {
             if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
             const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
-            console.log(consultation.date, consultation.time)
 
             const [timeSlot, timeSlotPrev] = await Promise.all([
                 this.timeSlotRepository.findByTimeDate(moscowTime, doctorId, moscowDate, "OPEN"),

@@ -7,7 +7,9 @@ const DoctorPage = () => {
             <MyProfile
                 mode={"DOCTOR"}
             />
-            <DoctorInfo />
+            <DoctorInfo 
+                type="WRITE"
+            />
         </>
     );
 };

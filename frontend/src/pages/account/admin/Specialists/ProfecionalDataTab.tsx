@@ -123,7 +123,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                         profecionalDatas.map((data) => (
                             <tr key={data.id}>
                                 <td>
-                                    <Link target="_blank" to={`/profile/${data.userId}`}>
+                                    <Link to={`/profile/${data.userId}`}>
                                         {data.userSurname} {data.userName} {data?.userPatronymic}
                                     </Link>
                                 </td>

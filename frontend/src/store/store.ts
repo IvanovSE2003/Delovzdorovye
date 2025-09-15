@@ -9,9 +9,8 @@ import type { AuthResponse, LoginResponse } from "../models/response/AuthRespons
 import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import AdminService from "../services/AdminService";
-import DoctorService from "../services/DoctorService";
+import DoctorService, { type IDoctor } from "../services/DoctorService";
 import { menuConfig } from "../routes/index";
-import type { IDoctor } from "../pages/account/patient/Specialists/Specialists";
 
 interface ImenuItems {
     path: string;
@@ -25,6 +24,7 @@ export default class Store {
     menuItems = [] as ImenuItems[];
     loading = false;
     countMessage = 0;
+    lastVisited: string = "/personal";
 
     constructor() {
         makeAutoObservable(this);
@@ -63,7 +63,11 @@ export default class Store {
 
     setCountMessage(count: number) {
         this.countMessage = count;
-    } 
+    }
+
+    setLastVisited(path: string) {
+        this.lastVisited = path;
+    }
 
     decrimentCountMessage() {
         this.countMessage--;
@@ -365,7 +369,7 @@ export default class Store {
         }
     }
 
-     // Принять изменения профессиональных данных
+    // Принять изменения профессиональных данных
     async confirmProfData(id: number): Promise<TypeResponse> {
         try {
             const response = await AdminService.confirmProfData(id);

@@ -92,6 +92,17 @@
             &:hover {
                 background: #229954;
             }
+
+            &:disabled {
+                background-color: $gray-color;
+                color: $text-color;
+                cursor: no-drop;
+
+                &:hover {
+                    background-color: $gray-color-hover;
+                    cursor: no-drop;
+                }
+            }
         }
 
         &-title {
@@ -132,8 +143,15 @@
     }
 
     &__button {
-        width: 100%;
+        width: 100% !important;
         margin: 0 !important;
+    }
+
+    &__message {
+        font-size: 2rem;
+        font-weight: bolder;
+        margin: 10px 0;
+        color: yellow;
     }
 }
 

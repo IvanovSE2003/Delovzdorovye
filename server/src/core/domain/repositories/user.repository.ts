@@ -23,6 +23,7 @@ export default interface UserRepository {
     findByActivationLink(link: string): Promise<User | null>;
     findByResetToken(resetToken: string): Promise<User | null>;
 
+    findOtherProblem(users: User[]): Promise<User[]>;
     getAll(): Promise<User[]>;
     
     checkUserExists(email?: string, phone?: string): Promise<boolean>;

@@ -5,6 +5,7 @@ import UserRepositoryImpl from "../../../../core/application/repositories/user.r
 import SpecializationRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 import TimeSlotRepositoryImpl from "../../../../core/application/repositories/timeSlot.repository.impl.js";
 import FileServiceImpl from "../../../../core/application/services/file.service.impl.js";
+import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js"
 
 const DoctorRepository = new DoctorRepositoryImpl();
 const UserRepository = new UserRepositoryImpl();
@@ -12,6 +13,7 @@ const ProfDataRepository = new ProfDataRepositoryImpl();
 const SpecializationRepository = new SpecializationRepositoryImpl();
 const TimeSlotRepository = new TimeSlotRepositoryImpl();
 const FileService = new FileServiceImpl();
+const NotificationRepository = new NotificationRepositoryImpl();
 
 const docotrController = new DoctorController(
     DoctorRepository, 
@@ -19,7 +21,8 @@ const docotrController = new DoctorController(
     FileService, 
     UserRepository, 
     SpecializationRepository,
-    TimeSlotRepository
+    TimeSlotRepository,
+    NotificationRepository
 );
 
 export default docotrController;

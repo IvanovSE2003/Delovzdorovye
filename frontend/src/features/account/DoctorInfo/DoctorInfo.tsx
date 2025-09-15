@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
 import './DoctorInfo.scss';
@@ -6,11 +6,16 @@ import { processError } from "../../../helpers/processError";
 import DoctorService, { type Specialization, type Specializations } from "../../../services/DoctorService";
 import { URL } from "../../../http";
 import { Link } from "react-router";
-import MyInput from "../../../components/UI/MyInput/MyInput";
 import Select from 'react-select';
 import MyInputFile from "../../../components/UI/MyInput/MyInputFile";
+import ShowError from "../../../components/UI/ShowError/ShowError";
 
-const DoctorInfo = () => {
+interface DoctorInfoProps {
+    type: "READ" | "WRITE";
+    userId?: number;
+}
+
+const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => {
     const { store } = useContext(Context);
     const [doctorInfo, setDoctorInfo] = useState<Specialization[]>([] as Specialization[]);
     const [edit, setEdit] = useState<boolean>(false);
@@ -23,10 +28,13 @@ const DoctorInfo = () => {
     const [diploma, setDiploma] = useState<File | null>(null)
     const [license, setLicense] = useState<File | null>(null)
 
+    const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
+    const [message, setMessage] = useState<string>("");
+
     // Получение данных
     const fetchProfData = async () => {
         try {
-            const response = await DoctorService.getDoctorInfo(store.user.id);
+            const response = await DoctorService.getDoctorInfo(userId || store.user.id);
             setDoctorInfo(response.data.profData);
         } catch (e) {
             processError(e, "Ошибка при получении профессональных данных доктора: ");
@@ -37,7 +45,9 @@ const DoctorInfo = () => {
     const deleteSpecialization = async (info: Specialization) => {
         try {
             const response = await DoctorService.deleteProfInfo(store.user.id, info);
-            console.log(response.data);
+            response.data.success
+                ? setMessage(response.data.message)
+                : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при удалении профессиональной информации: ");
         } finally {
@@ -49,13 +59,31 @@ const DoctorInfo = () => {
     const addSpecialization = async (info: Specialization) => {
         try {
             const response = await DoctorService.addProfInfo(store.user.id, info);
-            console.log(response.data);
+            response.data.success
+                ? setMessage(response.data.message)
+                : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при добавлении нового блока: ");
         } finally {
             fetchProfData();
             setAddBlock(false);
         }
+    }
+
+    // Обработка нажатия на добавление специализации
+    const handleAdd = async () => {
+        if (!selectedSpecializationId || !diploma || !license) {
+            setError({ id: Date.now(), message: "Выберите специализацию и загрузите файлы" })
+            return;
+        }
+        const info: Specialization = {
+            id: Date.now(),
+            specializationId: selectedSpecializationId || 0,
+            diploma: diploma,
+            license: license,
+            comment: comment
+        }
+        addSpecialization(info);
     }
 
     // Получение специализация для селекта
@@ -76,15 +104,24 @@ const DoctorInfo = () => {
         fetchProfData();
     }, [])
 
+    useEffect(() => {
+        console.log(message)
+    }, [message])
+
     return (
         <div className="doctor-info">
             <h1 className="doctor-info__title">Специализации доктора</h1>
             <p className="doctor-info__subtitle">Здесь находится список всех ваших специализаций</p>
+            {message && (<div className="doctor-info__message">{message}</div>)}
 
             {/* Блок для добавления */}
             {addBlock && (
                 <div className="doctor-info__flex-column doctor-info__add">
                     <h1 className="doctor-info__add-title">Добавление новой специализации</h1>
+
+                    <ShowError
+                        msg={error}
+                    />
 
                     <Select
                         options={specializations.map(spec => ({ value: spec.id, label: spec.name }))}
@@ -120,16 +157,7 @@ const DoctorInfo = () => {
 
                     <button
                         className="doctor-info__add-button"
-                        onClick={() => {
-                            const info: Specialization = {
-                                id: Date.now(),
-                                specializationId: selectedSpecializationId || 0,
-                                diploma: diploma?.name || "",
-                                license: license?.name || "",
-                                comment: comment
-                            }
-                            addSpecialization(info);
-                        }}
+                        onClick={handleAdd}
                     >
                         Добавить
                     </button>
@@ -144,7 +172,7 @@ const DoctorInfo = () => {
                 </div>
             )}
 
-            {doctorInfo && !addBlock && doctorInfo.map((info: Specialization) => (
+            {doctorInfo.length > 0 ? !addBlock && doctorInfo.map((info: Specialization) => (
                 <div key={info.id} className="info-section">
                     <div className="info-section__header">
                         <div className="info-section__title">{info.specialization}</div>
@@ -173,7 +201,9 @@ const DoctorInfo = () => {
                         </button>
                     )}
                 </div>
-            ))}
+            )) : (
+                <div>Нет данных</div>
+            )}
 
             {edit && (
                 <button
@@ -184,7 +214,7 @@ const DoctorInfo = () => {
                 </button>
             )}
 
-            {!edit && !addBlock && (
+            {!edit && !addBlock && type == "WRITE" && (
                 <div className="doctor-info__buttons">
                     <button
                         className="my-button"
@@ -200,7 +230,7 @@ const DoctorInfo = () => {
                             setAddBlock(true)
                         }}
                     >
-                        Добавить новый блок
+                        Добавить новую специализацию
                     </button>
                 </div>
             )}

@@ -1,5 +1,6 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
+import type { TypeResponse } from "../models/response/DefaultResponse";
 
 export interface Specializations {
     id: number;
@@ -11,8 +12,8 @@ export interface Specialization {
     specialization?: string;
     specializationId: number;
     comment?: string;
-    diploma: string;
-    license: string;
+    diploma: File|null;
+    license: File|null;
 }
 
 interface UserDoctor {
@@ -37,14 +38,14 @@ export default class DoctorService {
         return $api.get<IDoctor>(`/doctor/${id}`);
     }
 
-    static async deleteProfInfo(userId: number, data: Specialization) {
-        return $api.put(`/doctor/${userId}`,
+    static async deleteProfInfo(userId: number, data: Specialization): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/doctor/${userId}`,
             { type: "DELETE", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
         )
     }
 
-    static async addProfInfo(userId: number, data: Specialization) {
-        return $api.put(`/doctor/${userId}`,
+    static async addProfInfo(userId: number, data: Specialization): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/doctor/${userId}`,
             { type: "ADD", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
         )
     }

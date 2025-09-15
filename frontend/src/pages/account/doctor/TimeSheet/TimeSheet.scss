@@ -9,4 +9,106 @@
     margin-top: -20px;
     color: $gray-color;
   }
+
+  &__message {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bolder;
+    color: green;
+    margin-bottom: 20px;
+  }
+
+  &__text-modal {
+    line-height: 1.5;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  &__warnings {
+    margin: 1rem 0;
+  }
+
+  &__warning {
+    display: block;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    color: #856404;
+
+    &-item {
+      display: flex;
+      align-items: flex-start;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background-color: #f8f9fa;
+      border-left: 3px solid #ffc107;
+      border-radius: 4px;
+    }
+
+    &-icon {
+      margin-right: 0.5rem;
+      font-size: 1.1em;
+    }
+  }
+
+  &__selected-dates {
+    display: flex;
+    justify-content: center;
+    color: white;
+
+    strong {
+      font-size: 1.5rem;
+    }
+
+  }
+
+  &__reshim {
+    display: flex;
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+      color: white;
+      font-size: 1.15rem;
+    }
+  }
+
+  &__modal {
+    background: $button-gradient;
+    border: none;
+    border-radius: 20px;
+    padding: 2rem 3rem;
+    width: 35%;
+    margin: 2rem auto;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  &__celendar {
+    display: flex;
+    justify-content: center;
+    transform: scale(1.3);
+    margin: 8% 0;
+
+    .react-datepicker {
+      font-size: 1.1rem;
+
+      &__day {
+        padding: 3px;
+
+        &-name {
+          margin-left: 9.5px;
+        }
+      }
+    }
+  }
+
+  &__button {
+    width: 100% !important;
+  }
 }

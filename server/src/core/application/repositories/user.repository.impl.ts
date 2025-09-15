@@ -39,6 +39,29 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
+    async findOtherProblem(users: User[]): Promise<User[]> {
+        const userIds = users.map(user => user.id);
+
+        if (userIds.length === 0) {
+            return [];
+        }
+
+        const usersWithOtherProblems = await models.UserModel.findAll({
+            include: [{
+                model: models.OtherProblem,
+                required: true, 
+                attributes: [] 
+            }],
+            where: {
+                id: {
+                    [Op.in]: userIds 
+                }
+            }
+        });
+
+        return usersWithOtherProblems.map(user => this.mapToDomainUser(user));
+    }
+
     async findAll(
         page: number = 1,
         limit: number = 10,

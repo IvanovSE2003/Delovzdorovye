@@ -184,7 +184,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                         basicDatas.map((data) => (
                             <tr key={data.id}>
                                 <td>
-                                    <Link target="_blank" to={`/profile/${data.userId}`}>
+                                    <Link to={`/profile/${data.userId}`}>
                                         {data.userName} {data.userSurname} {data?.userPatronymic}
                                     </Link>
                                 </td>

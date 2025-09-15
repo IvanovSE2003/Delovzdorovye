@@ -4,7 +4,7 @@
   padding: 0 20px;
 
   &__search {
-    margin-bottom: 20px;
+    margin-bottom: 0 !important;
   }
 
   &__list {
@@ -117,7 +117,46 @@
     .active {
       color: white;
       background: $button-gradient;
-      box-shadow: 0 0 10px $shadow-color;;
+      box-shadow: 0 0 10px $shadow-color;
+      ;
+    }
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__tab {
+    padding: 0.7rem 1.1rem;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+
+    &--active {
+      background: $button-gradient;
+      color: #fff;
+      border: none;
+
+      &:hover {
+        background-color: $button-color-hover;
+      }
     }
   }
 }
