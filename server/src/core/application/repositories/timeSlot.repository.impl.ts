@@ -105,6 +105,25 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         }
     }
 
+    async findByTimeRangeDate(
+        startTime: string,
+        endTime: string,
+        doctorId: number,
+        date: string,
+        status: "OPEN" | "CLOSE" | "BOOKED"
+    ): Promise<TimeSlot[]> {
+        const slotModels = await models.DoctorSlots.findAll({
+            where: {
+                date: date,
+                time: {
+                    [Op.between]: [startTime, endTime]
+                },
+                doctorId: doctorId,
+                status: status
+            }
+        })
+        return slotModels.map(model => this.mapToDomainTimeSlot(model));
+    }
 
     private mapToDomainTimeSlot(slotModel: TimeSlotmModelInterface): TimeSlot {
         return new TimeSlot(

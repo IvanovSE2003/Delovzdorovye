@@ -6,7 +6,8 @@ import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
 import { adjustTimeSlotToTimeZone, convertUserTimeToMoscow } from "../../function/transferTime.js"
 import normalizeDate from "../../function/normDate.js";
-import { addDays, format, isBefore } from "date-fns";
+import { addDays, isBefore } from "date-fns";
+import { formatTime, parseTime } from "../../function/formatTime.js"
 
 export default class DoctorScheduleController {
     constructor(
@@ -36,13 +37,13 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Не удалось создать ячейку времени'));
             }
 
-            return res.status(200).json({ success: true, message: "Запрос успешно выполнен" });
+            return res.status(201).json({ success: true, message: "Запрос успешно выполнен" });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }
 
-    async createRecurning(req: Request, res: Response, next: NextFunction) {
+    async createRecurring(req: Request, res: Response, next: NextFunction) {
         try {
             const { time, date, dayWeek, userId } = req.body;
 
@@ -81,7 +82,102 @@ export default class DoctorScheduleController {
                 );
             }
 
-            return res.status(200).json({ success: true, message: "Слоты созданы на 10 недель вперёд" });
+            return res.status(201).json({ success: true, message: "Слоты созданы на 10 недель вперёд" });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async createGap(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { timeStart, timeEnd, date, dayWeek, userId } = req.body;
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+
+            const doctor = await this.doctorRepository.findByUserId(user.id);
+            if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
+
+
+            const { newTime: moscowTimeStart, newDate: moscowDateStart } = convertUserTimeToMoscow(date, timeStart, user.timeZone);
+            const { newTime: moscowTimeEnd } = convertUserTimeToMoscow(date, timeEnd, user.timeZone);
+
+            const timeSlots = this.generateTimeSlots(
+                moscowTimeStart,
+                moscowTimeEnd,
+                normalizeDate(moscowDateStart),
+                dayWeek,
+                doctor.id
+            );
+
+            for (const slot of timeSlots) {
+                const existing = await this.timeSlotRepository.findByTimeDate(
+                    slot.time,
+                    slot.doctorId!,
+                    slot.date,
+                    "OPEN"
+                );
+                if (!existing) {
+                    await this.timeSlotRepository.save(slot);
+                }
+            }
+
+            return res.status(201).json({
+                success: true,
+                message: "Запрос успешно выполнен"
+            });
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async createRecurringGap(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { timeStart, timeEnd, date, dayWeek, userId } = req.body;
+
+            const user = await this.userRepository.findById(Number(userId));
+            if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+
+            const doctor = await this.doctorRepository.findByUserId(user.id);
+            if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
+
+            const { newTime: moscowTimeStart, newDate: moscowDateStart } = convertUserTimeToMoscow(date, timeStart, user.timeZone);
+            const { newTime: moscowTimeEnd } = convertUserTimeToMoscow(date, timeEnd, user.timeZone);
+
+            const startDate = new Date(moscowDateStart);
+            const endDate = addDays(startDate, 61);
+            const jsDayWeek = dayWeek === 6 ? 0 : dayWeek + 1;
+
+            for (let currentDate = new Date(startDate); isBefore(currentDate, endDate); currentDate = addDays(currentDate, 1)) {
+                if (currentDate.getDay() === jsDayWeek) {
+                    const slotDate = normalizeDate(currentDate.toString());
+
+                    const timeSlots = this.generateTimeSlots(
+                        moscowTimeStart,
+                        moscowTimeEnd,
+                        slotDate,
+                        dayWeek, 
+                        doctor.id
+                    );
+
+                    for (const slot of timeSlots) {
+                        const existing = await this.timeSlotRepository.findByTimeDate(
+                            slot.time,
+                            slot.doctorId!,
+                            slot.date,
+                            "OPEN"
+                        );
+                        if (!existing) {
+                            await this.timeSlotRepository.save(slot);
+                        }
+                    }
+                }
+            }
+
+            return res.status(201).json({
+                success: true,
+                message: "Слоты созданы на 2 месяца вперед"
+            });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
@@ -186,5 +282,31 @@ export default class DoctorScheduleController {
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
+    }
+
+    private generateTimeSlots(startTime: string, endTime: string, date: string, dayWeek: number, doctorId: number): TimeSlot[] {
+        const slots: TimeSlot[] = [];
+        const start = parseTime(startTime);
+        const end = parseTime(endTime);
+
+        let currentTime = new Date(start);
+
+        while (currentTime < end) {
+            const timeString = formatTime(currentTime);
+            const nextTime = new Date(currentTime.getTime() + 60 * 60000);
+
+            if (nextTime <= end) {
+                slots.push(new TimeSlot(
+                    0,
+                    timeString,
+                    date,
+                    dayWeek,
+                    "OPEN",
+                    doctorId
+                ));
+            }
+            currentTime = nextTime;
+        }
+        return slots;
     }
 }

@@ -11,6 +11,14 @@ export default interface TimeSlotRepository {
 
     save(timeSlot: TimeSlot): Promise<TimeSlot>;
     create(timeSlot: TimeSlot): Promise<TimeSlot>;
-    update(timeSlot: TimeSlot): Promise<TimeSlot>;    
+    update(timeSlot: TimeSlot): Promise<TimeSlot>;
     delete(id: number): Promise<void>;
+
+    findByTimeRangeDate(
+        startTime: string,
+        endTime: string,
+        doctorId: number,
+        date: string,
+        status: "OPEN" | "CLOSE" | "BOOKED"
+    ): Promise<TimeSlot[]>;
 }
