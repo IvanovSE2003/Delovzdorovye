@@ -201,7 +201,7 @@ export default class BatchController {
 
             await this.userRepository.save(user.setSentChanges(false));
 
-            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, profData, "PROFDATA"));
+            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, profData, "PROFDATA", user.id));
             return res.status(200).json({
                 success: true,
                 message: "Изменения успешно подтверждены и применены для профессиональных данных",
@@ -224,6 +224,18 @@ export default class BatchController {
             await this.notificationRepository.save(new Notification(0, "Изменения не приняты", `Ваши изменения не приняты администратором. ${rejection_reason}`, "INFO", false, profData, "BASICDATA", profData.userId || 0));
 
             await this.profDataRepository.delete(profData.id);
+            await this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Отмена обновлений",
+                    `Ваши изменения были отклонены администратором по причине "${rejection_reason}"`,
+                    "ERROR",
+                    false,
+                    null,
+                    null, 
+                    profData.userId!
+                )
+            )
             return res.status(200).json({
                 success: true,
                 message: 'Изменение успешно отменено и сообщение отправлено'

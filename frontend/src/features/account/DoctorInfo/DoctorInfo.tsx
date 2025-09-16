@@ -15,6 +15,13 @@ interface DoctorInfoProps {
     userId?: number;
 }
 
+interface SpecializationForSend {
+    specializationId: number;
+    diploma: File;
+    license: File;
+    comment: string;
+}
+
 const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => {
     const { store } = useContext(Context);
     const [doctorInfo, setDoctorInfo] = useState<Specialization[]>([] as Specialization[]);
@@ -41,24 +48,39 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         }
     }
 
-    // Удаление специализации
     const deleteSpecialization = async (info: Specialization) => {
         try {
-            const response = await DoctorService.deleteProfInfo(store.user.id, info);
+            const formData = new FormData();
+            formData.append('comment', comment);
+            formData.append('type', 'DELETE');
+            formData.append('specializationId', info.specializationId.toString());
+
+            const response = await DoctorService.deleteProfInfo(store.user.id, formData);
             response.data.success
                 ? setMessage(response.data.message)
                 : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при удалении профессиональной информации: ");
         } finally {
-            setModal({ state: false, data: {} as Specialization })
+            setModal({ state: false, data: {} as Specialization });
+            setComment("");
+            fetchProfData();
         }
     }
 
-    // Добавление специализации
-    const addSpecialization = async (info: Specialization) => {
+    const addSpecialization = async (info: SpecializationForSend) => {
         try {
-            const response = await DoctorService.addProfInfo(store.user.id, info);
+            // Создаем FormData для отправки файлов
+            const formData = new FormData();
+            formData.append('type', 'ADD');
+            formData.append('specializationId', info.specializationId.toString());
+            formData.append('comment', info.comment || '');
+
+            // Правильно добавляем файлы - как отдельные поля
+            formData.append('diploma', info.diploma);
+            formData.append('license', info.license);
+
+            const response = await DoctorService.addProfInfo(store.user.id, formData);
             response.data.success
                 ? setMessage(response.data.message)
                 : setError({ id: Date.now(), message: response.data.message });
@@ -67,6 +89,12 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         } finally {
             fetchProfData();
             setAddBlock(false);
+
+            // Сброс состояния после отправки
+            setSelectedSpecializationId(null);
+            setDiploma(null);
+            setLicense(null);
+            setComment("");
         }
     }
 
@@ -76,11 +104,11 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
             setError({ id: Date.now(), message: "Выберите специализацию и загрузите файлы" })
             return;
         }
-        const info: Specialization = {
-            id: Date.now(),
-            specializationId: selectedSpecializationId || 0,
-            diploma: diploma,
-            license: license,
+
+        const info: SpecializationForSend = {
+            specializationId: selectedSpecializationId,
+            diploma: diploma as File,
+            license: license as File,
             comment: comment
         }
         addSpecialization(info);
@@ -93,8 +121,6 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
             setSpecializations(response.data);
         } catch (e) {
             processError(e, "Ошибка при получении всех специлазаций: ");
-        } finally {
-            fetchProfData();
         }
     }
 
@@ -105,13 +131,18 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
     }, [])
 
     useEffect(() => {
-        console.log(message)
+        if (message) {
+            const timer = setTimeout(() => {
+                setMessage("");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
     }, [message])
 
     return (
         <div className="doctor-info">
             <h1 className="doctor-info__title">Специализации доктора</h1>
-            <p className="doctor-info__subtitle">Здесь находится список всех ваших специализаций</p>
+            <p className="doctor-info__subtitle">Здесь находится список всех специализаций</p>
             {message && (<div className="doctor-info__message">{message}</div>)}
 
             {/* Блок для добавления */}
@@ -137,14 +168,16 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         value={diploma || ""}
                         className="doctor-info__input"
                         onChange={setDiploma}
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     />
 
                     <MyInputFile
                         id="license"
-                        label="Лицинзия"
+                        label="Лицензия"
                         className="doctor-info__input"
                         value={license || ""}
                         onChange={setLicense}
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     />
 
                     <textarea
@@ -153,22 +186,25 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         className="doctor-info__textarea"
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="Комментарий"
+                        rows={4}
                     />
 
-                    <button
-                        className="doctor-info__add-button"
-                        onClick={handleAdd}
-                    >
-                        Добавить
-                    </button>
+                    <div className="doctor-info__buttons">
+                        <button
+                            className="doctor-info__add-button my-button"
+                            onClick={handleAdd}
+                            disabled={!selectedSpecializationId || !diploma || !license}
+                        >
+                            Добавить
+                        </button>
 
-                    <button
-                        className="my-button doctor-info__button"
-                        onClick={() => setAddBlock(false)}
-                    >
-                        Назад
-                    </button>
-
+                        <button
+                            className="my-button doctor-info__button"
+                            onClick={() => setAddBlock(false)}
+                        >
+                            Назад
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -192,6 +228,13 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         </Link>
                     </div>
 
+                    {info.comment && (
+                        <div className="info-item">
+                            <div className="info-item__label">Комментарий: </div>
+                            <div className="info-item__value">{info.comment}</div>
+                        </div>
+                    )}
+
                     {edit && (
                         <button
                             className="neg-button doctor-info__button"
@@ -202,7 +245,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                     )}
                 </div>
             )) : (
-                <div>Нет данных</div>
+                !addBlock && <div className="doctor-info__no-data">Нет данных о специализациях</div>
             )}
 
             {edit && (
@@ -220,14 +263,14 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         className="my-button"
                         onClick={() => setEdit(true)}
                     >
-                        Отредактировать
+                        Редактировать
                     </button>
 
                     <button
                         className="my-button"
                         onClick={() => {
                             setEdit(false);
-                            setAddBlock(true)
+                            setAddBlock(true);
                         }}
                     >
                         Добавить новую специализацию
@@ -248,13 +291,14 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                                 className="doctor-info__textarea"
                                 onChange={(e) => setComment(e.target.value)}
                                 placeholder="Причина удаления (не менее 10 символов)"
+                                rows={4}
                             />
 
                             <div className="doctor-info__buttons">
                                 <button
                                     className="neg-button"
-                                    onClick={() => deleteSpecialization({ ...modal.data, comment })}
-                                    disabled={comment.length <= 10}
+                                    onClick={() => deleteSpecialization(modal.data)}
+                                    disabled={comment.length < 10}
                                 >
                                     Удалить
                                 </button>

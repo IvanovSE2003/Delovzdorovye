@@ -3,7 +3,7 @@ import type { DataTabProps } from "./Specialists";
 import { useContext, useEffect, useState } from "react";
 import type { IProfData } from "../../../../models/IDatas";
 import { Context } from "../../../../main";
-import { API_URL } from "../../../../http";
+import { URL } from "../../../../http";
 
 interface ProfecionalDataTabProps extends DataTabProps {
     profecionalDatas: IProfData[];
@@ -22,6 +22,15 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const [isClosing, setIsClosing] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [showRejectModal, setShowRejectModal] = useState(false);
+    const [commentModal, setCommentModal] = useState<string | null>(null);
+
+    const openCommentModal = (comment: string) => {
+        setCommentModal(comment);
+    };
+
+    const closeCommentModal = () => {
+        setCommentModal(null);
+    };
 
     // Модалка
     const openRejectModal = (id: number) => {
@@ -69,13 +78,14 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const handleRejectSubmit = async () => {
         if (!currentBatchId || !rejectReason.trim()) {
             setError("Укажите причину отказа");
+            setShowRejectModal(false);
             return;
         }
 
         try {
             setMessage("");
             setError("");
-            const data = await store.rejectBasicData(currentBatchId, rejectReason);
+            const data = await store.rejectProfData(currentBatchId, rejectReason);
 
             if (data.success) {
                 removeBatch(currentBatchId, data.message);
@@ -128,17 +138,27 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link target="_blank" to={`${API_URL}/${data.new_diploma}`}>
+                                    <Link target="_blank" to={`${URL}/${data.new_diploma}`}>
                                         Документ
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link target="_blank" to={`${API_URL}/${data.new_license}`}>
+                                    <Link target="_blank" to={`${URL}/${data.new_license}`}>
                                         Документ
                                     </Link>
                                 </td>
                                 <td>{data.new_specialization}</td>
-                                <td>{data.comment || <span style={{ color: "red" }}>Комментарий отсутсвует</span>}</td>
+                                <td
+                                    className="admin-page__comment-cell"
+                                    onClick={() => data.comment && openCommentModal(data.comment)}
+                                >
+                                    {data.comment ? (
+                                        <span className="comment-text">{data.comment}</span>
+                                    ) : (
+                                        <span style={{ color: "red" }}>Комментарий отсутствует</span>
+                                    )}
+                                </td>
+
                                 <td>
                                     <button
                                         className="btn btn-success"
@@ -164,6 +184,34 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                     )}
                 </tbody>
             </table>
+
+            {commentModal && (
+                <div className="modal modal--overlay">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Комментарий</h5>
+                                <button type="button" onClick={closeCommentModal}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p
+                                    style={{
+                                        color: 'white',
+                                        textAlign: 'justify',
+                                        padding: '0 2rem',
+                                    }}
+                                >{commentModal}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={closeCommentModal}>
+                                    Закрыть
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
             {/* Модальное окно */}
             {showRejectModal && (

@@ -89,7 +89,9 @@ export default class DoctorController {
                 return next(ApiError.badRequest("Специалист не найден"));
             }
 
-            let diplomaFileName, licenseFileName;
+            let diplomaFileName = "";
+            let licenseFileName = "";
+
             if (req.files?.diploma) {
                 const diplomaFile = Array.isArray(req.files.diploma)
                     ? req.files.diploma[0]
@@ -99,28 +101,34 @@ export default class DoctorController {
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
-            } else {
-                diplomaFileName = "";
             }
 
             if (req.files?.license) {
                 const licenseFile = Array.isArray(req.files.license)
                     ? req.files.license[0]
                     : req.files.license;
-
                 try {
                     licenseFileName = await this.fileService.saveFile(licenseFile);
                 } catch (error) {
                     return next(ApiError.internal('Ошибка загрузки лицензии'));
                 }
-            } else {
-                licenseFileName = "";
             }
 
             const specialization = await this.specializationRepository.findById(specializationId);
-            if (!specialization) return next(ApiError.badRequest('Специализация не найдена'))
+            if (!specialization) {
+                return next(ApiError.badRequest('Специализация не найдена'));
+            }
 
-            await this.profDataRepository.save(new ProfData(0, diplomaFileName, licenseFileName, specialization.name, comment, type, user.id));
+            await this.profDataRepository.save(new ProfData(
+                0,
+                diplomaFileName,
+                licenseFileName,
+                specialization.name,
+                comment,
+                type,
+                user.id
+            ));
+
             await this.userRepository.save(user.setSentChanges(true));
 
             await this.notificationReposiotory.save(
@@ -134,13 +142,14 @@ export default class DoctorController {
                     null,
                     user.id
                 )
-            )
+            );
 
             return res.json({
                 success: true,
                 message: "Изменения отправлены на модерацию"
             });
         } catch (e: any) {
+            console.error('Error in updateDoctor:', e);
             return next(ApiError.internal(e.message));
         }
     }

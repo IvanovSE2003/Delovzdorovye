@@ -7,6 +7,7 @@ import { Link } from 'react-router';
 
 export interface UserCon {
     id: number;
+    hasOtherProblem?: boolean;
     name: string;
     surname: string;
     patronymic?: string;
@@ -53,7 +54,7 @@ const MakeConsultation:React.FC = () => {
 
                 <div className="makeconsultation__list">
                     {filteredUsers.length>0 ? filteredUsers.map(user => (
-                        <div key={user.id} className="makeconsultation__user-card">
+                        <div key={user.id} className={`makeconsultation__user-card ${user.hasOtherProblem ? "other-problem" : ""}`}>
                             <div className="makeconsultation__user-info">
                                 <span className="makeconsultation__user-name">
                                     {user.name && user.surname && user?.patronymic ? (

@@ -185,7 +185,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                             <tr key={data.id}>
                                 <td>
                                     <Link to={`/profile/${data.userId}`}>
-                                        {data.userName} {data.userSurname} {data?.userPatronymic}
+                                        {data.userSurname} {data.userName} {data?.userPatronymic}
                                     </Link>
                                 </td>
                                 <td>{data.field_name}</td>

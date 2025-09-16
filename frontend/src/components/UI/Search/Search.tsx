@@ -7,7 +7,7 @@ interface SearchInputProps {
   className?: string;
 }
 
-const Search = ({ placeholder, value, onChange, className = '' }: SearchInputProps) => {
+const Search:React.FC<SearchInputProps> = ({ placeholder, value, onChange, className = '' }) => {
   return (
     <div className={`search-input ${className}`}>
       <div className="search-input__container">

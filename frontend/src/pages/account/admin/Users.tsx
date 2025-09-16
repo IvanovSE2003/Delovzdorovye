@@ -4,7 +4,9 @@ import type { User } from "../../../models/Auth";
 import { URL } from "../../../http";
 import { observer } from "mobx-react-lite";
 import AccountLayout from "../AccountLayout";
-import SearchInput from "../../../components/UI/Search/Search"; 
+import Search from "../../../components/UI/Search/Search";
+
+type tabType = "BASIC" | "PROF";
 
 const Users = () => {
   const { store } = useContext(Context);
@@ -13,32 +15,36 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
+  const [selectedRole, setSelectedRole] = useState<"ALL" | "ADMIN" | "DOCTOR" | "PATIENT">("ALL");
+  const [selectedTab, setSelectedTab] = useState<tabType>("BASIC");
 
-  // Получение всех пользователей при активации этой вкладки
   useEffect(() => {
     getAllUsers();
   }, []);
 
-  // Фильтрация пользователей по поисковому запросу
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredUsers(users);
-    } else {
-      const filtered = users.filter(user =>
+    let filtered = users;
+
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter(user =>
         `${user.name || ''} ${user.surname || ''} ${user.patronymic || ''}`
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       );
-      setFilteredUsers(filtered);
     }
-  }, [searchTerm, users]);
 
-  // Получение всех пользователей
+    if (selectedRole !== "ALL") {
+      filtered = filtered.filter(user => user.role === selectedRole);
+    }
+
+    setFilteredUsers(filtered);
+  }, [searchTerm, users, selectedRole]);
+
   const getAllUsers = async () => {
     const data = await store.getUsersAll();
     setUsers(data);
     setFilteredUsers(data);
-  }
+  };
 
   const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
     setPreviewImage(`${URL}/${imgPath}`);
@@ -57,7 +63,7 @@ const Users = () => {
       : await store.unblockUser(id);
 
     getAllUsers();
-  }
+  };
 
   const changeRoleUser = async (id: number, role: string) => {
     if (role === "ADMIN") return;
@@ -70,23 +76,50 @@ const Users = () => {
     }
     console.log(data);
     getAllUsers();
-  }
+  };
 
   const isActionAllowed = (role: string) => {
     return role !== "ADMIN";
-  }
+  };
 
   return (
     <AccountLayout>
       <div className="page-container admin-page">
         <h1 className="admin-page__title">Профили</h1>
 
-        <div className="admin-page__search">
-          <SearchInput
-            placeholder="Поиск по имени, фамилии и отчеству пользователя"
-            value={searchTerm}
-            onChange={setSearchTerm}
-          />
+        
+
+        <Search
+          placeholder="Поиск по имени, фамилии и отчеству пользователя"
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
+
+        <div className="admin-page__filter-tabs">
+          <button
+            className={`tab-btn ${selectedRole === "ALL" ? "active" : ""}`}
+            onClick={() => setSelectedRole("ALL")}
+          >
+            Все
+          </button>
+          <button
+            className={`tab-btn ${selectedRole === "ADMIN" ? "active" : ""}`}
+            onClick={() => setSelectedRole("ADMIN")}
+          >
+            Админы
+          </button>
+          <button
+            className={`tab-btn ${selectedRole === "DOCTOR" ? "active" : ""}`}
+            onClick={() => setSelectedRole("DOCTOR")}
+          >
+            Доктора
+          </button>
+          <button
+            className={`tab-btn ${selectedRole === "PATIENT" ? "active" : ""}`}
+            onClick={() => setSelectedRole("PATIENT")}
+          >
+            Пациенты
+          </button>
         </div>
 
         {previewImage && (
@@ -110,9 +143,6 @@ const Users = () => {
               <th>Пол</th>
               <th>Номер телефона</th>
               <th>Email</th>
-              <th>Специализация</th>
-              <th>Диплом</th>
-              <th>Лицензия</th>
               <th>Статус</th>
               <th>Блокировка</th>
             </tr>
@@ -123,9 +153,9 @@ const Users = () => {
               <tr
                 key={user.phone}
                 className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}
-                  ${user.role==='PATIENT' && "users__row-patient"}
-                  ${user.role==='DOCTOR' && "users__row-doctor"}
-                  ${user.role==='ADMIN' && "users__row-admin"}`}
+                  ${user.role === 'PATIENT' && "users__row-patient"}
+                  ${user.role === 'DOCTOR' && "users__row-doctor"}
+                  ${user.role === 'ADMIN' && "users__row-admin"}`}
               >
                 <td>
                   {user.role === "ADMIN" && "Админ"}
@@ -133,9 +163,9 @@ const Users = () => {
                   {user.role === "PATIENT" && "Пациент"}
                 </td>
                 <td>
-                  <a href={`/profile/${user.id}`}>
+                  <a href={`/profile/${user.id}`} className="users__table-fio">
                     {(user.name && user.surname && user.patronymic)
-                      ? <div> {user.name} {user.surname} {user.patronymic} </div>
+                      ? <div> {user.surname} {user.name} {user.patronymic} </div>
                       : <div> Анонимный пользователь </div>
                     }
                   </a>
@@ -155,9 +185,6 @@ const Users = () => {
                 <td>{user.gender || "Не указано"}</td>
                 <td>{user.phone}</td>
                 <td>{user.email}</td>
-                <td>{user.specialization || "-"}</td>
-                <td>{user.diploma || "-"}</td>
-                <td>{user.license || "-"}</td>
                 <td
                   onClick={() => isActionAllowed(user.role) && changeRoleUser(user.id, user.role)}
                   className={isActionAllowed(user.role) ? "clickable" : "non-clickable"}

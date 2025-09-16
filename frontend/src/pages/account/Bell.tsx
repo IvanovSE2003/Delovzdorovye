@@ -8,11 +8,11 @@ import { Context } from "../../main";
 import { observer } from "mobx-react-lite";
 
 const typeIcons: Record<string, string> = {
-    appointment: "📅",
-    message: "💬",
-    alert: "🚨",
-    system: "⚙️",
-    default: "🔔"
+    CONSULTATION: "📅",
+    PAYMENT: "💬",
+    ERROR: "🚨",
+    WARNING: "⚙️",
+    INFO: "🔔"
 };
 
 export interface INotification {

@@ -12,8 +12,8 @@ export interface Specialization {
     specialization?: string;
     specializationId: number;
     comment?: string;
-    diploma: File|null;
-    license: File|null;
+    diploma: File | null;
+    license: File | null;
 }
 
 interface UserDoctor {
@@ -38,16 +38,20 @@ export default class DoctorService {
         return $api.get<IDoctor>(`/doctor/${id}`);
     }
 
-    static async deleteProfInfo(userId: number, data: Specialization): Promise<AxiosResponse<TypeResponse>> {
-        return $api.put<TypeResponse>(`/doctor/${userId}`,
-            { type: "DELETE", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
-        )
+    static async deleteProfInfo(userId: number, formData: FormData): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/doctor/${userId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
     }
 
-    static async addProfInfo(userId: number, data: Specialization): Promise<AxiosResponse<TypeResponse>> {
-        return $api.put<TypeResponse>(`/doctor/${userId}`,
-            { type: "ADD", specializationId: data.specializationId, license: data.license, diploma: data.diploma, comment: data.comment }
-        )
+    static async addProfInfo(userId: number, formData: FormData): Promise<AxiosResponse<TypeResponse>> {
+        return $api.put<TypeResponse>(`/doctor/${userId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
     }
 
     static async getAllDoctors(page: number, limit: number) {
