@@ -1,27 +1,26 @@
 import { NextFunction, Request, Response } from "express";
-import ContentService from "../../../../core/domain/services/content.service";
-import DataContent from "../../types/dataContent";
+import Content from "../../../../core/domain/entities/content.entity";
 import ApiError from "../../error/ApiError"
+import ContentRepository from "../../../../core/domain/repositories/content.repository"
 
 export default class ContentController {
     constructor(
-        private readonly contentService: ContentService
+        private readonly contentRepository: ContentRepository
     ) { }
 
     async createContent(req: Request, res: Response, next: NextFunction) {
         try {
             const { title, content, type, hasTitle } = req.body;
 
-            const newContent: DataContent = {
-                text_content: content,
+            const newContent = new Content(
+                0,
+                content,
                 type,
-                hasTitle: !!hasTitle,
-                label: hasTitle ? title : undefined
-            };
+                hasTitle ? title : null
+            )
 
-            const created = await this.contentService.create(newContent);
+            const created = await this.contentRepository.save(newContent);
             return res.status(201).json(created);
-
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }
@@ -30,15 +29,10 @@ export default class ContentController {
     async getContentById(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { hasTitle } = req.query;
-
-            const content = await this.contentService.getById(
-                Number(id),
-                hasTitle === "true"
-            );
+            const content = await this.contentRepository.findById(Number(id))
 
             if (!content) {
-                return res.status(404).json({ message: "Контент не найден" });
+                return next(ApiError.badRequest("Контент не найден"));
             }
 
             return res.json({
@@ -53,16 +47,21 @@ export default class ContentController {
 
     async getAllContent(req: Request, res: Response, next: NextFunction) {
         try {
-            const { type } = req.query;
-            const contents = await this.contentService.getAll(type ? String(type) : undefined);
+            const { page, limit, type } = req.query;
+            const typeFilter = type ? type.toString() : ""
+            const contents = await this.contentRepository.findAll(Number(page), Number(limit), {type: typeFilter});
 
-            const results = contents.map(c => ({
+            const results = contents.contents.map(c => ({
                 id: c.id,
                 header: c.label,
                 text: c.text_content
             }));
 
-            return res.json(results);
+            return res.json({
+                contents: results,
+                totalCount: contents.totalCount,
+                totalPages: contents.totalPages
+            });
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }
@@ -71,23 +70,27 @@ export default class ContentController {
     async updateContent(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { title, content, type, hasTitle } = req.body;
+            const { title, content, type } = req.body;
 
-            const updated = await this.contentService.update(
-                Number(id),
-                {
-                    text_content: content,
-                    type,
-                    label: hasTitle ? title : undefined
-                },
-                !!hasTitle
-            );
-
-            if (!updated) {
-                return res.status(404).json({ message: "Контент для обновления не найден" });
+            const contentModel = await this.contentRepository.findById(Number(id));
+            if(!contentModel) {
+                return next(ApiError.badRequest('Контент не найден'));
             }
 
-            return res.json(updated);
+            if(title && title !== undefined) {
+                contentModel.label = title;
+            }
+
+            if(content && content !== undefined) {
+                contentModel.text_content = content;
+            }
+
+            if(type && type !== undefined) {
+                contentModel.type = type;
+            }
+
+            const updated = await this.contentRepository.save(contentModel);
+            return res.status(200).json(updated);
         } catch (e: any) {
             next(ApiError.internal(e.message));
         }
@@ -96,14 +99,13 @@ export default class ContentController {
     async deleteContent(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { hasTitle } = req.query;
 
-            const deleted = await this.contentService.delete(Number(id), hasTitle === "true");
-
-            if (!deleted) {
-                return res.status(404).json({ message: "Контент не найден" });
+            const content = await this.contentRepository.findById(Number(id));
+            if(!content) {
+                return next(ApiError.badRequest('Контент не найден'));
             }
 
+            await this.contentRepository.delete(content.id);
             return res.status(204).send();
         } catch (e: any) {
             next(ApiError.internal(e.message));

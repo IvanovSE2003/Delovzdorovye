@@ -13,6 +13,7 @@ import { ProfDataModelInterface } from './interfaces/profData.model.js'
 import { NotificationModelInterface } from './interfaces/notification.model.js'
 import { OtherProblemModelInterface } from './interfaces/otherProblem.model.js'
 import { ConsulationRoomModelInterface } from './interfaces/consulationRoom.model.js'
+import { ContentModelInterface } from './interfaces/content.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -170,18 +171,10 @@ const BreakModel = sequelize.define('break', {
     doctorId: { type: DataType.INTEGER }
 });
 
-
-// Таблицы с контентом на сайте
-
-const ContentModel = sequelize.define('content', {
+// Таблица работы с контентом на сайте
+const ContentModel = sequelize.define<ContentModelInterface>('content', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    type: { type: DataType.STRING, allowNull: false },
-    text_content: { type: DataType.TEXT, allowNull: false }
-});
-
-const ContentWithTitleModel = sequelize.define('content_with_title', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    label: { type: DataType.STRING, allowNull: false },
+    label: { type: DataType.STRING, allowNull: true },
     text_content: { type: DataType.TEXT, allowNull: false },
     type: { type: DataType.STRING, allowNull: false }
 });
@@ -278,7 +271,6 @@ export default {
     ProblemModel,
     DoctorSpecialization,
     ContentModel,
-    ContentWithTitleModel,
     ConsultationProblems,
     ProfDataModel,
     Notification,

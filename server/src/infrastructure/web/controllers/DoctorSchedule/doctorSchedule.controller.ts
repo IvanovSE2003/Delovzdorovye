@@ -156,7 +156,7 @@ export default class DoctorScheduleController {
                         moscowTimeStart,
                         moscowTimeEnd,
                         slotDate,
-                        dayWeek, 
+                        dayWeek,
                         doctor.id
                     );
 
@@ -284,29 +284,34 @@ export default class DoctorScheduleController {
         }
     }
 
-    private generateTimeSlots(startTime: string, endTime: string, date: string, dayWeek: number, doctorId: number): TimeSlot[] {
+    private generateTimeSlots(
+        startTime: string,
+        endTime: string,
+        date: string,
+        dayWeek: number,
+        doctorId: number
+    ): TimeSlot[] {
         const slots: TimeSlot[] = [];
         const start = parseTime(startTime);
         const end = parseTime(endTime);
 
         let currentTime = new Date(start);
 
-        while (currentTime < end) {
+        while (currentTime <= end) {
             const timeString = formatTime(currentTime);
-            const nextTime = new Date(currentTime.getTime() + 60 * 60000);
 
-            if (nextTime <= end) {
-                slots.push(new TimeSlot(
-                    0,
-                    timeString,
-                    date,
-                    dayWeek,
-                    "OPEN",
-                    doctorId
-                ));
-            }
-            currentTime = nextTime;
+            slots.push(new TimeSlot(
+                0,
+                timeString,
+                date,
+                dayWeek,
+                "OPEN",
+                doctorId
+            ));
+
+            currentTime = new Date(currentTime.getTime() + 60 * 60000); 
         }
+
         return slots;
     }
 }
