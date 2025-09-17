@@ -1,7 +1,8 @@
 import './Solutions.scss'
 import AnimatedBlock from '../../../components/AnimatedBlock';
+import type { ElementHomePageProps } from '../../../pages/Homepage';
 
-const Solutions = () => {
+const Solutions:React.FC<ElementHomePageProps> = ({ role }) => {
     return (
         <section className="solutions container" id="solutions">
             <AnimatedBlock>

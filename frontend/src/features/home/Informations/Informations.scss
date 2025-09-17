@@ -33,6 +33,7 @@
         &__text {
             color: $text-color;
             font-size: 1.6rem;
+            white-space: pre-line;
         }
 
         &__title-input {
@@ -53,6 +54,11 @@
             box-sizing: border-box;
             resize: vertical;
             height: 15vh;
+        }
+
+        &__button {
+            width: 100% !important;
+            margin-top: 20px !important;
         }
     }
 

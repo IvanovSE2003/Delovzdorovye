@@ -20,7 +20,9 @@ const HomePage = () => {
     <div>
       <Header />
       <Slider />
-      <Solutions />
+      <Solutions 
+        role={store.user.role}
+      />
       <div className='line'></div>
       <Costs 
         role={store.user.role}

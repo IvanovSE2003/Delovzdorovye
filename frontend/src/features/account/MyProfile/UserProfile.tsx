@@ -1,5 +1,5 @@
 import type { IUserDataProfile } from "../../../models/Auth";
-import { GetFormatDate, GetFormatPhone } from "../../../hooks/UserProfileHooks";
+import { GetFormatDate, GetFormatPhone } from "../../../helpers/formatDatePhone";
 import { URL } from "../../../http";
 import { getTimeZoneLabel } from "../../../models/TimeZones";
 

@@ -8,7 +8,11 @@ export default class HomeService {
     }
 
     static async editContent(type: string, newData: InfoBlock): Promise<void> {
-        $api.put<void>(`/content/${newData.id}`, { title: newData.header, content: newData.text, type, hasTitle: true})
+        $api.put(`/content/${newData.id}`, { title: newData.header, content: newData.text, type, hasTitle: true})
+    }
+
+    static async deleteContent(type: string, blockId: number): Promise<void> {
+        $api.delete(`/content/delete?type=${type}/${blockId}`)
     }
 
     // static async addContent(type: string) {

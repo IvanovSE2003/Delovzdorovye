@@ -6,26 +6,55 @@ import type { ElementHomePageProps } from '../../../pages/Homepage';
 import { useEffect, useState } from 'react';
 import { processError } from '../../../helpers/processError';
 import ShowError from '../../../components/UI/ShowError/ShowError';
+import HomeService from '../../../services/HomeService';
+import { GetFormatPhone } from '../../../helpers/formatDatePhone';
 
 const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [phone, setPhone] = useState<string>("");
     const [email, setEmail] = useState<string>("");
 
+    // Индификаторы для данных
+    const [phoneId, setPhoneId] = useState<number|null>(null);
+    const [emailId, setEmailId] = useState<number|null>(null);
+
+    // Сообщения
     const [error, setError] = useState<{id: number; message: string}>({id: 0, message: ""});
     const [message, setMessage] = useState<{id: number; message: string}>({id: 0, message: ""});
 
-    const fetchContacts = () => {
+    // Получение данных
+    const fetchContacts = async () => {
         try {
+            const phoneResponse = await HomeService.getContent("phone");
+            setPhone(phoneResponse.data[0].header || "Нет номера телефона");
+            setPhoneId(phoneResponse.data[0].id);
 
+            const emailResponse = await HomeService.getContent("email");
+            setEmail(emailResponse.data[0].header || "Нет электронной почты");
+            setEmailId(emailResponse.data[0].id);
         } catch (e) {
-            processError(e, "Ошибка при получении контактов: ");
+            processError(e, "Ошибка при получении контактов", setError);
         }
     }
 
+    // Сохранить 
+    const saveChange = async () => {
+        if(!phoneId || !emailId) return;
+        try {
+            await HomeService.editContent('phone', {id: phoneId, header: phone, text: "-"});
+            await HomeService.editContent('email', {id: emailId, header: email, text: "-"});
+            setMessage({id: Date.now(), message: "Контакты успешно сохранены"});
+        } catch (e) {
+            processError(e, "Ошибка при сохранении контактов", setError);
+        } finally {
+            setIsEditing(false);
+        }
+    }
+
+    // Получение данных загрузке блока
     useEffect(() => {
         fetchContacts();
-    })
+    }, [])
 
     return (
         <AnimatedBlock>
@@ -45,10 +74,10 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
                     <div className="contacts__info">
                         <p>Остались вопросы?</p>
 
-                        {isEditing ? (
+                        {!isEditing ? (
                             <span>
-                                <a href="mailto:ask@delovzdorovie.ru">ask@delovzdorovie.ru</a><br />
-                                <a href="tel:88888888888">8 888 888 88 88</a><br/><br/>
+                                <a href={`mailto:${email}`}>{email}</a><br />
+                                <a href={`tel:${phone}`}>{GetFormatPhone(phone)}</a><br/><br/>
                             </span>
                         ) : (
                             <span>
@@ -61,20 +90,28 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
                                 /><br />
                                 <input
                                     className="contacts__info__edit"
-                                    type="text"
+                                    type="tel"
+                                    minLength={11}
                                     placeholder='Номер телефона'
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                /><br/><br/>
+                                /><br/>
+                                <button
+                                    className='my-button contacts__info__button'
+                                    onClick={saveChange}
+                                >
+                                    Сохранить
+                                </button><br/><br/>
+
                             </span>
                         )}
 
                         {role === "ADMIN" && (
                             <button
-                                className='my-button'
+                                className={`${!isEditing ? "my-button" : "neg-button"}`}
                                 onClick={() => setIsEditing(!isEditing)}
                             >
-                                {isEditing ? "Редактировать" : "Выйти из редактирования"}
+                                {!isEditing ? "Редактировать" : "Выйти из редактирования"}
                             </button>
                         )}
 
