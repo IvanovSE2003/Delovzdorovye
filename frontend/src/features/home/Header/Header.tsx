@@ -1,15 +1,15 @@
-import "./Header.scss";
-import logo from "../../../../public/logo.svg";
-import avatar from "../../../assets/images/account.png"
-
-import React, { useContext } from "react";
-import { Link } from "react-router";
-import { Context } from "../../../main";
-import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../../routes";
+import { Link } from "react-router";
 
-const Header: React.FC = () => {
-  const { store } = useContext(Context);
+import avatar from "../../../assets/images/account.png"
+import logo from "../../../../public/logo.svg";
+import "./Header.scss";
+
+interface headerProps {
+  isAuth: boolean;
+}
+
+const Header: React.FC<headerProps> = ({ isAuth }) => {
   return (
 
     <div className="header">
@@ -29,7 +29,7 @@ const Header: React.FC = () => {
         <div className="header__phone">
           <a href="tel:88888888888">8 888 888 88 88</a>
         </div>
-        {store.isAuth
+        {isAuth
           ?
           <div className="header__avatar">
             <Link to={RouteNames.PERSONAL}>
@@ -49,4 +49,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default observer(Header);
+export default Header;

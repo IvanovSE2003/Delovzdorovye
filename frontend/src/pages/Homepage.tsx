@@ -18,7 +18,9 @@ const HomePage = () => {
 
   return (
     <div>
-      <Header />
+      <Header 
+        isAuth={store.isAuth}
+      />
       <Slider />
       <Solutions 
         role={store.user.role}
