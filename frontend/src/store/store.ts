@@ -9,7 +9,6 @@ import type { AuthResponse, LoginResponse } from "../models/response/AuthRespons
 import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import AdminService from "../services/AdminService";
-import DoctorService, { type IDoctor } from "../services/DoctorService";
 import { menuConfig } from "../routes/index";
 
 interface ImenuItems {
@@ -307,21 +306,6 @@ export default class Store {
         }
     }
 
-
-
-
-
-    // Получить дополнительную информацию о докторе
-    async getDoctorInfo(id: number): Promise<IDoctor> {
-        try {
-            const response = await DoctorService.getDoctorInfo(id);
-            return response.data;
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            this.setError(error.response?.data?.message || "Ошибка при получении информации о докторе");
-            return {} as IDoctor;
-        }
-    }
 
     // Получить все изменения базовых данных у специалиста
     async getBasicDataAll(limit: number, page: number) {

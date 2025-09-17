@@ -4,14 +4,10 @@ import { useEffect, useState } from 'react';
 import type { AxiosError } from 'axios';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import HomeService from '../../../services/HomeService';
-import type { Role } from '../../../models/Auth';
 import type { InfoBlock } from '../../../models/InfoBlock';
+import type { ElementHomePageProps } from '../../../pages/Homepage';
 
-interface CostsProps {
-    role: Role;
-}
-
-const Costs: React.FC<CostsProps> = ({ role }) => {
+const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
     const [data, setData] = useState<InfoBlock[]>([] as InfoBlock[]);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [message, setMessage] = useState<string>("");

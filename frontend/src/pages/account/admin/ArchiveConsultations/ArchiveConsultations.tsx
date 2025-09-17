@@ -10,6 +10,7 @@ import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import Pagination from "../../../../components/UI/Pagination/Pagination";
 import { Link } from "react-router-dom";
+import Tabs from "../../../../components/UI/Tabs/Tabs";
 
 const PAGE_SIZE = 8;
 
@@ -58,17 +59,20 @@ const ArchiveConsultations: React.FC = () => {
             className="archive__search"
           />
 
-          <div className="archive__tabs">
-            {["all", 1, 2, 3, 4, 5].map((score) => (
-              <button
-                key={score}
-                className={`archive__tab ${scoreFilter === score ? "archive__tab--active" : ""}`}
-                onClick={() => setScoreFilter(score === "all" ? "all" : (score as 1 | 2 | 3 | 4 | 5))}
-              >
-                {score === "all" ? "Все" : score}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            tabs={[
+              { name: "all", label: "Все" },
+              { name: "1", label: "1" },
+              { name: "2", label: "2" },
+              { name: "3", label: "3" },
+              { name: "4", label: "4" },
+              { name: "5", label: "5" }
+            ]}
+            filter
+            activeTab={scoreFilter === "all" ? "all" : scoreFilter?.toString()}
+            onTabChange={(tabName) => setScoreFilter(tabName === "all" ? "all" : parseInt(tabName) as 1 | 2 | 3 | 4 | 5)}
+            className="archive__tabs"
+          />
         </div>
 
         <div className="archive__list">

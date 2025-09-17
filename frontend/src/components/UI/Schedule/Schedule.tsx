@@ -36,7 +36,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
 
   const [slots, setSlots] = useState<Record<string, SlotStatus>>({});
   const [slotToId, setSlotToId] = useState<Record<string, number>>({});
-  const [maxId, setMaxId] = useState(0);
 
   const [modalData, setModalData] = useState<ModalData | null>(null);
   const [consultationInfo, setConsultationInfo] =
@@ -89,7 +88,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
 
       setSlots(mapped);
       setSlotToId(idMap);
-      setMaxId(localMax);
 
       if (onChange) onChange(mapped);
     } catch (e) {
@@ -300,7 +298,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               </button>
             </div>
 
-            {/* Условный рендеринг информации */}
             {showInfo && (
               <div className="timesheet__reshim-info">
                 <strong><span style={{ color: "black" }}>- Только для даты:</span> откроет ячейку только для этой даты в указаное время</strong>
@@ -314,11 +311,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                     const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
                     const timeGap = modalData.times.sort(); // полный диапазон
 
-                    await ScheduleService.setSchuduleDay(
-                      timeGap,
+                    await ScheduleService.setSchuduleGapDay(
+                      timeGap[0],
+                      timeGap[timeGap.length - 1],
                       modalData.day,
-                      userId,
-                      dayWeek
+                      dayWeek,
+                      userId
                     );
                     await fetchSchedule();
                   } catch (e) {
@@ -338,8 +336,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                     const dayWeek = (dayjs(modalData.day).day() + 6) % 7;
                     const timeGap = modalData.times.sort(); // полный диапазон
 
-                    await ScheduleService.setSchuduleDayRecurning(
-                      timeGap,
+                    await ScheduleService.setSchuduleGapDayRecurning(
+                      timeGap[0],
+                      timeGap[timeGap.length-1],
                       modalData.day,
                       dayWeek,
                       userId
@@ -399,7 +398,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
               </button>
             </div>
 
-            {/* Условный рендеринг информации */}
             {showInfo && (
               <div className="timesheet__reshim-info">
                 <strong><span style={{ color: "black" }}>- Только для даты:</span> откроет ячейку только для этой даты в указаное время</strong>

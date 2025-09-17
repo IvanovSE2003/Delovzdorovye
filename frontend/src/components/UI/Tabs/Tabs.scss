@@ -1,18 +1,22 @@
 @use '../../../assets/styles/variables.scss' as *;
 
-.filter-tabs {
+.tabs {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
     gap: 10px;
     margin: 15px 0;
 
+    &-filters {
+        justify-content: center;
+    }
+
     &__tab {
-        padding: 0.7rem 1.1rem;
+        padding: 0.8rem 1.2rem;
         border: none;
         background: #f5f5f5;
         cursor: pointer;
-        border-radius: 6px;
+        border-radius: 10px;
         transition: 0.2s;
         font-family: inherit;
         font-size: inherit;

@@ -7,7 +7,11 @@ import Contacts from '../features/home/Contacts/Contacts';
 import { useContext } from 'react';
 import { Context } from '../main';
 import { observer } from 'mobx-react-lite';
+import type { Role } from '../models/Auth';
 
+export interface ElementHomePageProps {
+  role: Role;
+}
 
 const HomePage = () => {
   const { store } = useContext(Context);
@@ -21,8 +25,12 @@ const HomePage = () => {
       <Costs 
         role={store.user.role}
       />
-      <Informations />
-      <Contacts />
+      <Informations
+        role={store.user.role}
+      />
+      <Contacts
+        role={store.user.role}
+      />
     </div>
   )
 }

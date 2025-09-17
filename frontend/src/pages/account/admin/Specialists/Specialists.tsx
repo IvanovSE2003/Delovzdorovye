@@ -5,6 +5,8 @@ import BasicDataTab from "./BasicDataTab";
 import ProfecionalDataTab from "./ProfecionalDataTab";
 import Search from "../../../../components/UI/Search/Search";
 import type { IBasicData, IProfData } from "../../../../models/IDatas";
+import type { ITab } from "../../../../components/UI/Tabs/Tabs";
+import Tabs from "../../../../components/UI/Tabs/Tabs";
 
 
 type TabType = "basic" | "prof";
@@ -25,6 +27,12 @@ const Specialists: React.FC = () => {
     const [message, setMessage] = useState<string>("");
     const [error, setError] = useState<string>("");
 
+    // Вкладки
+    const tabs: ITab[] = [
+        { name: "basic", label: "Основные данные" },
+        { name: "prof", label: "Профессиональные данные" }
+    ];
+
     return (
         <AccountLayout>
             {message && <div className="alert alert-success">{message}</div>}
@@ -34,20 +42,11 @@ const Specialists: React.FC = () => {
                 <h1 className="admin-page__title">Редактирование профилей</h1>
 
                 {/* Вкладки */}
-                <div className="edit-info__tabs">
-                    <button
-                        className={`edit-info__tab ${activeTab === "basic" ? "edit-info__tab--active" : ""}`}
-                        onClick={() => setActiveTab("basic")}
-                    >
-                        Основные данные
-                    </button>
-                    <button
-                        className={`edit-info__tab ${activeTab === "prof" ? "edit-info__tab--active" : ""}`}
-                        onClick={() => setActiveTab("prof")}
-                    >
-                        Профессиональные данные
-                    </button>
-                </div>
+                <Tabs
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={(tabName) => setActiveTab(tabName as TabType)}
+                />
 
                 {/* Поиск */}
                 <div className="admin-page__search">

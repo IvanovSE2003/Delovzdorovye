@@ -3,9 +3,10 @@ import './ShowError.scss';
 
 interface ShowErrorProps {
     msg: { id: number; message: string } | null;
+    mode?: "ERROR" | "MESSAGE";
 }
 
-const ShowError: React.FC<ShowErrorProps> = ({ msg }) => {
+const ShowError: React.FC<ShowErrorProps> = ({ msg, mode="ERROR"}) => {
     const [error, setError] = useState<string | null>(null);
     const [fadeOut, setFadeOut] = useState<boolean>(false);
 
@@ -30,7 +31,7 @@ const ShowError: React.FC<ShowErrorProps> = ({ msg }) => {
     return (
         <div className='show-error'>
             {error && (
-                <div className={`show-error__error ${fadeOut ? "fade-out" : ""}`}>
+                <div className={`show-error__error ${fadeOut ? "fade-out" : ""} ${mode == "MESSAGE" ? "show-error__message" : ""}`}>
                     {error}
                 </div>
             )}

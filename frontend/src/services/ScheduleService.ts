@@ -14,7 +14,7 @@ export default class ScheduleService {
         return $api.post('/schedule/create', { data });
     }
 
-    static deleteDay(id: number|undefined): Promise<AxiosResponse<TypeResponse>> {
+    static deleteDay(id: number | undefined): Promise<AxiosResponse<TypeResponse>> {
         return $api.delete<TypeResponse>(`/schedule/delete/${id}`);
     }
 
@@ -29,12 +29,20 @@ export default class ScheduleService {
     static getScheduleWeek(start: string, end: string, userId: number) {
         return $api.get(`/schedule/getBetweenSchedule?startDate=${start}&endDate=${end}&userId=${userId}`);
     }
-    
-    static setSchuduleDay(time: string|string[], date: string, userId: number, dayWeek: number): Promise<AxiosResponse<TypeResponse>>{
-        return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, {time, date, userId, dayWeek});
+
+    static setSchuduleDay(time: string | string[], date: string, userId: number, dayWeek: number): Promise<AxiosResponse<TypeResponse>> {
+        return $api.post<TypeResponse>(`/schedule/createWithRepetitions`, { time, date, userId, dayWeek });
     }
 
-    static setSchuduleDayRecurning(time: string|string[], date: string, dayWeek: number, userId: number) {
-        return $api.post('/schedule/timeSlot/create/recurning', {time, date, dayWeek, userId});
+    static setSchuduleGapDay (timeStart: string, timeEnd: string, date: string, dayWeek: number, userId: number) {
+        return $api.post<TypeResponse>('/schedule/timeSlot/create/gap', { timeStart, timeEnd, date, dayWeek, userId })
+    }
+    
+    static setSchuduleGapDayRecurning(timeStart: string, timeEnd: string, date: string, dayWeek: number, userId: number) {
+        return $api.post<TypeResponse>('schedule/timeSlot/create/recurning/gap', { timeStart, timeEnd, date, dayWeek, userId })
+    }
+
+    static setSchuduleDayRecurning(time: string | string[], date: string, dayWeek: number, userId: number) {
+        return $api.post('/schedule/timeSlot/create/recurning', { time, date, dayWeek, userId });
     }
 }

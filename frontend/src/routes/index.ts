@@ -15,7 +15,7 @@ import TimeSheet from "../pages/account/doctor/TimeSheet/TimeSheet";
 import UsefulInfoDoc from "../pages/account/doctor/UsefulInfo";
 
 import Specialists from "../pages/account/admin/Specialists/Specialists";
-import Users from '../pages/account/admin/Users';
+import Users from '../pages/account/admin/Users/Users';
 
 import Profile from "../pages/account/SomeProfile";
 import Bell from "../pages/account/Bell";
@@ -66,7 +66,6 @@ export const RouteNames = {
     MAKECONSULTATION: '/admin/make-consultation',
     ARCHIVECONSULTATIONS: '/admin/archive-consultation',
     EDITUSEFULINFO: '/admin/edit-useful-information',
-    SPECIALCONSUL: '/admin/special-consultations',
     ANOTHERPROBLEM: '/admin/another-problem',
 } as const;
 
@@ -85,12 +84,11 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.USEFULINFODOC, name: "Полезная информация" },
     ],
     ADMIN: [
-        { path: RouteNames.USERS, name: "Пользователи" },
-        { path: RouteNames.SPECIALISTS, name: "Специалисты" },
+        { path: RouteNames.USERS, name: "Профили" },
+        { path: RouteNames.SPECIALISTS, name: "Редактирование \n профилей" },
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
         { path: RouteNames.EDITUSEFULINFO, name: 'Полезная информация'},
-        { path: RouteNames.SPECIALCONSUL, name: "Особые заявки"},
         { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование "},
     ],
 };
@@ -130,5 +128,4 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN']},
     { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN']},
     { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN']},
-    { path: RouteNames.SPECIALCONSUL, element: SpecialConsultation, roles: ['ADMIN']},
 ];

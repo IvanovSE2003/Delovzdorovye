@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import './Specialists.scss';
 import { getTimeZoneLabel } from "../../../../models/TimeZones";
-import DoctorService, { type IDoctor } from "../../../../services/DoctorService";
+import DoctorService from "../../../../services/DoctorService";
 import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import { URL } from "../../../../http";
+import type { IDoctor } from "../../../../models/IDoctor";
 
 interface Pagination {
     currentPage: number;

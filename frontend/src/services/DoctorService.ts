@@ -1,36 +1,11 @@
 import type { AxiosResponse } from "axios";
 import $api from "../http";
 import type { TypeResponse } from "../models/response/DefaultResponse";
+import type { IDoctor } from "../models/IDoctor";
 
 export interface Specializations {
     id: number;
     name: string;
-}
-
-export interface Specialization {
-    id: any;
-    specialization?: string;
-    specializationId: number;
-    comment?: string;
-    diploma: File | null;
-    license: File | null;
-}
-
-interface UserDoctor {
-    id: number;
-    img: string;
-    name: string;
-    surname: string;
-    patronymic?: string;
-    time_zone: number;
-}
-
-export interface IDoctor {
-    id: number;
-    isActivated: boolean;
-    profData: Specialization[];
-    user: UserDoctor;
-    userAvatar?: string;
 }
 
 export default class DoctorService {

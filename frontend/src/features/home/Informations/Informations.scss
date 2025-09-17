@@ -34,5 +34,71 @@
             color: $text-color;
             font-size: 1.6rem;
         }
+
+        &__title-input {
+            padding: 0.8rem 1.2rem;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 10px;
+            font-size: 2rem;
+        }
+
+        &__textarea {
+            font-size: 1.7rem;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+            resize: vertical;
+            height: 15vh;
+        }
     }
+
+    &__edit-btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: #0056b3;
+        }
+
+        &.editing {
+            background-color: #28a745;
+
+            &:hover {
+                background-color: #1e7e34;
+            }
+        }
+    }
+
+    &__cancel-btn {
+        padding: 10px 20px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: #c82333;
+        }
+    }
+
+    &__buttons {
+        display: flex;
+        gap: 20px;
+    }
+}
+
+.block-edit {
+    background-color: $block-color !important;
+    width: 150%;
 }

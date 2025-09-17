@@ -33,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
           {menuItems?.map((item, index) => (
             <li key={index} className="sidebar__menu-item">
               <NavLink
+                style={{whiteSpace: 'pre-line'}}
                 to={item.path}
                 className={({ isActive }) =>
                   `${(isActive || activePath === item.path) ? 'active' : ''}`

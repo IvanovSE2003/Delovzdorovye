@@ -5,18 +5,26 @@ import UpcomingConsultations from "../../../../features/account/UpcomingConsulta
 import { Context } from "../../../../main";
 import ArchiveConsultations from "../../../../features/account/ArchiveConsultations/ArchiveConsultations";
 import { observer } from "mobx-react-lite";
+import DoctorService from "../../../../services/DoctorService";
+import { processError } from "../../../../helpers/processError";
 
 const Consultations: React.FC = () => {
     const { store } = useContext(Context);
     const [doctorId, setDoctorId] = useState<number | null>(null);
 
-    const consoleDoc = async () => {
-        const doctor = await store.getDoctorInfo(store.user.id);
-        setDoctorId(doctor.id)
+    // Получение данных о докторе (id)
+    const fecthDoctorId = async () => {
+        try {
+            const response = await DoctorService.getDoctorInfo(store.user.id);
+            setDoctorId(response.data.id)
+        } catch (e) {
+            processError(e, "Ошибка при получение данные о докторе")
+        }
     }
 
+    // Получение данных при открыти страницы
     useEffect(() => {
-        consoleDoc();
+        fecthDoctorId();
     }, [])
 
     return (
