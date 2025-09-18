@@ -13,7 +13,8 @@ export default class Notification {
             surname: string | null;
             patronymic: string | null;
             img: string;
-        } | null
+        } | null,
+        public createdAt?: string
     ) { }
 
     setType(type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT") {

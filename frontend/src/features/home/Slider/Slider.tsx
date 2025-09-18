@@ -5,23 +5,29 @@ import { AnimatePresence } from 'framer-motion';
 
 import AnimatedBlock from '../../../components/AnimatedBlock';
 import type { ElementHomePageProps } from '../../../pages/Homepage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { processError } from '../../../helpers/processError';
+import HomeService from '../../../services/HomeService';
+import type { InfoBlock } from '../../../models/InfoBlock';
 
 interface SliderProps extends ElementHomePageProps{
   isAuth: boolean;
 }
 
 const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
+  const [data, setData] = useState<InfoBlock>({} as InfoBlock);
 
+  // Получение данных
   const fetchSlider = async () => {
     try {
-
+      const response = await HomeService.getContent("slider");
+      setData(response.data.contents[0]);
     } catch(e) {
       processError(e, "Ошибка при получении данных слайдера")
     }
   }
 
+  // Получение данных при открытии блока
   useEffect(() => {
     fetchSlider();
   }, [])
@@ -32,9 +38,7 @@ const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
         <AnimatedBlock className="slider__content">
           <div className="slider__text">
             <h3>
-              {}
-              «Дело в здоровье» <br />
-              – сервис онлайн-консультаций по решению проблем со здоровьем.
+              {data.header}
             </h3>
           </div>
           <div className="my-button">

@@ -92,36 +92,42 @@ export default class DoctorController {
             let diplomaFileName = "";
             let licenseFileName = "";
 
-            if (req.files?.diploma) {
-                const diplomaFile = Array.isArray(req.files.diploma)
-                    ? req.files.diploma[0]
-                    : req.files.diploma;
+            if (type === 'ADD') {
+                if (req.files?.diploma) {
+                    const diplomaFile = Array.isArray(req.files.diploma)
+                        ? req.files.diploma[0]
+                        : req.files.diploma;
 
-                if (!diplomaFile.name.toLowerCase().endsWith('.pdf')) {
-                    return next(ApiError.badRequest("Диплом должен быть в формате .pdf"));
+                    if (!diplomaFile.name.toLowerCase().endsWith('.pdf')) {
+                        return next(ApiError.badRequest("Диплом должен быть в формате .pdf"));
+                    }
+
+                    try {
+                        diplomaFileName = await this.fileService.saveFile(diplomaFile);
+                    } catch (error) {
+                        return next(ApiError.internal('Ошибка загрузки диплома'));
+                    }
                 }
 
-                try {
-                    diplomaFileName = await this.fileService.saveFile(diplomaFile);
-                } catch (error) {
-                    return next(ApiError.internal('Ошибка загрузки диплома'));
-                }
-            }
+                if (req.files?.license) {
+                    const licenseFile = Array.isArray(req.files.license)
+                        ? req.files.license[0]
+                        : req.files.license;
 
-            if (req.files?.license) {
-                const licenseFile = Array.isArray(req.files.license)
-                    ? req.files.license[0]
-                    : req.files.license;
+                    if (!licenseFile.name.toLowerCase().endsWith('.pdf')) {
+                        return next(ApiError.badRequest("Лицензия должна быть в формате .pdf"));
+                    }
 
-                if (!licenseFile.name.toLowerCase().endsWith('.pdf')) {
-                    return next(ApiError.badRequest("Лицензия должна быть в формате .pdf"));
+                    try {
+                        licenseFileName = await this.fileService.saveFile(licenseFile);
+                    } catch (error) {
+                        return next(ApiError.internal('Ошибка загрузки лицензии'));
+                    }
                 }
-                
-                try {
-                    licenseFileName = await this.fileService.saveFile(licenseFile);
-                } catch (error) {
-                    return next(ApiError.internal('Ошибка загрузки лицензии'));
-                }
+            } else {
+                const { diploma, license } = req.body;
+                diplomaFileName = diploma;
+                licenseFileName = license;
             }
 
             const specialization = await this.specializationRepository.findById(specializationId);
@@ -154,7 +160,7 @@ export default class DoctorController {
                 )
             );
 
-            return res.json({
+            return res.status(200).json({
                 success: true,
                 message: "Изменения отправлены на модерацию"
             });

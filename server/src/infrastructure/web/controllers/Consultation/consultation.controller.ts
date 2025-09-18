@@ -552,6 +552,33 @@ export default class ConsultationController {
         });
     }
 
+    async updateConsulation(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params;
+        const { time, date, doctorId, problems, textProblem} = req.body;
+        const consultation = await this.consultationRepository.findById(Number(id));
+        if(!consultation) return next(ApiError.badRequest('Консультация не найдена'));
+
+        const doctor = await this.doctorReposiotry.findById(Number(doctorId));
+        if(!doctor) return next(ApiError.badRequest('Специалист не найден'));
+
+        const user = await this.userRepository.findById(consultation.userId);
+        if(!user) return next(ApiError.badRequest('Пользователь не найден'));
+
+        const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
+
+        consultation.time = moscowTime;
+        consultation.date = moscowDate;
+        consultation.doctorId = doctor.id;
+        consultation.problems = problems;
+        consultation.other_problem = textProblem;
+        await this.consultationRepository.save(consultation);
+
+        return res.status(200).json({
+            success: true,
+            message: "Консультация успешно обновлена"
+        });
+    }
+
     private formatTime(ms: number): string {
         if (ms <= 0) return '00:00';
         const minutes = Math.floor(ms / 60000);

@@ -55,14 +55,16 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
             const formData = new FormData();
             formData.append('comment', comment);
             formData.append('type', 'DELETE');
-            formData.append('specializationId', info.specializationId.toString());
+            formData.append('specializationId', info.id.toString());
+            formData.append('diploma', info.diploma!);
+            formData.append('license', info.license!);
 
             const response = await DoctorService.deleteProfInfo(store.user.id, formData);
             response.data.success
-                ? setMessage({id: Date.now(), message: response.data.message})
+                ? setMessage({ id: Date.now(), message: response.data.message })
                 : setError({ id: Date.now(), message: response.data.message });
-        } catch (e) {
-            processError(e, "Ошибка при удалении профессиональной информации: ");
+        } catch (e: any) {
+            processError(e, "Ошибка при удалении профессиональной информации");
         } finally {
             setModal({ state: false, data: {} as Specialization });
             setComment("");
@@ -82,7 +84,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
 
             const response = await DoctorService.addProfInfo(store.user.id, formData);
             response.data.success
-                ? setMessage({id: Date.now(), message: response.data.message})
+                ? setMessage({ id: Date.now(), message: response.data.message })
                 : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при добавлении нового блока: ");
@@ -140,7 +142,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                 <div className="doctor-info__flex-column doctor-info__add">
                     <h1 className="doctor-info__add-title">Добавление новой специализации</h1>
 
-                    <ShowError msg={error} /><br/>
+                    <ShowError msg={error} /><br />
 
                     <Select
                         options={specializations.map(spec => ({ value: spec.id, label: spec.name }))}
@@ -233,7 +235,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                     )}
                 </div>
             )) : (
-                !addBlock && 
+                !addBlock &&
                 <div className="doctor-info__no-data">
                     Пока нет данных о специализациях
                 </div>

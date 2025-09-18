@@ -26,7 +26,6 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const [rejectReason, setRejectReason] = useState("");
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [commentModal, setCommentModal] = useState<string | null>(null);
-    const [type, setType] = useState<"ADD" | "DELETE">("ADD");
 
     // Модалки
     const openRejectModal = (id: number) => {
@@ -93,10 +92,10 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                 removeBatch(currentBatchId, data.message);
                 closeRejectModal();
             } else {
-                setError({id: Date.now(), message: data.message || "Ошибка при отклонении"})
+                setError({ id: Date.now(), message: data.message || "Ошибка при отклонении" })
             }
         } catch {
-            setError({id: Date.now(), message: "Произошла ошибка при отклонении"})
+            setError({ id: Date.now(), message: "Произошла ошибка при отклонении" })
         }
     };
 
@@ -107,7 +106,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
             if (data?.profDatas) {
                 setProfecionalDatas(data.profDatas);
             }
-        } catch(e) {
+        } catch (e) {
             processError(e, "Ошибка при загрузке данных", setError);
         }
     };
@@ -134,6 +133,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                         <th>Лицензия</th>
                         <th>Специализация</th>
                         <th>Комментарий</th>
+                        <th>Тип запроса</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -168,12 +168,17 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                     )}
                                 </td>
 
+
+                                <td>
+                                    {data.type === 'ADD' ? <span style={{color: "green"}}>Добавление данных</span>: <span  style={{color: "red"}}>Удаление данных</span>}
+                                </td>
+
                                 <td>
                                     <button
                                         className="btn btn-success"
                                         onClick={() => confirm(data.id)}
                                     >
-                                        Подтвердить
+                                        {data.type === 'ADD' ? "Подтвердить" : "Удалить"}
                                     </button>
                                     <button
                                         className="btn btn-danger ml-2"
@@ -263,7 +268,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                     className="btn btn-primary"
                                     onClick={handleRejectSubmit}
                                 >
-                                    {type === 'ADD' ? "Подтвердить" : "Удалить"}
+                                    Подтвердить
                                 </button>
                             </div>
                         </div>

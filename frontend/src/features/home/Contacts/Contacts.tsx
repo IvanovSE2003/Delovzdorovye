@@ -37,6 +37,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
+    // Добавление элементов в БД если их нет
     const addChange = async () => {
         try {
             await HomeService.addContent('phone', {id: Date.now(), header: phone, text: '-'});
@@ -59,10 +60,9 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
             await HomeService.editContent('phone', { id: phoneId, header: phone, text: "-" });
             await HomeService.editContent('email', { id: emailId, header: email, text: "-" });
             setMessage({ id: Date.now(), message: "Контакты успешно сохранены" });
+            setIsEditing(false);
         } catch (e) {
             processError(e, "Ошибка при сохранении контактов", setError);
-        } finally {
-            setIsEditing(false);
         }
     }
 
@@ -71,6 +71,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         fetchContacts();
     }, [])
 
+    // Основной рендер
     return (
         <AnimatedBlock>
             <div className="contacts" id="contacts">

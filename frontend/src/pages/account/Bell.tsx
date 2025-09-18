@@ -6,6 +6,7 @@ import type { AxiosError } from "axios";
 import UserService from "../../services/UserService";
 import { Context } from "../../main";
 import { observer } from "mobx-react-lite";
+import { formatDateFromISO } from "../../helpers/formatDatePhone";
 
 const typeIcons: Record<string, string> = {
     CONSULTATION: "📅",
@@ -22,6 +23,7 @@ export interface INotification {
     type: "INFO" | "WARNING" | "ERROR" | "CONSULTATION" | "PAYMENT";
     isRead: boolean;
     userId: number;
+    createdAt: string;
     entity?: object;
     entityType?: string;
 }
@@ -112,6 +114,7 @@ const Bell: React.FC = () => {
                             <div className={`notification ${n.isRead ? "notification--read" : "notification--unread"}`}>
                                 <div className="notification__icon">{typeIcons[n.type] || typeIcons.default}</div>
                                 <div className="notification__content">
+                                    <span className="notification__datetime">{formatDateFromISO(n.createdAt)}</span>
                                     <h1 className="notification__header">{n.title}</h1>
                                     <p className="notification__message">{n.message}</p>
                                 </div>

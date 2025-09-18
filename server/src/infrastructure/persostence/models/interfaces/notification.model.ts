@@ -9,6 +9,7 @@ interface INotificationAttributes {
     entity: object | null;
     entityType: string | null;
     userId?: number;
+    createdAt?: string;
 }
 
 export interface INotificationCreationAttributes extends Optional<INotificationAttributes, 'id'> { }

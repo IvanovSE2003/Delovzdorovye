@@ -12,6 +12,7 @@ router.post('/appointment', catchAsync(consultationController.appointment.bind(c
 router.post('/resheduleConsultation/:id', catchAsync(consultationController.resheduleConsultation.bind(consultationController)));
 router.post('/cancelConsultation/:id', catchAsync(consultationController.cancelConsultation.bind(consultationController)));
 router.post('/repeatConsultation/:id', catchAsync(consultationController.repeatConsultation.bind(consultationController)));
+router.put('/update/:id', catchAsync(consultationController.updateConsulation.bind(consultationController)))
 
 router.get('/specialistForProblems', catchAsync(consultationController.findSpecialistForProblem.bind(consultationController)));
 

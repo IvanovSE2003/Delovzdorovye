@@ -3,6 +3,7 @@ import { Context } from "../../../../main";
 import type { DataTabProps } from "./Specialists";
 import { Link } from "react-router";
 import type { IBasicData } from "../../../../models/IDatas";
+import { processError } from "../../../../helpers/processError";
 
 const FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
@@ -80,14 +81,14 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             if (data?.basicDatas) {
                 setBasicDatas(data.basicDatas);
             }
-        } catch {
-            setError("Ошибка при загрузке данных");
+        } catch(e) {
+            processError(e, "Ошибка при загрузке данных");
         }
     };
 
     // Удаление данных
     const removeBatch = (id: number, message?: string) => {
-        setMessage(message || "");
+        setMessage({id: Date.now(), message: message || "Ошибка при удалении"})
 
         const marked = basicDatas.map(b =>
             b.id === id ? { ...b, className: "removing" } : b
@@ -103,32 +104,30 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const confirm = async (id: number) => {
         try {
             const data = await store.confirmBasicData(id);
-            data.success ? removeBatch(id, data.message) : setError(data.message);
-        } catch {
-            setError("Произошла ошибка при подтверждении");
+            data.success ? removeBatch(id, data.message) : setError({id: Date.now(), message: data.message});
+        } catch(e) {
+            processError(e, "Ошибка при изменении пользователя", setError)
         }
     };
 
     // Отклонить изменения пользователя
     const handleRejectSubmit = async () => {
         if (!currentBatchId || !rejectReason.trim()) {
-            setError("Укажите причину отказа");
+            setError({id: Date.now(), message: "Укажите причину отказа"})
             return;
         }
 
         try {
-            setMessage("");
-            setError("");
             const data = await store.rejectBasicData(currentBatchId, rejectReason);
 
             if (data.success) {
                 removeBatch(currentBatchId, data.message);
                 closeRejectModal();
             } else {
-                setError(data.message || "Ошибка при отклонении");
+                setError({id: Date.now(), message: data.message || "Ошибка при отклонении"});
             }
-        } catch {
-            setError("Произошла ошибка при отклонении");
+        } catch(e) {
+            processError(e, "Произошла ошибка при отклонении", setError);
         }
     };
 
@@ -168,7 +167,9 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                 </div>
             )}
 
-            <p>В таблице «Основные данные» отображаются все изменения основных данных, внесённые специалистом. К ним относятся ФИО, пол и дата рождения.</p>
+            <p style={{textAlign: "justify"}}>
+                В таблице «Основные данные» отображаются все изменения основных данных, внесённые специалистом. К ним относятся ФИО, пол и дата рождения.
+            </p>
 
             {/* Таблица */}
             <table className="admin-page__table">

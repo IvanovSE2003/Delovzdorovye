@@ -60,25 +60,30 @@ const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
 
     // Добавление нового блока
     const handleAdd = async () => {
-        try {
-            const newBlock: InfoBlock = {
-                id: Date.now(),
-                header: "Заголовок",
-                text: "Текст"
-            };
+        const newBlock: InfoBlock = {
+            id: Date.now(),
+            header: "Заголовок",
+            text: "Текст"
+        };
 
-            await HomeService.addContent("cost_consultation", newBlock);
+        try {
             setData(prev => [...prev, newBlock]);
+            await HomeService.addContent("cost_consultation", newBlock);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await fetchData();
             setMessage({ id: Date.now(), message: "Блок стоимости успешно добавлен" });
         } catch (e) {
             processError(e, "Ошибка при добавлении блока стоимости", setError);
+            setData(prev => prev.filter(item => item.id !== newBlock.id));
         }
     };
 
     const handleDelete = async (id: number) => {
         try {
             await HomeService.deleteContent(id);
-            setMessage({ id: Date.now(), message: "Блок стоимости успешно удален"});
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await fetchData();
+            setMessage({ id: Date.now(), message: "Блок стоимости успешно удален" });
         } catch (e) {
             processError(e, "Ошибка при удалении блока стоимости", setError);
         }

@@ -102,6 +102,7 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
                 patronymic: notifactionModel.user?.patronymic,
                 img: notifactionModel.user?.img
             } : null,
+            notifactionModel.createdAt
         );
     }
 

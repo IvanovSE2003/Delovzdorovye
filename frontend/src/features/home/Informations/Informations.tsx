@@ -35,17 +35,16 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
                     await HomeService.editContent("useful_informations", block);
                 } else {
                     // Создаем новый блок
-                    // await HomeService.createContent("useful_informations", {
-                    //     header: block.header,
-                    //     text: block.text
-                    // });
+                    await HomeService.addContent("useful_informations", block);
                 }
             }
 
+            await fetchInformations();
             setMessage({ id: Date.now(), message: "Данные успешно сохранены" });
-            fetchInformations();
         } catch (e) {
             processError(e, "Ошибка при сохранении данных", setError);
+        } finally {
+            setIsEditing(false);
         }
     };
 
@@ -67,11 +66,14 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
 
     const deleteInformation = async (id: number) => {
         try {
+            setContent(prev => prev.filter(block => block.id !== id));
+            setOriginalContent(prev => prev.filter(block => block.id !== id));
             await HomeService.deleteContent("useful_informations", id);
+            await fetchInformations();
             setMessage({ id: Date.now(), message: "Блок успешно удален" });
-            fetchInformations();
+
         } catch (e) {
-            processError(e, "Ошибка при удалении блока информации");
+            processError(e, "Ошибка при удалении блока информации", setError);
         }
     };
 
