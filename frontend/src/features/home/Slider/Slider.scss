@@ -43,4 +43,23 @@
       }
     }
   }
+
+  &__textarea {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    font-size: 2rem;
+    font-weight: bolder;
+    margin-bottom: 10px;
+    width: 1000px;
+    border: none;
+    resize: vertical;
+    max-height: 350px;
+    min-height: 15vh;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border: 2px solid $primary-color;
+    }
+  }
 }
