@@ -1,22 +1,24 @@
-import ConsultationsStore,  { type OptionsResponse } from "../../../../store/consultations-store";
-import { EditableList } from "./EditableList";
+
+import ConsultationsStore from "../../../../../store/consultations-store";
+import EditableList from "./EditableList";
 
 const store = new ConsultationsStore();
 
 const ProblemsTab: React.FC = () => {
     return (
-        <EditableList<OptionsResponse>
-            title="Добавить проблему"
+        <EditableList
             loadItems={store.getProblems}
             createItem={store.createProblem}
-            updateItem={async (id, label) => {
+            updateItem={async (id: number, label: string) => {
                 await store.updateProblem(Number(id), label);
             }}
-            deleteItem={async (id) => {
+            deleteItem={async (id: number) => {
                 await store.deleteProblem(Number(id));
             }}
             getId={p => p.value}
             getLabel={p => p.label}
+            placeholder="Введите название проблемы"
+            addMessage="+ Добавить новую проблему"
         />
     );
 };

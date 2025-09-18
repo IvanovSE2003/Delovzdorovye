@@ -8,12 +8,27 @@ const UsefulInfo = () => {
 
     const fetchData = async () => {
         const response = await HomeService.getContent("useful_info_patient");
-        setData(response.data);
+        setData(response.data.contents);
     }
 
     useEffect(() => {
         fetchData();
     }, [])
+
+    if (data.length === 0 || !data) return (
+        <AccountLayout>
+            <div className="page-container archive">
+                <h1 className="page-container__title">Полезная информация</h1>
+                <div className="lk-tab lk-tab--empty">
+                    <div className="lk-tab__empty-content">
+                        <div className="lk-tab__empty-icon">📝</div>
+                        <h3 className="lk-tab__empty-title">Пока нет полезной информации</h3>
+                        <p className="lk-tab__empty-description">В скором времени она появятся</p>
+                    </div>
+                </div>
+            </div>
+        </AccountLayout>
+    )
 
     return (
         <AccountLayout>

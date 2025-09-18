@@ -19,4 +19,9 @@ export default class Doctor {
             license?: string | null;
         }> | null
     ) {}
+
+    blocked() {
+        this.isActivated = false;
+        return this;
+    }
 }

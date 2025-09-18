@@ -5,18 +5,18 @@ import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastr
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<BasicData | null> {
-        const basicDataModel = await models.ModerationBatchModel.findByPk(id);
+        const basicDataModel = await models.BasicDataModel.findByPk(id);
         return basicDataModel ? this.mapToDomainBasicData(basicDataModel) : null;
     }
 
     async findAllByUserId(userId: number): Promise<BasicData[]> {
-        const basicDataModel = await models.ModerationBatchModel.findAll({ where: { userId } });
+        const basicDataModel = await models.BasicDataModel.findAll({ where: { userId } });
         return basicDataModel.map(data => this.mapToDomainBasicData(data));
     }
 
     async findAll(page: number, limit: number): Promise<{ batches: BasicData[]; totalCount: number; totalPage: number; }> {
         const offset = (page - 1) * limit;
-        const { count, rows } = await models.ModerationBatchModel.findAndCountAll({
+        const { count, rows } = await models.BasicDataModel.findAndCountAll({
             limit,
             offset,
             include: [{
@@ -33,12 +33,12 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }
 
     async create(basicData: BasicData): Promise<BasicData> {
-        const basicDataModel = await models.ModerationBatchModel.create(this.mapToPersistence(basicData));
+        const basicDataModel = await models.BasicDataModel.create(this.mapToPersistence(basicData));
         return this.mapToDomainBasicData(basicDataModel);
     }
 
     async update(basicData: BasicData): Promise<BasicData> {
-        const [affectedCount] = await models.ModerationBatchModel.update(this.mapToPersistence(basicData), {
+        const [affectedCount] = await models.BasicDataModel.update(this.mapToPersistence(basicData), {
             where: { id: basicData.id }
         });
 
@@ -46,7 +46,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
             throw new Error("Batch not found");
         }
 
-        const updatedBasicData = await models.ModerationBatchModel.findByPk(basicData.id);
+        const updatedBasicData = await models.BasicDataModel.findByPk(basicData.id);
         return this.mapToDomainBasicData(updatedBasicData!);
     }
 
@@ -55,7 +55,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }
 
     async delete(id: number): Promise<void> {
-        await models.ModerationBatchModel.destroy({ where: { id } });
+        await models.BasicDataModel.destroy({ where: { id } });
     }
 
     async createBatchWithChangesUser(userId: number, changes: Array<{
@@ -63,7 +63,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
         old_value: string | null;
         new_value: string;
     }>): Promise<BasicData[]> {
-        const transaction = await models.ModerationBatchModel.sequelize!.transaction();
+        const transaction = await models.BasicDataModel.sequelize!.transaction();
         try {
             const filteredChanges = changes.filter(change => {
                 const oldVal = change.old_value?.trim() ?? '';
@@ -79,7 +79,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
             const createdBasicDatas: BasicData[] = [];
 
             for (const change of filteredChanges) {
-                const existingBatch = await models.ModerationBatchModel.findOne({
+                const existingBatch = await models.BasicDataModel.findOne({
                     where: {
                         userId: userId,
                         field_name: change.field_name,
@@ -96,7 +96,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
                     }, { transaction });
                     createdBasicDatas.push(this.mapToDomainBasicData(existingBatch));
                 } else {
-                    const newBatch = await models.ModerationBatchModel.create({
+                    const newBatch = await models.BasicDataModel.create({
                         userId: userId,
                         status: 'pending',
                         is_urgent: false,

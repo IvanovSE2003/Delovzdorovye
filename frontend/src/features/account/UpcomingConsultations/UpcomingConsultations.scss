@@ -13,6 +13,10 @@
         font-weight: bold;
         margin: 0;
     }
+
+    &__other-problem {
+        background-color: rgb(217, 217, 8) !important;
+    }
 }
 
 .consultations-container {
@@ -61,6 +65,12 @@
         font-size: 1.5rem;
         color: black;
         margin-right: 12px;
+    }
+
+    &__description {
+        justify-content: center;
+        font-size: 1.4rem;
+        font-weight: bold;
     }
 
     &__hours {

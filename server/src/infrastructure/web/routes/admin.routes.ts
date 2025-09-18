@@ -1,23 +1,24 @@
-import { Router, NextFunction, Request, Response } from "express";
+import { Router } from "express";
 import adminController from "../controllers/Admin/admin.controller.interface.js";
 import authMiddlewareInstance from "../middleware/authMiddlewareInstance.js";
+import catchAsync from "../middleware/catchAsync.js";
 
-const router: Router = Router(); 
+const router: Router = Router();
 
-router.put('/basicData/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirmBasicData(req, res, next));
-router.put('/basicData/reject/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.rejectBasicData(req, res, next));
+router.put('/basicData/confirm/:id', catchAsync(adminController.confirmBasicData.bind(adminController)));
+router.put('/basicData/reject/:id', authMiddlewareInstance, catchAsync(adminController.rejectBasicData.bind(adminController)));
 
-router.put('/profData/confirm/:id', (req: Request, res: Response, next: NextFunction) => adminController.confirmProfData(req, res, next));
-router.put('/profData/reject/:id', (req: Request, res: Response, next: NextFunction) => adminController.rejectProfData(req, res, next));
+router.put('/profData/confirm/:id', catchAsync(adminController.confirmProfData.bind(adminController)));
+router.put('/profData/reject/:id', catchAsync(adminController.rejectProfData.bind(adminController)));
 
-router.get('/user/all', (req: Request, res: Response, next: NextFunction) => adminController.getAllUser(req, res, next));
+router.get('/user/all', catchAsync(adminController.getAllUser.bind(adminController)));
 
-router.get('/basicData/all', (req: Request, res: Response, next: NextFunction) => adminController.getAllBasicData(req, res, next));
-router.get('/profData/all', (req: Request, res: Response, next: NextFunction) => adminController.getAllProfData(req, res, next));
+router.get('/basicData/all', catchAsync(adminController.getAllBasicData.bind(adminController)));
+router.get('/profData/all', catchAsync(adminController.getAllProfData.bind(adminController)));
 
-router.get('/userConsult/all', (req: Request, res: Response, next: NextFunction) => adminController.getUserConsultation(req, res, next));
-router.get('/:id', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => adminController.getOne(req, res, next));
+router.get('/userConsult/all', catchAsync(adminController.getUserConsultation.bind(adminController)));
+router.get('/:id', authMiddlewareInstance, catchAsync(adminController.getOneBasicData.bind(adminController)));
 
-router.get('/consultation/all', (req: Request, res: Response, next: NextFunction) => adminController.getConsultaions(req, res, next));
+router.get('/consultation/all', catchAsync(adminController.getConsultaions.bind(adminController)));
 
 export default router;

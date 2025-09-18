@@ -5,6 +5,8 @@ import otherProblemController from "../controllers/OtherProblem/otherProblem.con
 const router: Router = Router(); 
 
 router.get('/all', (req: Request, res: Response, next: NextFunction) => otherProblemController.findAll(req, res, next));
-router.post('/create', (req: Request, res: Response, next: NextFunction) => otherProblemController.create(req, res, next))
+router.post('/create', (req: Request, res: Response, next: NextFunction) => otherProblemController.create(req, res, next));
+
+router.get('/user/:userId', (req: Request, res: Response, next: NextFunction) => otherProblemController.findByUserId(req, res, next))
 
 export default router;

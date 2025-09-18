@@ -13,18 +13,18 @@ export default class ProfileController {
     async getProfile(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
-            const { linkerId } = req.body;
+            const {linkerId} = req.query;
 
             const [userLinker, user] = await Promise.all([
                 this.userRepository.findById(Number(linkerId)),
                 this.userRepository.findById(Number(id))
             ]);
-
-            if (!user || !userLinker) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
+            if (!user || !userLinker) return next(ApiError.badRequest('Пользователь не найден'));
 
             const doctor = await this.doctorRepository.findByUserId(user.id);
+
+            const usersWithFlag = await this.userRepository.findOtherProblem([user]);
+            const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);
 
             const baseData = {
                 id: user.id,
@@ -34,7 +34,8 @@ export default class ProfileController {
                 patronymic: user.patronymic,
                 role: user.role,
                 isAnonymous: user.isAnonymous,
-                timeZone: user.timeZone
+                timeZone: user.timeZone,
+                hasOtherProblem 
             };
 
             const age = user.dateBirth ? calculateAge(user.dateBirth) : 0;

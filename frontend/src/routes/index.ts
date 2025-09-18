@@ -88,7 +88,7 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.SPECIALISTS, name: "Редактирование \n профилей" },
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
-        { path: RouteNames.EDITUSEFULINFO, name: 'Полезная информация'},
+        { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации'},
         { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование "},
     ],
 };

@@ -134,11 +134,17 @@
   flex-direction: column;
   gap: 10px;
 
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+  }
+
   &__item {
     padding: 1rem 1.5rem;
     border-radius: 10px;
     background: $nav-color;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;

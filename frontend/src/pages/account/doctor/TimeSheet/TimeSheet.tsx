@@ -2,21 +2,21 @@ import { useContext, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import { Context } from "../../../../main";
 import { observer } from "mobx-react-lite";
-import "./TimeSheet.scss";
 import ScheduleGrid, { type SlotStatus } from "../../../../components/UI/Schedule/Schedule";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "axios";
 import { ru } from "date-fns/locale";
 import ShowError from "../../../../components/UI/ShowError/ShowError";
+import "./TimeSheet.scss";
+import DoctorService from "../../../../services/DoctorService";
+import { processError } from "../../../../helpers/processError";
 
-const TimeSheet = () => {
+const TimeSheet: React.FC = () => {
     const { store } = useContext(Context);
-    const [modal, setModal] = useState(false);
+    const [modal, setModal] = useState<boolean>(false);
     const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" })
     const [message, setMessage] = useState<string>("");
-
     const [startDate, endDate] = dateRange;
 
     const handleScheduleChange = (slots: Record<string, SlotStatus>) => {
@@ -37,25 +37,18 @@ const TimeSheet = () => {
                 return adjustedDate.toISOString().split("T")[0];
             };
 
-            const response = await axios.post(
-                `http://localhost:5000/api/doctor/break/create/${store.user.id}`,
-                {
-                    startDate: adjustDate(startDate),
-                    endDate: adjustDate(endDate),
-                }
-            );
-
+            const response = await DoctorService.applyBreak(store.user.id, adjustDate(startDate), adjustDate(endDate))
             if (response.data.success) {
                 setDateRange([null, null]);
                 setMessage(response.data.message);
-                setModal(false);
             }
-        } catch (e: any) {
-            setError({ id: Date.now(), message: e.response?.data?.message || "Ошибка при отправке запроса" });
+        } catch (e) {
+            processError(e, "Ошибка при взятии перерыва", setError);
+        } finally {
+            setModal(false);
         }
     };
 
-    // Минимальная дата = завтра
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 

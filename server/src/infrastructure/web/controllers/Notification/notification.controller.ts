@@ -9,7 +9,7 @@ export default class NotificationContorller {
         public readonly userRepository: UserRepository
     ) { }
 
-    async getAll(req: Request, res: Response, next: NextFunction) {
+    async findAll(req: Request, res: Response, next: NextFunction) {
         try {
             const { limit, page } = req.query;
             const notifactions = await this.notificationReposiotory.findAll(Number(page), Number(limit));

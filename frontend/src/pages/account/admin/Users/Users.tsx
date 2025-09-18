@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useContext, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom"; // Добавьте этот импорт
+import { useSearchParams } from "react-router-dom";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
 import { Context } from "../../../../main";
 import type { User } from "../../../../models/Auth";
@@ -15,10 +15,8 @@ const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
   
-  const [searchParams, setSearchParams] = useSearchParams(); // Добавьте этот хук
-  
-  // Получаем начальные значения из URL или используем дефолтные
   const getInitialRole = () => {
     const roleFromUrl = searchParams.get('role');
     return (roleFromUrl as TabRole) || "ALL";
@@ -106,8 +104,8 @@ const Users = () => {
           ]}
           activeTab={selectedTab}
           onTabChange={(tabName) => setSelectedTab(tabName as TabType)}
-          paramName="mainTab" // Уникальное имя параметра для основного таба
-          syncWithUrl={true} // Включаем синхронизацию с URL
+          paramName="mainTab" 
+          syncWithUrl={true} 
         />
 
         {selectedTab === "BASIC" && (

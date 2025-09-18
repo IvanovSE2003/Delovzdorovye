@@ -22,7 +22,7 @@ const Step2: React.FC<Step2Props> = ({
       transition={{ duration: 0.3 }}
     >
       <div className="auth__form">
-        <h2>Введите ваш пин-код</h2>
+        <h2 className="auth__form__title">Введите ваш пин-код</h2>
         <PinCodeInput onLogin={handelStep2} countNumber={4} />
 
         <button className="auth__button" onClick={handleBack}>

@@ -234,6 +234,10 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         return consult.id ? await this.update(consult) : await this.create(consult);
     }
 
+    async delete(id: number): Promise<void> {
+        await models.Consultation.destroy({where: {id}});
+    }
+
     private mapToDomainConsultation(consultModel: any): Consultation {
         return new Consultation(
             consultModel.id,

@@ -153,6 +153,12 @@
         margin: 10px 0;
         color: yellow;
     }
+
+    &__no-data {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: bolder;
+    }
 }
 
 .delete-modal {

@@ -21,336 +21,318 @@ export default class BatchController {
         private readonly notificationRepository: NotificationRepository
     ) { }
 
-    async getOne(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const batch = await this.basicDataReposiotry.findById(Number(id));
+    async getOneBasicData(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const basicData = await this.basicDataReposiotry.findById(Number(id));
 
-            if (!batch) {
-                return next(ApiError.badRequest('Изменение не найдено'));
-            }
-
-            return res.status(200).json(batch);
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
+        if (!basicData) {
+            return next(ApiError.badRequest('Основное изменение не найдено'));
         }
+
+        return res.status(200).json(basicData);
     }
 
     async getAllBasicData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const limit = req.query.limit || 10;
-            const page = req.query.page || 1;
-            const basicData = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
+        const limit = req.query.limit || 10;
+        const page = req.query.page || 1;
+        const basicData = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
 
-            if (!basicData || basicData.batches.length === 0) {
-                return next(ApiError.badRequest('Изменения не найдены'));
-            }
-
-            const formattedBatches = basicData.batches.map(data => ({
-                id: data.id,
-                field_name: data.field_name,
-                old_value: data.old_value,
-                new_value: data.new_value,
-                userId: data.userId,
-                userName: data.userName,
-                userSurname: data.userSurname,
-                userPatronymic: data.userPatronymic
-            }));
-
-            return res.status(200).json({
-                basicDatas: formattedBatches,
-                totalCount: basicData.totalCount,
-                totalPage: basicData.totalPage
-            });
-        } catch (e: any) {
-            next(ApiError.badRequest(e.message));
+        if (!basicData || basicData.batches.length === 0) {
+            return next(ApiError.badRequest('Изменения не найдены'));
         }
+
+        const formattedBasicDatas = basicData.batches.map(data => ({
+            id: data.id,
+            field_name: data.field_name,
+            old_value: data.old_value,
+            new_value: data.new_value,
+            userId: data.userId,
+            userName: data.userName,
+            userSurname: data.userSurname,
+            userPatronymic: data.userPatronymic
+        }));
+
+        return res.status(200).json({
+            basicDatas: formattedBasicDatas,
+            totalCount: basicData.totalCount,
+            totalPage: basicData.totalPage
+        });
     }
 
     async getAllProfData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const limit = req.query.limit || 10;
-            const page = req.query.page || 1;
-            const filters = req.query.filters || {}
+        const limit = req.query.limit || 10;
+        const page = req.query.page || 1;
+        const filters = req.query.filters || {}
 
-            const profDatas = await this.profDataRepository.findAll(Number(page), Number(limit), filters);
+        const profDatas = await this.profDataRepository.findAll(Number(page), Number(limit), filters);
 
-            if (!profDatas) {
-                return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
-            }
-
-            const formattedProfData = profDatas.profData.map(data => ({
-                id: data.id,
-                new_diploma: data.new_diploma,
-                new_license: data.new_license,
-                new_specialization: data.new_specialization,
-                comment: data.comment,
-                type: data.type,
-                userId: data.userId,
-                userName: data.userName,
-                userSurname: data.userSurname,
-                userPatronymic: data.userPatronymic
-            }));
-
-            res.status(200).json({
-                profDatas: formattedProfData,
-                totalCount: profDatas.totalCount,
-                totalPage: profDatas.totalPage
-            })
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
+        if (!profDatas) {
+            return next(ApiError.badRequest('Данные для обновления профессиональных данных не найдены'));
         }
+
+        const formattedProfData = profDatas.profData.map(data => ({
+            id: data.id,
+            new_diploma: data.new_diploma,
+            new_license: data.new_license,
+            new_specialization: data.new_specialization,
+            comment: data.comment,
+            type: data.type,
+            userId: data.userId,
+            userName: data.userName,
+            userSurname: data.userSurname,
+            userPatronymic: data.userPatronymic
+        }));
+
+        res.status(200).json({
+            profDatas: formattedProfData,
+            totalCount: profDatas.totalCount,
+            totalPage: profDatas.totalPage
+        })
     }
 
     async confirmBasicData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
+        const { id } = req.params;
 
-            const basicData = await this.basicDataReposiotry.findById(Number(id));
-            if (!basicData) {
-                return next(ApiError.badRequest("Изменение не найдено"));
-            }
+        const basicData = await this.basicDataReposiotry.findById(Number(id));
+        if (!basicData) return next(ApiError.badRequest("Изменение не найдено"));
 
-            const user = await this.userRepository.findById(basicData.userId || 0);
-            if (!user) {
-                return next(ApiError.badRequest("Пользователь не найден"));
-            }
+        const user = await this.userRepository.findById(basicData.userId || 0);
+        if (!user) return next(ApiError.badRequest("Пользователь не найден"));
 
-            const userFieldMap: Record<string, (user: User, value: string) => void> = {
-                "Изображение": (u, v) => (u.img = v),
-                "Имя": (u, v) => (u.name = v),
-                "Фамилия": (u, v) => (u.surname = v),
-                "Отчество": (u, v) => (u.patronymic = v),
-                "Пол": (u, v) => {
-                    u.gender = v;
-                    if (u.img === "man.png" && v === "Женщина") u.img = "girl.png";
-                    else if (u.img === "girl.png" && v !== "Женщина") u.img = "man.png";
-                },
-                "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
-            };
+        const userFieldMap: Record<string, (user: User, value: string) => void> = {
+            "Изображение": (u, v) => (u.img = v),
+            "Имя": (u, v) => (u.name = v),
+            "Фамилия": (u, v) => (u.surname = v),
+            "Отчество": (u, v) => (u.patronymic = v),
+            "Пол": (u, v) => {
+                u.gender = v;
+                if (u.img === "man.png" && v === "Женщина") u.img = "girl.png";
+                else if (u.img === "girl.png" && v !== "Женщина") u.img = "man.png";
+            },
+            "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
+        };
 
-            if (basicData.field_name in userFieldMap) {
-                userFieldMap[basicData.field_name](user, basicData.new_value);
-                await this.userRepository.update(user);
-            } else {
-                return next(ApiError.badRequest("Недопустимое поле для изменения"));
-            }
-
-            await this.basicDataReposiotry.delete(basicData.id);
-
-            const basicDatas = await this.basicDataReposiotry.findAllByUserId(user.id);
-            if (basicDatas.length === 0) {
-                await this.userRepository.save(user.setSentChanges(false));
-            }
-
-            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, basicData, "BASICDATA"));
-
-            return res.status(200).json({
-                success: true,
-                message: "Изменение успешно подтверждено и применено",
-            });
-        } catch (e: any) {
-            return next(ApiError.badRequest("Неизвестная ошибка"));
+        if (basicData.field_name in userFieldMap) {
+            userFieldMap[basicData.field_name](user, basicData.new_value);
+            await this.userRepository.update(user);
+        } else {
+            return next(ApiError.badRequest("Недопустимое поле для изменения"));
         }
+
+        const basicDatas = await this.basicDataReposiotry.findAllByUserId(user.id);
+        if (basicDatas.length === 0) await this.userRepository.save(user.setSentChanges(false));
+
+        await this.basicDataReposiotry.delete(basicData.id);
+
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Изменения приняты",
+                "Ваши изменения были приняты администатором",
+                "INFO",
+                false,
+                basicData,
+                "BASICDATA",
+                user.id
+            )
+        );
+
+        await this.userRepository.save(user.setSentChanges(false));
+
+        return res.status(200).json({
+            success: true,
+            message: "Изменение успешно подтверждено и применено",
+        });
     }
 
     async rejectBasicData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const { rejection_reason } = req.body;
+        const { id } = req.params;
+        const { rejection_reason } = req.body;
 
-            const basicData = await this.basicDataReposiotry.findById(Number(id));
+        const basicData = await this.basicDataReposiotry.findById(Number(id));
+        if (!basicData) return next(ApiError.badRequest('Изменение не найдено'));
 
-            if (!basicData) {
-                return next(ApiError.badRequest('Изменение не найдено'));
-            }
+        const user = await this.userRepository.findById(basicData.userId || 0);
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
 
-            await this.notificationRepository.save(new Notification(0, "Изменения не приняты", `Ваши изменения не приняты администратором. ${rejection_reason}`, "INFO", false, basicData, "BASICDATA", basicData.userId));
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Изменения не приняты",
+                `Ваши изменения не приняты администратором. ${rejection_reason}`,
+                "INFO",
+                false,
+                basicData,
+                "BASICDATA",
+                user.id
+            )
+        );
 
-            await this.basicDataReposiotry.delete(basicData.id);
-            return res.status(200).json({
-                success: true,
-                message: 'Изменение успешно отменено и сообщение отправлено'
-            });
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
-        }
+        await this.basicDataReposiotry.delete(basicData.id);
+        await this.userRepository.save(user.setSentChanges(false));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Изменение успешно отменено и сообщение отправлено'
+        });
     }
 
     async confirmProfData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const profData = await this.profDataRepository.findById(Number(id));
+        const { id } = req.params;
+        const profData = await this.profDataRepository.findById(Number(id));
 
-            if (!profData) {
-                return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
-            }
-
-            const user = await this.userRepository.findById(profData.userId || 0);
-            if (!user) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
-
-            const doctor = await this.doctorRepository.findByUserId(user.id);
-            if (!doctor) {
-                return next(ApiError.badRequest('Специалист не найден'));
-            }
-
-            await this.doctorRepository.saveLisinseDiploma(doctor, profData.new_license, profData.new_diploma, profData.new_specialization);
-            await this.profDataRepository.delete(profData.id);
-
-            await this.userRepository.save(user.setSentChanges(false));
-
-            await this.notificationRepository.save(new Notification(0, "Изменения приняты", "Ваши изменения были приняты администатором", "INFO", false, profData, "PROFDATA", user.id));
-            return res.status(200).json({
-                success: true,
-                message: "Изменения успешно подтверждены и применены для профессиональных данных",
-            });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
+        if (!profData) {
+            return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
         }
+
+        const user = await this.userRepository.findById(profData.userId || 0);
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+
+        const doctor = await this.doctorRepository.findByUserId(user.id);
+        if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
+
+        await this.doctorRepository.saveLisinseDiploma(doctor, profData.new_license, profData.new_diploma, profData.new_specialization);
+        await this.profDataRepository.delete(profData.id);
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Изменения приняты",
+                "Ваши изменения были приняты администатором",
+                "INFO",
+                false,
+                profData,
+                "PROFDATA",
+                user.id
+            )
+        );
+
+        await this.userRepository.save(user.setSentChanges(false));
+
+        return res.status(200).json({
+            success: true,
+            message: "Изменения успешно подтверждены и применены для профессиональных данных",
+        });
     }
 
     async rejectProfData(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const { rejection_reason } = req.body;
+        const { id } = req.params;
+        const { rejection_reason } = req.body;
 
-            const profData = await this.profDataRepository.findById(Number(id));
-            if (!profData) {
-                return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
-            }
+        const profData = await this.profDataRepository.findById(Number(id));
+        if (!profData)  return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
 
-            await this.notificationRepository.save(new Notification(0, "Изменения не приняты", `Ваши изменения не приняты администратором. ${rejection_reason}`, "INFO", false, profData, "BASICDATA", profData.userId || 0));
+        const user = await this.userRepository.findById(profData.userId!)
+        if(!user) return next(ApiError.badRequest('Пользователь не найден'));
 
-            await this.profDataRepository.delete(profData.id);
-            await this.notificationRepository.save(
-                new Notification(
-                    0,
-                    "Отмена обновлений",
-                    `Ваши изменения были отклонены администратором по причине "${rejection_reason}"`,
-                    "ERROR",
-                    false,
-                    null,
-                    null, 
-                    profData.userId!
-                )
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Отмена обновлений",
+                `Ваши изменения были отклонены администратором по причине "${rejection_reason}"`,
+                "ERROR",
+                false,
+                null,
+                null,
+                user.id
             )
-            return res.status(200).json({
-                success: true,
-                message: 'Изменение успешно отменено и сообщение отправлено'
-            });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
+        )
+
+        await this.profDataRepository.delete(profData.id);
+        await this.userRepository.save(user.setSentChanges(false));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Изменение успешно отменено'
+        });
     }
 
     async getAllUser(req: Request, res: Response, next: NextFunction) {
-        try {
-            const users = await this.userRepository.getAll();
+        const users = await this.userRepository.findAll();
 
-            if (!users || users.length === 0) {
-                return res.status(404).json({ message: 'Пользователи не найдены' });
+        if (!users || users.users.length === 0) return next(ApiError.badRequest('Пользователи не найдены'));
+
+        const doctorUserIds = users.users
+            .filter(user => user.role === 'DOCTOR')
+            .map(user => user.id);
+
+        const doctors = await this.doctorRepository.getDoctorsWithSpecializations(doctorUserIds);
+        const doctorMap = new Map<number, Doctor>();
+        doctors.forEach(doctor => {
+            if (doctor.userId) {
+                doctorMap.set(doctor.userId, doctor);
+            }
+        });
+
+        const response = users.users.map(user => {
+            const userData: UserShortInfoDto = {
+                id: user.id,
+                role: user.role,
+                name: user.name,
+                surname: user.surname,
+                patronymic: user.patronymic,
+                img: user.img,
+                phone: user.phone,
+                gender: user.gender,
+                email: user.email,
+                profData: [],
+                isBlocked: user.isBlocked
+            };
+
+            if (user.role === 'DOCTOR') {
+                const doctorInfo = doctorMap.get(user.id);
+                if (doctorInfo && doctorInfo.profData && doctorInfo.profData.length > 0) {
+                    userData.profData = doctorInfo.profData.map(spec => ({
+                        specialization: spec.specialization || null,
+                        diploma: spec.diploma || null,
+                        license: spec.license || null
+                    }));
+                }
             }
 
-            const doctorUserIds = users
-                .filter(user => user.role === 'DOCTOR')
-                .map(user => user.id);
+            return userData;
+        });
 
-            const doctors = await this.doctorRepository.getDoctorsWithSpecializations(doctorUserIds);
-            const doctorMap = new Map<number, Doctor>();
-            doctors.forEach(doctor => {
-                if (doctor.userId) {
-                    doctorMap.set(doctor.userId, doctor);
-                }
-            });
-
-            const response = users.map(user => {
-                const userData: UserShortInfoDto = {
-                    id: user.id,
-                    role: user.role,
-                    name: user.name,
-                    surname: user.surname,
-                    patronymic: user.patronymic,
-                    img: user.img,
-                    phone: user.phone,
-                    gender: user.gender,
-                    email: user.email,
-                    profData: [],
-                    isBlocked: user.isBlocked
-                };
-
-                if (user.role === 'DOCTOR') {
-                    const doctorInfo = doctorMap.get(user.id);
-                    if (doctorInfo && doctorInfo.profData && doctorInfo.profData.length > 0) {
-                        userData.profData = doctorInfo.profData.map(spec => ({
-                            specialization: spec.specialization || null,
-                            diploma: spec.diploma || null,
-                            license: spec.license || null
-                        }));
-                    }
-                }
-
-                return userData;
-            });
-
-            return res.status(200).json(response);
-        } catch (e: any) {
-            next(ApiError.badRequest(e.message));
-        }
+        return res.status(200).json(response);
     }
 
     async getUserConsultation(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { page, limit } = req.query;
+        const { page, limit } = req.query;
 
-            const pageUser = page ? page : 1;
-            const limitUser = limit ? limit : 1;
+        const pageUser = page ? page : 1;
+        const limitUser = limit ? limit : 1;
 
-            const result = await this.userRepository.findAll(Number(pageUser), Number(limitUser), { role: "PATIENT" });
+        const result = await this.userRepository.findAll(Number(pageUser), Number(limitUser), { role: "PATIENT" });
+        if (!result || !result.users || result.users.length === 0) return next(ApiError.badRequest('Пользователи не найдены'));
 
-            if (!result || !result.users || result.users.length === 0) {
-                return next(ApiError.badRequest('Пользователи не найдены'));
-            }
+        const usersWithFlag = await this.userRepository.findOtherProblem(result.users);
 
-            const usersWithFlag = await this.userRepository.findOtherProblem(result.users);
+        return res.status(200).json({
+            users: result.users.map(user => {
+                const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);
 
-            return res.status(200).json({
-                users: result.users.map(user => {
-                    const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);
-
-                    return {
-                        id: user.id,
-                        name: user.name,
-                        surname: user.surname,
-                        patronymic: user.patronymic,
-                        phone: user.phone,
-                        hasOtherProblem: hasOtherProblem 
-                    };
-                }),
-                totalCount: result.totalCount,
-                totalPages: result.totalPages
-            });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
+                return {
+                    id: user.id,
+                    name: user.name,
+                    surname: user.surname,
+                    patronymic: user.patronymic,
+                    phone: user.phone,
+                    hasOtherProblem: hasOtherProblem
+                };
+            }),
+            totalCount: result.totalCount,
+            totalPages: result.totalPages
+        });
     }
 
     async getConsultaions(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { page, limit } = req.query;
+        const { page, limit } = req.query;
 
-            const pageUser = page ? page : 1;
-            const limitUser = limit ? limit : 1;
+        const pageUser = page ? page : 1;
+        const limitUser = limit ? limit : 1;
 
-            const result = await this.consultationRepository.findAll(Number(pageUser), Number(limitUser));
-            if (!result) {
-                return next(ApiError.badRequest('Консультации не найдены'));
-            }
+        const result = await this.consultationRepository.findAll(Number(pageUser), Number(limitUser));
+        if (!result)  return next(ApiError.badRequest('Консультации не найдены'));
 
-            return res.status(200).json(result);
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
+        return res.status(200).json(result);
     }
 }

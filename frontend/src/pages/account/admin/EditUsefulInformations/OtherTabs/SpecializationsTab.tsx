@@ -1,14 +1,12 @@
-import DoctorService from "../../../../services/DoctorService";
-import { EditableList } from "./EditableList";
-import type { Specializations } from "../../../../services/DoctorService";
+import DoctorService from "../../../../../services/DoctorService";
+import EditableList from "./EditableList";
 
 const SpecializationsTab: React.FC = () => {
     return (
-        <EditableList<Specializations>
-            title="Добавить специализацию"
+        <EditableList
             loadItems={async () => {
                 const res = await DoctorService.getSpecializations();
-                return res.data; // EditableList ждёт T[]
+                return res.data;
             }}
             createItem={async (name) => {
                 await DoctorService.createSpecialization(name);
@@ -21,6 +19,8 @@ const SpecializationsTab: React.FC = () => {
             }}
             getId={s => s.id}
             getLabel={s => s.name}
+            placeholder="Введите название специализации"
+            addMessage="+ Добавить новую специализацию"
         />
     );
 };

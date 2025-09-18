@@ -4,6 +4,8 @@ import { useContext, useEffect, useState } from "react";
 import type { IProfData } from "../../../../models/IDatas";
 import { Context } from "../../../../main";
 import { URL } from "../../../../http";
+import { observer } from "mobx-react-lite";
+import { processError } from "../../../../helpers/processError";
 
 interface ProfecionalDataTabProps extends DataTabProps {
     profecionalDatas: IProfData[];
@@ -18,21 +20,15 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     setMessage,
 }) => {
     const { store } = useContext(Context);
+
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
     const [isClosing, setIsClosing] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [commentModal, setCommentModal] = useState<string | null>(null);
+    const [type, setType] = useState<"ADD" | "DELETE">("ADD");
 
-    const openCommentModal = (comment: string) => {
-        setCommentModal(comment);
-    };
-
-    const closeCommentModal = () => {
-        setCommentModal(null);
-    };
-
-    // Модалка
+    // Модалки
     const openRejectModal = (id: number) => {
         setCurrentBatchId(id);
         setShowRejectModal(true);
@@ -41,11 +37,11 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const confirm = async (id: number) => {
         const res = await store.confirmProfData(id);
         if (res.success) {
-            setMessage("Данные подтверждены")
-            console.log(res)
+            setMessage({ id: Date.now(), message: "Данные подтверждены" })
+            await getProfecionalAll();
         }
         else {
-            setError(`Неудалось выполнить действие: ${res.message}`);
+            setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
             console.log(res)
         }
     };
@@ -60,9 +56,17 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         }, 300);
     };
 
+    const openCommentModal = (comment: string) => {
+        setCommentModal(comment);
+    };
+
+    const closeCommentModal = () => {
+        setCommentModal(null);
+    };
+
     // Удаление данных
     const removeBatch = (id: number, message?: string) => {
-        setMessage(message || "");
+        setMessage({ id: Date.now(), message: message || "" });
 
         const marked = profecionalDatas.map(b =>
             b.id === id ? { ...b, className: "removing" } : b
@@ -77,24 +81,22 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     // Отклонить изменения пользователя
     const handleRejectSubmit = async () => {
         if (!currentBatchId || !rejectReason.trim()) {
-            setError("Укажите причину отказа");
+            setError({ id: Date.now(), message: "Укажите причину отказа" })
             setShowRejectModal(false);
             return;
         }
 
         try {
-            setMessage("");
-            setError("");
             const data = await store.rejectProfData(currentBatchId, rejectReason);
 
             if (data.success) {
                 removeBatch(currentBatchId, data.message);
                 closeRejectModal();
             } else {
-                setError(data.message || "Ошибка при отклонении");
+                setError({id: Date.now(), message: data.message || "Ошибка при отклонении"})
             }
         } catch {
-            setError("Произошла ошибка при отклонении");
+            setError({id: Date.now(), message: "Произошла ошибка при отклонении"})
         }
     };
 
@@ -105,8 +107,8 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
             if (data?.profDatas) {
                 setProfecionalDatas(data.profDatas);
             }
-        } catch {
-            setError("Ошибка при загрузке данных");
+        } catch(e) {
+            processError(e, "Ошибка при загрузке данных", setError);
         }
     };
 
@@ -115,8 +117,15 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         getProfecionalAll();
     }, []);
 
+    // Основной рендер
     return (
         <>
+            <p
+                style={{ textAlign: 'justify' }}
+            >
+                В таблице «Полфессиональные данные» отображаются все изменения профессиональных данных, внесённые специалистом. К ним относятся диплом об образовании, лицензия и специализация.
+            </p>
+
             <table className="admin-page__table">
                 <thead>
                     <tr>
@@ -254,7 +263,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                     className="btn btn-primary"
                                     onClick={handleRejectSubmit}
                                 >
-                                    Подтвердить
+                                    {type === 'ADD' ? "Подтвердить" : "Удалить"}
                                 </button>
                             </div>
                         </div>
@@ -265,4 +274,4 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     );
 };
 
-export default ProfecionalDataTab;
+export default observer(ProfecionalDataTab);

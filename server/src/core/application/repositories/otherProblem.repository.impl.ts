@@ -53,7 +53,8 @@ export default class OtherProblemReposiotoryImpl implements OhterProblemReposito
             problemModel.id,
             problemModel.time,
             problemModel.date,
-            problemModel.description_problem
+            problemModel.description_problem,
+            problemModel.userId
         );
     }
 
@@ -61,7 +62,8 @@ export default class OtherProblemReposiotoryImpl implements OhterProblemReposito
         return {
             time: problem.time,
             date: problem.date,
-            description_problem: problem.description_problem
+            description_problem: problem.description_problem,
+            userId: problem.userId
         };
     }
 }

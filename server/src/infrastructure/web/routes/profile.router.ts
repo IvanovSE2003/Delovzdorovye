@@ -5,6 +5,6 @@ import profileController from "../controllers/Profile/profile.controller.interfa
 
 const router: Router = Router(); 
 
-router.post('/:id',authMiddlewareInstance,(req: Request, res: Response, next: NextFunction) => profileController.getProfile(req, res, next));
+router.get('/:id',authMiddlewareInstance,(req: Request, res: Response, next: NextFunction) => profileController.getProfile(req, res, next));
 
 export default router;

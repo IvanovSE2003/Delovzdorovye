@@ -28,7 +28,7 @@ const Step3: React.FC<Step3Props> = ({
       transition={{ duration: 0.3 }}
     >
       <div className="auth__form">
-        <h2>Введите полученный код</h2>
+        <h2 className="auth__form__title">Введите полученный код</h2>
 
         <PinCodeInput onLogin={handelStep3} countNumber={6} />
 

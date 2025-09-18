@@ -13,8 +13,8 @@ interface TabsProps {
     activeTab?: string;
     onTabChange?: (tabName: string) => void;
     className?: string;
-    paramName?: string; // Новый проп для имени параметра в URL
-    syncWithUrl?: boolean; // Флаг для синхронизации с URL
+    paramName?: string;
+    syncWithUrl?: boolean;
 }
 
 const Tabs: React.FC<TabsProps> = ({ 

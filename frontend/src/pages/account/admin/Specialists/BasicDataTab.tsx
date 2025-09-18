@@ -168,6 +168,8 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                 </div>
             )}
 
+            <p>В таблице «Основные данные» отображаются все изменения основных данных, внесённые специалистом. К ним относятся ФИО, пол и дата рождения.</p>
+
             {/* Таблица */}
             <table className="admin-page__table">
                 <thead>

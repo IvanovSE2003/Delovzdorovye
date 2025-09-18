@@ -38,6 +38,7 @@ export interface IUserDataProfile {
     isAnonymous: boolean;
     age?: number;
     timeZone?: ITimeZones;
+    hasOtherProblem?: boolean;
 }
 
 export interface IAdminDataProfile {

@@ -15,7 +15,7 @@ export interface ConsultationData {
     id?: number;
     userId?: number;
     problems?: number[];
-    otherProblem?: boolean;
+    otherProblem?: string;
     descriptionProblem?: string;
     date: Date | string | undefined;
     time: string | null;

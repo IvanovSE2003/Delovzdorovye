@@ -25,7 +25,10 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async findByUserId(userId: number) {
         const doctor = await DoctorModel.findOne({
-            where: { userId },
+            where: { 
+                userId,
+                isActivated: true
+            },
             include: [
                 {
                     model: SpecializationModel,
@@ -102,6 +105,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             userWhere.gender = filters.gender;
         }
 
+        where.isActivated = true;
+
         const totalCount = await DoctorModel.count({
             where,
             include: [
@@ -153,7 +158,8 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             where: {
                 userId: {
                     [Op.in]: userIds
-                }
+                },
+                isActivated: true
             },
             include: [
                 {
@@ -169,7 +175,10 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async getDoctorsWithSpecializations(userIds: number[]) {
         const doctors = await DoctorModel.findAll({
-            where: { userId: userIds },
+            where: { 
+                userId: userIds,
+                isActivated: true
+            },
             include: [{
                 model: SpecializationModel,
                 through: { attributes: ['diploma', 'license'] }

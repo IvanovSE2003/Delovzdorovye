@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 dayjs.locale("ru");
@@ -32,30 +32,23 @@ type ModalData =
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   const [weekOffset, setWeekOffset] = useState(0);
-  const weekDays = getWeekDays(weekOffset);
-
   const [slots, setSlots] = useState<Record<string, SlotStatus>>({});
   const [slotToId, setSlotToId] = useState<Record<string, number>>({});
-
   const [modalData, setModalData] = useState<ModalData | null>(null);
-  const [consultationInfo, setConsultationInfo] =
-    useState<Consultation[] | null>(null);
-
+  const [consultationInfo, setConsultationInfo] = useState<Consultation[] | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [hoveredCol, setHoveredCol] = useState<string | null>(null);
-
-  const today = dayjs().format("YYYY-MM-DD");
-
-  // drag-select
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [startDay, setStartDay] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState<boolean>(false);
 
-
-  const [showInfo, setShowInfo] = useState(false);
+  const weekDays = getWeekDays(weekOffset);
+  const today = dayjs().format("YYYY-MM-DD");
+  const currentHour = dayjs().format("HH:00"); // Текущий час
 
   // загрузка расписания
-  const fetchSchedule = async () => {
+  const fetchSchedule = useCallback(async () => {
     try {
       const startDate = weekDays[0];
       const endDate = weekDays[6];
@@ -93,11 +86,12 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
     } catch (e) {
       console.error("Ошибка при получении расписания:", e);
     }
-  };
+  }, [weekDays, userId, onChange]);
 
+  // Загрузка расписания при открытии страницы
   useEffect(() => {
     fetchSchedule();
-  }, [weekOffset]);
+  }, [fetchSchedule, weekOffset]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -113,8 +107,31 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, [isSelecting, selectedSlots, startDay]);
 
-  const getSlotStatus = (day: string, time: string): SlotStatus =>
-    slots[`${day}_${time}`] || "closed";
+  const getSlotStatus = (day: string, time: string): SlotStatus => slots[`${day}_${time}`] || "closed";
+
+  // Функция для определения, является ли временной слот прошедшим
+  const isPastSlot = (day: string, time: string): boolean => {
+    const slotDateTime = dayjs(`${day} ${time}`, "YYYY-MM-DD HH:mm");
+    const now = dayjs();
+
+    // Если день в прошлом - слот прошедший
+    if (slotDateTime.isBefore(now, 'day')) {
+      return true;
+    }
+
+    // Если день сегодняшний, проверяем время
+    if (slotDateTime.isSame(now, 'day')) {
+      // Считаем слот прошедшим, если он раньше текущего часа
+      return slotDateTime.isBefore(now, 'hour');
+    }
+
+    return false;
+  };
+
+  // Функция для определения, является ли слот текущим часом
+  const isCurrentHourSlot = (day: string, time: string): boolean => {
+    return day === today && time === currentHour;
+  };
 
   const handleSingleClick = async (day: string, time: string) => {
     const normalizedDay = dayjs(day).format("YYYY-MM-DD");
@@ -202,11 +219,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                 {weekDays.map((day) => {
                   const status = getSlotStatus(day, time);
                   const isToday = day === today;
-                  const slotDateTime = dayjs(
-                    `${day} ${time}`,
-                    "YYYY-MM-DD HH:mm"
-                  );
-                  const isPast = slotDateTime.isBefore(dayjs());
+                  const isPast = isPastSlot(day, time);
+                  const isCurrentHour = isCurrentHourSlot(day, time);
                   const key = `${day}_${time}`;
                   const isSelected = selectedSlots.includes(key);
 
@@ -246,6 +260,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                       className={`schedule-grid__slot schedule-grid__slot--${status} 
                         ${isToday ? "schedule-grid__slot--today" : ""}
                         ${isPast ? "schedule-grid__slot--past" : ""}
+                        ${isCurrentHour ? "schedule-grid__slot--current-hour" : ""}
                         ${isSelected ? "schedule-grid__slot--selected" : ""}
                       `}
                     >
@@ -338,7 +353,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
 
                     await ScheduleService.setSchuduleGapDayRecurning(
                       timeGap[0],
-                      timeGap[timeGap.length-1],
+                      timeGap[timeGap.length - 1],
                       modalData.day,
                       dayWeek,
                       userId

@@ -3,7 +3,6 @@ import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
 import { UserModelInterface, IUserCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/user.model.js';
-import FileService from '../../domain/services/file.service.js';
 
 export default class UserRepositoryImpl implements UserRepository {
     async findByEmailOrPhone(credential: string): Promise<User | null> {
@@ -49,12 +48,12 @@ export default class UserRepositoryImpl implements UserRepository {
         const usersWithOtherProblems = await models.UserModel.findAll({
             include: [{
                 model: models.OtherProblem,
-                required: true, 
-                attributes: [] 
+                required: true,
+                attributes: []
             }],
             where: {
                 id: {
-                    [Op.in]: userIds 
+                    [Op.in]: userIds
                 }
             }
         });
@@ -63,8 +62,8 @@ export default class UserRepositoryImpl implements UserRepository {
     }
 
     async findAll(
-        page: number = 1,
-        limit: number = 10,
+        page?: number,
+        limit?: number,
         filters?: {
             role?: string;
         }
@@ -79,23 +78,32 @@ export default class UserRepositoryImpl implements UserRepository {
             where.role = filters.role;
         }
 
-        const totalCount = await models.UserModel.count({
-            where
-        });
+        const totalCount = await models.UserModel.count({ where });
 
-        const totalPages = Math.ceil(totalCount / limit);
+        let users;
+        let totalPages = 1;
 
-        const users = await models.UserModel.findAll({
-            where,
-            limit,
-            offset: (page - 1) * limit,
-            order: [['id', 'ASC']]
-        });
+        if (page && limit) {
+            // с пагинацией
+            totalPages = Math.ceil(totalCount / limit);
+
+            users = await models.UserModel.findAll({
+                where,
+                limit,
+                offset: (page - 1) * limit,
+                order: [["id", "ASC"]],
+            });
+        } else {
+            users = await models.UserModel.findAll({
+                where,
+                order: [["id", "ASC"]],
+            });
+        }
 
         return {
-            users: users.map(user => this.mapToDomainUser(user)),
+            users: users.map((user) => this.mapToDomainUser(user)),
             totalCount,
-            totalPages
+            totalPages,
         };
     }
 
@@ -153,11 +161,6 @@ export default class UserRepositoryImpl implements UserRepository {
             }
         });
         return user ? this.mapToDomainUser(user) : null;
-    }
-
-    async getAll(): Promise<User[]> {
-        const users = await models.UserModel.findAll();
-        return users.map(user => this.mapToDomainUser(user));
     }
 
     private mapToDomainUser(userModel: UserModelInterface): User {

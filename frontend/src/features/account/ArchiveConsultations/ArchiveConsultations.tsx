@@ -11,6 +11,7 @@ import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import { getDateLabel } from '../../../hooks/DateHooks';
 import type { Role } from '../../../models/Auth';
 import Pagination from '../../../components/UI/Pagination/Pagination';
+import { processError } from '../../../helpers/processError';
 
 interface ArchiveConsultationsProps {
     id?: string;
@@ -31,7 +32,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
     const fetchConsultations = async (pageNumber = 1) => {
         try {
             const filters: any = { consultation_status: "ARCHIVE" };
-            
+
             if (mode === "DOCTOR") filters.doctorId = id;
             else filters.userId = id;
 
@@ -40,8 +41,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
             setTotalPages(response.data.totalPages);
             setPage(pageNumber);
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при получении архивных консультаций:", error.response?.data.message);
+            processError(e, "Ошибка при получении архивных консультаций");
         } finally {
             setIsVisible(true);
         }
@@ -139,6 +139,15 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
                                         <a target="_blank" href={`/profile/${consultation.DoctorUserId}`}>
                                             {consultation.DoctorSurname} {consultation.DoctorName} {consultation.DoctorPatronymic}
                                         </a>
+
+                                        {consultation.PatientScore && (
+                                            <>
+                                                <br />
+                                                <span className="consultation-card__details">
+                                                    Ваша оценка: {consultation.PatientScore}
+                                                </span>
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -164,7 +173,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
                         </div>
 
                         <div className="consultation-card__actions">
-                            {mode === "PATIENT" && (
+                            {mode === "PATIENT" && !consultation.PatientScore && (
                                 <button
                                     className="consultation-card__button consultation-card__button--rate"
                                     onClick={() => openModal(consultation, setModalRate)}

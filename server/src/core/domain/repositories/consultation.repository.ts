@@ -19,5 +19,6 @@ export default interface ConsultationRepository {
     findByUserId(id: number, page: number, limit: number): Promise<Consultation[]>;
     create(consultationData: Consultation): Promise<Consultation>;
     update(consult: Consultation): Promise<Consultation>;
-    save(consult: Consultation): Promise<Consultation> 
+    save(consult: Consultation): Promise<Consultation>;
+    delete(id: number): Promise<void>;
 }

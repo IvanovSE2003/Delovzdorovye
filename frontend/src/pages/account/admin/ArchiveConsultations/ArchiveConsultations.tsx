@@ -46,6 +46,47 @@ const ArchiveConsultations: React.FC = () => {
     fetchConsultations(page);
   }, [page]);
 
+  if (filteredConsultations.length === 0) return (
+    <AccountLayout>
+      <div className="page-container archive">
+        <h1 className="admin-page__title">Архив консультаций</h1>
+
+        <div className="archive__filters">
+          <Search
+            placeholder="Введите телефон, имя, фамилию пользователя"
+            value={search}
+            onChange={setSearch}
+            className="archive__search"
+          />
+
+          <Tabs
+            tabs={[
+              { name: "all", label: "Все" },
+              { name: "1", label: "1" },
+              { name: "2", label: "2" },
+              { name: "3", label: "3" },
+              { name: "4", label: "4" },
+              { name: "5", label: "5" }
+            ]}
+            filter
+            activeTab={scoreFilter === "all" ? "all" : scoreFilter?.toString()}
+            onTabChange={(tabName) => setScoreFilter(tabName === "all" ? "all" : parseInt(tabName) as 1 | 2 | 3 | 4 | 5)}
+            className="archive__tabs"
+          />
+        </div>
+
+
+        <div className="lk-tab lk-tab--empty">
+          <div className="lk-tab__empty-content">
+            <div className="lk-tab__empty-icon">📅</div>
+            <h3 className="lk-tab__empty-title">Нет архивных консультаций</h3>
+            <p className="lk-tab__empty-description">В скором времени они появятся</p>
+          </div>
+        </div>
+      </div>
+    </AccountLayout>
+  )
+
   return (
     <AccountLayout>
       <div className="page-container archive">
@@ -89,15 +130,17 @@ const ArchiveConsultations: React.FC = () => {
                     <p>
                       <strong>Клиент: </strong>
                       {<Link to={`/profile/${c.PatientUserId}`}>
-                        ${c.PatientSurname} ${c.PatientName} ${c?.PatientPatronymic}`
+                        {c.PatientSurname} {c.PatientName} {c?.PatientPatronymic}
                       </Link>}
                     </p>
+
                     <p>
                       <strong>Специалист: </strong>
                       {<Link to={`/profile/${c.DoctorUserId}`}>
-                        ${c.DoctorSurname} ${c.DoctorName} ${c?.DoctorPatronymic}`
+                        {c.DoctorSurname} {c.DoctorName} {c?.DoctorPatronymic}
                       </Link>}
                     </p>
+
                     <p>
                       <strong>Рекомендации: </strong>{" "}
                       {c.recommendations ? (

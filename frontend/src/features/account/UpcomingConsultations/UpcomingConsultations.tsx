@@ -25,6 +25,8 @@ export interface Consultation {
     PatientSurname: string;
     PatientPatronymic?: string;
     PatientPhone: string;
+    PatientScore: number;
+    PatientComment: string;
     Problems: string[];
     score?: number;
     comment?: string;
@@ -91,7 +93,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     useEffect(() => {
         const loadData = async () => {
             setIsVisible(false);
-            await new Promise(resolve => setTimeout(resolve, 150)); // Небольшая задержка перед загрузкой
+            await new Promise(resolve => setTimeout(resolve, 150));
             await fetchConsultations();
         };
         loadData();
@@ -116,6 +118,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             console.log("Данные для переноса консультации:", data);
             await ConsultationService.shiftAppointment(data);
             setModalShift(false);
+            await fetchConsultations();
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при переносе консультации: ", error.response?.data.message);
@@ -126,17 +129,13 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     const handleCancelConsultation = async (reason: string, id: number) => {
         try {
             await ConsultationService.cancelAppointment(reason, id);
-
-            // Убираем отменённую консультацию из локального стейта
             setConsultations(prev => prev.filter(c => c.id !== id));
-
-            setModalCancel(false);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при отмене консультации: ", error.response?.data.message);
         } finally {
-            // на всякий случай можно подгрузить ещё раз, если нужно синхронизировать с бэком
-            fetchConsultations();
+            setModalCancel(false);
+            await fetchConsultations();
         }
     };
 
@@ -150,6 +149,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             console.error("Ошибка при повторе консультации: ", error.response?.data.message);
         } finally {
             setModalRepeat(false);
+            await fetchConsultations();
         }
     };
 

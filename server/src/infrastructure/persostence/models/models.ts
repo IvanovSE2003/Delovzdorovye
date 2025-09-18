@@ -101,7 +101,7 @@ const Transaction = sequelize.define('transaction', {
     date: { type: DataType.DATE }
 })
 
-const ModerationBatchModel = sequelize.define<BatchModelInterface>('basic_data_records', {
+const BasicDataModel = sequelize.define<BatchModelInterface>('basic_data_records', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     status: { type: DataType.STRING },
     rejection_reason: { type: DataType.TEXT, allowNull: true },
@@ -183,8 +183,8 @@ const ContentModel = sequelize.define<ContentModelInterface>('content', {
 Consultation.hasOne(ConsultationRoomModel, { foreignKey: 'consultationId' });
 ConsultationRoomModel.belongsTo(Consultation, { foreignKey: 'consultationId' });
 
-UserModel.hasOne(ModerationBatchModel);
-ModerationBatchModel.belongsTo(UserModel);
+UserModel.hasOne(BasicDataModel);
+BasicDataModel.belongsTo(UserModel);
 
 UserModel.hasOne(DoctorModel);
 DoctorModel.belongsTo(UserModel);
@@ -266,7 +266,7 @@ export default {
     TokenModel,
     UserTelegramModel,
     DoctorSlots,
-    ModerationBatchModel,
+    BasicDataModel,
     SpecializationModel,
     ProblemModel,
     DoctorSpecialization,

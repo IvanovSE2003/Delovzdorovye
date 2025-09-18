@@ -76,7 +76,9 @@
 
     a {
       color: $primary-color;
-      text-decoration: underline;
+      &:hover {
+        color: $button-color-hover;
+      }
     }
   }
 

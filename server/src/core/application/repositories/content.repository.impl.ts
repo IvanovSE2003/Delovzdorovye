@@ -2,6 +2,7 @@ import Content from "../../domain/entities/content.entity";
 import ContentRepository from "../../domain/repositories/content.repository";
 import models from "../../../infrastructure/persostence/models/models";
 import { ContentModelInterface, IContentCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/content.model";
+import { Op } from "sequelize";
 
 export default class ContentRepositoryImpl implements ContentRepository {
     async findById(id: number): Promise<Content | null> {
@@ -9,27 +10,40 @@ export default class ContentRepositoryImpl implements ContentRepository {
         return content ? this.mapToDomainContent(content) : null
     }
 
-    async findAll(page: number, limit: number, filters: { type: string }): Promise<{ contents: Content[], totalCount: number, totalPages: number }> {
+    async findAll(page?: number, limit?: number, filters?: { type?: string }): Promise<{ contents: Content[]; totalCount: number; totalPages: number }> {
         const where: any = {};
 
-        if (filters?.type && filters?.type !== undefined) {
-            where.type = filters.type;
+        if (filters?.type) {
+            where.type = {
+                [Op.iLike]: filters.type 
+            };
         }
 
-        const totalCount = await models.UserModel.count({ where });
-        const totalPages = Math.ceil(totalCount / limit);
+        const totalCount = await models.ContentModel.count({ where });
 
-        const contents = await models.ContentModel.findAll({
-            where,
-            limit,
-            offset: (page - 1) * limit,
-            order: [['id', 'ASC']]
-        });
+        let contents;
+        let totalPages = 1;
+
+        if (page != null && limit != null) {
+            totalPages = Math.ceil(totalCount / limit);
+
+            contents = await models.ContentModel.findAll({
+                where,
+                limit,
+                offset: (page - 1) * limit,
+                order: [["id", "ASC"]],
+            });
+        } else {
+            contents = await models.ContentModel.findAll({
+                where,
+                order: [["id", "ASC"]],
+            });
+        }
 
         return {
-            contents: contents.map(content => this.mapToDomainContent(content)),
+            contents: contents.map((content) => this.mapToDomainContent(content)),
             totalCount,
-            totalPages
+            totalPages,
         };
     }
 

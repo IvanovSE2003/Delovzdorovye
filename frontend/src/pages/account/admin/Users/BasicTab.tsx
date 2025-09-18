@@ -38,6 +38,20 @@ const BasicTab: React.FC<BasicTabProps> = ({
     return role !== "ADMIN";
   };
 
+  const changeRoleClick = (id: number, role: string) => {
+    if(role === "ADMIN") return;
+    const result = confirm("Вы действительно хотите поменять роль выбранному пользователю?");
+    if(!result) return;
+    onChangeRole(id, role);
+  }
+
+  const blockedClick = (id: number, isBlocked: boolean, role: string) => {
+    if(role === "ADMIN") return;
+    const result = confirm(`Вы действительно хотите ${isBlocked ? "разблокировать" : "заблокировать"} пользователя?`);
+    if(!result) return;
+    onBlockUser(id, isBlocked, role);
+  }
+
   return (
     <>
       <Search
@@ -56,8 +70,8 @@ const BasicTab: React.FC<BasicTabProps> = ({
         filter
         activeTab={selectedRole}
         onTabChange={onRoleChange}
-        paramName="role" // Используем тот же параметр, что и в родительском компоненте
-        syncWithUrl={true} // Включаем синхронизацию с URL
+        paramName="role"
+        syncWithUrl={true}
       />
 
       {previewImage && (
@@ -124,7 +138,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
               <td>{user.phone}</td>
               <td>{user.email}</td>
               <td
-                onClick={() => isActionAllowed(user.role) && onChangeRole(user.id, user.role)}
+                onClick={() => changeRoleClick(user.id, user.role)}
                 className={isActionAllowed(user.role) ? "clickable" : "non-clickable"}
               >
                 {user.role === "DOCTOR" && "Сделать пациентом"}
@@ -135,7 +149,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
                 <td>-</td>
               ) : (
                 <td
-                  onClick={() => isActionAllowed(user.role) && onBlockUser(user.id, user.isBlocked, user.role)}
+                  onClick={() => blockedClick(user.id, user.isBlocked, user.role)}
                   className={`${user.isBlocked ? "action-unblock-user" : "action-block-user"} ${isActionAllowed(user.role) ? "clickable" : "non-clickable"}`}
                 >
                   {user.isBlocked ? "Разблокировать" : "Заблокировать"}

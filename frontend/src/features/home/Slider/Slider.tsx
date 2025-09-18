@@ -4,11 +4,27 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 import AnimatedBlock from '../../../components/AnimatedBlock';
-import { useContext } from 'react';
-import { Context } from '../../../main';
+import type { ElementHomePageProps } from '../../../pages/Homepage';
+import { useEffect } from 'react';
+import { processError } from '../../../helpers/processError';
 
-const Slider: React.FC = () => {
-  const { store } = useContext(Context);
+interface SliderProps extends ElementHomePageProps{
+  isAuth: boolean;
+}
+
+const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
+
+  const fetchSlider = async () => {
+    try {
+
+    } catch(e) {
+      processError(e, "Ошибка при получении данных слайдера")
+    }
+  }
+
+  useEffect(() => {
+    fetchSlider();
+  }, [])
 
   return (
     <AnimatePresence mode="wait">
@@ -16,12 +32,13 @@ const Slider: React.FC = () => {
         <AnimatedBlock className="slider__content">
           <div className="slider__text">
             <h3>
+              {}
               «Дело в здоровье» <br />
               – сервис онлайн-консультаций по решению проблем со здоровьем.
             </h3>
           </div>
           <div className="my-button">
-            <Link to={store.isAuth ? RouteNames.MAINPAT : RouteNames.LOGIN}>
+            <Link to={isAuth ? RouteNames.MAINPAT : RouteNames.LOGIN}>
               Записаться на консультацию
             </Link>
           </div>

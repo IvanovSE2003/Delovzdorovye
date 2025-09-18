@@ -124,17 +124,22 @@
             }
         }
 
+        &--current-hour {
+            background-color: #ff9800 !important;
+            border: 2px solid #e65100 !important;
+
+            &:hover {
+                background-color: #ffb74d !important;
+            }
+        }
+
         &:hover {
             filter: brightness(0.95);
         }
 
-        // &--today {
-        //     background-color: rgba(178, 222, 236, 0.703);
-        // }
-
         &--past {
-            background-color: black !important;
-            color: #999;
+            background-color: rgb(137, 137, 137) !important;
+            color: #9999997b;
             cursor: not-allowed;
             opacity: 0.6;
         }

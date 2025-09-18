@@ -29,7 +29,6 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus
         }
     }, [code, onLogin]);
 
-    // Эффект для фокусировки первого инпута после сброса
     useEffect(() => {
         if (code.every((d) => d === "")) {
             inputRefs.current[0]?.focus();
@@ -43,9 +42,6 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus
         newPin[index] = value;
         setPinCode(newPin);
 
-        // Переход дальше делаем только если:
-        // 1. Пользователь ввёл новую цифру в ПУСТУЮ ячейку
-        // 2. Не последний input
         if (value && index < countNumber - 1) {
             setTimeout(() => inputRefs.current[index + 1]?.focus(), 0);
         }
@@ -54,12 +50,10 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus
     const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Backspace") {
             if (code[index]) {
-                // просто очищаем текущую ячейку
                 const newPin = [...code];
                 newPin[index] = "";
                 setPinCode(newPin);
             } else if (index > 0) {
-                // если пусто — прыгаем на предыдущую
                 inputRefs.current[index - 1]?.focus();
             }
         }

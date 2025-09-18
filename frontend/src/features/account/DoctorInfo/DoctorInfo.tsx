@@ -3,12 +3,13 @@ import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
 import './DoctorInfo.scss';
 import { processError } from "../../../helpers/processError";
-import DoctorService, { type Specialization, type Specializations } from "../../../services/DoctorService";
+import DoctorService, { type Specializations } from "../../../services/DoctorService";
 import { URL } from "../../../http";
 import { Link } from "react-router";
 import Select from 'react-select';
 import MyInputFile from "../../../components/UI/MyInput/MyInputFile";
 import ShowError from "../../../components/UI/ShowError/ShowError";
+import type { Specialization } from "../../../models/IDoctor";
 
 interface DoctorInfoProps {
     type: "READ" | "WRITE";
@@ -36,7 +37,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
     const [license, setLicense] = useState<File | null>(null)
 
     const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
-    const [message, setMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ id: number, message: string }>({ id: 0, message: "" });
 
     // Получение данных
     const fetchProfData = async () => {
@@ -48,6 +49,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         }
     }
 
+    // Удаление блока специализации
     const deleteSpecialization = async (info: Specialization) => {
         try {
             const formData = new FormData();
@@ -57,7 +59,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
 
             const response = await DoctorService.deleteProfInfo(store.user.id, formData);
             response.data.success
-                ? setMessage(response.data.message)
+                ? setMessage({id: Date.now(), message: response.data.message})
                 : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при удалении профессиональной информации: ");
@@ -68,29 +70,25 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         }
     }
 
+    // Добавление блока специализаци
     const addSpecialization = async (info: SpecializationForSend) => {
         try {
-            // Создаем FormData для отправки файлов
             const formData = new FormData();
             formData.append('type', 'ADD');
             formData.append('specializationId', info.specializationId.toString());
             formData.append('comment', info.comment || '');
-
-            // Правильно добавляем файлы - как отдельные поля
             formData.append('diploma', info.diploma);
             formData.append('license', info.license);
 
             const response = await DoctorService.addProfInfo(store.user.id, formData);
             response.data.success
-                ? setMessage(response.data.message)
+                ? setMessage({id: Date.now(), message: response.data.message})
                 : setError({ id: Date.now(), message: response.data.message });
         } catch (e) {
             processError(e, "Ошибка при добавлении нового блока: ");
         } finally {
             fetchProfData();
             setAddBlock(false);
-
-            // Сброс состояния после отправки
             setSelectedSpecializationId(null);
             setDiploma(null);
             setLicense(null);
@@ -130,29 +128,19 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         fetchProfData();
     }, [])
 
-    useEffect(() => {
-        if (message) {
-            const timer = setTimeout(() => {
-                setMessage("");
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [message])
-
+    // Основной рендер
     return (
         <div className="doctor-info">
             <h1 className="doctor-info__title">Специализации доктора</h1>
             <p className="doctor-info__subtitle">Здесь находится список всех специализаций</p>
-            {message && (<div className="doctor-info__message">{message}</div>)}
+            <ShowError msg={message} mode="MESSAGE" />
 
             {/* Блок для добавления */}
             {addBlock && (
                 <div className="doctor-info__flex-column doctor-info__add">
                     <h1 className="doctor-info__add-title">Добавление новой специализации</h1>
 
-                    <ShowError
-                        msg={error}
-                    />
+                    <ShowError msg={error} /><br/>
 
                     <Select
                         options={specializations.map(spec => ({ value: spec.id, label: spec.name }))}
@@ -168,7 +156,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         value={diploma || ""}
                         className="doctor-info__input"
                         onChange={setDiploma}
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        accept=".pdf"
                     />
 
                     <MyInputFile
@@ -177,7 +165,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         className="doctor-info__input"
                         value={license || ""}
                         onChange={setLicense}
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        accept=".pdf"
                     />
 
                     <textarea
@@ -245,7 +233,10 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                     )}
                 </div>
             )) : (
-                !addBlock && <div className="doctor-info__no-data">Нет данных о специализациях</div>
+                !addBlock && 
+                <div className="doctor-info__no-data">
+                    Пока нет данных о специализациях
+                </div>
             )}
 
             {edit && (
@@ -273,7 +264,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                             setAddBlock(true);
                         }}
                     >
-                        Добавить новую специализацию
+                        + Добавить новую специализацию
                     </button>
                 </div>
             )}

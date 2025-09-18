@@ -60,6 +60,12 @@
             width: 100% !important;
             margin-top: 20px !important;
         }
+        
+        &__empty {
+            font-size: 1.5rem;
+            font-weight: bolder;
+            text-align: center;
+        }
     }
 
     &__edit-btn {

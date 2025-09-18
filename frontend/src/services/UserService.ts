@@ -5,6 +5,7 @@ import type { TypeResponse } from '../models/response/DefaultResponse';
 import type { PatientData } from '../models/PatientData';
 import type { Recomendations } from '../pages/account/patient/Recomendations';
 import type { INotification } from '../pages/account/Bell';
+import type { IOtherProblem } from '../pages/account/SomeProfile';
 
 export default class UserService {
 
@@ -15,6 +16,7 @@ export default class UserService {
 
     // Проверка пользователя на сущестование в БД
     static async CheckUser(creditial: string): Promise<AxiosResponse<TypeResponse>> {
+        console.log(creditial)
         return $api.post<TypeResponse>("/user/check/", { creditial });
     }
 
@@ -65,6 +67,17 @@ export default class UserService {
         return $api.get<Recomendations[]>(`/user/getRecomendation?userId=${id}`);
     }
 
+
+
+    static async getProfileData(id: string, linkerId: number): Promise<AxiosResponse<IUserDataProfile>> {
+        return $api.get<IUserDataProfile>(`/profile/${id}?linkerId=${linkerId}`);
+    }
+
+    static async getDataOtherProblem(id: string): Promise<AxiosResponse<IOtherProblem[]>> {
+        return $api.get<IOtherProblem[]>(`/otherProblem/user/${id}`);
+    }
+
+    
 
     static async getNotifications(id: number): Promise<AxiosResponse<INotification[]>>{
         return $api.get<INotification[]>(`/notification/user?userId=${id}`);

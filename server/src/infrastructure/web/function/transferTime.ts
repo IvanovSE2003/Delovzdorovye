@@ -61,3 +61,29 @@ export function formatEndTime(startTime: string, duration: number): string {
     const endMinutes = totalMinutes % 60;
     return `${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`;
 }
+
+export function adjustTimeSlotToMoscow(slot: TimeSlot, userTimeZone: ITimeZones): TimeSlot {
+    const hoursDiff = STORAGE_TIMEZONE - userTimeZone;
+
+    const { newTime, newDate } = adjustDateTime(slot.date, slot.time, hoursDiff);
+
+    return new TimeSlot(
+        slot.id,
+        newTime,
+        newDate,
+        slot.dayWeek,
+        slot.status,
+        slot.doctorId
+    );
+}
+
+export function convertMoscowToUserTime(
+    date: string,
+    time: string,
+    userTimeZone: ITimeZones
+): { newDate: string; newTime: string } {
+    const hoursDiff = userTimeZone - STORAGE_TIMEZONE;
+    return adjustDateTime(date, time, hoursDiff);
+}
+
+

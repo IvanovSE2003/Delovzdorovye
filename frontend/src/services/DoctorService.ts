@@ -29,6 +29,10 @@ export default class DoctorService {
         });
     }
 
+    static async applyBreak(id: number, startDate: string, endDate: string) {
+        return $api.post(`/doctor/break/create/${id}`, { startDate, endDate })
+    }
+
     static async getAllDoctors(page: number, limit: number) {
         return $api.get('/doctor/all');
     }

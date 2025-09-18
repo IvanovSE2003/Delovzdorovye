@@ -21,11 +21,14 @@ const HomePage = () => {
       <Header 
         isAuth={store.isAuth}
       />
-      <Slider />
+      <Slider 
+        role={store.user.role}
+        isAuth={store.isAuth}
+      />
       <Solutions 
         role={store.user.role}
       />
-      <div className='line'></div>
+      <div className='line'/>
       <Costs 
         role={store.user.role}
       />

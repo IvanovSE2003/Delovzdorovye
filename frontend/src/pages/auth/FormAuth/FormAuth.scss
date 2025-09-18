@@ -11,6 +11,12 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    &__title {
+      text-align: center;
+      font-size: 1.4rem;
+      margin-bottom: 5px;
+    }
   }
 
   &__error {

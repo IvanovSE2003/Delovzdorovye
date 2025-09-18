@@ -1,24 +1,19 @@
 import "dayjs/locale/ru";
-
 import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
-import { useContext, useEffect, useState } from "react";
-
-import type { AxiosError } from "axios";
-
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Context } from "../../../main";
 import AccountLayout from "../AccountLayout";
-
 import { getDateLabel } from "../../../hooks/DateHooks";
-
-import type { TypeResponse } from "../../../models/response/DefaultResponse";
 import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
 import type { Consultation } from "../../../features/account/UpcomingConsultations/UpcomingConsultations";
-
 import ConsultationService from "../../../services/ConsultationService";
 import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
+import ShowError from "../../../components/UI/ShowError/ShowError";
+import { processError } from "../../../helpers/processError";
 
 
+// Количество элементов на одной "странице"
 const PAGE_SIZE = 4;
 
 const Main: React.FC = () => {
@@ -28,6 +23,8 @@ const Main: React.FC = () => {
     const [page, setPage] = useState<number>(1);
     const [total, setTotal] = useState<number>(0);
 
+    const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+
     // Завершение записи на консультацию
     const handleRecordConsultation = async (data: ConsultationData) => {
         const RecordData = {
@@ -35,40 +32,45 @@ const Main: React.FC = () => {
             userId: store.user.id,
         };
 
-        if (RecordData.otherProblem) {
-            console.log("Была выбрана другая проблема!");
-            await ConsultationService.createSpecificConsultation(RecordData)
-        } else {
-            await ConsultationService.createAppointment(RecordData);
-            fetchUpcomingConsultations(page);
+        try {
+            if (RecordData.otherProblem) {
+                console.log("Это другая проблема: ", RecordData);
+                await ConsultationService.createSpecificConsultation(RecordData);
+                setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию. В ближайшее время с вами свяжется наш администратор" });
+            } else {
+                await ConsultationService.createAppointment(RecordData);
+                setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию" });
+                fetchUpcomingConsultations(page);
+            }
+        } catch (e) {
+            processError(e, "Ошибка при записи на консультацию")
         }
     };
 
     // Получение данных
-    const fetchUpcomingConsultations = async (currentPage: number) => {
+    const fetchUpcomingConsultations = useCallback(async (currentPage: number) => {
         try {
             const response = await ConsultationService.getAllConsultations(PAGE_SIZE, currentPage, {
                 userId: store.user.id.toString(),
                 consultation_status: "UPCOMING",
             });
 
-            // предполагаю, что API возвращает totalCount (проверь)
             setTotal(response.data.totalCount ?? 0);
-
             setUpcomingConsultations(response.data.consultations);
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при получении ближайших консультаций: ", error.response?.data.message);
+            processError(e, "Ошибка при получении ближайших консультации");
         }
-    };
+    }, [store.user.id, PAGE_SIZE]);
 
     // Получение данных при открытии страницы
     useEffect(() => {
         fetchUpcomingConsultations(page);
-    }, [page]);
+    }, [page, fetchUpcomingConsultations]);
 
+    // Итоговое количество страниц
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
+    // Основной рендер
     return (
         <AccountLayout>
             <UserRecordModal
@@ -80,6 +82,7 @@ const Main: React.FC = () => {
 
             <div className="main">
                 <div className="main__main-block">
+                    <ShowError msg={message} mode="MESSAGE" />
                     <h2 className="main__main-block__title">Дело всегда в здоровье - начните сейчас!</h2>
                     <p className="main__main-block__text">
                         Наши специалисты составят персональный план по комплексному восстановлению здоровья,

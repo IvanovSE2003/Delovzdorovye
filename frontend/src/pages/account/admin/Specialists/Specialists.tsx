@@ -7,13 +7,14 @@ import Search from "../../../../components/UI/Search/Search";
 import type { IBasicData, IProfData } from "../../../../models/IDatas";
 import type { ITab } from "../../../../components/UI/Tabs/Tabs";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
+import ShowError from "../../../../components/UI/ShowError/ShowError";
 
 
 type TabType = "basic" | "prof";
 export interface DataTabProps {
     searchTerm: string;
-    setError: (error: string) => void;
-    setMessage: (message: string) => void;
+    setError: (message: {id: number; message: string}) => void;
+    setMessage: (message: {id: number; message: string}) => void;
 }
 
 const Specialists: React.FC = () => {
@@ -24,8 +25,8 @@ const Specialists: React.FC = () => {
     const [basicDatas, setBasicDatas] = useState<IBasicData[]>([]);
     const [profecionalDatas, setProfecionalDatas] = useState<IProfData[]>([]);
 
-    const [message, setMessage] = useState<string>("");
-    const [error, setError] = useState<string>("");
+    const [message, setMessage] = useState<{id: number; message: string}>({id: 0, message: ""});
+    const [error, setError] = useState<{id: number; message: string}>({id: 0, message: ""});
 
     // Вкладки
     const tabs: ITab[] = [
@@ -35,8 +36,8 @@ const Specialists: React.FC = () => {
 
     return (
         <AccountLayout>
-            {message && <div className="alert alert-success">{message}</div>}
-            {error && <div className="alert alert-danger">{error}</div>}
+            <ShowError msg={message} mode="MESSAGE"/>
+            <ShowError msg={error} />
 
             <div className="page-container">
                 <h1 className="admin-page__title">Редактирование профилей</h1>
@@ -49,13 +50,11 @@ const Specialists: React.FC = () => {
                 />
 
                 {/* Поиск */}
-                <div className="admin-page__search">
-                    <Search
-                        placeholder="Поиск по фамилии, имени, отчеству специалиста"
-                        value={searchTerm}
-                        onChange={setSearchTerm}
-                    />
-                </div>
+                <Search
+                    placeholder="Поиск по фамилии, имени, отчеству специалиста"
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                />
 
                 {/* Контент */}
                 <div className="edit-info__content">

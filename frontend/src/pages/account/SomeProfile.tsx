@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import Loader from "../../components/UI/Loader/Loader";
-import $api from "../../http";
 import type { IUserDataProfile } from "../../models/Auth";
 import AccountLayout from "./AccountLayout";
 import { Link, useNavigate, useParams } from "react-router";
@@ -14,20 +13,51 @@ import type { ConsultationData } from "../../components/UI/Modals/EditModal/Edit
 import AdminRecordModal from "../../components/UI/Modals/RecordModal/AdminRecordModal";
 import ConsultationService from "../../services/ConsultationService";
 import DoctorInfo from "../../features/account/DoctorInfo/DoctorInfo";
+import { processError } from "../../helpers/processError";
+import UserService from "../../services/UserService";
 
-const Profile = () => {
+export interface IOtherProblem {
+    id: number,
+    time: string,
+    date: string,
+    description_problem: string,
+    userId?: number
+}
+
+const Profile: React.FC = () => {
     const { id } = useParams();
     const { store } = useContext(Context);
     const navigate = useNavigate();
+
     const [profile, setProfile] = useState<IUserDataProfile | null>(null)
     const [modalRecord, setModalRecord] = useState<boolean>(false);
     const [refreshUpcoming, setRefreshUpcoming] = useState(0);
+    const [otherProblem, setOterProblem] = useState<IOtherProblem[]>([] as IOtherProblem[]);
+
+    const getDataOtherProblem = async () => {
+        if (!id) return;
+        try {
+            const response = await UserService.getDataOtherProblem(id);
+            console.log(response.data)
+            setOterProblem(response.data);
+        } catch (e) {
+            processError(e, "Ошибка при получении данных другой проблемы")
+        }
+    }
 
     // Получение данных профиля пользователя
     const getDataProfile = async () => {
-        if (!store.user?.id) return;
-        const { data } = await $api.post(`/profile/${id}`, { linkerId: store.user.id });
-        setProfile(data);
+        if (!store.user?.id || !id) return;
+        try {
+            const response = await UserService.getProfileData(id, store.user.id);
+            setProfile(response.data);
+            console.log("Есть другая проблема? - ", response.data.hasOtherProblem)
+            if (response.data.hasOtherProblem) {
+                await getDataOtherProblem();
+            }
+        } catch (e) {
+            processError(e, "Ошибка при получении данных пользователя")
+        }
     }
 
     // Запись человека на консультацию
@@ -37,9 +67,12 @@ const Profile = () => {
             userId: Number(id),
         };
 
-        console.log("Данные для записи на консультацию:", RecordData);
-        await ConsultationService.createAppointment(RecordData);
-        setRefreshUpcoming(prev => prev + 1);
+        try {
+            await ConsultationService.createAppointment(RecordData);
+            setRefreshUpcoming(prev => prev + 1);
+        } catch (e) {
+            processError(e, "Ошибка при записи на консультации ")
+        }
     };
 
     // Получение данных при открытии страницы
@@ -99,6 +132,30 @@ const Profile = () => {
                     )}
                 </div>
             </div>
+
+            {store.user.role == "ADMIN" && profile.hasOtherProblem && (
+                <div className="user-consultations user-consultations__other-problem">
+                    <h2 className="consultations__title">Другие проблемы</h2>
+                    {otherProblem.map(element => (
+                        <div className="consultation-card">
+                            <p
+                                className="consultation-card__description"
+                            >
+                                Пользователь не нашел подходящей проблемы и ожидает записи на консультацию по следующим данным:
+                            </p>
+                            <div className="consultation-card__symptoms">
+                                Желаемое время: <span>{element.time}</span>
+                            </div>
+                            <div className="consultation-card__symptoms">
+                                Желаемая дата: <span>{element.date}</span>
+                            </div>
+                            <div className="consultation-card__symptoms">
+                                Подробности: <span>{element.description_problem}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {store.user.role === "ADMIN" && profile.role === "PATIENT" && (
                 <>

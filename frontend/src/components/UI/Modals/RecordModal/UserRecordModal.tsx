@@ -87,7 +87,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({
       descriptionProblem: descriptionProblem,
       problems: selectedProblems.map((p) => p.value),
       doctorId: doctorId,
-      otherProblem: showOtherProblem,
+      otherProblem: descriptionProblem
     });
 
     // Сброс состояния

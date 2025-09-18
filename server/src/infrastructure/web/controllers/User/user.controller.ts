@@ -16,6 +16,7 @@ import BasicDataRepository from "../../../../core/domain/repositories/basicData.
 import ConsultationRepository from "../../../../core/domain/repositories/consultation.repository.js"
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js";
 import Notification from "../../../../core/domain/entities/notification.entity.js";
+import { convertMoscowToUserTime } from "../../function/transferTime.js";
 
 export default class UserController {
     constructor(
@@ -26,7 +27,7 @@ export default class UserController {
         private readonly basicDataRepository: BasicDataRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly consultationRepository: ConsultationRepository,
-        private readonly notificationRepository: NotificationRepository
+        private readonly notificationRepository: NotificationRepository,
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -646,6 +647,12 @@ export default class UserController {
                 if (!doctor) {
                     return next(ApiError.internal('Ошибка изменения роли пользователя на специалиста'));
                 }
+            } else if(newRole === 'PATIENT') {
+                const doctor = await this.doctorRepository.findByUserId(user.id);
+                if (!doctor) {
+                    return next(ApiError.badRequest('Специалист не найден'));
+                }
+                await this.doctorRepository.save(doctor.blocked());
             }
 
             await this.userRepository.save(user.setRole(newRole));
@@ -674,15 +681,20 @@ export default class UserController {
                 return next(ApiError.badRequest('Консультации для пользователя не найдены'));
             }
 
-            res.status(200).json(consultations.map(consult => ({
-                doctorName: consult.doctor?.user.name,
-                doctorSurname: consult.doctor?.user.surname,
-                doctorPatronymic: consult.doctor?.user.patronymic,
-                date: consult.date,
-                time: consult.time,
-                recomendation: consult.recommendations,
-                specialization: consult.doctor?.profData.map(p => p.specialization)
-            })));
+            res.status(200).json(
+                consultations.map(consult => {
+                    const result = convertMoscowToUserTime(consult.date, consult.time, user.timeZone);
+                    return {
+                        doctorName: consult.doctor?.user.name,
+                        doctorSurname: consult.doctor?.user.surname,
+                        doctorPatronymic: consult.doctor?.user.patronymic,
+                        date: result.newDate,  
+                        time: result.newTime,  
+                        recomendation: consult.recommendations,
+                        specialization: consult.doctor?.profData.map(p => p.specialization)
+                    };
+                })
+            );
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

@@ -12,8 +12,8 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     const [content, setContent] = useState<InfoBlock[]>([]);
     const [originalContent, setOriginalContent] = useState<InfoBlock[]>([]);
 
-    const [error, setError] = useState<{id: number; message: string}>({id: 0, message: ''});
-    const [message, setMessage] = useState<{id: number; message: string}>({id: 0, message: ''});
+    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: '' });
+    const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: '' });
 
     const handleEditToggle = () => {
         if (isEditing) {
@@ -41,8 +41,8 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
                     // });
                 }
             }
-            
-            setMessage({id: Date.now(), message: "Данные успешно сохранены"});
+
+            setMessage({ id: Date.now(), message: "Данные успешно сохранены" });
             fetchInformations();
         } catch (e) {
             processError(e, "Ошибка при сохранении данных", setError);
@@ -50,16 +50,16 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     };
 
     const handleBlockTitleChange = (index: number, value: string) => {
-        setContent(prev => 
-            prev.map((block, i) => 
+        setContent(prev =>
+            prev.map((block, i) =>
                 i === index ? { ...block, header: value } : block
             )
         );
     };
 
     const handleBlockTextChange = (index: number, value: string) => {
-        setContent(prev => 
-            prev.map((block, i) => 
+        setContent(prev =>
+            prev.map((block, i) =>
                 i === index ? { ...block, text: value } : block
             )
         );
@@ -68,7 +68,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     const deleteInformation = async (id: number) => {
         try {
             await HomeService.deleteContent("useful_informations", id);
-            setMessage({id: Date.now(), message: "Блок успешно удален"});
+            setMessage({ id: Date.now(), message: "Блок успешно удален" });
             fetchInformations();
         } catch (e) {
             processError(e, "Ошибка при удалении блока информации");
@@ -79,7 +79,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
         setContent(prev => [
             ...prev,
             {
-                id: 0, // 0 или null для новых блоков
+                id: 0,
                 header: "Новый заголовок",
                 text: "Введите текст здесь"
             }
@@ -89,28 +89,10 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     const fetchInformations = async () => {
         try {
             const response = await HomeService.getContent('useful_informations');
-            setContent(response.data);
-            setOriginalContent(response.data);
+            setContent(response.data.contents);
+            setOriginalContent(response.data.contents);
         } catch (e) {
-            processError(e, "Ошибка при получении данных", setError);
-            // Устанавливаем данные по умолчанию при ошибке
-            // setContent([
-            //     {
-            //         id: 1,
-            //         header: "Как записаться на консультацию?",
-            //         text: "Зарегистрируйтесь или войдите в личный кабинет.\nВыберите удобные дату и время.\nОплатите консультацию.\nВ назначенное время подключитесь к видеоконсультации."
-            //     },
-            //     {
-            //         id: 2,
-            //         header: "Насколько конфиденциальны мои данные?",
-            //         text: "Всё, что вы скажете на консультации, останется между вами и специалистом. Мы не передаем данные третьим лицам и используем шифрование для защиты переписки."
-            //     },
-            //     {
-            //         id: 3,
-            //         header: "Почему онлайн-консультации удобнее очных встреч?",
-            //         text: "консультируйтесь не выходя из дома\nподключайтесь без поездок и очередей\nпереносите или продлевайте консультации в один клик"
-            //     }
-            // ]);
+            processError(e, "Ошибка при получении данных");
         }
     };
 
@@ -133,7 +115,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
                         mode="MESSAGE"
                     />
 
-                    {content.map((block, blockIndex) => (
+                    {content.length > 0 ? content.map((block, blockIndex) => (
                         <div key={block.id || `new-${blockIndex}`} className={`informations__block ${isEditing ? "block-edit" : ""}`}>
                             {isEditing ? (
                                 <input
@@ -171,7 +153,13 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
                                 <p className="informations__block__text">{block.text}</p>
                             )}
                         </div>
-                    ))}
+                    )) : (
+                        <div className="costs__block">
+                            <h3 className="costs__block--none">
+                                Нет данных
+                            </h3>
+                        </div>
+                    )}
 
                     {isEditing && (
                         <div className="informations__add-block">
