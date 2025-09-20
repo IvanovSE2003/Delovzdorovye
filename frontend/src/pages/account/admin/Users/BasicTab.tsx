@@ -64,8 +64,8 @@ const BasicTab: React.FC<BasicTabProps> = ({
         tabs={[
           { name: "ALL", label: "Все" },
           { name: "ADMIN", label: "Админы" },
-          { name: "DOCTOR", label: "Доктора" },
-          { name: "PATIENT", label: "Пациенты" }
+          { name: "DOCTOR", label: "Специалисты" },
+          { name: "PATIENT", label: "Пользователи" }
         ]}
         filter
         activeTab={selectedRole}
@@ -111,8 +111,8 @@ const BasicTab: React.FC<BasicTabProps> = ({
             >
               <td>
                 {user.role === "ADMIN" && "Админ"}
-                {user.role === "DOCTOR" && "Доктор"}
-                {user.role === "PATIENT" && "Пациент"}
+                {user.role === "DOCTOR" && "Специалисты"}
+                {user.role === "PATIENT" && "Пользователи"}
               </td>
               <td>
                 <a href={`/profile/${user.id}`}>
