@@ -15,7 +15,7 @@ export default class HomeService {
         $api.post('/content/create', { title: newData.header, content: newData.text, type})
     }
 
-    static async deleteContent(p0: string, blockId: number): Promise<void> {
+    static async deleteContent(blockId: number): Promise<void> {
         $api.delete(`/content/${blockId}`)
     }
 

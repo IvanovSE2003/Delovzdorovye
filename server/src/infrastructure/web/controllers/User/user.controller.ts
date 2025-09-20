@@ -32,51 +32,25 @@ export default class UserController {
 
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
-            const {
-                email,
-                role,
-                name,
-                surname,
-                patronymic,
-                phone,
-                pin_code: pinCode,
-                gender,
-                date_birth: dateBirth,
-                time_zone: timeZone,
-                specializations,
-                experienceYears,
-                isAnonymous,
-            } = req.body;
+            const { email, name, surname, patronymic, phone, pinCode, gender, dateBirth, timeZone, isAnonymous, } = req.body;
 
             const exists = await this.userRepository.checkUserExists(email, phone);
-            if (exists) {
-                return next(ApiError.badRequest("Пользователь с таким email или телефоном уже существует"));
-            }
+            if (exists) return next(ApiError.badRequest("Пользователь с таким email или телефоном уже существует"));
 
-            const saveFile = async (file?: UploadedFile) => file ? await this.fileService.saveFile(file) : null;
+            const data: regData = { email, name, surname, patronymic, phone, pinCode, gender, dateBirth, timeZone, isAnonymous };
+            const result = await this.authService.registerWithTwoFactor(data);
 
-            const diploma = await saveFile(req.files?.diploma as UploadedFile) || "";
-            const license = await saveFile(req.files?.license as UploadedFile) || "";
+            return res.status(200).json(result);
+        } catch (e: any) {
+            return next(ApiError.badRequest(e.message));
+        }
+    }
 
-            const data: regData = {
-                email,
-                role,
-                name,
-                surname,
-                patronymic,
-                phone,
-                pinCode,
-                gender,
-                dateBirth,
-                timeZone,
-                specializations,
-                experienceYears,
-                diploma,
-                license,
-                isAnonymous,
-            };
+    async completeRegistration(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { tempToken, twoFactorCode } = req.body;
 
-            const result = await this.authService.register(data);
+            const result = await this.authService.completeRegistration(tempToken, twoFactorCode);
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -84,7 +58,7 @@ export default class UserController {
                 secure: true,
             });
 
-            return res.json({
+            return res.status(201).json({
                 accessToken: result.accessToken,
                 user: result.user,
             });
@@ -93,20 +67,13 @@ export default class UserController {
         }
     }
 
+
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const { creditial, pin_code: pinCode, twoFactorCode, twoFactorMethod } = req.body;
+            const { creditial, pinCode, twoFactorCode, twoFactorMethod } = req.body;
+            const result: dataResult = await this.authService.login(creditial, pinCode, twoFactorMethod, twoFactorCode);
 
-            const result: dataResult = await this.authService.login(
-                creditial,
-                pinCode,
-                twoFactorMethod,
-                twoFactorCode
-            );
-
-            if (result.requiresTwoFactor) {
-                return res.json({ success: true, tempToken: result.tempToken });
-            }
+            if (result.requiresTwoFactor) return res.json({ success: true, tempToken: result.tempToken });
 
             res.cookie("refreshToken", result.refreshToken, {
                 maxAge: 24 * 60 * 60 * 1000,
@@ -114,13 +81,13 @@ export default class UserController {
                 secure: true,
             });
 
-            return res.json(result);
+            return res.status(200).json(result);
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
 
-    async completeTwoFactorAuth(req: Request, res: Response, next: NextFunction) {
+    async completeLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const { tempToken, code } = req.body;
 
@@ -132,7 +99,7 @@ export default class UserController {
                 secure: true,
             });
 
-            return res.json(result);
+            return res.status(200).json(result);
         } catch (e: any) {
             next(ApiError.badRequest(e.message));
         }
@@ -647,7 +614,7 @@ export default class UserController {
                 if (!doctor) {
                     return next(ApiError.internal('Ошибка изменения роли пользователя на специалиста'));
                 }
-            } else if(newRole === 'PATIENT') {
+            } else if (newRole === 'PATIENT') {
                 const doctor = await this.doctorRepository.findByUserId(user.id);
                 if (!doctor) {
                     return next(ApiError.badRequest('Специалист не найден'));
@@ -688,8 +655,8 @@ export default class UserController {
                         doctorName: consult.doctor?.user.name,
                         doctorSurname: consult.doctor?.user.surname,
                         doctorPatronymic: consult.doctor?.user.patronymic,
-                        date: result.newDate,  
-                        time: result.newTime,  
+                        date: result.newDate,
+                        time: result.newTime,
                         recomendation: consult.recommendations,
                         specialization: consult.doctor?.profData.map(p => p.specialization)
                     };
@@ -703,7 +670,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL;
+        const clientUrl = process.env.CLIENT_URL_CLOUD;
 
         return `
             <!DOCTYPE html>

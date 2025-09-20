@@ -1,6 +1,5 @@
 export default interface regData {
     email: string,
-    role: 'PATIENT' | 'DOCTOR' | 'ADMIN',
     name: string,
     surname: string,
     patronymic: string,
@@ -9,9 +8,5 @@ export default interface regData {
     gender: string,
     dateBirth: Date,
     timeZone: number,
-    specializations: string[],
-    experienceYears: number
-    diploma: string,
-    license: string,
     isAnonymous: boolean
 }

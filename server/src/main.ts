@@ -28,7 +28,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173"],
+        origin: ["https://lithely-truthful-polecat.cloudpub.ru"],
         methods: ["GET", "POST"]
     }
 });
@@ -37,7 +37,7 @@ videoConferenceService.setIo(io);
 timerService.setIo(io);
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "https://lithely-truthful-polecat.cloudpub.ru",
     credentials: true
 }));
 app.use(express.json());
@@ -76,34 +76,6 @@ const start = async () => {
                         console.log(`Консультация ${consult.id} завершена автоматически`);
                     }
                 }
-
-                // const expiredConsultations = await models.Consultation.findAll({
-                //     where: {
-                //         consultation_status: 'UPCOMING',
-                //         payment_status: 'PAYMENT',
-                //         reservation_expires_at: { [Op.lt]: now.toDate() }
-                //     }
-                // });
-
-                // for (const consult of expiredConsultations) {
-                //     const slot = await models.DoctorSlots.findOne({
-                //         where: {
-                //             doctorId: consult.doctorId,
-                //             date: consult.date,
-                //             time: consult.time
-                //         }
-                //     });
-
-                //     if (slot) {
-                //         await slot.update({ status: 'OPEN' });
-                //     }
-
-                //     // 3️⃣ Обновляем консультацию
-                //     await consult.update({ payment_status: 'NOTPAID' });
-
-                //     console.log(`⏰ Сброшена бронь консультации ${consult.id}, слот освобождён`);
-                // }
-
             } catch (e) {
                 console.error('Ошибка при авто-завершении консультаций:', e);
             }

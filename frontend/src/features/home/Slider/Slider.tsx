@@ -16,6 +16,7 @@ interface SliderProps extends ElementHomePageProps {
 
 const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
   const [title, setTitle] = useState<string>("");
+  const [titleId, setTitleId] = useState<number>(Date.now());
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
   const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
@@ -25,6 +26,7 @@ const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
     try {
       const response = await HomeService.getContent("slider");
       setTitle(response.data.contents[0].text || "Пока нет данных");
+      setTitleId(response.data.contents[0].id);
     } catch (e) {
       processError(e, "Ошибка при получении данных слайдера");
     }
@@ -33,9 +35,9 @@ const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
   // Сохраниние данных
   const saveChange = async () => {
     try {
-      await HomeService.editContent("slider", { id: Date.now(), text: title });
+      await HomeService.editContent("slider", { id: titleId, text: title });
       setMessage({ id: Date.now(), message: "Данные успешно сохранены" });
-      setIsEditing(false)
+      setIsEditing(false);
     } catch (e) {
       processError(e, "Ошибка при сохрании данных", setError);
     }
@@ -54,7 +56,7 @@ const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
           <div className="slider__text">
             <ShowError msg={error} />
             <ShowError msg={message} mode="MESSAGE" />
-            <br/>
+            <br />
             {isEditing ? (
               <textarea
                 className='slider__textarea'

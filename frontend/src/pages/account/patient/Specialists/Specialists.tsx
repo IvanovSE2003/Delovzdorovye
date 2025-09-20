@@ -64,9 +64,6 @@ const Specialists: React.FC = () => {
                                         {doctor.user.surname} {doctor.user.name} {doctor.user?.patronymic}
                                     </h2>
                                     <p className="specialist-card__status">
-                                        Статус: {doctor.isActivated ? 'Активен' : 'Не активен'}
-                                    </p>
-                                    <p className="specialist-card__status">
                                         Часовой пояс: {getTimeZoneLabel(doctor.user.time_zone)}
                                     </p>
                                 </div>

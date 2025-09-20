@@ -91,7 +91,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
   // Загрузка расписания при открытии страницы
   useEffect(() => {
     fetchSchedule();
-  }, [fetchSchedule, weekOffset]);
+  }, [weekOffset]);
 
   useEffect(() => {
     const handleMouseUp = () => {

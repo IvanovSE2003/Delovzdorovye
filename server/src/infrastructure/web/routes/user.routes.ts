@@ -10,8 +10,12 @@ router.post('/upload-avatar', authMiddlewareInstance, (req: Request, res: Respon
 router.post('/delete-avatar', (req: Request, res: Response, next: NextFunction) => userController.deleteAvatar(req, res, next));
 
 router.post('/registration', body('email').isEmail(), (req: Request, res: Response, next: NextFunction) => userController.registration(req, res, next));
+router.post('/complete/registration', (req: Request, res: Response, next: NextFunction) => userController.completeRegistration(req, res, next));
+
 router.post('/login', (req: Request, res: Response, next: NextFunction) => userController.login(req, res, next));
-router.post('/complete-two-factor', (req: Request, res: Response, next: NextFunction) => userController.completeTwoFactorAuth(req, res, next));
+router.post('/complete-two-factor', (req: Request, res: Response, next: NextFunction) => userController.completeLogin(req, res, next));
+
+
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
 router.get('/auth', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));
 

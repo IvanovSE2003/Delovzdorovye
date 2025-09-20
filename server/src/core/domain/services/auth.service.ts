@@ -12,8 +12,8 @@ export default interface AuthService {
 
     sendTwoFactorCode(creditial: string, method: string): Promise<void>;
     verifyTwoFactorCode(userId: number, code: string): Promise<boolean>;
-    completeTwoFactorAuth(tempToken: string, code: string): Promise<{accessToken: string; refreshToken: string; user: User; }>;  
-    sendLoginNotification(phone: string, code: string): Promise<void>;  
+    completeTwoFactorAuth(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: User; }>;
+    sendLoginNotification(phone: string, code: string): Promise<void>;
 
     generateTelegramLinkToken(userId: number): Promise<string>;
 
@@ -24,4 +24,7 @@ export default interface AuthService {
     blockAccount(userId: number): Promise<void>;
     sendActivationEmail(email: string, activationLink: string): Promise<void>;
     sendActivationPhone(email: string, token: string): Promise<void>;
+
+    registerWithTwoFactor(data: regData): Promise<{ requiresTwoFactor: boolean; tempToken: string }>;
+    completeRegistration(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: User }>;
 }

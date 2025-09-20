@@ -33,7 +33,7 @@
 //             },
 //             confirmation: {
 //                 type: 'redirect',
-//                 return_url: `${process.env.CLIENT_URL}/consultation/${consultationId}?payment=success`,
+//                 return_url: `${process.env.CLIENT_URL_CLOUD}/consultation/${consultationId}?payment=success`,
 //             },
 //             capture: true,
 //             description: description,

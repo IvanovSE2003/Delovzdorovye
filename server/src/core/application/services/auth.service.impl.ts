@@ -118,6 +118,64 @@ export class AuthServiceImpl implements AuthService {
         };
     }
 
+    async registerWithTwoFactor(data: regData): Promise<{ requiresTwoFactor: boolean; tempToken: string }> {
+        const user = await this.register(data);
+
+        const code = this.twoFactorService.generateCode();
+        const expires = new Date(Date.now() + 5 * 60 * 1000);
+
+        await this.userRepository.save(user.user.setTwoFactorCode(code, expires));
+        await this.mailService.sendTwoFactorCode(user.user.email, code);
+
+        const tempToken = jwt.sign(
+            {
+                id: user.user.id,
+                email: user.user.email,
+                role: user.user.role,
+                twoFactorRequired: true,
+                action: "registration",
+            },
+            this.twoFactorService.getTempSecret(),
+            { expiresIn: "5m" }
+        );
+
+        return { requiresTwoFactor: true, tempToken };
+    }
+
+    async completeRegistration(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+        const payload = jwt.verify(tempToken, this.twoFactorService.getTempSecret()) as jwt.JwtPayload & {
+            id: number;
+            email: string;
+            role: string;
+            twoFactorRequired: boolean;
+            action: string;
+        };
+
+        if (!payload || payload.action !== "registration") throw new Error("Неверный временный токен");
+
+        const user = await this.userRepository.findById(payload.id);
+        if (!user) throw new Error("Пользователь не найден");
+
+        const isValid = await this.twoFactorService.verifyCode(user, code);
+        if (!isValid) throw new Error("Неверный код подтверждения");
+
+        const activatedUser = await this.userRepository.save(user.activate());
+
+        const tokens = await this.tokenService.generateTokens({
+            id: activatedUser.id,
+            email: activatedUser.email,
+            role: activatedUser.role,
+        });
+
+        await this.tokenService.saveToken(activatedUser.id, tokens.refreshToken);
+
+        return {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            user: activatedUser,
+        };
+    }
+
     async logout(refreshToken: string): Promise<void> {
         if (!refreshToken) {
             throw new Error("Токен не найден");
