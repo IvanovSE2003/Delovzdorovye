@@ -4,6 +4,7 @@ import type { DataTabProps } from "./Specialists";
 import { Link } from "react-router";
 import type { IBasicData } from "../../../../models/IDatas";
 import { processError } from "../../../../helpers/processError";
+import { URL } from "../../../../http";
 
 const FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
@@ -48,11 +49,9 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                         href={fileUrl}
                         onMouseEnter={(e) => handleImageHover(e, value)}
                         onMouseLeave={handleImageLeave}
-                        onMouseMove={(e) =>
-                            setPreviewPosition({ x: e.clientX, y: e.clientY })
-                        }
+                        onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
                     >
-                        Документ
+                        Изображение
                     </a>
                 );
             }
@@ -81,14 +80,14 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             if (data?.basicDatas) {
                 setBasicDatas(data.basicDatas);
             }
-        } catch(e) {
+        } catch (e) {
             processError(e, "Ошибка при загрузке данных");
         }
     };
 
     // Удаление данных
     const removeBatch = (id: number, message?: string) => {
-        setMessage({id: Date.now(), message: message || "Ошибка при удалении"})
+        setMessage({ id: Date.now(), message: message || "Ошибка при удалении" })
 
         const marked = basicDatas.map(b =>
             b.id === id ? { ...b, className: "removing" } : b
@@ -104,8 +103,8 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const confirm = async (id: number) => {
         try {
             const data = await store.confirmBasicData(id);
-            data.success ? removeBatch(id, data.message) : setError({id: Date.now(), message: data.message});
-        } catch(e) {
+            data.success ? removeBatch(id, data.message) : setError({ id: Date.now(), message: data.message });
+        } catch (e) {
             processError(e, "Ошибка при изменении пользователя", setError)
         }
     };
@@ -113,7 +112,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     // Отклонить изменения пользователя
     const handleRejectSubmit = async () => {
         if (!currentBatchId || !rejectReason.trim()) {
-            setError({id: Date.now(), message: "Укажите причину отказа"})
+            setError({ id: Date.now(), message: "Укажите причину отказа" })
             return;
         }
 
@@ -124,9 +123,9 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                 removeBatch(currentBatchId, data.message);
                 closeRejectModal();
             } else {
-                setError({id: Date.now(), message: data.message || "Ошибка при отклонении"});
+                setError({ id: Date.now(), message: data.message || "Ошибка при отклонении" });
             }
-        } catch(e) {
+        } catch (e) {
             processError(e, "Произошла ошибка при отклонении", setError);
         }
     };
@@ -167,7 +166,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                 </div>
             )}
 
-            <p style={{textAlign: "justify"}}>
+            <p style={{ textAlign: "justify" }}>
                 В таблице «Основные данные» отображаются все изменения основных данных, внесённые специалистом. К ним относятся ФИО, пол и дата рождения.
             </p>
 

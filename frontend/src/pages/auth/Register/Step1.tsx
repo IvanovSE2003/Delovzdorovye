@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import MyInput from "../../../components/UI/MyInput/MyInput";
 import MyInputTel from "../../../components/UI/MyInput/MyInputTel";
 import MyInputEmail from "../../../components/UI/MyInput/MyInputEmail";
@@ -6,9 +5,9 @@ import MyInputDate from "../../../components/UI/MyInput/MyInputDate";
 import CheckBox from "../../../components/UI/CheckBox/CheckBox";
 import type { Gender, RegistrationData, Role } from "../../../models/Auth";
 import { useState } from "react";
+import AnimatedBlock from "../../../components/AnimatedBlock";
 
 interface Step1FormProps {
-    step: number;
     anonym: boolean;
     anonymSet: (value: boolean) => void;
     userDetails: RegistrationData;
@@ -21,12 +20,10 @@ interface Step1FormProps {
     handleStep1: () => void;
     disabled: boolean;
     setState: (value: string) => void;
-    stepVariants: any;
 }
 
 
 const Step1Form: React.FC<Step1FormProps> = ({
-    step,
     anonym,
     anonymSet,
     userDetails,
@@ -36,29 +33,13 @@ const Step1Form: React.FC<Step1FormProps> = ({
     handleStep1,
     disabled,
     setState,
-    stepVariants,
 }) => {
     const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
     const [isErrorDate, setIsErrorDate] = useState<boolean>(false);
     const [isErrorTel, setIsErrorTel] = useState<boolean>(false);
 
-    // useEffect(() => {
-    //     console.clear();
-    //     console.log("Ошибка почты: ", isErrorEmail);
-    //     console.log("Ошибка даты рождения: ", isErrorDate);
-    //     console.log("Ошибка номера телефона: ", isErrorTel);
-    // }, [isErrorEmail, isErrorDate, isErrorTel]);
-
     return (
-        <motion.div
-            key={step}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            variants={stepVariants}
-            transition={{ duration: 0.2 }}
-            className="auth__form"
-        >
+        <AnimatedBlock>
             <div className={`auth__anonym-btn ${anonym ? "active" : ""}`}>
                 <label
                     htmlFor="anonym"
@@ -160,10 +141,10 @@ const Step1Form: React.FC<Step1FormProps> = ({
                     <MyInputDate
                         id="date-birth"
                         label="Дата рождения"
-                        value={userDetails.date_birth || ""}
+                        value={userDetails.dateBirth || ""}
                         isError={setIsErrorDate}
-                        onChange={(value) => handleUserDetailsChange("date_birth", value)}
-                        className={!userDetails.date_birth ? "required-field" : ""}
+                        onChange={(value) => handleUserDetailsChange("dateBirth", value)}
+                        className={!userDetails.dateBirth ? "required-field" : ""}
                     />
                 </>
             )}
@@ -185,7 +166,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
             >
                 Войти в аккаунт
             </a>
-        </motion.div>
+        </AnimatedBlock>
     );
 };
 

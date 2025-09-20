@@ -60,13 +60,21 @@ export default class UserController {
 
             return res.status(201).json({
                 accessToken: result.accessToken,
-                user: result.user,
+                user: {
+                    name: result.user.name,
+                    surname: result.user.surname,
+                    patronymic: result.user.patronymic,
+                    gender: result.user.gender,
+                    dateBirth: result.user.dateBirth,
+                    phone: result.user.phone,
+                    email: result.user.email,
+                    timeZone: result.user.timeZone
+                },
             });
         } catch (e: any) {
             return next(ApiError.badRequest(e.message));
         }
     }
-
 
     async login(req: Request, res: Response, next: NextFunction) {
         try {
@@ -518,27 +526,15 @@ export default class UserController {
             const img = req.files?.img;
 
             const user = await this.userRepository.findById(Number(userId));
-            if (!user) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
-
-            if (!img) {
-                return next(ApiError.badRequest('Файл не загружен'));
-            }
-
-            if (Array.isArray(img)) {
-                return next(ApiError.badRequest('Загружено несколько файлов'));
-            }
+            if (!user)  return next(ApiError.badRequest('Пользователь не найден'));
+            if (!img) return next(ApiError.badRequest('Файл не загружен'));
+            if (Array.isArray(img)) return next(ApiError.badRequest('Загружено несколько файлов'));
 
             let updatedUser: User;
             const fileName = await this.fileService.saveFile(img);
             if (user.role === 'DOCTOR') {
-                if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
-                    await this.fileService.deleteFile(user.img);
-                }
-
-                updatedUser = await this.userRepository.save(user.updateAvatar(fileName).setSentChanges(true));
-                const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, updatedUser.img, updatedUser.id);
+                updatedUser = await this.userRepository.save(user.setSentChanges(true));
+                const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, fileName, updatedUser.id);
                 await this.basicDataRepository.create(basicData);
             } else {
                 if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {

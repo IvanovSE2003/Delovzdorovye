@@ -13,8 +13,7 @@ router.post('/registration', body('email').isEmail(), (req: Request, res: Respon
 router.post('/complete/registration', (req: Request, res: Response, next: NextFunction) => userController.completeRegistration(req, res, next));
 
 router.post('/login', (req: Request, res: Response, next: NextFunction) => userController.login(req, res, next));
-router.post('/complete-two-factor', (req: Request, res: Response, next: NextFunction) => userController.completeLogin(req, res, next));
-
+router.post('/complete/login', (req: Request, res: Response, next: NextFunction) => userController.completeLogin(req, res, next));
 
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => userController.logout(req, res, next));
 router.get('/auth', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => userController.check(req, res, next));

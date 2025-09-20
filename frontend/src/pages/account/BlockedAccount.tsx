@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import logo from '../../../public/logo.svg'
+import logo from "@/assets/images/logo.svg";
 import { useContext } from 'react';
 import { Context } from '../../main';
 

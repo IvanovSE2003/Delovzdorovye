@@ -2,6 +2,7 @@ import { useState, Suspense, lazy } from "react";
 import "./FormAuth.scss";
 import { observer } from "mobx-react-lite";
 import Loader from "../../../components/UI/Loader/Loader";
+import { AnimatePresence } from "framer-motion";
 
 export type AuthState = "login" | "register" | "recover";
 
@@ -17,18 +18,19 @@ const FormAuth: React.FC = () => {
             <h3 className="auth__title">
                 {state === "login" && "Вход в систему"}
                 {state === "register" && "Регистрация"}
-                {state === "recover" && "Восстановление пин-кода"}
             </h3>
 
             {error && <p className="auth__error">{error}</p>}
 
-            <Suspense fallback={<Loader/>}>
-                {state === "login" && (
-                    <Login setState={setState} setError={setError} />
-                )}
-                {state === "register" && (
-                    <Register setState={setState} setError={setError} />
-                )}
+            <Suspense fallback={<Loader />}>
+                <AnimatePresence mode="wait">
+                    {state === "login" && (
+                        <Login setState={setState} setError={setError} />
+                    )}
+                    {state === "register" && (
+                        <Register setState={setState} setError={setError} />
+                    )}
+                </AnimatePresence>
             </Suspense>
         </>
     );

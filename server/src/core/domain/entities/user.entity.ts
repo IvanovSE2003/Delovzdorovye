@@ -8,7 +8,7 @@ export default class User {
         public phone: string,
         public pinCode: number,
         public timeZone: number,
-        public dateBirth: Date | null,
+        public dateBirth: string | null,
         public gender: string | null,
         public isActivated: boolean,
         public isActivatedSMS: boolean,

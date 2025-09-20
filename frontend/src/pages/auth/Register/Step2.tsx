@@ -1,9 +1,7 @@
-import { motion } from "framer-motion";
 import PinCodeInput from "../../../components/UI/PinCodeInput/PinCodeInput";
+import AnimatedBlock from "../../../components/AnimatedBlock";
 
 interface Step2FormProps {
-  step: number;
-  stepVariants: any;
   SetPinCode: (code: string) => void;
   setReplyPinCode: (code: string) => void;
   registration: () => void;
@@ -11,34 +9,25 @@ interface Step2FormProps {
 }
 
 const Step2Form: React.FC<Step2FormProps> = ({
-  step,
-  stepVariants,
   SetPinCode,
   setReplyPinCode,
   registration,
   handleBack,
 }) => {
   return (
-    <motion.div
-      key={step}
-      initial="enter"
-      animate="center"
-      exit="exit"
-      variants={stepVariants}
-      transition={{ duration: 0.3 }}
-    >
+    <AnimatedBlock>
       <div className="solutions__warn">
         <span>
-          PIN-код нужен для безопасности ваших данных. Если вы забудете PIN-код, то потребуется пройти регистрацию повторно.
+          PIN-код нужен для безопасности ваших данных. Если вы забудете PIN-код, то попробуйте его востановить.
         </span>
       </div>
       <br />
 
       <div className="auth__form">
-        <h2>Придумайте пин-код</h2>
+        <h2 className="auth__form__title">Придумайте пин-код</h2>
         <PinCodeInput onLogin={SetPinCode} countNumber={4} />
 
-        <h2>Повторите пин-код</h2>
+        <h2 className="auth__form__title">Повторите пин-код</h2>
         <PinCodeInput onLogin={setReplyPinCode} countNumber={4} />
 
         <button
@@ -46,7 +35,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
           className="auth__button__final"
           type="button"
         >
-          Завершить регистрацию
+          Продолжить
         </button>
 
         <button
@@ -57,7 +46,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
           Назад
         </button>
       </div>
-    </motion.div>
+    </AnimatedBlock>
   );
 };
 

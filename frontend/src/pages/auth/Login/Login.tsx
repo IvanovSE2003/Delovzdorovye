@@ -1,21 +1,19 @@
-import { lazy, Suspense, useState, useContext, useEffect, useMemo } from "react";
+import { lazy, useState, useContext, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../../../main";
-import { AnimatePresence } from "framer-motion";
 import type { FormAuthProps } from "../../../models/Auth";
 import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../../routes";
-
-import Loader from "../../../components/UI/Loader/Loader";
+import { processError } from "../../../helpers/processError";
 
 const Step1 = lazy(() => import("./Step1"));
 const Step2 = lazy(() => import("./Step2"));
 const Step3 = lazy(() => import("./Step3"));
 
-
 const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const { store } = useContext(Context);
   const navigate = useNavigate();
+
   const [method, setMethod] = useState<"SMS" | "EMAIL">("SMS");
   const [step, setStep] = useState<number>(1);
   const [emailOrphone, setEmailOrPhone] = useState<string>("");
@@ -86,7 +84,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (!correctCode)
       setError("Не корректно введен код!");
     else {
-      const data = await store.login({ creditial: emailOrphone, twoFactorMethod: method, pin_code: Number(code) });
+      const data = await store.login({ creditial: emailOrphone, twoFactorMethod: method, pinCode: Number(code) });
       data.success && setStep(3);
     }
   };
@@ -97,9 +95,9 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setError("Введите код!");
       return;
     }
-    const data = await store.completeTwoFactor(localStorage.getItem('tempToken'), code);
+    const data = await store.completeLogin(localStorage.getItem('tempToken'), code);
     console.log(data);
-    if(data.success) navigate(RouteNames.PERSONAL);
+    if (data.success) navigate(RouteNames.PERSONAL);
     else setError('Ошибка при входе!');
   };
 
@@ -122,10 +120,10 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const handleResendCode = async () => {
     setIsResending(true);
     try {
-      await store.twoFactorSend(method, emailOrphone);
+      await store.completeLogin(method, emailOrphone);
       setTimeLeft(60);
-    } catch (error) {
-      console.error("Ошибка при повторной отправке:", error);
+    } catch (e) {
+      processError(e, "Ошибка при повторной отправке");
     } finally {
       setIsResending(false);
     }
@@ -140,52 +138,48 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [step])
 
   useEffect(() => {
-    if (timeLeft > 0) {
+    if (timeLeft > 0 && step === 3) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
+    } else {
+      setTimeLeft(60);
     }
-  }, [timeLeft]);
-
-  if (store.loading) return <Loader />
+  }, [step, timeLeft]);
 
   return (
     <div className="auth__container">
-      <Suspense fallback={<Loader />}>
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <Step1
-              method={method}
-              emailOrPhone={emailOrphone}
-              setEmailOrPhone={setEmailOrPhone}
-              setIsErrorTelOrEmail={setIsErrorTelOrEmail}
-              formValidation={formValidation}
-              handelStep1={handelStep1}
-              toggleAuthType={toggleAuthType}
-              setState={setState}
-              stepVariants={stepVariants}
-            />
-          )}
+      {step === 1 && (
+        <Step1
+          method={method}
+          emailOrPhone={emailOrphone}
+          setEmailOrPhone={setEmailOrPhone}
+          setIsErrorTelOrEmail={setIsErrorTelOrEmail}
+          formValidation={formValidation}
+          handelStep1={handelStep1}
+          toggleAuthType={toggleAuthType}
+          setState={setState}
+          stepVariants={stepVariants}
+        />
+      )}
 
-          {step === 2 && (
-            <Step2
-              handelStep2={handelStep2}
-              handleBack={handleBack}
-              stepVariants={stepVariants}
-            />
-          )}
+      {step === 2 && (
+        <Step2
+          handelStep2={handelStep2}
+          handleBack={handleBack}
+          stepVariants={stepVariants}
+        />
+      )}
 
-          {step === 3 && (
-            <Step3
-              handelStep3={handelStep3}
-              handleBack={handleBack}
-              handleResendCode={handleResendCode}
-              stepVariants={stepVariants}
-              timeLeft={timeLeft}
-              isResending={isResending}
-            />
-          )}
-        </AnimatePresence>
-      </Suspense>
+      {step === 3 && (
+        <Step3
+          handelStep3={handelStep3}
+          handleBack={handleBack}
+          handleResendCode={handleResendCode}
+          stepVariants={stepVariants}
+          timeLeft={timeLeft}
+          isResending={isResending}
+        />
+      )}
     </div>
   );
 };

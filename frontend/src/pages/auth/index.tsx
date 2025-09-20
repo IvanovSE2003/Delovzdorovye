@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import logo from '../../../public/logo.svg';
+import logo from "@/assets/images/logo.svg";
 import FormAuth from "./FormAuth/FormAuth";
 
 const LoginPage = () => {

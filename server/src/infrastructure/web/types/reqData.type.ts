@@ -6,7 +6,7 @@ export default interface regData {
     phone: string,
     pinCode: number,
     gender: string,
-    dateBirth: Date,
+    dateBirth: string,
     timeZone: number,
     isAnonymous: boolean
 }

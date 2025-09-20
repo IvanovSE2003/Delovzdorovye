@@ -28,7 +28,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://lithely-truthful-polecat.cloudpub.ru"],
+        origin: ["https://affably-clear-rat.cloudpub.ru"],
         methods: ["GET", "POST"]
     }
 });
@@ -37,7 +37,7 @@ videoConferenceService.setIo(io);
 timerService.setIo(io);
 
 app.use(cors({
-    origin: "https://lithely-truthful-polecat.cloudpub.ru",
+    origin: "https://affably-clear-rat.cloudpub.ru",
     credentials: true
 }));
 app.use(express.json());

@@ -99,36 +99,62 @@ export default class BatchController {
         const user = await this.userRepository.findById(basicData.userId || 0);
         if (!user) return next(ApiError.badRequest("Пользователь не найден"));
 
-        const userFieldMap: Record<string, (user: User, value: string) => void> = {
-            "Изображение": (u, v) => (u.img = v),
-            "Имя": (u, v) => (u.name = v),
-            "Фамилия": (u, v) => (u.surname = v),
-            "Отчество": (u, v) => (u.patronymic = v),
-            "Пол": (u, v) => {
-                u.gender = v;
-                if (u.img === "man.png" && v === "Женщина") u.img = "girl.png";
-                else if (u.img === "girl.png" && v !== "Женщина") u.img = "man.png";
+        const userFieldMap: Record<string, (user: User, value: string) => Promise<void>> = {
+            "Изображение": async (u, v) => {
+                u.img = v;
+                await this.userRepository.save(u);
             },
-            "Дата рождения": (u, v) => (u.dateBirth = new Date(v)),
+            "Имя": async (u, v) => {
+                u.name = v;
+                await this.userRepository.save(u);
+            },
+            "Фамилия": async (u, v) => {
+                u.surname = v;
+                await this.userRepository.save(u);
+            },
+            "Отчество": async (u, v) => {
+                u.patronymic = v;
+                await this.userRepository.save(u);
+            },
+            "Пол": async (u, v) => {
+                const oldGender = u.gender;
+                u.gender = v;
+
+                if (oldGender !== v) {
+                    if (u.img === "man.png" && v === "Женщина") {
+                        u.img = "girl.png";
+                    } else if (u.img === "girl.png" && v !== "Женщина") {
+                        u.img = "man.png";
+                    }
+                }
+
+                await this.userRepository.save(u);
+            },
+            "Дата рождения": async (u, v) => {
+                u.dateBirth = v;
+                await this.userRepository.save(u);
+            },
         };
 
         if (basicData.field_name in userFieldMap) {
-            userFieldMap[basicData.field_name](user, basicData.new_value);
-            await this.userRepository.update(user);
+            await userFieldMap[basicData.field_name](user, basicData.new_value);
         } else {
             return next(ApiError.badRequest("Недопустимое поле для изменения"));
         }
 
-        const basicDatas = await this.basicDataReposiotry.findAllByUserId(user.id);
-        if (basicDatas.length === 0) await this.userRepository.save(user.setSentChanges(false));
-
         await this.basicDataReposiotry.delete(basicData.id);
+
+        const remainingChanges = await this.basicDataReposiotry.findAllByUserId(user.id);
+        if (remainingChanges.length === 0) {
+            user.setSentChanges(false);
+            await this.userRepository.save(user);
+        }
 
         await this.notificationRepository.save(
             new Notification(
                 0,
                 "Изменения приняты",
-                "Ваши изменения были приняты администатором",
+                "Ваши изменения были приняты администратором",
                 "INFO",
                 false,
                 basicData,
@@ -136,8 +162,6 @@ export default class BatchController {
                 user.id
             )
         );
-
-        await this.userRepository.save(user.setSentChanges(false));
 
         return res.status(200).json({
             success: true,
@@ -219,10 +243,10 @@ export default class BatchController {
         const { rejection_reason } = req.body;
 
         const profData = await this.profDataRepository.findById(Number(id));
-        if (!profData)  return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
+        if (!profData) return next(ApiError.badRequest('Данные изменения профессиональных компентенций не найдены'));
 
         const user = await this.userRepository.findById(profData.userId!)
-        if(!user) return next(ApiError.badRequest('Пользователь не найден'));
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
 
         await this.notificationRepository.save(
             new Notification(
@@ -331,7 +355,7 @@ export default class BatchController {
         const limitUser = limit ? limit : 1;
 
         const result = await this.consultationRepository.findAll(Number(pageUser), Number(limitUser));
-        if (!result)  return next(ApiError.badRequest('Консультации не найдены'));
+        if (!result) return next(ApiError.badRequest('Консультации не найдены'));
 
         return res.status(200).json(result);
     }

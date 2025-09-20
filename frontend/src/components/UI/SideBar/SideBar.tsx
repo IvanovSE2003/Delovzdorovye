@@ -1,6 +1,7 @@
 import type { SidebarProps } from '../../../models/MenuItems';
 import './Sidebar.scss';
 import { NavLink, useLocation } from "react-router-dom";
+import logo from '@/assets/images/logo.svg';
 
 const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
   const location = useLocation();
@@ -25,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '' }) => {
     <div className={`sidebar ${className}`}>
       <div className="sidebar__logo">
         <NavLink to="/">
-          <img src="/logo.svg" alt="logo" />
+          <img src={logo} alt="logo" />
         </NavLink>
       </div>
       <nav className="sidebar__nav">

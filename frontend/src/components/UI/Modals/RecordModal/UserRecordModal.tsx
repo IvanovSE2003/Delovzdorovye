@@ -73,7 +73,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({
       setError("Не удалось загрузить расписание");
     }
   };
-  
+
   // Записаться на консультацию
   const handleSubmit = () => {
     if (!selectedDate || !selectedTime) {
@@ -81,13 +81,15 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({
       return;
     }
 
+    const hasOther = selectedProblems.some((p) => p.value === OTHER_PROBLEM_ID);
     onRecord({
       time: selectedTime,
       date: selectedDate,
       descriptionProblem: descriptionProblem,
       problems: selectedProblems.map((p) => p.value),
       doctorId: doctorId,
-      otherProblem: descriptionProblem
+      otherProblem: descriptionProblem,
+      hasOtherProblem: hasOther
     });
 
     // Сброс состояния

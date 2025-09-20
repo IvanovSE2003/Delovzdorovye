@@ -2,7 +2,7 @@ import { RouteNames } from "../../../routes";
 import { Link } from "react-router";
 
 import avatar from "../../../assets/images/account.png"
-import logo from "../../../../public/logo.svg";
+import logo from "@/assets/images/logo.svg";
 import "./Header.scss";
 
 interface headerProps {

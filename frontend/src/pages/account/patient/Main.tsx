@@ -33,7 +33,7 @@ const Main: React.FC = () => {
         };
 
         try {
-            if (RecordData.otherProblem) {
+            if (RecordData.hasOtherProblem) {
                 console.log("Это другая проблема: ", RecordData);
                 await ConsultationService.createSpecificConsultation(RecordData);
                 setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию. В ближайшее время с вами свяжется наш администратор" });

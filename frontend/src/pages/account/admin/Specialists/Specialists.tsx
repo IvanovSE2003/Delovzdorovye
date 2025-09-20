@@ -13,8 +13,8 @@ import ShowError from "../../../../components/UI/ShowError/ShowError";
 type TabType = "basic" | "prof";
 export interface DataTabProps {
     searchTerm: string;
-    setError: (message: {id: number; message: string}) => void;
-    setMessage: (message: {id: number; message: string}) => void;
+    setError: (message: { id: number; message: string }) => void;
+    setMessage: (message: { id: number; message: string }) => void;
 }
 
 const Specialists: React.FC = () => {
@@ -25,8 +25,8 @@ const Specialists: React.FC = () => {
     const [basicDatas, setBasicDatas] = useState<IBasicData[]>([]);
     const [profecionalDatas, setProfecionalDatas] = useState<IProfData[]>([]);
 
-    const [message, setMessage] = useState<{id: number; message: string}>({id: 0, message: ""});
-    const [error, setError] = useState<{id: number; message: string}>({id: 0, message: ""});
+    const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
 
     // Вкладки
     const tabs: ITab[] = [
@@ -36,10 +36,10 @@ const Specialists: React.FC = () => {
 
     return (
         <AccountLayout>
-            <ShowError msg={message} mode="MESSAGE"/>
+            <ShowError msg={message} mode="MESSAGE" />
             <ShowError msg={error} />
 
-            <div className="page-container">
+            <div className="page-container admin-page">
                 <h1 className="admin-page__title">Редактирование профилей</h1>
 
                 {/* Вкладки */}
@@ -78,7 +78,7 @@ const Specialists: React.FC = () => {
                     )}
                 </div>
             </div>
-        </AccountLayout>
+        </AccountLayout >
     );
 };
 

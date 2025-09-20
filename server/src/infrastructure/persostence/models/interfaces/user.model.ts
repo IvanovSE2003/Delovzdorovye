@@ -9,7 +9,7 @@ interface IUserAttributes {
     phone: string;
     pin_code: number;
     time_zone: number;
-    date_birth: Date | null;
+    date_birth: string | null;
     gender: string | null;
     isActivated: boolean;
     isActivatedSMS: boolean;

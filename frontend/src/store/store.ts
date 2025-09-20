@@ -97,11 +97,11 @@ export default class Store {
         });
     }
 
-    // Второй этап входа
-    async completeTwoFactor(tempToken: string | null, code: string): Promise<{ success: boolean }> {
+    // Второй этап входа (вход в систему)
+    async completeLogin(tempToken: string | null, code: string): Promise<{ success: boolean }> {
         return this.withLoading(async () => {
             try {
-                const response = await AuthService.completeTwoFactor(tempToken, code);
+                const response = await AuthService.completeLogin(tempToken, code);
                 localStorage.removeItem('tempToken');
                 localStorage.setItem('accessToken', response.data.accessToken);
                 this.setAuth(true);
@@ -118,21 +118,41 @@ export default class Store {
         });
     }
 
-    // Регистрация
-    async registration(data: RegistrationData): Promise<void> {
+    // Первый этап регистрации
+    async registration(data: RegistrationData): Promise<boolean> {
         return this.withLoading(async () => {
             try {
                 this.setError("");
                 const response = await AuthService.registration(data);
-                localStorage.setItem('token', response.data.accessToken);
-                this.setMenuItems(response.data.user.role);
-                this.setAuth(true);
-                this.setUser(response.data.user);
+                localStorage.setItem('tempToken', response.data.tempToken);
+                return response.data.requiresTwoFactor;
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 this.setError(error.response?.data?.message || "Ошибка при регистрации!");
+                return false;
             }
         });
+    }
+
+    // Второй этап регистрации (регистрация в системе)
+    async completeRegistration(tempToken: string, TwoFactorCode: string): Promise<boolean> {
+        return this.withLoading(async () => {
+            if(tempToken==="") return false;
+            try {
+                this.setError("");
+                const response = await AuthService.completeRegistration(tempToken, TwoFactorCode);
+                localStorage.removeItem('tempToken');
+                localStorage.setItem('accessToken', response.data.accessToken);
+                this.setAuth(true);
+                this.setMenuItems(response.data.user.role);
+                this.setUser(response.data.user);
+                return true;
+            } catch (e) {
+                const error = e as AxiosError<{ message: string }>;
+                this.setError(error.response?.data.message || "Ошибка при регистрации!");
+                return false;
+            }
+        })
     }
 
     // Выход

@@ -2,6 +2,7 @@ import { useState } from "react";
 import Search from "../../../../components/UI/Search/Search";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
 import type { User } from "../../../../models/Auth";
+import { URL } from "../../../../http";
 
 interface BasicTabProps {
   filteredUsers: User[];
@@ -63,7 +64,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
       <Tabs
         tabs={[
           { name: "ALL", label: "Все" },
-          { name: "ADMIN", label: "Админы" },
+          { name: "ADMIN", label: "Администраторы" },
           { name: "DOCTOR", label: "Специалисты" },
           { name: "PATIENT", label: "Пользователи" }
         ]}
@@ -110,9 +111,9 @@ const BasicTab: React.FC<BasicTabProps> = ({
                 ${user.role === 'ADMIN' && "users__row-admin"}`}
             >
               <td>
-                {user.role === "ADMIN" && "Админ"}
-                {user.role === "DOCTOR" && "Специалисты"}
-                {user.role === "PATIENT" && "Пользователи"}
+                {user.role === "ADMIN" && "Администратор"}
+                {user.role === "DOCTOR" && "Специалист"}
+                {user.role === "PATIENT" && "Пользователь"}
               </td>
               <td>
                 <a href={`/profile/${user.id}`}>

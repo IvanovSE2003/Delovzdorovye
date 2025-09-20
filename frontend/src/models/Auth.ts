@@ -71,7 +71,7 @@ export interface User {
 export type LoginData = {
     creditial: string;
     twoFactorMethod: "SMS"|"EMAIL";
-    pin_code: number;
+    pinCode: number;
 }
 
 export type RegistrationData = {
@@ -80,9 +80,9 @@ export type RegistrationData = {
     patronymic: string;
     email: string;
     phone: string;
-    pin_code: string;
-    time_zone: number;
-    date_birth: string;
+    pinCode: string;
+    timeZone: number;
+    dateBirth: string;
     gender: Gender;
     role: Role;
     isAnonymous: boolean;

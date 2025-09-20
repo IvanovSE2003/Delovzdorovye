@@ -1,8 +1,6 @@
-import { lazy, Suspense, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { lazy, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import "../FormAuth/FormAuth.scss";
 import { Context } from "../../../main";
-import { AnimatePresence } from "framer-motion";
-
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router";
 import type { FormAuthProps, RegistrationData, Role, Gender } from "../../../models/Auth";
@@ -12,12 +10,7 @@ import Loader from "../../../components/UI/Loader/Loader";
 
 const Step1Form = lazy(() => import("./Step1"));
 const Step2Form = lazy(() => import("./Step2"));
-
-const stepVariants = {
-  enter: { opacity: 0, x: 30 },
-  center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -30 }
-};
+const Step3Form = lazy(() => import("./Step3"));
 
 const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const navigate = useNavigate();
@@ -93,12 +86,10 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Проверка обязательных полей
   const hasRequiredFields = useMemo(() => {
     if (anonym) {
-      // Для анонимного пользователя: телефон, почта
       return !!(userDetails.phone &&
         userDetails.email);
     } else {
-      // Для неанонимного пользователя: дата рождения должна быть полностью введена (ДД.ММ.ГГГГ)
-      const isDateValid = !!(userDetails.date_birth && userDetails.date_birth.length === 10);
+      const isDateValid = !!(userDetails.dateBirth && userDetails.dateBirth.length === 10);
       return !!(userDetails.name &&
         userDetails.surname &&
         userDetails.phone &&
@@ -115,7 +106,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, [hasRequiredFields, isCheck]);
 
   // Завершение первого этапа 
-  const handleStep1 = useCallback(async (): Promise<void> => {
+  const handleStep1 = async () => {
     if (!hasRequiredFields) {
       setError("Заполните все обязательные поля!");
       return;
@@ -155,19 +146,19 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       console.error('Неожиданная ошибка при проверке пользователя:', error);
       setError("Произошла ошибка при проверке данных");
     }
-  }, [hasRequiredFields, setError, userDetails.phone, userDetails.email, store]);
+  };
 
-  // Завершение регистрации
-  const handleStep2 = useCallback(async (): Promise<void> => {
-    if (userDetails.date_birth && !anonym) {
-      const age = calculateAge(userDetails.date_birth);
+  // Завершение второго этапа
+  const handleStep2 = async () => {
+    if (userDetails.dateBirth && !anonym) {
+      const age = calculateAge(userDetails.dateBirth);
       if (age < 18 || age > 100) {
         setError("Возраст должен быть от 18 до 100 лет");
         return;
       }
     }
 
-    if (replyPinCode !== userDetails.pin_code) {
+    if (replyPinCode !== userDetails.pinCode) {
       setError("Пин-коды не совпадают!");
       return;
     }
@@ -178,33 +169,42 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       // Подготавливаем данные для регистрации
       const registrationData: Partial<RegistrationData> = {
         ...userDetails,
-        time_zone: detectedTimeZone,
+        timeZone: detectedTimeZone,
         email: userDetails.email?.toLowerCase(),
         isAnonymous: anonym
       };
 
       if (anonym) {
-        delete registrationData.date_birth;
+        delete registrationData.dateBirth;
         delete registrationData.name;
         delete registrationData.surname;
         delete registrationData.patronymic;
         delete registrationData.gender;
       } else {
-        registrationData.date_birth = userDetails.date_birth ?
-          userDetails.date_birth.replace(/\./g, '-') : '';
+        registrationData.dateBirth = userDetails.dateBirth ?
+          userDetails.dateBirth.split('.').reverse().join('-') : '';
       }
 
       setError("");
-      await store.registration(registrationData as RegistrationData);
+      const successStep2 = await store.registration(registrationData as RegistrationData);
+      if (successStep2) setStep(3);
+      else setError("Ошибка при регистрации");
 
-      if (store.isAuth) {
-        navigate(RouteNames.PERSONAL);
-      }
     } catch (error) {
       console.error('Ошибка при регистрации:', error);
       setError("Произошла ошибка при регистрации");
     }
-  }, [userDetails, anonym, replyPinCode, calculateAge, detectUserTimeZone, setError, store, navigate]);
+  }
+
+  const handleStep3 = async (pin: string) => {
+    if (pin === "") return;
+
+    const successStep3 = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
+    if (successStep3) navigate(RouteNames.PERSONAL);
+    else {
+      setError("Ошибка при регистрации");
+    }
+  }
 
   const handleBack = useCallback((): void => {
     setError("");
@@ -216,7 +216,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   }, []);
 
   const SetPinCode = useCallback((pin: string) => {
-    handleUserDetailsChange('pin_code', pin);
+    handleUserDetailsChange('pinCode', pin);
   }, [handleUserDetailsChange]);
 
   const handleLinkClick = useCallback(() => {
@@ -232,36 +232,35 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   return (
     <div className="auth__container">
-      <Suspense fallback={<Loader />}>
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <Step1Form
-              step={step}
-              anonym={anonym}
-              anonymSet={anonymSet}
-              userDetails={userDetails}
-              handleUserDetailsChange={handleUserDetailsChange}
-              setIsCheck={setIsCheck}
-              handleLinkClick={handleLinkClick}
-              handleStep1={handleStep1}
-              disabled={disabled}
-              setState={setState}
-              stepVariants={stepVariants}
-            />
-          )}
+      {step === 1 && (
+        <Step1Form
+          anonym={anonym}
+          anonymSet={anonymSet}
+          userDetails={userDetails}
+          handleUserDetailsChange={handleUserDetailsChange}
+          setIsCheck={setIsCheck}
+          handleLinkClick={handleLinkClick}
+          handleStep1={handleStep1}
+          disabled={disabled}
+          setState={setState}
+        />
+      )}
 
-          {step === 2 && (
-            <Step2Form
-              step={step}
-              stepVariants={stepVariants}
-              SetPinCode={SetPinCode}
-              setReplyPinCode={setReplyPinCode}
-              registration={handleStep2}
-              handleBack={handleBack}
-            />
-          )}
-        </AnimatePresence>
-      </Suspense>
+      {step === 2 && (
+        <Step2Form
+          SetPinCode={SetPinCode}
+          setReplyPinCode={setReplyPinCode}
+          registration={handleStep2}
+          handleBack={handleBack}
+        />
+      )}
+
+      {step === 3 && (
+        <Step3Form
+          handleStep3={handleStep3}
+          handleBack={handleBack}
+        />
+      )}
     </div>
   );
 

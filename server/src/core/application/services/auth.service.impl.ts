@@ -34,7 +34,7 @@ export class AuthServiceImpl implements AuthService {
             phone: data.phone,
             pinCode: data.pinCode,
             timeZone: data.timeZone,
-            dateBirth: null,
+            dateBirth: data.dateBirth,
             gender: data.gender,
             isActivated: false,
             isBanned: false,
@@ -73,7 +73,6 @@ export class AuthServiceImpl implements AuthService {
                 baseUserData.isAnonymous
             );
         } else {
-            const formattedDateBirth = formatDate(data.dateBirth.toString());
             user = new User(
                 baseUserData.id,
                 data.name,
@@ -83,7 +82,7 @@ export class AuthServiceImpl implements AuthService {
                 baseUserData.phone,
                 baseUserData.pinCode,
                 baseUserData.timeZone,
-                formattedDateBirth as unknown as Date,
+                baseUserData.dateBirth,
                 baseUserData.gender,
                 baseUserData.isActivated,
                 baseUserData.isBanned,
