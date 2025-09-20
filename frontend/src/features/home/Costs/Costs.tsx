@@ -78,6 +78,7 @@ const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     };
 
+    // Удаление блока
     const handleDelete = async (id: number) => {
         try {
             await HomeService.deleteContent(id);
@@ -89,6 +90,7 @@ const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
+    // Основной рендер
     return (
         <AnimatedBlock>
             <div className="costs container" id="costs">

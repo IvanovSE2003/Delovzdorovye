@@ -149,7 +149,11 @@ const Step1Form: React.FC<Step1FormProps> = ({
                 </>
             )}
 
-            <CheckBox id="check-box" onAgreementChange={setIsCheck} onLinkClick={handleLinkClick} />
+            <CheckBox
+                id="check-box"
+                onAgreementChange={setIsCheck}
+                onLinkClick={handleLinkClick}
+            />
 
             <button
                 className="auth__button step1"
