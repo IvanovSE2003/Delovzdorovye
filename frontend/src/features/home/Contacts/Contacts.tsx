@@ -18,11 +18,10 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     const [phoneId, setPhoneId] = useState<number | null>(null);
     const [emailId, setEmailId] = useState<number | null>(null);
 
-    // Сообщения
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
 
-    // Получение данных
+    // Получение контактов
     const fetchContacts = async () => {
         try {
             const phoneResponse = await HomeService.getContent("phone");
@@ -37,7 +36,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
-    // Добавление элементов в БД если их нет
+    // Добавление котактов в БД
     const addChange = async () => {
         try {
             await HomeService.addContent('phone', {id: Date.now(), header: phone, text: '-'});
@@ -49,7 +48,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
-    // Сохранить 
+    // Сохранение контакты
     const saveChange = async () => {
         if (!phoneId || !emailId) {
             await addChange();
@@ -66,7 +65,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
-    // Получение данных загрузке блока
+    // Получение контактов при загрузке блока
     useEffect(() => {
         fetchContacts();
     }, [])

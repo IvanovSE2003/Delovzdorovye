@@ -16,6 +16,7 @@ export interface ElementHomePageProps {
 const HomePage = () => {
   const { store } = useContext(Context);
 
+  // Основной рендер
   return (
     <div>
       <Header 
@@ -28,7 +29,9 @@ const HomePage = () => {
       <Solutions 
         role={store.user.role}
       />
+
       <div className='line'/>
+
       <Costs 
         role={store.user.role}
       />

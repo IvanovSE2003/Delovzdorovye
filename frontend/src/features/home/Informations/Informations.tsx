@@ -15,26 +15,26 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: '' });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: '' });
 
-    const handleEditToggle = () => {
-        if (isEditing) {
-            // При выходе из редактирования восстанавливаем оригинальные данные
-            setContent([...originalContent]);
-        } else {
-            // При входе в редактирование сохраняем текущие данные как оригинальные
-            setOriginalContent([...content]);
+    // Получение блоков информации
+    const fetchInformations = async () => {
+        try {
+            const response = await HomeService.getContent('useful_informations');
+            setContent(response.data.contents);
+            setOriginalContent(response.data.contents);
+        } catch (e) {
+            processError(e, "Ошибка при получении данных");
         }
-        setIsEditing(!isEditing);
     };
 
+    // Сохранение блока информации
     const handleSave = async () => {
         try {
-            // Сохраняем все блоки
             for (const block of content) {
                 if (block.id) {
-                    // Обновляем существующий блок
+                    // Либо обновляем текущий блок
                     await HomeService.editContent("useful_informations", block);
                 } else {
-                    // Создаем новый блок
+                    // Либо создаем новую блок
                     await HomeService.addContent("useful_informations", block);
                 }
             }
@@ -48,35 +48,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     };
 
-    const handleBlockTitleChange = (index: number, value: string) => {
-        setContent(prev =>
-            prev.map((block, i) =>
-                i === index ? { ...block, header: value } : block
-            )
-        );
-    };
-
-    const handleBlockTextChange = (index: number, value: string) => {
-        setContent(prev =>
-            prev.map((block, i) =>
-                i === index ? { ...block, text: value } : block
-            )
-        );
-    };
-
-    const deleteInformation = async (id: number) => {
-        try {
-            setContent(prev => prev.filter(block => block.id !== id));
-            setOriginalContent(prev => prev.filter(block => block.id !== id));
-            await HomeService.deleteContent("useful_informations", id);
-            await fetchInformations();
-            setMessage({ id: Date.now(), message: "Блок успешно удален" });
-
-        } catch (e) {
-            processError(e, "Ошибка при удалении блока информации", setError);
-        }
-    };
-
+    // Добавление нового блока информации
     const addNewBlock = () => {
         setContent(prev => [
             ...prev,
@@ -88,34 +60,62 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
         ]);
     };
 
-    const fetchInformations = async () => {
+    // Удаление блока информации
+    const deleteInformation = async (id: number) => {
         try {
-            const response = await HomeService.getContent('useful_informations');
-            setContent(response.data.contents);
-            setOriginalContent(response.data.contents);
+            setContent(prev => prev.filter(block => block.id !== id));
+            setOriginalContent(prev => prev.filter(block => block.id !== id));
+            await HomeService.deleteContent(id);
+            await fetchInformations();
+            setMessage({ id: Date.now(), message: "Блок успешно удален" });
+
         } catch (e) {
-            processError(e, "Ошибка при получении данных");
+            processError(e, "Ошибка при удалении блока информации", setError);
         }
     };
 
+    // Изменение заголовка
+    const handleBlockTitleChange = (index: number, value: string) => {
+        setContent(prev =>
+            prev.map((block, i) =>
+                i === index ? { ...block, header: value } : block
+            )
+        );
+    };
+
+    // Изменение текстовой части
+    const handleBlockTextChange = (index: number, value: string) => {
+        setContent(prev =>
+            prev.map((block, i) =>
+                i === index ? { ...block, text: value } : block
+            )
+        );
+    };
+
+    // Редактирование/отмена редактирования
+    const handleEditToggle = () => {
+        if (isEditing) {
+            setContent([...originalContent]);
+        } else {
+            setOriginalContent([...content]);
+        }
+        setIsEditing(!isEditing);
+    };
+
+    // Получение данных при загрузки блока информации
     useEffect(() => {
         fetchInformations();
     }, []);
 
+    // Основной рендер
     return (
         <div className='informations container' id="informations">
             <AnimatedBlock>
                 <div className="container__box">
                     <h2 className='informations__title'>Полезная информация</h2>
 
-                    <ShowError
-                        msg={error}
-                    />
-
-                    <ShowError
-                        msg={message}
-                        mode="MESSAGE"
-                    />
+                    <ShowError msg={error} />
+                    <ShowError msg={message} mode="MESSAGE" />
 
                     {content.length > 0 ? content.map((block, blockIndex) => (
                         <div key={block.id || `new-${blockIndex}`} className={`informations__block ${isEditing ? "block-edit" : ""}`}>
@@ -152,7 +152,9 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
                                     </button>
                                 </div>
                             ) : (
-                                <p className="informations__block__text">{block.text}</p>
+                                <p className="informations__block__text">
+                                    {block.text}
+                                </p>
                             )}
                         </div>
                     )) : (

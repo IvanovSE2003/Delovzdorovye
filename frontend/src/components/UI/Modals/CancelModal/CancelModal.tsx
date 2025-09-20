@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './CancelModal.scss'
 import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
-import { formatDateWithoutYear, getDateLabel } from '../../../../hooks/DateHooks';
+import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
 import type { Role } from '../../../../models/Auth';
+import ShowError from '../../ShowError/ShowError';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -17,25 +18,22 @@ interface CancelModalProps extends ModalProps {
 
 const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode }) => {
     const [reasons, setReasons] = useState<string>("");
-    const [error, setError] = useState<string>("");
+    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
 
+    // Отмена консультации
     const handleSubmit = () => {
         if (!reasons) {
-            setError("Пожалуйста, заполните причину отказа!");
+            setError({ id: Date.now(), message: "Пожалуйста, заполните причину отказа!" });
             return;
         }
 
         onRecord(reasons, consultationData.id);
     };
 
-    useEffect(() => {
-        if (!isOpen) {
-
-        }
-    }, [isOpen]);
-
+    // Если модалка зактыра ничего не возвращать
     if (!isOpen) return null;
 
+    // Основной рендер
     return (
         <div className="modal">
             <div className='shift-modal cancel-modal'>
@@ -80,9 +78,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                     🔔 Средства будут возвращены в течении 3 дней.
                 </div>
 
-                {error && (
-                    <div className="consultation-modal__error">{error}</div>
-                )}
+                <ShowError msg={error} />
 
                 <button
                     className='shift-modal__submit'

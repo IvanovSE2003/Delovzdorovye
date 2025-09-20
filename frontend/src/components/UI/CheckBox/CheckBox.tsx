@@ -1,32 +1,24 @@
-import React, { useState } from 'react';
-import './CheckBox.scss'
+import { useState } from 'react';
 import { URL } from '../../../http';
+import './CheckBox.scss'
 
 interface AgreeCheckBoxProps {
   id: string,
-  onAgreementChange?: (isChecked: boolean) => void;
-  agreementText?: string;
-  linkText?: string;
-  onLinkClick?: () => void;
-  defaultChecked?: boolean;
+  onAgreementChange: (isChecked: boolean) => void;
+  onLinkClick: () => void;
 }
 
-const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
-  id,
-  onAgreementChange,
-  agreementText = 'Я согласен с условиями пользовательского соглашения и даю согласие на обработку персональных данных',
-  linkText = ' условиями пользовательского соглашения',
-  onLinkClick,
-  defaultChecked = true
-}) => {
-  const [isChecked, setIsChecked] = useState(defaultChecked);
+const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({ id, onAgreementChange, onLinkClick }) => {
+  const [isChecked, setIsChecked] = useState(true);
 
+  // Изменение чек-бокса
   const handleCheckboxChange = () => {
     const newValue = !isChecked;
     setIsChecked(newValue);
     onAgreementChange?.(newValue);
   };
 
+  // Обработка нажатий на клавиши 'ENTER' или пробела
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
@@ -34,6 +26,7 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
     }
   };
 
+  // Основной рендер
   return (
     <div className="agreement">
       <div className="agreement__container">
@@ -46,24 +39,20 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({
           aria-checked={isChecked}
           tabIndex={0}
         />
-        
+
         <div className="agreement__text">
-          {agreementText.split(linkText)[0]}
-          <span 
-            className="agreement__link" 
+          Я согласен с
+          <span
+            className="agreement__link"
             onClick={onLinkClick}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                onLinkClick?.();
-              }
-            }}
           >
-            <a target="_blank" href={`${URL}/terms.pdf`}>{linkText}</a>
+            <a target="_blank" href={`${URL}/terms.pdf`}>
+              условиями пользовательского соглашения
+            </a>
           </span>
-          {agreementText.split(linkText)[1]}
+          и даю согласие на обработку персональных данных
         </div>
       </div>
     </div>
