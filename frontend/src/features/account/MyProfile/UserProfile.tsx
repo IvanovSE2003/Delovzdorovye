@@ -36,7 +36,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true,
                     <>
                         {profileData.gender && (<span><span className="label">Пол:</span> {profileData.gender}</span>)}
                         {profileData.dateBirth && (<span><span className="label">Дата рождения:</span> {GetFormatDate(profileData.dateBirth)}</span>)}
-                        {profileData.age && (<span><span className="label">Возвраст: </span> {profileData?.age} </span>)}
+                        {profileData.age && (<span><span className="label">Возраст: </span> {profileData?.age} </span>)}
                     </>
                 )}
                 {profileData.phone && (<span><span className="label">Номер телефона:</span> {GetFormatPhone(profileData.phone)}</span>)}

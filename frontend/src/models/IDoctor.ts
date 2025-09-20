@@ -1,6 +1,5 @@
 export interface IDoctor {
     id: number;
-    isActivated: boolean;
     profData: Specialization[];
     user: UserDoctor;
     userAvatar?: string;

@@ -202,7 +202,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
                     ${hoveredCol === d ? "highlight" : ""}
                   `}
                 >
-                  {dayjs(d).format("dd, DD MMMM")}
+                  {dayjs(d).format("dd, DD MMM")}
                 </th>
               ))}
             </tr>
