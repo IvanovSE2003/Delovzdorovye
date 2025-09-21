@@ -23,7 +23,6 @@ import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsul
 import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations/ArchiveConsultations";
 import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
 import AnotherProblem from "../pages/account/admin/Conference";
-import SpecialConsultation from "../pages/account/admin/SpecialConsultations/SpecialConsultations";
 
 export interface IRoute {
     path: string;
@@ -84,8 +83,8 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.USEFULINFODOC, name: "Полезная информация" },
     ],
     ADMIN: [
-        { path: RouteNames.USERS, name: "Профили" },
-        { path: RouteNames.SPECIALISTS, name: "Редактирование \n профилей" },
+        { path: RouteNames.USERS, name: "Учетные записи" },
+        { path: RouteNames.SPECIALISTS, name: "Изменение данных" },
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
         { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации'},

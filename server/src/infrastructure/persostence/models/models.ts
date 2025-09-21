@@ -20,7 +20,7 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     name: { type: DataType.STRING, allowNull: true },
     surname: { type: DataType.STRING, allowNull: true },
     patronymic: { type: DataType.STRING, allowNull: true },
-    email: { type: DataType.STRING, allowNull: true },
+    email: { type: DataType.STRING, allowNull: true, unique: true},
     phone: { type: DataType.STRING, allowNull: true },
     pin_code: { type: DataType.INTEGER, allowNull: false },
     time_zone: { type: DataType.INTEGER, allowNull: false },

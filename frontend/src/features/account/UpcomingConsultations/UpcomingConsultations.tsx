@@ -179,7 +179,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     );
 
     return (
-        <>
+        <div className='upcomming-cousultations'>
             <ShiftModal
                 isOpen={modalShift}
                 consultationData={selectedConsultation || {} as Consultation}
@@ -234,7 +234,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                                     </div>
 
                                     <div className="consultation-card__details">
-                                        Симптомы подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
+                                        Подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
                                     </div>
                                 </>
                             ) : (
@@ -273,19 +273,20 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
                                     <EditModal
                                         isOpen={modalEdit}
+                                        consultationData={selectedConsultation || {} as Consultation}
                                         onClose={() => setModalEdit(false)}
                                         onRecord={handleEditConsultation}
                                     />
 
                                     <button
                                         className="consultation-card__button consultation-card__button--repeat"
-                                        onClick={() => setModalRepeat(true)}
+                                        onClick={() => handleClickButton(consultation, setModalRepeat)}
                                     >
                                         Повторить
                                     </button>
                                     <button
                                         className="consultation-card__button consultation-card__button--edit"
-                                        onClick={() => setModalEdit(true)}
+                                        onClick={() => handleClickButton(consultation, setModalEdit)}
                                     >
                                         Редактировать
                                     </button>
@@ -301,7 +302,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 totalPages={total}
                 onChange={handlePageChange}
             />
-        </>
+        </div>
     );
 }
 

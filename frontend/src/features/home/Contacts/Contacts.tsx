@@ -17,7 +17,6 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     // Индификаторы для данных
     const [phoneId, setPhoneId] = useState<number | null>(null);
     const [emailId, setEmailId] = useState<number | null>(null);
-
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
 
@@ -25,11 +24,11 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     const fetchContacts = async () => {
         try {
             const phoneResponse = await HomeService.getContent("phone");
-            setPhone(phoneResponse.data.contents[0].header || "Нет номера телефона");
+            setPhone(phoneResponse.data.contents[0].text || "Нет номера телефона");
             setPhoneId(phoneResponse.data.contents[0].id);
 
             const emailResponse = await HomeService.getContent("email");
-            setEmail(emailResponse.data.contents[0].header || "Нет электронной почты");
+            setEmail(emailResponse.data.contents[0].text || "Нет электронной почты");
             setEmailId(emailResponse.data.contents[0].id);
         } catch (e) {
             processError(e, "Ошибка при получении контактов");
@@ -77,14 +76,8 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
                 <div className='container__box'>
                     <h2 className='contacts__title'>Контакты</h2>
 
-                    <ShowError
-                        msg={error}
-                    />
-
-                    <ShowError
-                        msg={message}
-                        mode='MESSAGE'
-                    />
+                    <ShowError msg={error}/>
+                    <ShowError msg={message} mode='MESSAGE'/>
 
                     <div className="contacts__info">
                         <p>Остались вопросы?</p>

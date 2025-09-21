@@ -92,11 +92,8 @@ const BasicTab: React.FC<BasicTabProps> = ({
           <tr>
             <th>Роль</th>
             <th>ФИО</th>
-            <th>Фото</th>
-            <th>Пол</th>
             <th>Номер телефона</th>
             <th>Email</th>
-            <th>Статус</th>
             <th>Блокировка</th>
           </tr>
         </thead>
@@ -123,29 +120,8 @@ const BasicTab: React.FC<BasicTabProps> = ({
                   }
                 </a>
               </td>
-              <td>
-                {user.img ? (
-                  <a
-                    href={`${URL}/${user.img}`}
-                    onMouseEnter={(e) => handleImageHover(e, user.img)}
-                    onMouseLeave={handleImageLeave}
-                    onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
-                  >
-                    Документ
-                  </a>
-                ) : 'Нет фото'}
-              </td>
-              <td>{user.gender || "Не указано"}</td>
               <td>{user.phone}</td>
               <td>{user.email}</td>
-              <td
-                onClick={() => changeRoleClick(user.id, user.role)}
-                className={isActionAllowed(user.role) ? "clickable" : "non-clickable"}
-              >
-                {user.role === "DOCTOR" && "Сделать пациентом"}
-                {user.role === "PATIENT" && "Сделать доктором"}
-                {user.role === "ADMIN" && "-"}
-              </td>
               {user.role === "ADMIN" ? (
                 <td>-</td>
               ) : (
@@ -153,7 +129,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
                   onClick={() => blockedClick(user.id, user.isBlocked, user.role)}
                   className={`${user.isBlocked ? "action-unblock-user" : "action-block-user"} ${isActionAllowed(user.role) ? "clickable" : "non-clickable"}`}
                 >
-                  {user.isBlocked ? "Разблокировать" : "Заблокировать"}
+                  {user.isBlocked ? "" : "Да"}
                 </td>
               )}
             </tr>

@@ -5,6 +5,7 @@ import type { FormAuthProps } from "../../../models/Auth";
 import { observer } from "mobx-react-lite";
 import { RouteNames } from "../../../routes";
 import { processError } from "../../../helpers/processError";
+import Loader from "../../../components/UI/Loader/Loader";
 
 const Step1 = lazy(() => import("./Step1"));
 const Step2 = lazy(() => import("./Step2"));
@@ -20,6 +21,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [isResending, setIsResending] = useState<boolean>(false);
   const [isErrorTelOrEmail, setIsErrorTelOrEmail] = useState<boolean>(true);
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Анимации
   const stepVariants = {
@@ -95,9 +98,11 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setError("Введите код!");
       return;
     }
-    const data = await store.completeLogin(localStorage.getItem('tempToken'), code);
-    console.log(data);
-    if (data.success) navigate(RouteNames.PERSONAL);
+    setLoading(true);
+    const successLogin = await store.completeLogin(localStorage.getItem('tempToken'), code);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setLoading(false);
+    if (successLogin) navigate(RouteNames.PERSONAL);
     else setError('Ошибка при входе!');
   };
 
@@ -145,6 +150,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       setTimeLeft(60);
     }
   }, [step, timeLeft]);
+
+  if(loading) return <Loader/>
 
   return (
     <div className="auth__container">

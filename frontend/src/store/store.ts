@@ -98,7 +98,7 @@ export default class Store {
     }
 
     // Второй этап входа (вход в систему)
-    async completeLogin(tempToken: string | null, code: string): Promise<{ success: boolean }> {
+    async completeLogin(tempToken: string | null, code: string): Promise<boolean> {
         return this.withLoading(async () => {
             try {
                 const response = await AuthService.completeLogin(tempToken, code);
@@ -107,13 +107,13 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
-                return { success: true };
+                return true;
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data?.message || "Ошибка при входе!";
                 this.setError(errorMessage);
 
-                return { success: false };
+                return false;
             }
         });
     }

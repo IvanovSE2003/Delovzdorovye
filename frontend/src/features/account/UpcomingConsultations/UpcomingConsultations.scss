@@ -1,5 +1,9 @@
 @use '../../../assets/styles/variables.scss' as *;
 
+.upcoming-consultations {
+    position: relative;
+}
+
 .user-consultations {
     padding: 20px;
     background-color: $profile-color;
@@ -24,12 +28,10 @@
     
     &.visible {
         opacity: 1;
-        transform: translateY(0);
     }
     
     &.hidden {
         opacity: 0;
-        transform: translateY(10px);
         pointer-events: none;
     }
 }

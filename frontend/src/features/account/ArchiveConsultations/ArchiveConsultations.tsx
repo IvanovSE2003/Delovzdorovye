@@ -165,7 +165,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
                                     </div>
 
                                     <div className="consultation-card__details">
-                                        Симптомы подробно: {' '}
+                                        Подробно: {' '}
                                         <span>{consultation.other_problem || "Не указано"}</span>
                                     </div>
                                 </>

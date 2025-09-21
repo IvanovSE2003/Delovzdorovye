@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import Select, { type MultiValue } from 'react-select';
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { ru } from "date-fns/locale";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import './EditModal.scss';
+import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
+import { GetFormatPhone } from "../../../../helpers/formatDatePhone";
+import RecordForm from "../RecordModal/RecordForm";
+import ShowError from "../../ShowError/ShowError";
+
 interface ConsultationModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecord: (data: ConsultationData) => void;
+    consultationData: Consultation;
 }
 
 export interface ConsultationData {
@@ -23,38 +27,38 @@ export interface ConsultationData {
     doctorId?: number;
 }
 
-const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord }) => {
+const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
     const consultationStore = new ConsultationsStore();
     const [otherProblemText, setOtherProblemText] = useState<string>("");
-    const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date>();
 
     const [problems, setProblems] = useState<OptionsResponse[]>([]);
-    const [specialists, setSpecialists] = useState<OptionsResponse[]>([]);
+    const [specialists, setSpecialists] = useState<OptionsResponse[]>([] as OptionsResponse[]);
 
+    const [selectedSpecialist, setSelectedSpecialist] = useState<OptionsResponse>({} as OptionsResponse);
     const [selectedOptions, setSelectedOptions] = useState<MultiValue<OptionsResponse>>([]);
+
+    const [error, setError] = useState<{id: number, message: string}>({id: 0, message: ""});
 
     const getProblems = async () => {
         const data = await consultationStore.getProblems();
         setProblems(data);
+        const matchedProblems = problems.filter(problem =>
+            consultationData.Problems.some(problemName =>
+                problem.label.toLowerCase() === problemName.toLowerCase()
+            )
+        );
+        setSelectedOptions(matchedProblems)
     }
 
     const getSpecialists = async () => {
-        // const data = await consultationStore.findSpecialists();
-        // setSpecialists(data);
+        const problemIds = selectedOptions.map(value => value.value)
+        const data = await consultationStore.findSpecialists(problemIds);
+        setSpecialists(data);
+        console.log(data.filter(value => value.value === consultationData.DoctorId)[0])
+        setSelectedSpecialist(data.filter(value => value.value === consultationData.DoctorId)[0]);
     }
-
-    useEffect(() => {
-        getProblems();
-        getSpecialists();
-    }, []);
-
-    const times = [
-        "09:00", "09:30", "10:00", "10:30",
-        "12:00", "12:30", "13:00", "13:30",
-        "15:00", "16:00", "18:00", "19:30"
-    ];
 
     const handleProblemChange = async (selected: MultiValue<OptionsResponse>) => {
         const selectedArray = Array.from(selected);
@@ -68,12 +72,16 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
         } else {
             setSelectedOptions(selectedArray);
         }
-
-        const numericValues = selectedArray.map(option => option.value);
-        // const data = await consultationStore.findDays(numericValues);
-        // console.log("Ответ: ", data);
-        // setShowOtherProblemInput(hasOtherProblem);
     };
+
+    const handleSpecialistChange = async () => {
+        try {
+            const response = await consultationStore.getSchedule(selectedSpecialist.value, consultationData.PatientUserId);
+
+        } catch (e) {
+
+        }
+    }
 
     const isOptionDisabled = (option: OptionsResponse): boolean => {
         const hasOtherProblem = selectedOptions.some(opt => opt.value === 9);
@@ -117,17 +125,15 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
         setError("");
     };
 
+    const onTimeDateSelect = (time: string | null, date: string | null, doctorId?: number) => {
+        console.log(time, date);
+    }
+
     useEffect(() => {
-        if (!isOpen) {
-            // Сброс формы при закрытии
-            setSelectedOptions([]);
-            setOtherProblemText("");
-            // setShowOtherProblemInput(false);
-            setSelectedDate(undefined);
-            setSelectedTime(null);
-            setError("");
-        }
-    }, [isOpen]);
+        getProblems();
+        getSpecialists();
+        // console.log(consultationData)
+    }, [consultationData])
 
     if (!isOpen) return null;
 
@@ -137,7 +143,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                 <h2 className="consultation-modal__title">Запись на консультацию</h2>
 
                 <p className="consultation-modal__client">
-                    Клиент: Иванова Мария Петровна, 8 888 888 88 88
+                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {GetFormatPhone(consultationData.PatientPhone)}
                 </p>
 
                 <button
@@ -152,66 +158,45 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                     options={problems}
                     value={selectedOptions}
                     placeholder="Выберите одну или несколько проблем"
-                    className="consultation-modal__select-problems"
+                    className="consultation-modal__select"
                     classNamePrefix="custom-select"
                     onChange={handleProblemChange}
                     isOptionDisabled={isOptionDisabled}
+                    noOptionsMessage={() => "Нет доступных проблем"}
                 />
 
                 <Select
                     options={specialists}
-                    // value={'value'}
+                    value={selectedSpecialist}
                     placeholder="Выберите специалиста"
-                    className="consultation-modal__select-problems"
+                    className="consultation-modal__select"
                     classNamePrefix="custom-select"
-                    onChange={() => { }}
-                    isClearable={true}
+                    onChange={handleSpecialistChange}
+                    noOptionsMessage={() => "Нет данных о специалистах"}
                 />
 
                 <p className="consultation-modal__subtitle">Выберите удобные дату и время в календаре ниже: </p>
 
-                <div className="consultation-modal__date-time">
-                    <div className="consultation-modal__calendar">
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={(date: Date | null) => {
-                                setSelectedDate(date || new Date());
-                            }}
-                            inline
-                            locale={ru}
-                            dateFormat="dd.MM.yyyy"
-                            minDate={new Date()}
-                            todayButton="Сегодня"
-                            popperClassName="large-datepicker"
-                            calendarClassName="large-datepicker"
-                        />
-                    </div>
+                <RecordForm
+                    specialist={selectedSpecialist}
+                    onTimeDateSelect={onTimeDateSelect}
+                    userId={consultationData.PatientUserId.toString()}
+                />
 
-                    <div className="consultation-modal__time">
-                        {/* <TimeSlots times={times} onSelect={setSelectedTime} /> */}
-                        <p className="consultation-modal__selected-time">
-                            Вы выбрали: {selectedTime || "не выбрано"}
-                        </p>
-                    </div>
-                </div>
 
                 <div className="consultation-modal__other-problem">
-                    <label className="consultation-modal__label" htmlFor="otherProblem">
-                        Подробная информация о проблеме:
-                    </label>
+                    <p className="consultation-modal__description">Если вы хотите уточнить детали - опишите это подробно в поле ниже:</p>
                     <textarea
-                        id="otherProblem"
+                        name="other-problem"
+                        id="other-problem"
                         className="consultation-modal__textarea"
+                        placeholder="Подробное описание проблемы..."
                         value={otherProblemText}
                         onChange={(e) => setOtherProblemText(e.target.value)}
-                        placeholder="Подробно опишите вашу проблему..."
-                        rows={4}
                     />
                 </div>
 
-                {error && (
-                    <div className="consultation-modal__error">{error}</div>
-                )}
+                <ShowError msg={error} />
 
                 <button
                     className="consultation-modal__submit"

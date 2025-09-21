@@ -40,7 +40,7 @@ const Specialists: React.FC = () => {
             <ShowError msg={error} />
 
             <div className="page-container admin-page">
-                <h1 className="admin-page__title">Редактирование профилей</h1>
+                <h1 className="admin-page__title">Изменение данных</h1>
 
                 {/* Вкладки */}
                 <Tabs
