@@ -1,18 +1,84 @@
-import { Server } from 'socket.io';
 import TimerService from '../../domain/services/timer.service';
 import ConsultationRepository from '../../domain/repositories/consultation.repository';
 import TimeSlotRepository from '../../domain/repositories/timeSlot.repository';
 
+interface WebSocketClient {
+    send(data: string): void;
+    readyState: number;
+}
+
+interface ConsultationTimer {
+    consultationId: number;
+    expiresAt: Date;
+}
+
 export default class TimerServiceImpl implements TimerService {
-    private timers = new Map<number, NodeJS.Timeout>();
-    private io?: Server
+    private activeTimers = new Map<number, ConsultationTimer>();
+    private clients = new Map<string, WebSocketClient>();
+    private globalInterval: number | null = null;
+
     constructor(
         private consultationRepository: ConsultationRepository,
         private timeSlotRepository: TimeSlotRepository,
     ) { }
 
-    setIo(io: Server) {
-        this.io = io;
+    addClient(userId: string, ws: WebSocketClient) {
+        this.clients.set(userId, ws);
+    }
+
+    removeClient(userId: string) {
+        this.clients.delete(userId);
+    }
+
+    // Отправка обновления конкретному пользователю
+    private sendToUser(userId: string, event: string, data: any) {
+        const client = this.clients.get(userId);
+        if (client && client.readyState === 1) {
+            client.send(JSON.stringify({ event, data }));
+        }
+    }
+
+    // Запуск глобального интервала для всех таймеров
+    private startGlobalInterval() {
+        if (this.globalInterval !== null) return;
+
+        this.globalInterval = setInterval(() => {
+            this.updateAllTimers();
+        }, 1000) as unknown as number;
+    }
+
+    // Остановка глобального интервала когда нет активных таймеров
+    private stopGlobalIntervalIfNeeded() {
+        if (this.activeTimers.size === 0 && this.globalInterval !== null) {
+            clearInterval(this.globalInterval);
+            this.globalInterval = null;
+        }
+    }
+
+    // Обновление всех активных таймеров
+    private updateAllTimers() {
+        const now = Date.now();
+
+        this.activeTimers.forEach((timer, consultationId) => {
+            const timeLeft = timer.expiresAt.getTime() - now;
+
+            if (timeLeft <= 0) {
+                this.completeTimer(consultationId);
+                return;
+            }
+
+            // Отправляем обновление только каждые 5 секунд для экономии ресурсов
+            if (timeLeft % 5000 < 1000) {
+                this.sendTimeUpdate(consultationId, timeLeft);
+            }
+        });
+    }
+
+    // Завершение таймера
+    private async completeTimer(consultationId: number) {
+        await this.cancelConsultation(consultationId);
+        this.activeTimers.delete(consultationId);
+        this.stopGlobalIntervalIfNeeded();
     }
 
     startTimer(consultationId: number, expiresAt: Date) {
@@ -23,75 +89,66 @@ export default class TimerServiceImpl implements TimerService {
             return;
         }
 
-        const timer = setTimeout(async () => {
-            await this.cancelConsultation(consultationId);
-            this.timers.delete(consultationId);
-        }, timeLeft);
+        this.activeTimers.set(consultationId, {
+            consultationId,
+            expiresAt
+        });
 
-        this.timers.set(consultationId, timer);
+        // Запускаем глобальный интервал если он еще не запущен
+        this.startGlobalInterval();
 
+        // Немедленно отправляем первое обновление
         this.sendTimeUpdate(consultationId, timeLeft);
-
-        const interval = setInterval(() => {
-            const currentTimeLeft = expiresAt.getTime() - Date.now();
-            if (currentTimeLeft <= 0) {
-                clearInterval(interval);
-                return;
-            }
-            this.sendTimeUpdate(consultationId, currentTimeLeft);
-        }, 1000);
-
-        this.intervals.set(consultationId, interval);
     }
 
     private sendTimeUpdate(consultationId: number, timeLeft: number) {
-        if (this.io) {
-            this.io.to(`consultation-${consultationId}`).emit('time-update', {
+        // Отправляем всем клиентам, но на клиенте будет фильтрация
+        const message = JSON.stringify({
+            event: 'time-update',
+            data: {
                 consultationId,
                 timeLeft,
                 expiresAt: new Date(Date.now() + timeLeft)
-            });
-        }
+            }
+        });
+
+        this.clients.forEach((client) => {
+            if (client.readyState === 1) {
+                client.send(message);
+            }
+        });
     }
 
     private async cancelConsultation(consultationId: number) {
         try {
             const consultation = await this.consultationRepository.findById(consultationId);
             if (consultation && consultation.payment_status === "PAYMENT") {
-                await this.consultationRepository.update(consultation.setPayStatus("NOTPAID").setConsultStatus("ARCHIVE"));
+                await this.consultationRepository.update(
+                    consultation.setPayStatus("NOTPAID").setConsultStatus("ARCHIVE")
+                );
 
-                // if (consultation.time) {
-                //     const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time,consultation.doctorId ,consultation.date);
-                //     if (timeSlot) {
-                //         timeSlot.status = "OPEN";
-                //         await this.timeSlotRepository.update(timeSlot);
-                //     }
-                // }
-
-                if (this.io) {
-                    this.io.to(`consultation-${consultationId}`).emit('consultation-cancelled', {
+                const cancelMessage = JSON.stringify({
+                    event: 'consultation-cancelled',
+                    data: {
                         consultationId,
                         reason: 'Время оплаты истекло'
-                    });
-                }
+                    }
+                });
+
+                this.clients.forEach((client) => {
+                    if (client.readyState === 1) {
+                        client.send(cancelMessage);
+                    }
+                });
             }
         } catch (error) {
-            throw error;
+            console.error('Error cancelling consultation:', error);
         }
     }
 
     stopTimer(consultationId: number) {
-        const timer = this.timers.get(consultationId);
-        if (timer) {
-            clearTimeout(timer);
-            this.timers.delete(consultationId);
-        }
-
-        const interval = this.intervals.get(consultationId);
-        if (interval) {
-            clearInterval(interval);
-            this.intervals.delete(consultationId);
-        }
+        this.activeTimers.delete(consultationId);
+        this.stopGlobalIntervalIfNeeded();
     }
 
     async restoreTimers() {
@@ -108,5 +165,12 @@ export default class TimerServiceImpl implements TimerService {
         }
     }
 
-    private intervals = new Map<number, NodeJS.Timeout>();
+    // Метод для очистки всех таймеров
+    cleanup() {
+        if (this.globalInterval !== null) {
+            clearInterval(this.globalInterval);
+            this.globalInterval = null;
+        }
+        this.activeTimers.clear();
+    }
 }

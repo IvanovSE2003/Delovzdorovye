@@ -87,7 +87,7 @@ export default class MailServiceImpl implements MailService {
                     display: inline-block; border-radius: 4px;">
                     ${code}
                 </div>
-                <p>Код действителен в течение 5 минут.</p>
+                <p>Код действителен в течение 2-ух минут.</p>
                 <p><b>Если вы не запрашивали код, проигнорируйте это письмо.</b></p>
                 <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
                     С уважением,<br>Команда Дело в здоровье

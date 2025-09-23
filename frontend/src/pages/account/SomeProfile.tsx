@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import Loader from "../../components/UI/Loader/Loader";
-import type { IUserDataProfile } from "../../models/Auth";
+import type { IUserDataProfile, Role } from "../../models/Auth";
 import AccountLayout from "./AccountLayout";
 import { Link, useNavigate, useParams } from "react-router";
 import { Context } from "../../main";
@@ -15,6 +15,7 @@ import ConsultationService from "../../services/ConsultationService";
 import DoctorInfo from "../../features/account/DoctorInfo/DoctorInfo";
 import { processError } from "../../helpers/processError";
 import UserService from "../../services/UserService";
+import ShowError from "../../components/UI/ShowError/ShowError";
 
 export interface IOtherProblem {
     id: number,
@@ -34,11 +35,13 @@ const Profile: React.FC = () => {
     const [refreshUpcoming, setRefreshUpcoming] = useState(0);
     const [otherProblem, setOterProblem] = useState<IOtherProblem[]>([] as IOtherProblem[]);
 
+    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+    const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+
     const getDataOtherProblem = async () => {
         if (!id) return;
         try {
             const response = await UserService.getDataOtherProblem(id);
-            console.log(response.data)
             setOterProblem(response.data);
         } catch (e) {
             processError(e, "Ошибка при получении данных другой проблемы")
@@ -51,7 +54,6 @@ const Profile: React.FC = () => {
         try {
             const response = await UserService.getProfileData(id, store.user.id);
             setProfile(response.data);
-            console.log("Есть другая проблема? - ", response.data.hasOtherProblem)
             if (response.data.hasOtherProblem) {
                 await getDataOtherProblem();
             }
@@ -74,6 +76,44 @@ const Profile: React.FC = () => {
             processError(e, "Ошибка при записи на консультации ")
         }
     };
+
+    const changeRole = async (role: Role) => {
+        try {
+            if (role === "ADMIN") return;
+            else if (role === "PATIENT") {
+                const response = await UserService.changeRoleUser(Number(id), "DOCTOR");
+                setMessage({ id: Date.now(), message: response.data.message });
+            } else {
+                const response = await UserService.changeRoleUser(Number(id), "PATIENT");
+                setMessage({ id: Date.now(), message: response.data.message });
+            }
+        } catch (e) {
+            processError(e, "Ошибка при изменении роли", setError);
+        } finally {
+            await getDataProfile();
+        }
+    }
+
+    const changeBlocked = async (blocked: boolean) => {
+        console.log(blocked)
+        try {
+            let response;
+            if (blocked) response = await UserService.unblockUser(Number(id));
+            else response = await UserService.blockUser(Number(id));
+
+            if (response.data.success) setMessage(
+                { id: Date.now(), message: `Пользователь ${blocked ? "разблокирован" : "заблокирован"}` }
+            )
+            else setError(
+                { id: Date.now(), message: response.data.message }
+            )
+
+        } catch (e) {
+            processError(e, "Ошибка при блокировки пользователя: ", setError);
+        } finally {
+            await getDataProfile();
+        }
+    }
 
     // Получение данных при открытии страницы
     useEffect(() => {
@@ -130,7 +170,27 @@ const Profile: React.FC = () => {
                             Записать на консультацию
                         </button>
                     )}
+
+                    {store.user.role === "ADMIN" && profile.role !== "ADMIN" && (
+                        <>
+                            <button
+                                className="my-button width100"
+                                onClick={() => changeRole(profile.role)}
+                            >
+                                {profile.role === "PATIENT" && "Сделать специалистом"}
+                                {profile.role === "DOCTOR" && "Сделать пользователем"}
+                            </button>
+                            <button
+                                className="my-button width100"
+                                onClick={() => changeBlocked(profile.isBlocked)}
+                            >
+                                {profile.isBlocked ? "Разблокировать" : "Заблокировать"}
+                            </button>
+                        </>
+                    )}
                 </div>
+                <ShowError msg={error} className="user-profile__message" />
+                <ShowError msg={message} mode="MESSAGE" className="user-profile__message" />
             </div>
 
             {store.user.role == "ADMIN" && profile.hasOtherProblem && (

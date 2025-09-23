@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../../../main";
 import type { FormAuthProps } from "../../../models/Auth";
 import { observer } from "mobx-react-lite";
-import { RouteNames } from "../../../routes";
+import { defaultRoleRoutes } from "../../../routes";
 import { processError } from "../../../helpers/processError";
 import Loader from "../../../components/UI/Loader/Loader";
 
@@ -11,7 +11,7 @@ const Step1 = lazy(() => import("./Step1"));
 const Step2 = lazy(() => import("./Step2"));
 const Step3 = lazy(() => import("./Step3"));
 
-const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
+const Login: React.FC<FormAuthProps> = ({ setState, setError, setMessage }) => {
   const { store } = useContext(Context);
   const navigate = useNavigate();
 
@@ -33,7 +33,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Проверка пользователя на существование в БД
   const checkAuth = async () => {
-    setError("");
+    setError({id: 0, message: ""});
     const isAuth = await store.checkUser(emailOrphone);
     return isAuth.success;
   };
@@ -67,17 +67,17 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Завершение 1 шага
   const handelStep1 = async () => {
     if (!formValidation.isValid) {
-      setError(formValidation.errorMessage);
+      setError({id: Date.now(), message: formValidation.errorMessage});
       return;
     }
 
     const isAuth = await checkAuth();
     if (!isAuth) {
-      setError("Пользователь не найден");
+      setError({id: Date.now(), message: "Пользователь не найден"});
       return;
     }
 
-    setError("");
+    setError({id: 0, message: ""});
     setStep(2);
   };
 
@@ -85,9 +85,9 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const handelStep2 = async (code: string) => {
     const correctCode = /^\d{4}$/.test(code);
     if (!correctCode)
-      setError("Не корректно введен код!");
+      setError({id: Date.now(), message: "Не корректно введен код!"});
     else {
-      const data = await store.login({ creditial: emailOrphone, twoFactorMethod: method, pinCode: Number(code) });
+      const data = await store.login({ creditial: emailOrphone, twoFactorMethod: method, pinCode: code });
       data.success && setStep(3);
     }
   };
@@ -95,15 +95,14 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Завершение 3 шага
   const handelStep3 = async (code: string) => {
     if (code === "") {
-      setError("Введите код!");
+      setError({id: Date.now(), message: "Введите код!"});
       return;
     }
     setLoading(true);
     const successLogin = await store.completeLogin(localStorage.getItem('tempToken'), code);
-    await new Promise(resolve => setTimeout(resolve, 500));
     setLoading(false);
-    if (successLogin) navigate(RouteNames.PERSONAL);
-    else setError('Ошибка при входе!');
+    if (successLogin) navigate(defaultRoleRoutes[store.user.role]);
+    else setError({id: Date.now(), message: 'Ошибка при входе!'});
   };
 
   // Переключение почта/телефон
@@ -112,12 +111,12 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
       ? setMethod("EMAIL")
       : setMethod("SMS");
     setEmailOrPhone("");
-    setError("");
+    setError({id: 0, message: ""});
   };
 
   // Вернуться на прошлый шаг
   const handleBack = () => {
-    setError("");
+    setError({id: 0, message: ""});
     if (step > 1) setStep(step - 1);
   };
 
@@ -125,7 +124,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const handleResendCode = async () => {
     setIsResending(true);
     try {
-      await store.completeLogin(method, emailOrphone);
+      const data = await store.twoFactorSend(method, emailOrphone);
+      setMessage && setMessage({id: Date.now(), message: data.message})
       setTimeLeft(60);
     } catch (e) {
       processError(e, "Ошибка при повторной отправке");
@@ -135,23 +135,17 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError }) => {
   };
 
   useEffect(() => {
-    setError(store.error);
-  }, [store.error]);
-
-  useEffect(() => {
-    setError("")
+    setError({id: 0, message: ""})
   }, [step])
 
   useEffect(() => {
-    if (timeLeft > 0 && step === 3) {
+    if (step === 3 && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else {
-      setTimeLeft(60);
     }
   }, [step, timeLeft]);
 
-  if(loading) return <Loader/>
+  if (loading) return <Loader />
 
   return (
     <div className="auth__container">

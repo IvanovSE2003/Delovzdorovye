@@ -20,8 +20,10 @@ export default interface DoctorRepository {
     }>;
     findByUserIds(userIds: number[]): Promise<Doctor[]>;
     findByProblems(problems: number[]): Promise<Doctor[]>;
+    findByUserIdSimple(userId: number): Promise<Doctor | null>;
     getDoctorsWithSpecializations(userIds: number[]): Promise<Doctor[]>;
     update(doctor: Doctor): Promise<Doctor>;
+    updateSimple(doctor: Doctor): Promise<void>
     create(doctor: Doctor): Promise<Doctor>;
     save(doctor: Doctor): Promise<Doctor>;
 

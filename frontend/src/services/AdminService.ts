@@ -58,4 +58,8 @@ export default class AdminService {
     static async getSpecialistUsefulBlock(limit=10, page=1): Promise<AxiosResponse<getUsefulBlock[]>> {
         return $api.post<getUsefulBlock[]>('/admin/', {limit, page});
     }
+
+    static async getChangesCount(){
+        return $api.get('/admin/change/count');
+    }
 }

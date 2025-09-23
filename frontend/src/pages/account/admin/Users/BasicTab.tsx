@@ -1,17 +1,13 @@
-import { useState } from "react";
 import Search from "../../../../components/UI/Search/Search";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
 import type { User } from "../../../../models/Auth";
-import { URL } from "../../../../http";
 
 interface BasicTabProps {
   filteredUsers: User[];
   searchTerm: string;
   onSearchChange: (term: string) => void;
-  selectedRole: string;
+  selectedRole: string | null;
   onRoleChange: (role: string) => void;
-  onBlockUser: (id: number, isBlocked: boolean, role: string) => void;
-  onChangeRole: (id: number, role: string) => void;
 }
 
 const BasicTab: React.FC<BasicTabProps> = ({
@@ -20,43 +16,11 @@ const BasicTab: React.FC<BasicTabProps> = ({
   onSearchChange,
   selectedRole,
   onRoleChange,
-  onBlockUser,
-  onChangeRole
 }) => {
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
-
-  const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
-    setPreviewImage(`${URL}/${imgPath}`);
-    setPreviewPosition({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleImageLeave = () => {
-    setPreviewImage(null);
-  };
-
-  const isActionAllowed = (role: string) => {
-    return role !== "ADMIN";
-  };
-
-  const changeRoleClick = (id: number, role: string) => {
-    if(role === "ADMIN") return;
-    const result = confirm("Вы действительно хотите поменять роль выбранному пользователю?");
-    if(!result) return;
-    onChangeRole(id, role);
-  }
-
-  const blockedClick = (id: number, isBlocked: boolean, role: string) => {
-    if(role === "ADMIN") return;
-    const result = confirm(`Вы действительно хотите ${isBlocked ? "разблокировать" : "заблокировать"} пользователя?`);
-    if(!result) return;
-    onBlockUser(id, isBlocked, role);
-  }
-
   return (
     <>
       <Search
-        placeholder="Поиск по имени, фамилии и отчеству пользователя"
+        placeholder="Поиск по ФИО, телефону, почте"
         value={searchTerm}
         onChange={onSearchChange}
       />
@@ -75,73 +39,54 @@ const BasicTab: React.FC<BasicTabProps> = ({
         syncWithUrl={true}
       />
 
-      {previewImage && (
-        <div
-          className="image-preview"
-          style={{
-            left: `${previewPosition.x + 20}px`,
-            top: `${previewPosition.y + 20}px`,
-          }}
-        >
-          <img src={previewImage} alt="Preview" />
-        </div>
-      )}
+      {(selectedRole !== null || searchTerm !== "") && (
+        <table className="admin-page__table">
+          <thead>
+            <tr>
+              <th>Роль</th>
+              <th>ФИО</th>
+              <th>Номер телефона</th>
+              <th>Email</th>
+              <th>Блокировка</th>
+            </tr>
+          </thead>
 
-      <table className="admin-page__table">
-        <thead>
-          <tr>
-            <th>Роль</th>
-            <th>ФИО</th>
-            <th>Номер телефона</th>
-            <th>Email</th>
-            <th>Блокировка</th>
-          </tr>
-        </thead>
-
-        <tbody className="users__table-body">
-          {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-            <tr
-              key={user.phone}
-              className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}
+          <tbody className="users__table-body">
+            {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+              <tr
+                key={user.phone}
+                className={`users__table-row ${user.isBlocked ? "users__row-blocked" : ""}
                 ${user.role === 'PATIENT' && "users__row-patient"}
                 ${user.role === 'DOCTOR' && "users__row-doctor"}
                 ${user.role === 'ADMIN' && "users__row-admin"}`}
-            >
-              <td>
-                {user.role === "ADMIN" && "Администратор"}
-                {user.role === "DOCTOR" && "Специалист"}
-                {user.role === "PATIENT" && "Пользователь"}
-              </td>
-              <td>
-                <a href={`/profile/${user.id}`}>
-                  {(user.name && user.surname && user.patronymic)
-                    ? <div> {user.surname} {user.name} {user.patronymic} </div>
-                    : <div> Анонимный пользователь </div>
-                  }
-                </a>
-              </td>
-              <td>{user.phone}</td>
-              <td>{user.email}</td>
-              {user.role === "ADMIN" ? (
-                <td>-</td>
-              ) : (
-                <td
-                  onClick={() => blockedClick(user.id, user.isBlocked, user.role)}
-                  className={`${user.isBlocked ? "action-unblock-user" : "action-block-user"} ${isActionAllowed(user.role) ? "clickable" : "non-clickable"}`}
-                >
-                  {user.isBlocked ? "" : "Да"}
+              >
+                <td>
+                  {user.role === "ADMIN" && "Администратор"}
+                  {user.role === "DOCTOR" && "Специалист"}
+                  {user.role === "PATIENT" && "Пользователь"}
                 </td>
-              )}
-            </tr>
-          )) : (
-            <tr>
-              <td colSpan={11}>
-                {searchTerm ? "Пользователи не найдены" : "Нет данных"}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                <td>
+                  <a href={`/profile/${user.id}`}>
+                    {(user.name && user.surname && user.patronymic)
+                      ? <div> {user.surname} {user.name} {user.patronymic} </div>
+                      : <div> Анонимный пользователь </div>
+                    }
+                  </a>
+                </td>
+                <td>{user.phone}</td>
+                <td>{user.email}</td>
+                <td>{user.isBlocked ? "Да" : "-"}</td>
+              </tr>
+            )) : (
+              <tr>
+                <td colSpan={11}>
+                  {searchTerm ? "Пользователи не найдены" : "Нет данных"}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
     </>
   );
 };

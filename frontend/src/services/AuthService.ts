@@ -10,12 +10,14 @@ interface IResponseRegistration {
 }
 
 export default class AuthService {
+    // Первый этап авторизации
     static async login(data: LoginData): Promise<AxiosResponse<LoginResponse>> {
         return $api.post<LoginResponse>('user/login', data);
     }
 
+    // Второй этап авторизации
     static async completeLogin(tempToken: string|null, code: string):Promise<AxiosResponse<AuthResponse>> {
-        return $api.post<AuthResponse>('user/complete/login', { tempToken, code });
+        return $api.post<AuthResponse>('user/complete/login', { tempToken, code: Number(code) });
     }
 
     static async registration(data: RegistrationData): Promise<AxiosResponse<IResponseRegistration>> {
@@ -46,9 +48,5 @@ export default class AuthService {
     // Двухфакторка
     static async twoFactorSend(method: "EMAIL" | "SMS", creditial: string): Promise<AxiosResponse<{ message: string }>> {
         return $api.post<{ message: string }>('user/twoFactorSend', { method, creditial });
-    }
-
-    static async checkVarifyCode(code: string, creditial: string): Promise<AxiosResponse<TypeResponse & {userId: number}>> {
-        return $api.post<TypeResponse & {userId: number}>('user/checkVarifyCode', { code, creditial });
     }
 }

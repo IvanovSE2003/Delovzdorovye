@@ -1,34 +1,35 @@
-// auth.middleware.ts
 import ApiError from "../error/ApiError.js";
 import { Request, Response, NextFunction } from "express";
 import TokenService from "../../../core/domain/services/token.service.js";
+
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: { id: number; email: string; role: string };
+        }
+    }
+}
 
 export default function authMiddleware(tokenService: TokenService) {
     return async function (req: Request, res: Response, next: NextFunction) {
         if (req.method === 'OPTIONS') {
             return next();
         }
-        
         try {
-            const token = req.headers.authorization?.split(' ')[1];
-            
-            if (!token) {
-                return next(ApiError.badRequest('Пользователь не авторизован'));
-            }
-            
-            const userData = tokenService.validateAccessToken(token)            
-            if (!userData) {
-                return next(ApiError.badRequest('Пользователь не авторизован'));
-            }
-            
-            req.user = userData as any;
-            
+            const token = req.headers.authorization;
+            if (!token) return next(ApiError.notAuthorized('Пользователь не авторизован'));
+
+            const accessToken = token.split(' ')[1];
+            if (!accessToken) return next(ApiError.notAuthorized('Пользователь не авторизован'));
+
+            const userData = tokenService.validateAccessToken(accessToken)
+            if (!userData) return next(ApiError.notAuthorized('Пользователь не авторизован'));
+
+            req.user = userData;
             next();
         } catch (e) {
-            if (e instanceof ApiError) {
-                return next(e);
-            }
-            return next(ApiError.badRequest('Неверный токен авторизации'));
+            return next(ApiError.notAuthorized('Неверный токен авторизации'));
         }
     };
 }

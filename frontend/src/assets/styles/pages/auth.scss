@@ -6,6 +6,10 @@
     box-sizing: border-box;
   }
 
+  &__error {
+    font-size: 1rem;
+  }
+
   &__left {
     width: 50%;
     height: 100vh;

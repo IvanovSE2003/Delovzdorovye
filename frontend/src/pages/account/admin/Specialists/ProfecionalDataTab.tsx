@@ -41,7 +41,6 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         }
         else {
             setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
-            console.log(res)
         }
     };
 

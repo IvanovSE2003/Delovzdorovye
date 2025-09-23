@@ -81,6 +81,16 @@ export default class Store {
         }
     }
 
+    async twoFactorSend(method: "SMS"|"EMAIL", creditional: string): Promise<{message: string}> {
+        try {
+            const response = await AuthService.twoFactorSend(method, creditional);
+            return response.data;
+        } catch(e) {
+            const error = e as AxiosError<TypeResponse>;
+            return {message: error.response?.data.message || "Ошибка при отправки кода"};
+        }
+    }
+
     // Первый этап входа
     async login(data: LoginData): Promise<LoginResponse> {
         return this.withLoading(async () => {

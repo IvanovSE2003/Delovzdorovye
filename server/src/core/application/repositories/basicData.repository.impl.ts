@@ -14,21 +14,25 @@ export default class BatchRepositoryImpl implements BatchRepository {
         return basicDataModel.map(data => this.mapToDomainBasicData(data));
     }
 
-    async findAll(page: number, limit: number): Promise<{ batches: BasicData[]; totalCount: number; totalPage: number; }> {
-        const offset = (page - 1) * limit;
-        const { count, rows } = await models.BasicDataModel.findAndCountAll({
-            limit,
-            offset,
+    async findAll(page?: number, limit?: number): Promise<{ batches: BasicData[]; totalCount: number; totalPage: number; }> {
+        const options: any = {
             include: [{
                 model: models.UserModel,
                 attributes: ['name', 'surname', 'patronymic']
             }]
-        });
+        };
+
+        if (page && limit) {
+            options.limit = limit;
+            options.offset = (page - 1) * limit;
+        }
+
+        const result = await models.BasicDataModel.findAndCountAll(options);
 
         return {
-            batches: rows.map(batch => this.mapToDomainBasicData(batch)),
-            totalCount: count,
-            totalPage: Math.ceil(count / limit)
+            batches: result.rows.map(batch => this.mapToDomainBasicData(batch)),
+            totalCount: result.count,
+            totalPage: limit ? Math.ceil(result.count / limit) : 1
         };
     }
 

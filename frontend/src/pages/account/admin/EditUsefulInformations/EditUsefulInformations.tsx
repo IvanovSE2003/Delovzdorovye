@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import AccountLayout from "../../AccountLayout";
 import "./EditUsefulInformations.scss";
 import SpecialistInfoTab from "./LKtabs/SpecialistInfoTab";
@@ -8,7 +9,27 @@ import ProblemsTab from "./OtherTabs/ProblemsTab";
 import SpecializationsTab from "./OtherTabs/SpecializationsTab";
 
 const EditUsefulInformations: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("client");
+
+  // Получаем начальную вкладку из URL
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['client', 'specialist', 'problems', 'specializations'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, []);
+
+  // Обновляем URL при изменении вкладки
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', activeTab);
+    setSearchParams(newSearchParams);
+  }, [activeTab]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
 
   return (
     <AccountLayout>
@@ -22,7 +43,7 @@ const EditUsefulInformations: React.FC = () => {
             { name: "specializations", label: "Специализации" }
           ]}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           className="edit-info__tabs"
         />
 

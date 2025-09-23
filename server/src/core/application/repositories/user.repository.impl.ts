@@ -3,6 +3,7 @@ import UserRepository from "../../domain/repositories/user.repository.js"
 import User from '../../domain/entities/user.entity.js';
 import models from '../../../infrastructure/persostence/models/models.js';
 import { UserModelInterface, IUserCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/user.model.js';
+import ApiError from '../../../infrastructure/web/error/ApiError.js';
 
 export default class UserRepositoryImpl implements UserRepository {
     async findByEmailOrPhone(credential: string): Promise<User | null> {

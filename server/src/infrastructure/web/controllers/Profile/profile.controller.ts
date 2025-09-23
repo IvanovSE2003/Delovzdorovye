@@ -34,6 +34,7 @@ export default class ProfileController {
                 patronymic: user.patronymic,
                 role: user.role,
                 isAnonymous: user.isAnonymous,
+                isBlocked: user.isBlocked,
                 timeZone: user.timeZone,
                 hasOtherProblem 
             };

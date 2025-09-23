@@ -89,7 +89,6 @@ const Bell: React.FC = () => {
 
     useEffect(() => {
         fetchNotifications();
-        console.log(notifications);
     }, []);
 
     return (

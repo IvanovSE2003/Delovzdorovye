@@ -1,14 +1,14 @@
 import { observer } from "mobx-react-lite";
 import { useContext, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import Tabs from "../../../../components/UI/Tabs/Tabs";
 import { Context } from "../../../../main";
 import type { User } from "../../../../models/Auth";
 import AccountLayout from "../../AccountLayout";
 import BasicTab from "./BasicTab";
+import { normalizePhone } from "../../../../helpers/formatDatePhone";
 
-type TabType = "BASIC";
-type TabRole = "ALL" | "ADMIN" | "DOCTOR" | "PATIENT";
+
+type TabRole = "ALL" | "ADMIN" | "DOCTOR" | "PATIENT" | null;
 
 const Users = () => {
   const { store } = useContext(Context);
@@ -16,109 +16,89 @@ const Users = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  const getInitialRole = () => {
-    const roleFromUrl = searchParams.get('role');
-    return (roleFromUrl as TabRole) || "ALL";
-  };
 
-  const getInitialTab = () => {
-    const tabFromUrl = searchParams.get('tab');
-    return (tabFromUrl as TabType) || "BASIC";
+  const getInitialRole = () => {
+    const roleFromUrl = searchParams.get("role");
+    return (roleFromUrl as TabRole) || null;
   };
 
   const [selectedRole, setSelectedRole] = useState<TabRole>(getInitialRole());
-  const [selectedTab, setSelectedTab] = useState<TabType>(getInitialTab());
 
-  // Загрузка данных при открытии страницы
   useEffect(() => {
-    getAllUsers();
-  }, []);
+    if ((selectedRole || searchTerm.trim() !== "") && users.length === 0) {
+      getAllUsers();
+    }
+  }, [selectedRole, searchTerm]);
 
-  // Обновляем URL при изменении роли или таба
+  // Обновляем URL при изменении роли
   useEffect(() => {
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('role', selectedRole);
-    newSearchParams.set('tab', selectedTab);
+    if (selectedRole) {
+      newSearchParams.set("role", selectedRole);
+    } else {
+      newSearchParams.delete("role");
+    }
     setSearchParams(newSearchParams);
-  }, [selectedRole, selectedTab]);
+  }, [selectedRole]);
 
   // Фильтрация
   useEffect(() => {
     let filtered = users;
 
     if (searchTerm.trim() !== "") {
-      filtered = filtered.filter(user =>
-        `${user.name || ''} ${user.surname || ''} ${user.patronymic || ''}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      const termDigits = searchTerm.replace(/\D/g, ""); // цифры из поиска
+
+      filtered = filtered.filter(user => {
+        const fio = `${user.name || ""} ${user.surname || ""} ${user.patronymic || ""}`.toLowerCase();
+        const email = (user.email || "").toLowerCase();
+        const phone = normalizePhone(user.phone);
+
+        return (
+          fio.includes(term) ||
+          email.includes(term) ||
+          (termDigits && phone.includes(termDigits))
+        );
+      });
     }
 
-    if (selectedRole !== "ALL") {
-      filtered = filtered.filter(user => user.role === selectedRole);
+    switch (selectedRole) {
+      case "ADMIN":
+      case "DOCTOR":
+      case "PATIENT":
+        filtered = filtered.filter(user => user.role === selectedRole);
+        break;
+      case "ALL":
+        break;
+      case null:
+        if (searchTerm.trim() === "") {
+          filtered = [];
+        }
+        break;
     }
 
     setFilteredUsers(filtered);
   }, [searchTerm, users, selectedRole]);
 
-  // Получение все данных пользователей
+
+
+  // Получение всех данных пользователей
   const getAllUsers = async () => {
     const data = await store.getUsersAll();
     setUsers(data);
-    setFilteredUsers(data);
-  };
-
-  // Заблокировать или разблокировать пользователя
-  const blockedOrUnblocked = async (id: number, isBlocked: boolean, role: string) => {
-    if (role === "ADMIN") return;
-
-    !isBlocked
-      ? await store.blockUser(id)
-      : await store.unblockUser(id);
-
-    getAllUsers();
-  };
-
-  // Изменить роль пользователя
-  const changeRoleUser = async (id: number, role: string) => {
-    if (role === "ADMIN") return;
-
-    if (role === "DOCTOR") {
-      await store.changeRoleUser(id, "PATIENT");
-    } else {
-      await store.changeRoleUser(id, "DOCTOR");
-    }
-    
-    getAllUsers();
   };
 
   return (
     <AccountLayout>
       <div className="page-container admin-page">
         <h1 className="admin-page__title">Учетные записи</h1>
-
-        <Tabs
-          tabs={[
-            { name: "BASIC", label: "Основные данные" },
-          ]}
-          activeTab={selectedTab}
-          onTabChange={(tabName) => setSelectedTab(tabName as TabType)}
-          paramName="mainTab" 
-          syncWithUrl={true} 
+        <BasicTab
+          filteredUsers={filteredUsers}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedRole={selectedRole}
+          onRoleChange={(role) => setSelectedRole(role as TabRole)}
         />
-
-        {selectedTab === "BASIC" && (
-          <BasicTab
-            filteredUsers={filteredUsers}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedRole={selectedRole}
-            onRoleChange={(role) => setSelectedRole(role as TabRole)}
-            onBlockUser={blockedOrUnblocked}
-            onChangeRole={changeRoleUser}
-          />
-        )}
       </div>
     </AccountLayout>
   );

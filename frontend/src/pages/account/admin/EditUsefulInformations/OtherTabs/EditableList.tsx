@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import LoaderUsefulInfo from "../../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 import Search from "../../../../../components/UI/Search/Search";
 import ShowError from "../../../../../components/UI/ShowError/ShowError";
@@ -15,6 +16,7 @@ interface EditableListProps<T> {
     placeholder?: string;
     emptyMessage?: string;
     addMessage?: string;
+    tabName: string; // Обязательный параметр - имя вкладки для URL
 }
 
 const EditableList = <T,>({
@@ -26,7 +28,8 @@ const EditableList = <T,>({
     getLabel,
     placeholder = "Введите название",
     emptyMessage = "Элементы не найдены",
-    addMessage = "Добавить элемент"
+    addMessage = "Добавить элемент",
+    tabName // Имя вкладки (например: "problems", "specializations")
 }: EditableListProps<T>) => {
     const [items, setItems] = useState<T[]>([]);
     const [editing, setEditing] = useState<number | null>(null);
@@ -35,10 +38,19 @@ const EditableList = <T,>({
     const [newItem, setNewItem] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [operationInProgress, setOperationInProgress] = useState<number | string | null>(null);
-    const [search, setSearch] = useState<string>("");
-
+    
+    const [searchParams, setSearchParams] = useSearchParams();
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+
+    const [search, setSearch] = useState<string>("");
+
+    // При монтировании компонента обновляем URL с текущей вкладкой
+    useEffect(() => {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', tabName);
+        setSearchParams(newSearchParams);
+    }, [tabName]); // Обновляем URL когда меняется вкладка
 
     // Получение данных
     const fetchInfo = useCallback(async () => {
@@ -160,7 +172,7 @@ const EditableList = <T,>({
                         <div className="lk-tab__empty-icon">📝</div>
                         <h3 className="lk-tab__empty-title">{emptyMessage}</h3>
                         <p className="lk-tab__empty-description">Если хотите можете добавить новый элемент</p>
-                        <button className="my-button lk-tab__add-btn" onClick={handleCreate}>
+                        <button className="my-button lk-tab__add-btn" onClick={() => setIsAdding(true)}>
                             {addMessage}
                         </button>
                     </div>

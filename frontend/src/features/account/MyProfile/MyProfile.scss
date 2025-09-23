@@ -61,7 +61,7 @@
 
   &__role {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: $doctor-color;
     margin: 0.4rem 0;
   }
@@ -154,6 +154,11 @@
 
   &__error-block {
     border-left: solid 5px red;
+  }
+
+  &__message {
+    text-align: center;
+    margin-bottom: 0;
   }
 
   &__buttons {

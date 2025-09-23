@@ -11,7 +11,7 @@ import consultationRouter from './consultation.routes.js'
 import contentRouter from './content.router.js'
 import notificationRouter from './notification.route.js'
 import otherProblemRouter from './otherProblem.router.js'
-import conferenceRouter from './videoConference.routes.js'
+// import conferenceRouter from './videoConference.routes.js'
 
 router.use('/user', userRouter);
 router.use('/doctor', doctorRouter);
@@ -23,7 +23,7 @@ router.use('/consultation', consultationRouter);
 router.use('/content', contentRouter);
 router.use('/notification', notificationRouter);
 router.use('/otherProblem', otherProblemRouter);
-router.use('/conference', conferenceRouter);
+// router.use('/conference', conferenceRouter);
 
 
 export default router;

@@ -15,6 +15,7 @@ import NotificationRepository from "../../../../core/domain/repositories/notifac
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import normalizeDate from "../../function/normDate.js";
 import { ITimeZones } from "../../../../../../frontend/src/models/TimeZones.js";
+import { resolve } from "path";
 
 export default class ConsultationController {
     constructor(
@@ -119,7 +120,7 @@ export default class ConsultationController {
                 result.PatientName = consultation.user.name;
                 result.PatientSurname = consultation.user.surname;
                 result.PatientPatronymic = consultation.user.patronymic;
-                result.PatientPhone = consultation.user.phone;
+                result.PatientPhone = user?.phone;
                 result.PatientScore = consultation.score;
                 result.PatientComment = consultation.comment;
             }
@@ -417,12 +418,12 @@ export default class ConsultationController {
                 "PAYMENT",
                 null,
                 null,
-                30,
+                60,
                 null,
                 null,
                 reservationExpiresAt,
                 null,
-                timeSlot.time,
+                moscowTime,
                 date,
                 consultation.userId,
                 consultation.doctorId
@@ -462,24 +463,9 @@ export default class ConsultationController {
     }
 
     async findSpecialistForProblem(req: Request, res: Response, next: NextFunction) {
-        const { problems } = req.query;
+        const { problems } = req.query
 
-        let problemIds: number[] = [];
-
-        if (typeof problems === "string") {
-            try {
-                const parsed = JSON.parse(problems);
-                problemIds = Array.isArray(parsed)
-                    ? parsed.map((p: any) => Number(p))
-                    : [Number(parsed)];
-            } catch {
-                problemIds = problems.split(",").map(p => Number(p.trim()));
-            }
-        } else if (Array.isArray(problems)) {
-            problemIds = problems.map(p => Number(p));
-        }
-
-        const doctors = await this.doctorReposiotry.findByProblems(problemIds);
+        const doctors = await this.doctorReposiotry.findByProblems(problems as unknown as number[]);
         if (doctors && doctors.length === 0) return next(ApiError.badRequest('Специалисты не надены'));
 
         res.status(200).json(doctors.map(doctor => ({
@@ -554,7 +540,8 @@ export default class ConsultationController {
 
     async updateConsulation(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params;
-        const { time, date, doctorId, problems, textProblem} = req.body;
+        const { time, date, doctorId, problems, descriptionProblem} = req.body;
+
         const consultation = await this.consultationRepository.findById(Number(id));
         if(!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
@@ -570,7 +557,7 @@ export default class ConsultationController {
         consultation.date = moscowDate;
         consultation.doctorId = doctor.id;
         consultation.problems = problems;
-        consultation.other_problem = textProblem;
+        consultation.other_problem = descriptionProblem;
         await this.consultationRepository.save(consultation);
 
         return res.status(200).json({

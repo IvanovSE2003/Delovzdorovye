@@ -81,7 +81,7 @@ export default class ConsultationsStore {
         } catch (e) {
             console.error(`Ошибка при загрузке рассписания врача ${doctorId}:`, e);
             return [];
-        }
+        } 
     }
 
     // Собираем все расписания специалистов для проблем

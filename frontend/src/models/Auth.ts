@@ -1,44 +1,44 @@
-import type { Dispatch, SetStateAction } from "react";
 import type { ITimeZones } from "./TimeZones";
 
 export type Gender = "Мужчина" | "Женщина" | "";
 export type Role = "PATIENT" | "DOCTOR" | "ADMIN";
 export interface IUser {
-    id: number;
-    name: string;
-    surname: string;
-    patronymic?: string;
-    email: string;
-    phone: string;
-    pin_code: number;
-    password: string;
-    timeZone: number;
-    dateBirth: string;
-    gender: Gender;
-    role: Role;
-    isActivated: boolean;
-    isActivatedSMS: boolean;
-    isAnonymous: boolean;
-    isBlocked: boolean;
-    activationLink: string;
-    sentChanges: boolean;
-    img: string;
+  id: number;
+  name: string;
+  surname: string;
+  patronymic?: string;
+  email: string;
+  phone: string;
+  pin_code: number;
+  password: string;
+  timeZone: number;
+  dateBirth: string;
+  gender: Gender;
+  role: Role;
+  isActivated: boolean;
+  isActivatedSMS: boolean;
+  isAnonymous: boolean;
+  isBlocked: boolean;
+  activationLink: string;
+  sentChanges: boolean;
+  img: string;
 }
 
 export interface IUserDataProfile {
-    img: string;
-    role: Role;
-    name: string;
-    surname: string;
-    patronymic?: string;
-    gender: Gender;
-    dateBirth: string;
-    phone: string;
-    email: string;
-    isAnonymous: boolean;
-    age?: number;
-    timeZone?: ITimeZones;
-    hasOtherProblem?: boolean;
+  img: string;
+  role: Role;
+  name: string;
+  surname: string;
+  patronymic?: string;
+  gender: Gender;
+  dateBirth: string;
+  phone: string;
+  email: string;
+  isAnonymous: boolean;
+  isBlocked: boolean;
+  age?: number;
+  timeZone?: ITimeZones;
+  hasOtherProblem?: boolean;
 }
 
 export interface IAdminDataProfile {
@@ -69,30 +69,31 @@ export interface User {
 }
 
 export type LoginData = {
-    creditial: string;
-    twoFactorMethod: "SMS"|"EMAIL";
-    pinCode: number;
+  creditial: string;
+  twoFactorMethod: "SMS" | "EMAIL";
+  pinCode: string;
 }
 
 export type RegistrationData = {
-    name: string;
-    surname: string;
-    patronymic: string;
-    email: string;
-    phone: string;
-    pinCode: string;
-    timeZone: number;
-    dateBirth: string;
-    gender: Gender;
-    role: Role;
-    isAnonymous: boolean;
-    specializations?: string[];
-    experienceYears?: number;
-    diploma?: File;
-    license?: File;
+  name: string;
+  surname: string;
+  patronymic: string;
+  email: string;
+  phone: string;
+  pinCode: string;
+  timeZone: number;
+  dateBirth: string;
+  gender: Gender;
+  role: Role;
+  isAnonymous: boolean;
+  specializations?: string[];
+  experienceYears?: number;
+  diploma?: File;
+  license?: File;
 };
 
 export type FormAuthProps = {
   setState: any;
-  setError: Dispatch<SetStateAction<string>>;
+  setError: (message: { id: number; message: string }) => void;
+  setMessage?: (message: { id: number; message: string }) => void;
 };

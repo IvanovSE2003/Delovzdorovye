@@ -30,9 +30,9 @@ export interface IRoute {
 }
 
 export interface ProtectedRoute {
-  path: string;
-  element: React.FC;
-  roles?: string[];
+    path: string;
+    element: React.FC;
+    roles?: string[];
 }
 
 export const RouteNames = {
@@ -68,14 +68,20 @@ export const RouteNames = {
     ANOTHERPROBLEM: '/admin/another-problem',
 } as const;
 
-export const menuConfig: Record<string, { path: string; name: string }[]> = {
+export const defaultRoleRoutes: Record<string, string> = {
+    PATIENT: RouteNames.MAINPAT,
+    DOCTOR: RouteNames.TIMESHEET,
+    ADMIN: RouteNames.MAKECONSULTATION,
+}
+
+export const menuConfig: Record<string, { path: string; name: string; notification?: number }[]> = {
     PATIENT: [
         { path: RouteNames.MAINPAT, name: "Главная" },
         { path: RouteNames.CONSULTATIONSPAT, name: "Консультации" },
         { path: RouteNames.RECOMENDATIONS, name: "Рекомендации" },
         { path: RouteNames.SPECIALISTPAT, name: "Специалисты" },
         { path: RouteNames.USEFULINFOPAT, name: "Полезная информация" },
-        { path: RouteNames.PAYMENT, name: "Текущие заявки"},
+        { path: RouteNames.PAYMENT, name: "Текущие заявки" },
     ],
     DOCTOR: [
         { path: RouteNames.CONSULTATIONSDOC, name: "Консультации" },
@@ -86,9 +92,9 @@ export const menuConfig: Record<string, { path: string; name: string }[]> = {
         { path: RouteNames.USERS, name: "Учетные записи" },
         { path: RouteNames.SPECIALISTS, name: "Изменение данных" },
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
-        { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций'},
-        { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации'},
-        { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование "},
+        { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций' },
+        { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации' },
+        { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование " },
     ],
 };
 
@@ -112,19 +118,19 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.CONSULTATIONSPAT, element: ConsultationsPat, roles: ['PATIENT'] },
     { path: RouteNames.RECOMENDATIONS, element: Recomendations, roles: ['PATIENT'] },
     { path: RouteNames.SPECIALISTPAT, element: SpecialistsPat, roles: ['PATIENT'] },
-    { path: RouteNames.USEFULINFOPAT, element: UsefulInfoPat, roles: ['PATIENT']},
-    { path: RouteNames.PAYMENT, element: Payment, roles: ['PATIENT']},
+    { path: RouteNames.USEFULINFOPAT, element: UsefulInfoPat, roles: ['PATIENT'] },
+    { path: RouteNames.PAYMENT, element: Payment, roles: ['PATIENT'] },
 
     // Маршруты для врачей
     { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc, roles: ['DOCTOR'] },
     { path: RouteNames.TIMESHEET, element: TimeSheet, roles: ['DOCTOR'] },
-    { path: RouteNames.USEFULINFODOC, element: UsefulInfoDoc, roles: ['DOCTOR']},
+    { path: RouteNames.USEFULINFODOC, element: UsefulInfoDoc, roles: ['DOCTOR'] },
 
     // Маршруты для администраторов
     { path: RouteNames.SPECIALISTS, element: Specialists, roles: ['ADMIN'] },
     { path: RouteNames.USERS, element: Users, roles: ['ADMIN'] },
-    { path: RouteNames.MAKECONSULTATION, element: MakeConsultation, roles: ['ADMIN']},
-    { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN']},
-    { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN']},
-    { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN']},
+    { path: RouteNames.MAKECONSULTATION, element: MakeConsultation, roles: ['ADMIN'] },
+    { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN'] },
+    { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN'] },
+    { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN'] },
 ];

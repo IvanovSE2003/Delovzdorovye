@@ -23,201 +23,171 @@ export default class DoctorController {
     ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
 
-            const filters = {
-                specialization: req.query.specialization as string | undefined,
-                isActive: req.query.isActive !== undefined
-                    ? req.query.isActive === 'true'
-                    : undefined,
-                gender: req.query.gender as string | undefined,
-                experienceMin: req.query.experienceMin
-                    ? parseInt(req.query.experienceMin as string)
-                    : undefined,
-                experienceMax: req.query.experienceMax
-                    ? parseInt(req.query.experienceMax as string)
-                    : undefined
-            };
+        const filters = {
+            specialization: req.query.specialization as string | undefined,
+            isActive: req.query.isActive !== undefined
+                ? req.query.isActive === 'true'
+                : undefined,
+            gender: req.query.gender as string | undefined,
+            experienceMin: req.query.experienceMin
+                ? parseInt(req.query.experienceMin as string)
+                : undefined,
+            experienceMax: req.query.experienceMax
+                ? parseInt(req.query.experienceMax as string)
+                : undefined
+        };
 
-            const result = await this.doctorRepository.findAll(page, limit, filters);
-            return res.status(200).json({
-                success: true,
-                data: result.doctors,
-                pagination: {
-                    currentPage: page,
-                    totalPages: result.totalPages,
-                    totalItems: result.totalCount,
-                    itemsPerPage: limit
-                }
-            });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
+        const result = await this.doctorRepository.findAll(page, limit, filters);
+        if (!result) return next(ApiError.badRequest('Специалисты не найдены'));
+
+        return res.status(200).json({
+            success: true,
+            data: result.doctors,
+            pagination: {
+                currentPage: page,
+                totalPages: result.totalPages,
+                totalItems: result.totalCount,
+                itemsPerPage: limit
+            }
+        });
     }
 
-    async getOne(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const doctor = await this.doctorRepository.findByUserId(Number(id));
-            if (!doctor) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
-            return res.status(200).json(doctor);
-        } catch (e: any) {
-            return next(ApiError.badRequest(e.message));
-        }
+    async findOne(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+
+        const doctor = await this.doctorRepository.findByUserId(Number(id));
+        if (!doctor) return next(ApiError.badRequest('Пользователь не найден'));
+
+        return res.status(200).json(doctor);
     }
 
     async updateDoctor(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const { type, specializationId, comment } = req.body;
+        const { id } = req.params;
+        const { type, specializationId, comment } = req.body;
 
-            if (!specializationId) {
-                return res.status(204).send()
-            }
+        if (!specializationId) return res.status(204).send()
 
-            const user = await this.userRepository.findById(Number(id));
-            if (!user) {
-                return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
-            }
+        const user = await this.userRepository.findById(Number(id));
+        if (!user) return next(ApiError.badRequest("Пользователь для данного доктора не найден"));
 
-            const doctor = await this.doctorRepository.findByUserId(user.id);
-            if (!doctor) {
-                return next(ApiError.badRequest("Специалист не найден"));
-            }
+        const doctor = await this.doctorRepository.findByUserId(user.id);
+        if (!doctor) return next(ApiError.badRequest("Специалист не найден"));
 
-            let diplomaFileName = "";
-            let licenseFileName = "";
+        let diplomaFileName = "";
+        let licenseFileName = "";
 
-            if (type === 'ADD') {
-                if (req.files?.diploma) {
-                    const diplomaFile = Array.isArray(req.files.diploma)
-                        ? req.files.diploma[0]
-                        : req.files.diploma;
+        if (type === 'ADD') {
+            if (req.files?.diploma) {
+                const diplomaFile = Array.isArray(req.files.diploma)
+                    ? req.files.diploma[0]
+                    : req.files.diploma;
 
-                    if (!diplomaFile.name.toLowerCase().endsWith('.pdf')) {
-                        return next(ApiError.badRequest("Диплом должен быть в формате .pdf"));
-                    }
-
-                    try {
-                        diplomaFileName = await this.fileService.saveFile(diplomaFile);
-                    } catch (error) {
-                        return next(ApiError.internal('Ошибка загрузки диплома'));
-                    }
+                if (!diplomaFile.name.toLowerCase().endsWith('.pdf')) {
+                    return next(ApiError.badRequest("Диплом должен быть в формате .pdf"));
                 }
 
-                if (req.files?.license) {
-                    const licenseFile = Array.isArray(req.files.license)
-                        ? req.files.license[0]
-                        : req.files.license;
-
-                    if (!licenseFile.name.toLowerCase().endsWith('.pdf')) {
-                        return next(ApiError.badRequest("Лицензия должна быть в формате .pdf"));
-                    }
-
-                    try {
-                        licenseFileName = await this.fileService.saveFile(licenseFile);
-                    } catch (error) {
-                        return next(ApiError.internal('Ошибка загрузки лицензии'));
-                    }
+                try {
+                    diplomaFileName = await this.fileService.saveFile(diplomaFile);
+                } catch (error) {
+                    return next(ApiError.internal('Ошибка загрузки диплома'));
                 }
-            } else {
-                const { diploma, license } = req.body;
-                diplomaFileName = diploma;
-                licenseFileName = license;
             }
 
-            const specialization = await this.specializationRepository.findById(specializationId);
-            if (!specialization) {
-                return next(ApiError.badRequest('Специализация не найдена'));
+            if (req.files?.license) {
+                const licenseFile = Array.isArray(req.files.license)
+                    ? req.files.license[0]
+                    : req.files.license;
+
+                if (!licenseFile.name.toLowerCase().endsWith('.pdf')) {
+                    return next(ApiError.badRequest("Лицензия должна быть в формате .pdf"));
+                }
+
+                try {
+                    licenseFileName = await this.fileService.saveFile(licenseFile);
+                } catch (error) {
+                    return next(ApiError.internal('Ошибка загрузки лицензии'));
+                }
             }
-
-            await this.profDataRepository.save(new ProfData(
-                0,
-                diplomaFileName,
-                licenseFileName,
-                specialization.name,
-                comment,
-                type,
-                user.id
-            ));
-
-            await this.userRepository.save(user.setSentChanges(true));
-
-            await this.notificationReposiotory.save(
-                new Notification(
-                    0,
-                    "Обновление данных",
-                    "Ваши профессиональные данные были отправлены на модерацию. Ответ займёт от одного часа до трёх дней.",
-                    "INFO",
-                    false,
-                    null,
-                    null,
-                    user.id
-                )
-            );
-
-            return res.status(200).json({
-                success: true,
-                message: "Изменения отправлены на модерацию"
-            });
-        } catch (e: any) {
-            console.error('Error in updateDoctor:', e);
-            return next(ApiError.internal(e.message));
+        } else {
+            const { diploma, license } = req.body;
+            diplomaFileName = diploma;
+            licenseFileName = license;
         }
+
+        const specialization = await this.specializationRepository.findById(specializationId);
+        if (!specialization) {
+            return next(ApiError.badRequest('Специализация не найдена'));
+        }
+
+        await this.profDataRepository.save(new ProfData(
+            0,
+            diplomaFileName,
+            licenseFileName,
+            specialization.name,
+            comment,
+            type,
+            user.id
+        ));
+
+        await this.userRepository.save(user.setSentChanges(true));
+
+        await this.notificationReposiotory.save(
+            new Notification(
+                0,
+                "Обновление данных",
+                "Ваши профессиональные данные были отправлены на модерацию. Ответ займёт от одного часа до трёх дней.",
+                "INFO",
+                false,
+                null,
+                null,
+                user.id
+            )
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Изменения отправлены на модерацию"
+        });
     }
 
     async TakeBreak(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { startDate, endDate } = req.body;
-            const { userId } = req.params;
+        const { startDate, endDate } = req.body;
+        const { userId } = req.params;
 
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            const now = new Date();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const now = new Date();
 
-            if (start < now) {
-                return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
-            }
+        if (start < now) return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
+        if (start > end) return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
 
-            if (start > end) {
-                return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
-            }
+        const diffInMs = end.getTime() - start.getTime();
+        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
-            const diffInMs = end.getTime() - start.getTime();
-            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+        if (diffInDays > 61) return next(ApiError.badRequest('Перерыв не может длиться более двух месяцев'));
 
-            if (diffInDays > 61) {
-                return next(ApiError.badRequest('Перерыв не может длиться более двух месяцев'));
-            }
+        const doctor = await this.doctorRepository.findByUserId(Number(userId));
+        if (!doctor) return next(ApiError.badRequest('Пользователь не найден'));
 
-            const doctor = await this.doctorRepository.findByUserId(Number(userId));
-            if (!doctor) {
-                return next(ApiError.badRequest('Пользователь не найден'));
-            }
-
-            await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
-            await this.notificationReposiotory.save(
-                new Notification(
-                    0,
-                    "Перерыв",
-                    `Вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
-                    "INFO",
-                    false,
-                    null,
-                    null,
-                    Number(userId)
-                )
-            );
-            res.status(200).json({
-                success: true,
-                message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`
-            });
-        } catch (e: any) {
-            return next(ApiError.internal(e.message));
-        }
+        await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
+        await this.notificationReposiotory.save(
+            new Notification(
+                0,
+                "Перерыв",
+                `Вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
+                "INFO",
+                false,
+                null,
+                null,
+                Number(userId)
+            )
+        );
+        res.status(200).json({
+            success: true,
+            message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`
+        });
     }
 }

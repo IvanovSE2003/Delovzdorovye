@@ -79,7 +79,6 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
             setSelectedTime(null);
             setError("");
         }
-        console.log(consultationData)
     }, [isOpen]);
 
     if (!isOpen) return null;
@@ -105,8 +104,10 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                     <div className="shift-modal__client">
                         <p className="consultation-modal__client">
                             Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
-                                ? <span>Анонимный пользователь</span>
-                                : <span>
+                                ? 
+                                <span>Анонимный пользователь</span>
+                                : 
+                                <span>
                                     {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
                                 </span>
                             }

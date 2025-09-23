@@ -1,37 +1,32 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Context } from '../../main';
 import { observer } from 'mobx-react-lite';
 import RightPanel from '../../features/account/RightPanel/RightPanel';
 import SideBar from '../../components/UI/SideBar/SideBar';
-import Loader from '../../components/UI/Loader/Loader';
 import BlockedAccount from './BlockedAccount';
+import type { Role } from '../../models/Auth';
 
 interface AccountLayoutProps {
   children: React.ReactNode;
 }
 
+export interface MenuItem {
+  label: string;
+  path: string;
+  notifications?: number;
+  roles: Role[];
+}
+
 const AccountLayout: React.FC<AccountLayoutProps> = ({ children }) => {
   const { store } = useContext(Context);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const checkActivation = async () => {
-      await store.checkAuth();
-      setIsLoading(false);
-    };
-
-    checkActivation();
-  }, [store.user.isActivated]);
 
   if (store.user.isBlocked) return <BlockedAccount />
 
-  if (isLoading) return <Loader />;
-
   return (
     <div className="account__main">
-      <SideBar menuItems={store.menuItems} />
+      <SideBar menuItems={store.menuItems}/>
       <main className='account__content'>
-          {children}
+        {children}
       </main>
       <RightPanel
         countMessage={store.countMessage}

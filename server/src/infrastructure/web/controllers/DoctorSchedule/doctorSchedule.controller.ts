@@ -98,7 +98,6 @@ export default class DoctorScheduleController {
             const doctor = await this.doctorRepository.findByUserId(user.id);
             if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
 
-
             const { newTime: moscowTimeStart, newDate: moscowDateStart } = convertUserTimeToMoscow(date, timeStart, user.timeZone);
             const { newTime: moscowTimeEnd } = convertUserTimeToMoscow(date, timeEnd, user.timeZone);
 
@@ -309,7 +308,7 @@ export default class DoctorScheduleController {
                 doctorId
             ));
 
-            currentTime = new Date(currentTime.getTime() + 60 * 60000); 
+            currentTime = new Date(currentTime.getTime() + 60 * 60000);
         }
 
         return slots;

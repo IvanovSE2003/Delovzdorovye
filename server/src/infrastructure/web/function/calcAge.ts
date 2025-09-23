@@ -1,4 +1,4 @@
-const calculateAge = (dateOfBirth: Date): number => {
+const calculateAge = (dateOfBirth: string): number => {
     if (!dateOfBirth) return 0;
     const today = new Date();
     const birthDate = new Date(dateOfBirth);

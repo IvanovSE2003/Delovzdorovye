@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import './UpcomingConsultations.scss';
-import ShiftModal from '../../../components/UI/Modals/ShiftModal/ShiftModal';
-import CancelModal from '../../../components/UI/Modals/CancelModal/CancelModal';
-import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
-import EditModal, { type ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
 import ConsultationService from '../../../services/ConsultationService';
-import type { TypeResponse } from '../../../models/response/DefaultResponse';
-import type { AxiosError } from 'axios';
 import { getDateLabel } from '../../../hooks/DateHooks';
 import type { Role } from '../../../models/Auth';
 import Pagination from '../../../components/UI/Pagination/Pagination';
+import { processError } from '../../../helpers/processError';
+import ShowError from '../../../components/UI/ShowError/ShowError';
+import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
+import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
+
+// Замените прямые импорты на ленивые
+const ShiftModal = lazy(() => import('../../../components/UI/Modals/ShiftModal/ShiftModal'));
+const CancelModal = lazy(() => import('../../../components/UI/Modals/CancelModal/CancelModal'));
+const RepeatModal = lazy(() => import('../../../components/UI/Modals/RepeatModal/RepeatModal'));
+const EditModal = lazy(() => import('../../../components/UI/Modals/EditModal/EditModal'));
 
 export interface Consultation {
     id: number;
@@ -56,10 +60,14 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     const [total, setTotal] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
 
+    const [message, setMessage] = useState<{ id: number, message: string }>({ id: 0, message: "" });
+    const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
+    const [loading, setLoading] = useState<boolean>(false);
+
     // Получение данных предстоящих консультаций
     const fetchConsultations = async () => {
         try {
-
+            setLoading(true)
             let response;
             if (mode === "DOCTOR")
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
@@ -82,10 +90,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                 setTotal(response.data.totalPages || 0);
             }
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error('Ошибка при получение предстоящих консультации: ', error.response?.data.message)
+            processError(e, "Ошибка при получении предстоящих консультаций")
         } finally {
             setIsVisible(true);
+            setLoading(false);
         }
     }
 
@@ -115,13 +123,11 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     // Завершение переноса консультации
     const handleShiftConsultation = async (data: ConsultationData) => {
         try {
-            console.log("Данные для переноса консультации:", data);
             await ConsultationService.shiftAppointment(data);
             setModalShift(false);
             await fetchConsultations();
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при переносе консультации: ", error.response?.data.message);
+            processError(e, "Ошибка при переносе консультации", setError);
         }
     };
 
@@ -131,8 +137,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             await ConsultationService.cancelAppointment(reason, id);
             setConsultations(prev => prev.filter(c => c.id !== id));
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при отмене консультации: ", error.response?.data.message);
+            processError(e, "Ошибка при отмене консультации", setError);
         } finally {
             setModalCancel(false);
             await fetchConsultations();
@@ -145,8 +150,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             const response = await ConsultationService.repeatAppointment(data);
             console.log(response.data);
         } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при повторе консультации: ", error.response?.data.message);
+            processError(e, "Ошибка при повторе консультации", setError);
         } finally {
             setModalRepeat(false);
             await fetchConsultations();
@@ -154,11 +158,19 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
     };
 
     // Завершение редактирование консультации
-    const handleEditConsultation = (newData: ConsultationData) => {
-        console.log("Новые данные для консультации:", newData);
-        // const response = await ConsultationService.editAppoinment(newData);
-        // console.log(response.data);
-        setModalEdit(false);
+    const handleEditConsultation = async (newData: ConsultationData) => {
+        try {
+            setLoading(true);
+            const response = await ConsultationService.editAppointment(newData);
+            if (response.data.success) setMessage({ id: Date.now(), message: response.data.message })
+            else setError({ id: Date.now(), message: `Ошибка: ${response.data.message}` })
+        } catch (e) {
+            processError(e, "Ошибка при редактировании консультации")
+        } finally {
+            setModalEdit(false);
+            await fetchConsultations();
+            setLoading(false);
+        }
     };
 
     // Обработка сликов по кнопкам карточек с консультациями
@@ -166,6 +178,8 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
         setSelectedConsultation(data);
         fun(true);
     }
+
+    if (loading) return <LoaderUsefulInfo />
 
     if (consultations.length === 0) return (
         <div className="consultation-card">
@@ -180,21 +194,28 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
     return (
         <div className='upcomming-cousultations'>
-            <ShiftModal
-                isOpen={modalShift}
-                consultationData={selectedConsultation || {} as Consultation}
-                onClose={() => setModalShift(false)}
-                onRecord={handleShiftConsultation}
-                mode={mode}
-            />
+            <Suspense fallback={<LoaderUsefulInfo />}>
+                <ShiftModal
+                    isOpen={modalShift}
+                    consultationData={selectedConsultation || {} as Consultation}
+                    onClose={() => setModalShift(false)}
+                    onRecord={handleShiftConsultation}
+                    mode={mode}
+                />
+            </Suspense>
 
-            <CancelModal
-                isOpen={modalCancel}
-                consultationData={selectedConsultation || {} as Consultation}
-                onClose={() => setModalCancel(false)}
-                onRecord={handleCancelConsultation}
-                mode={mode}
-            />
+            <Suspense fallback={<LoaderUsefulInfo />}>
+                <CancelModal
+                    isOpen={modalCancel}
+                    consultationData={selectedConsultation || {} as Consultation}
+                    onClose={() => setModalCancel(false)}
+                    onRecord={handleCancelConsultation}
+                    mode={mode}
+                />
+            </Suspense>
+
+            <ShowError msg={error} />
+            <ShowError msg={message} mode='MESSAGE' />
 
             <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'}`}>
                 {consultations.map(consultation => (
@@ -264,19 +285,23 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
                             {mode === "ADMIN" && (
                                 <>
-                                    <RepeatModal
-                                        isOpen={modalRepeat}
-                                        consultationData={selectedConsultation || {} as Consultation}
-                                        onClose={() => setModalRepeat(false)}
-                                        onRecord={handleRepeatConsultation}
-                                    />
+                                    <Suspense fallback={<LoaderUsefulInfo />}>
+                                        <RepeatModal
+                                            isOpen={modalRepeat}
+                                            consultationData={selectedConsultation || {} as Consultation}
+                                            onClose={() => setModalRepeat(false)}
+                                            onRecord={handleRepeatConsultation}
+                                        />
+                                    </Suspense>
 
-                                    <EditModal
-                                        isOpen={modalEdit}
-                                        consultationData={selectedConsultation || {} as Consultation}
-                                        onClose={() => setModalEdit(false)}
-                                        onRecord={handleEditConsultation}
-                                    />
+                                    <Suspense fallback={<LoaderUsefulInfo />}>
+                                        <EditModal
+                                            isOpen={modalEdit}
+                                            consultationData={selectedConsultation || {} as Consultation}
+                                            onClose={() => setModalEdit(false)}
+                                            onRecord={handleEditConsultation}
+                                        />
+                                    </Suspense>
 
                                     <button
                                         className="consultation-card__button consultation-card__button--repeat"

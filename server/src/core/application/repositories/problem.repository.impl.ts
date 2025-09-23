@@ -5,7 +5,9 @@ import models from "../../../infrastructure/persostence/models/models.js";
 
 export default class ProblemRepositoryImpl implements ProblemRepository {
     async findAll(): Promise<Problem[]> {
-        const problems = await models.ProblemModel.findAll();
+        const problems = await models.ProblemModel.findAll({
+            order: [['id', 'ASC']]
+        });
         return problems.map((p) => this.mapToDomainProblem(p.get() as ProblemModelInterface));
     }
 
@@ -33,7 +35,7 @@ export default class ProblemRepositoryImpl implements ProblemRepository {
     }
 
     async delete(id: number): Promise<void> {
-        await models.ProblemModel.destroy({where:{id}});
+        await models.ProblemModel.destroy({ where: { id } });
     }
 
     private mapToDomainProblem(problemModel: ProblemModelInterface) {

@@ -128,9 +128,15 @@ export default class ConsultationService {
     }
 
     // Редактирование консультации
-    // static async editAppointment(newData: ConsultationData) : Promise<AxiosResponse<>> {
-    //     return $api.put('/consultation/appoinment/edit', newData);
-    // }
+    static async editAppointment(newData: ConsultationData): Promise<AxiosResponse<TypeResponse>>  {
+        return $api.put<TypeResponse>(`/consultation/update/${newData.id}`, {
+            time: newData.time,
+            date: newData.date,
+            descriptionProblem: newData.descriptionProblem,
+            doctorId: newData.doctorId,
+            problems: newData.problems
+        });
+    }
 
     // ----------------------------ВИДЕОКОНФЕРЕНЦИЯ------------------------------
     static async createConsultation(consultationId: number) {

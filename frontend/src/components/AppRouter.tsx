@@ -3,6 +3,7 @@ import { useContext, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Context } from "../main";
 import {
+  defaultRoleRoutes,
   privateRoutes,
   publicRoutes,
   RouteNames,
@@ -39,18 +40,27 @@ const AppRouter: React.FC = () => {
     return requiredRoles.includes(userRole);
   };
 
-  const lastVisited = store.lastVisited || localStorage.getItem("lastVisited") || RouteNames.PERSONAL;
+  // определяем lastVisited
+  const lastVisited =
+    store.lastVisited || localStorage.getItem("lastVisited");
+
+  // выбираем дефолтную страницу для роли
+  const defaultForRole =
+    (userRole && defaultRoleRoutes[userRole]) || RouteNames.PERSONAL;
+
+  // если lastVisited валиден — используем его, иначе дефолт для роли
   const availablePaths = privateRoutes
     .filter((r) => hasRoleAccess((r as ProtectedRoute).roles))
     .map((r) => r.path);
 
-  const safeLastVisited =
-    availablePaths.includes(lastVisited) ? lastVisited : RouteNames.PERSONAL;
+  const safeStartPage =
+    lastVisited && availablePaths.includes(lastVisited)
+      ? lastVisited
+      : defaultForRole;
 
   return (
     <>
       <LastVisitedTracker />
-
       <Routes>
         {isAuth ? (
           <>
@@ -67,11 +77,11 @@ const AppRouter: React.FC = () => {
                 <Route
                   key={protectedRoute.path}
                   path={protectedRoute.path}
-                  element={<Navigate to={RouteNames.PERSONAL} />}
+                  element={<Navigate to={defaultForRole} />}
                 />
               );
             })}
-            <Route path="*" element={<Navigate to={safeLastVisited} />} />
+            <Route path="*" element={<Navigate to={safeStartPage} />} />
           </>
         ) : (
           <>
@@ -92,5 +102,6 @@ const AppRouter: React.FC = () => {
     </>
   );
 };
+
 
 export default observer(AppRouter);

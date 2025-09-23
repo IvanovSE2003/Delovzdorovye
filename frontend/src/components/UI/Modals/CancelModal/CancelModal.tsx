@@ -79,6 +79,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                 </div>
 
                 <ShowError msg={error} />
+                <br/>
 
                 <button
                     className='shift-modal__submit'

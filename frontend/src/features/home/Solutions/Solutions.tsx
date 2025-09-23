@@ -3,6 +3,8 @@ import AnimatedBlock from '../../../components/AnimatedBlock';
 import type { ElementHomePageProps } from '../../../pages/Homepage';
 import { useEffect, useState } from 'react';
 import ConsultationsStore, { type OptionsResponse } from '../../../store/consultations-store';
+import { Link } from 'react-router';
+import { processError } from '../../../helpers/processError';
 
 const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
     const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
@@ -13,9 +15,8 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
         try {
             const data = await store.getProblems();
             setProblems(data);
-            console.log(data);
         } catch (e) {
-
+            processError(e, "Ошибка при получении данных (решения)")
         }
     }
 
@@ -42,12 +43,12 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
                         </span>
                     </div>
                     {role === "ADMIN" && (
-                        <button
+                        <Link
                             className='my-button'
-                            // onClick={}
+                            to={'admin/edit-useful-information?tab=problems'}
                         >
                             Редактирование
-                        </button>
+                        </Link>
                     )}
                 </div>
             </AnimatedBlock>

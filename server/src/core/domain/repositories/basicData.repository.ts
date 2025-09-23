@@ -2,7 +2,7 @@ import BasicData from "../entities/basicData.entity";
 
 export default interface BasicDataRepository {
     findById(id: number): Promise<BasicData | null>;
-    findAll(page: number, limit: number): Promise<{batches: BasicData[], totalCount: number, totalPage: number}>;
+    findAll(page?: number, limit?: number): Promise<{batches: BasicData[], totalCount: number, totalPage: number}>;
     findAllByUserId(userId: number): Promise<BasicData[]>;
     create(batch: BasicData): Promise<BasicData>;
     update(batch: BasicData): Promise<BasicData>;

@@ -10,39 +10,41 @@ import { observer } from 'mobx-react-lite';
 import type { Role } from '../models/Auth';
 
 export interface ElementHomePageProps {
-  role: Role;
+  role: Role | null;
 }
 
-const HomePage = () => {
+const Homepage = () => {
   const { store } = useContext(Context);
+  const userRole = store.user ? store.user.role : null;
 
   // Основной рендер
   return (
     <div>
       <Header 
         isAuth={store.isAuth}
+        role={store.user.role}
       />
       <Slider 
-        role={store.user.role}
+        role={userRole}
         isAuth={store.isAuth}
       />
       <Solutions 
-        role={store.user.role}
+        role={userRole}
       />
 
       <div className='line'/>
 
       <Costs 
-        role={store.user.role}
+        role={userRole}
       />
       <Informations
-        role={store.user.role}
+        role={userRole}
       />
       <Contacts
-        role={store.user.role}
+        role={userRole}
       />
     </div>
   )
 }
 
-export default observer(HomePage);
+export default observer(Homepage);

@@ -11,7 +11,7 @@ const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
 
 interface BasicDataTabProps extends DataTabProps {
     basicDatas: IBasicData[];
-    setBasicDatas: (data: IBasicData[]) => void; // исправил
+    setBasicDatas: (data: IBasicData[]) => void;
 }
 
 const BasicDataTab: React.FC<BasicDataTabProps> = ({
@@ -30,12 +30,35 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const [rejectReason, setRejectReason] = useState("");
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
 
+    const [modalImage, setModalImage] = useState<{ open: boolean, value: string }>({ open: false, value: "" });
+
     // Хэлпиры для полей
     const isFile = (value: string) =>
         !!value && FILE_EXTENSIONS.some((ext) => value.toLowerCase().endsWith(ext));
 
     const isImage = (filename: string) =>
         IMAGE_EXTENSIONS.some((ext) => filename.toLowerCase().endsWith(ext));
+
+    // Обработчик нажатия клавиш
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && modalImage.open) {
+                setModalImage({ open: false, value: "" });
+            }
+        };
+
+        if (modalImage.open) {
+            document.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden'; // Блокируем скролл
+        } else {
+            document.body.style.overflow = 'auto'; // Восстанавливаем скролл
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'auto';
+        };
+    }, [modalImage.open]);
 
     const renderValue = (value: string) => {
         if (!value) return "Пустое поле";
@@ -46,7 +69,8 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             if (isImage(value)) {
                 return (
                     <a
-                        href={fileUrl}
+                        style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+                        onClick={() => setModalImage({ open: true, value: value })}
                         onMouseEnter={(e) => handleImageHover(e, value)}
                         onMouseLeave={handleImageLeave}
                         onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
@@ -219,6 +243,22 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                 </tbody>
             </table>
 
+            {modalImage.open && (
+                <div className="modal modal--overlay" onClick={() => setModalImage({ open: false, value: "" })}>
+                    <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div className="image-modal">
+                            <p className="image-modal__hint">
+                                Чтобы выйти из режима просмотра изображения нажмите ESC
+                            </p>
+                            <img
+                                src={`${URL}/${modalImage.value}`}
+                                alt="Просмотр изображения"
+                                className="image-modal__img"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Модальное окно */}
             {showRejectModal && (
                 <div className="modal modal--overlay">

@@ -13,7 +13,7 @@ import Notification from '../../../../core/domain/entities/notification.entity.j
 
 export default class BatchController {
     constructor(
-        private readonly basicDataReposiotry: BasicDataRepository,
+        private readonly basicDataRepository: BasicDataRepository,
         private readonly profDataRepository: ProfDataRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly userRepository: UserRepository,
@@ -23,7 +23,7 @@ export default class BatchController {
 
     async getOneBasicData(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const basicData = await this.basicDataReposiotry.findById(Number(id));
+        const basicData = await this.basicDataRepository.findById(Number(id));
 
         if (!basicData) {
             return next(ApiError.badRequest('Основное изменение не найдено'));
@@ -35,7 +35,7 @@ export default class BatchController {
     async getAllBasicData(req: Request, res: Response, next: NextFunction) {
         const limit = req.query.limit || 10;
         const page = req.query.page || 1;
-        const basicData = await this.basicDataReposiotry.findAll(Number(page), Number(limit));
+        const basicData = await this.basicDataRepository.findAll(Number(page), Number(limit));
 
         if (!basicData || basicData.batches.length === 0) {
             return next(ApiError.badRequest('Изменения не найдены'));
@@ -93,7 +93,7 @@ export default class BatchController {
     async confirmBasicData(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
 
-        const basicData = await this.basicDataReposiotry.findById(Number(id));
+        const basicData = await this.basicDataRepository.findById(Number(id));
         if (!basicData) return next(ApiError.badRequest("Изменение не найдено"));
 
         const user = await this.userRepository.findById(basicData.userId || 0);
@@ -142,9 +142,9 @@ export default class BatchController {
             return next(ApiError.badRequest("Недопустимое поле для изменения"));
         }
 
-        await this.basicDataReposiotry.delete(basicData.id);
+        await this.basicDataRepository.delete(basicData.id);
 
-        const remainingChanges = await this.basicDataReposiotry.findAllByUserId(user.id);
+        const remainingChanges = await this.basicDataRepository.findAllByUserId(user.id);
         if (remainingChanges.length === 0) {
             user.setSentChanges(false);
             await this.userRepository.save(user);
@@ -173,7 +173,7 @@ export default class BatchController {
         const { id } = req.params;
         const { rejection_reason } = req.body;
 
-        const basicData = await this.basicDataReposiotry.findById(Number(id));
+        const basicData = await this.basicDataRepository.findById(Number(id));
         if (!basicData) return next(ApiError.badRequest('Изменение не найдено'));
 
         const user = await this.userRepository.findById(basicData.userId || 0);
@@ -192,7 +192,7 @@ export default class BatchController {
             )
         );
 
-        await this.basicDataReposiotry.delete(basicData.id);
+        await this.basicDataRepository.delete(basicData.id);
         await this.userRepository.save(user.setSentChanges(false));
 
         return res.status(200).json({
@@ -358,5 +358,27 @@ export default class BatchController {
         if (!result) return next(ApiError.badRequest('Консультации не найдены'));
 
         return res.status(200).json(result);
+    }
+
+    async countChanges(req: Request, res: Response, next: NextFunction) {
+        const [basicData, profData] = await Promise.all([
+            this.basicDataRepository.findAll(),
+            this.profDataRepository.findAll()
+        ]);
+
+        if (!basicData || !profData) {
+            return next(ApiError.badRequest('Данные не найдены'));
+        }
+
+        const basicDataCount = basicData.batches ? basicData.batches.length : 0;
+        const profDataCount = profData.profData ? profData.profData.length : 0;
+
+        const totalChanges = basicDataCount + profDataCount;
+
+        if (totalChanges === 0) {
+            return next(ApiError.badRequest('Изменения не найдены'));
+        }
+
+        return res.status(200).json(totalChanges);
     }
 }

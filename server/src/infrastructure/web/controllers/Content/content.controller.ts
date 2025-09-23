@@ -6,113 +6,87 @@ import ContentRepository from "../../../../core/domain/repositories/content.repo
 export default class ContentController {
     constructor(
         private readonly contentRepository: ContentRepository
-    ) {}
+    ) { }
 
     async createContent(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { title, content, type } = req.body;
+        const { title, content, type } = req.body;
 
-            const newContent = new Content(
-                0,
-                type,
-                content,
-                title ? title : null
-            )
+        const newContent = new Content(
+            0,
+            type,
+            content,
+            title ? title : null
+        )
 
-            const created = await this.contentRepository.save(newContent);
-            return res.status(201).json(created);
-        } catch (e: any) {
-            next(ApiError.internal(e.message));
-        }
+        const created = await this.contentRepository.save(newContent);
+        return res.status(201).json(created);
     }
 
     async getContentById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const content = await this.contentRepository.findById(Number(id))
+        const { id } = req.params;
 
-            if (!content) {
-                return next(ApiError.badRequest("Контент не найден"));
-            }
+        const content = await this.contentRepository.findById(Number(id))
+        if (!content) return next(ApiError.badRequest("Контент не найден"));
 
-            return res.status(200).json({
-                header: content.label,
-                text: content.text_content,
-                type: content.type
-            });
-        } catch (e: any) {
-            next(ApiError.internal(e.message));
-        }
+        return res.status(200).json({
+            header: content.label,
+            text: content.text_content,
+            type: content.type
+        });
     }
 
     async getAllContent(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { page, limit, type } = req.query;
+        const { page, limit, type } = req.query;
 
-            const pageNum = page ? Number(page) : undefined;
-            const limitNum = limit ? Number(limit) : undefined;
-            const typeFilter = type ? type.toString() : ""
+        const pageNum = page ? Number(page) : undefined;
+        const limitNum = limit ? Number(limit) : undefined;
+        const typeFilter = type ? type.toString() : ""
 
-            const contents = await this.contentRepository.findAll(pageNum, limitNum, { type: typeFilter });
+        const contents = await this.contentRepository.findAll(pageNum, limitNum, { type: typeFilter });
 
-            const results = contents.contents.map(c => ({
-                id: c.id,
-                header: c.label,
-                text: c.text_content
-            }));
+        const results = contents.contents.map(c => ({
+            id: c.id,
+            header: c.label,
+            text: c.text_content
+        }));
 
-            return res.status(200).json({
-                contents: results,
-                totalCount: contents.totalCount,
-                totalPages: contents.totalPages
-            });
-        } catch (e: any) {
-            next(ApiError.internal(e.message));
-        }
+        return res.status(200).json({
+            contents: results,
+            totalCount: contents.totalCount,
+            totalPages: contents.totalPages
+        });
     }
 
     async updateContent(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const { title, content, type } = req.body;
+        const { id } = req.params;
+        const { title, content, type } = req.body;
 
-            const contentModel = await this.contentRepository.findById(Number(id));
-            if (!contentModel) {
-                return next(ApiError.badRequest('Контент не найден'));
-            }
+        const contentModel = await this.contentRepository.findById(Number(id));
+        if (!contentModel) return next(ApiError.badRequest('Контент не найден'));
 
-            if (title && title !== undefined) {
-                contentModel.label = title;
-            }
-
-            if (content && content !== undefined) {
-                contentModel.text_content = content;
-            }
-
-            if (type && type !== undefined) {
-                contentModel.type = type;
-            }
-
-            const updated = await this.contentRepository.save(contentModel);
-            return res.status(200).json(updated);
-        } catch (e: any) {
-            next(ApiError.internal(e.message));
+        if (title && title !== undefined) {
+            contentModel.label = title;
         }
+
+        if (content && content !== undefined) {
+            contentModel.text_content = content;
+        }
+
+        if (type && type !== undefined) {
+            contentModel.type = type;
+        }
+
+        const updated = await this.contentRepository.save(contentModel);
+        return res.status(200).json(updated);
     }
 
     async deleteContent(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
+        const { id } = req.params;
 
-            const content = await this.contentRepository.findById(Number(id));
-            if (!content) {
-                return next(ApiError.badRequest('Контент не найден'));
-            }
+        const content = await this.contentRepository.findById(Number(id));
+        if (!content) return next(ApiError.badRequest('Контент не найден'));
 
-            await this.contentRepository.delete(content.id);
-            return res.status(204).send();
-        } catch (e: any) {
-            next(ApiError.internal(e.message));
-        }
+        await this.contentRepository.delete(content.id);
+        return res.status(204).send();
     }
 }

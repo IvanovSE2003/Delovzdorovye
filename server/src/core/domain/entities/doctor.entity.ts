@@ -24,4 +24,9 @@ export default class Doctor {
         this.isActivated = false;
         return this;
     }
+
+    activate() {
+        this.isActivated = true;
+        return this;
+    }
 }

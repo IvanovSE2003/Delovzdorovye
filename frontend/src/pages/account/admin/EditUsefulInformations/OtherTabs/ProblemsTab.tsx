@@ -1,4 +1,3 @@
-
 import ConsultationsStore from "../../../../../store/consultations-store";
 import EditableList from "./EditableList";
 
@@ -19,6 +18,7 @@ const ProblemsTab: React.FC = () => {
             getLabel={p => p.label}
             placeholder="Введите название проблемы"
             addMessage="+ Добавить новую проблему"
+            tabName="problems"
         />
     );
 };

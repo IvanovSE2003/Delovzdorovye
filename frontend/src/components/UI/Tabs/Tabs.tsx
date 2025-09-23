@@ -10,7 +10,7 @@ export interface ITab {
 interface TabsProps {
     tabs: ITab[];
     filter?: boolean;
-    activeTab?: string;
+    activeTab?: string | null;
     onTabChange?: (tabName: string) => void;
     className?: string;
     paramName?: string;

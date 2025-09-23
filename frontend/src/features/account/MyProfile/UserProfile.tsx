@@ -13,7 +13,10 @@ interface UserProfileProps {
     mode?: "ADMIN" | "PATIENT" | "DOCTOR";
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true, isButton = true, onEdit, onLogout, mode="PATIENT"}) => {
+const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true, isButton = true, onEdit, onLogout, mode = "PATIENT" }) => {
+    if (!profileData) {
+        return <div>Загрузка...</div>;
+    }
     return (
         <>
             {isAvatar && mode !== "ADMIN" && (
@@ -30,6 +33,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ profileData, isAvatar = true,
                         ? 'Анонимный пользователь'
                         : <>{profileData.surname} {profileData.name} {profileData.patronymic}</>
                     }
+                    {profileData.role && (
+                        <div className="user-profile__role">
+                            {profileData.role === "PATIENT" && "Пользователь"}
+                            {profileData.role === "DOCTOR" && "Специалист"}
+                            {profileData.role === "ADMIN" && "Администратор"}
+                        </div>
+                    )}
                 </div>
 
                 {!profileData.isAnonymous && (

@@ -1,0 +1,19 @@
+.edit-modal {
+    &__buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        button {
+            width: 300px;
+        }
+    }
+
+    &__comfirm {
+        background-color: green !important;
+        &:hover{
+            background-color: rgb(0, 104, 0) !important;
+        }
+    }
+}

@@ -16,7 +16,6 @@ export default class UserService {
 
     // Проверка пользователя на сущестование в БД
     static async CheckUser(creditial: string): Promise<AxiosResponse<TypeResponse>> {
-        console.log(creditial)
         return $api.post<TypeResponse>("/user/check/", { creditial });
     }
 
@@ -60,7 +59,7 @@ export default class UserService {
     }
 
     static async changeRoleUser(id: number, newRole: string): Promise<AxiosResponse<TypeResponse>> {
-        return $api.post<TypeResponse>('/user/change-role', { userId: id, newRole })
+        return $api.post<TypeResponse>('/user/role/update', { userId: id, newRole })
     }
 
     static async getRecomendation(id: number): Promise<AxiosResponse<Recomendations[]>>{

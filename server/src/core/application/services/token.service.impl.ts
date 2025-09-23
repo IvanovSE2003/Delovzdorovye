@@ -4,8 +4,6 @@ import TokenService from '../../domain/services/token.service.js';
 import Token from '../../domain/entities/token.entity.js'
 import models from '../../../infrastructure/persostence/models/models.js';
 
-const {TokenModel} = models;
-
 class TokenServiceImpl implements TokenService {
     constructor(
         private readonly secretKey: string,
@@ -34,75 +32,52 @@ class TokenServiceImpl implements TokenService {
         return { accessToken, refreshToken };
     }
 
-    validateAccessToken(token: string): { id: number; email: string; role: string } | null {
+    validateAccessToken(token: string): any | null {
         try {
-            const decoded = jwt.verify(token, this.secretKey) as jwt.JwtPayload;
+            const userData = jwt.verify(token, this.secretKey) as jwt.JwtPayload;
             
-            if (decoded.type !== 'access') {
+            if (userData.type !== 'access') {
                 throw ApiError.badRequest('Неверный тип токена');
             }
 
-            return {
-                id: decoded.id,
-                email: decoded.email,
-                role: decoded.role
-            };
+            return userData;
         } catch (e) {
-            if (e instanceof jwt.TokenExpiredError) {
-                throw ApiError.notAuthorized('Access token просрочен');
-            }
-            if (e instanceof jwt.JsonWebTokenError) {
-                throw ApiError.badRequest('Неверный access token');
-            }
             return null;
         }
     }
 
-    validateRefreshToken(token: string): { id: number; email: string; role: string } | null {
+    validateRefreshToken(token: string): any | null {
         try {
-            const decoded = jwt.verify(token, this.refreshKey) as jwt.JwtPayload;
-            if (decoded.type !== 'refresh') {
+            const userData = jwt.verify(token, this.refreshKey) as jwt.JwtPayload;
+            if (userData.type !== 'refresh') {
                 throw ApiError.badRequest('Не верный тип токена');
             }
 
-            return {
-                id: decoded.id,
-                email: decoded.email,
-                role: decoded.role
-            };
+            return userData;
         } catch (e) {
-            if (e instanceof jwt.TokenExpiredError) {
-                throw ApiError.badRequest('Refresh token просрочен');
-            }
-            if (e instanceof jwt.JsonWebTokenError) {
-                throw ApiError.badRequest(e.message);
-            }
             return null;
         }
     }
 
     async saveToken(userId: number, refreshToken: string): Promise<void> {
-        const existingToken = await TokenModel.findOne({ where: { userId } });
+        const existingToken = await models.TokenModel.findOne({ where: { userId } });
         
         if (existingToken) {
-            await TokenModel.update(
+            await models.TokenModel.update(
                 { refreshToken },
                 { where: { userId } }
             );
         } else {
-            await TokenModel.create({ refreshToken, userId });
+            await models.TokenModel.create({ refreshToken, userId });
         }
     }
 
     async removeToken(refreshToken: string): Promise<void> {
-        await TokenModel.destroy({where: {refreshToken}});
+        await models.TokenModel.destroy({where: {refreshToken}});
     }
 
-    async findToken(refreshToken: string): Promise<Token> {
-        const tokenData = await TokenModel.findOne({where: {refreshToken}});
-        if(!tokenData) {
-            throw new Error(`Refresh токен: ${refreshToken} был не найден в базе данных для пользователя`);
-        }
+    async findToken(refreshToken: string): Promise<Token | null> {
+        const tokenData = await models.TokenModel.findOne({where: {refreshToken}});
         return tokenData;
     }
 }

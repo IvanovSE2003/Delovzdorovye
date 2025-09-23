@@ -53,7 +53,7 @@ const ArchiveConsultations: React.FC = () => {
 
         <div className="archive__filters">
           <Search
-            placeholder="Введите телефон, имя, фамилию пользователя"
+            placeholder="Поиск по ФИО специалиста и телефону"
             value={search}
             onChange={setSearch}
             className="archive__search"
@@ -94,7 +94,7 @@ const ArchiveConsultations: React.FC = () => {
 
         <div className="archive__filters">
           <Search
-            placeholder="Введите телефон, имя, фамилию пользователя"
+            placeholder="Поиск по ФИО специалиста и телефону"
             value={search}
             onChange={setSearch}
             className="archive__search"

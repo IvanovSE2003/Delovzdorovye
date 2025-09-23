@@ -1,4 +1,3 @@
-import { RouteNames } from "../../../routes";
 import { Link } from "react-router";
 
 import avatar from "../../../assets/images/account.png"
@@ -7,12 +6,15 @@ import "./Header.scss";
 import { useEffect, useState } from "react";
 import HomeService from "../../../services/HomeService";
 import { GetFormatPhone } from "../../../helpers/formatDatePhone";
+import { defaultRoleRoutes, RouteNames } from "../../../routes";
+import type { Role } from "../../../models/Auth";
 
 interface headerProps {
   isAuth: boolean;
+  role: Role;
 }
 
-const Header: React.FC<headerProps> = ({ isAuth }) => {
+const Header: React.FC<headerProps> = ({ isAuth, role}) => {
   const [phone, setPhone] = useState<string>("");
 
   // Получение данных
@@ -30,6 +32,11 @@ const Header: React.FC<headerProps> = ({ isAuth }) => {
     fetchPhone();
   }, [])
 
+  const startPage =
+    isAuth
+      ? defaultRoleRoutes[role] || RouteNames.PERSONAL
+      : RouteNames.LOGIN;
+
   // Основной рендер
   return (
     <div className="header">
@@ -46,7 +53,7 @@ const Header: React.FC<headerProps> = ({ isAuth }) => {
         <a href="#informations">Полезная информация</a>
         <a href="#contacts">Контакты</a>
       </nav>
-      
+
       <div className="header__profile">
 
         {phone && (
@@ -56,7 +63,7 @@ const Header: React.FC<headerProps> = ({ isAuth }) => {
         )}
 
         <div className="header__avatar">
-          <Link to={isAuth ? RouteNames.PERSONAL : RouteNames.LOGIN}>
+          <Link to={startPage}>
             <img src={avatar} alt="avatar" />
           </Link>
         </div>

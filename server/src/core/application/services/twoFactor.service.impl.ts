@@ -30,7 +30,8 @@ export default class TwoFactorServiceImpl implements TwoFactorService {
         if (new Date() > user.twoFactorCodeExpires) {
             return false;
         }
-        return user.twoFactorCode === code;
+
+        return user.twoFactorCode == code;
     }
 
     getTempSecret(): string {

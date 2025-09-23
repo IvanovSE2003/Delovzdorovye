@@ -3,12 +3,11 @@ import DoctorRepository from '../../domain/repositories/doctor.repository.js';
 import { IDoctorCreationAttributes } from '../../../infrastructure/persostence/models/interfaces/doctor.model.js';
 import Doctor from '../../domain/entities/doctor.entity.js';
 import sequelize from '../../../infrastructure/persostence/db/db.js';
-import { Op, Sequelize } from "sequelize";
+import { Op } from "sequelize";
 
 const { UserModel, DoctorModel, SpecializationModel, DoctorSpecialization } = models;
 
 export default class DoctorRepositoryImpl implements DoctorRepository {
-
     async findById(id: number): Promise<Doctor | null> {
         const doctor = await DoctorModel.findByPk(id, {
             include: [
@@ -25,7 +24,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async findByUserId(userId: number) {
         const doctor = await DoctorModel.findOne({
-            where: { 
+            where: {
                 userId,
                 isActivated: true
             },
@@ -41,16 +40,33 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return doctor ? this.mapToDomainDoctor(doctor) : null;
     }
 
-    async findByProblems(problems: number[]): Promise<Doctor[]> {
-        if (!problems || problems.length === 0) {
+    async findByUserIdSimple(userId: number): Promise<Doctor | null> {
+        const doctor = await DoctorModel.findOne({
+            where: {
+                userId
+            }
+        });
+        return doctor ? this.mapToDomainDoctor(doctor) : null;
+    }
+
+    async findByProblems(problems: number[] | number | string | string[]): Promise<Doctor[]> {
+        if (!problems || (Array.isArray(problems) && problems.length === 0)) {
             throw new Error("Нужен хотя бы один id проблемы");
+        }
+
+        let problemIds: number[] = [];
+
+        if (Array.isArray(problems)) {
+            problemIds = problems.map(p => Number(p));
+        } else {
+            problemIds = [Number(problems)];
         }
 
         const doctors = await DoctorModel.findAll({
             where: {
                 isActivated: true,
                 competencies: {
-                    [Op.overlap]: problems
+                    [Op.overlap]: problemIds 
                 }
             },
             include: [
@@ -69,13 +85,15 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         const sortedDoctors = doctors
             .map(d => ({
                 doctor: d,
-                matchCount: d.competencies.filter(c => problems.includes(c)).length
+                matchCount: d.competencies.filter(c => problemIds.includes(c)).length
             }))
             .sort((a, b) => b.matchCount - a.matchCount)
             .map(d => this.mapToDomainDoctor(d.doctor));
 
         return sortedDoctors;
     }
+
+
 
     async findAll(
         page: number = 1,
@@ -175,7 +193,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async getDoctorsWithSpecializations(userIds: number[]) {
         const doctors = await DoctorModel.findAll({
-            where: { 
+            where: {
                 userId: userIds,
                 isActivated: true
             },
@@ -229,6 +247,13 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             await transaction.rollback();
             throw error;
         }
+    }
+
+    async updateSimple(doctor: Doctor): Promise<void> {
+        await DoctorModel.update(
+            { isActivated: doctor.isActivated },
+            { where: { id: doctor.id } }
+        );
     }
 
     async create(doctor: Doctor): Promise<Doctor> {

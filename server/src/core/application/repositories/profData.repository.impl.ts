@@ -4,21 +4,26 @@ import ProfDataRepository from "../../domain/repositories/profData.repository";
 import models from "../../../infrastructure/persostence/models/models";
 
 export default class ProfDataRepositoryImpl implements ProfDataRepository {
-    async findAll(page: number, limit: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPage: number }> {
-        const offset = (page - 1) * limit;
-        const { count, rows } = await models.ProfDataModel.findAndCountAll({
-            limit,
-            offset,
+    async findAll(page?: number, limit?: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPage: number }> {
+        const options: any = {
             include: [{
                 model: models.UserModel,
                 attributes: ['name', 'surname', 'patronymic']
-            }]
-        });
+            }],
+            where: filters 
+        };
+
+        if (page && limit) {
+            options.limit = limit;
+            options.offset = (page - 1) * limit;
+        }
+
+        const { count, rows } = await models.ProfDataModel.findAndCountAll(options);
 
         return {
             profData: rows.map(data => this.mapToDomainProfData(data)),
             totalCount: count,
-            totalPage: Math.ceil(count / limit)
+            totalPage: limit ? Math.ceil(count / limit) : 1
         };
     }
 

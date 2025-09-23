@@ -4,7 +4,7 @@ import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
 import { useNavigate } from "react-router";
 import type { FormAuthProps, RegistrationData, Role, Gender } from "../../../models/Auth";
-import { RouteNames } from "../../../routes";
+import { defaultRoleRoutes } from "../../../routes";
 import { ITimeZones } from "../../../models/TimeZones";
 import Loader from "../../../components/UI/Loader/Loader";
 
@@ -27,7 +27,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Стираю ошибку при изменении шага 
   useEffect(() => {
-    setError("");
+    setError({ id: 0, message: "" });
   }, [step, setError]);
 
   const calculateAge = useCallback((birthDate: string): number => {
@@ -108,7 +108,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   // Завершение первого этапа 
   const handleStep1 = async () => {
     if (!hasRequiredFields) {
-      setError("Заполните все обязательные поля!");
+      setError({ id: Date.now(), message: "Заполните все обязательные поля!" });
       return;
     }
 
@@ -119,14 +119,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       ]);
 
       if (phoneCheck.status === 'fulfilled' && phoneCheck.value.success) {
-        setError("Пользователь с таким номером телефона уже существует");
+        setError({ id: Date.now(), message: "Пользователь с таким номером телефона уже существует" });
         return;
       } else if (phoneCheck.status === 'rejected') {
         console.error('Ошибка проверки телефона:', phoneCheck.reason);
       }
 
       if (emailCheck.status === 'fulfilled' && emailCheck.value.success) {
-        setError("Пользователь с такой почтой уже существует!");
+        setError({ id: Date.now(), message: "Пользователь с такой почтой уже существует!" });
         return;
       } else if (emailCheck.status === 'rejected') {
         console.error('Ошибка проверки email:', emailCheck.reason);
@@ -137,14 +137,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
       if (!phoneExists && !emailExists) {
         setStep(2);
-        setError("");
+        setError({ id: 0, message: "" });
       } else if (phoneExists && emailExists) {
-        setError("Пользователь с таким номером телефона и почтой уже существует");
+        setError({ id: Date.now(), message: "Пользователь с таким номером телефона и почтой уже существует" });
       }
 
     } catch (error) {
       console.error('Неожиданная ошибка при проверке пользователя:', error);
-      setError("Произошла ошибка при проверке данных");
+      setError({ id: Date.now(), message: "Произошла ошибка при проверке данных" });
     }
   };
 
@@ -153,13 +153,13 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (userDetails.dateBirth && !anonym) {
       const age = calculateAge(userDetails.dateBirth);
       if (age < 18 || age > 100) {
-        setError("Возраст должен быть от 18 до 100 лет");
+        setError({ id: Date.now(), message: "Возраст должен быть от 18 до 100 лет" });
         return;
       }
     }
 
     if (replyPinCode !== userDetails.pinCode) {
-      setError("Пин-коды не совпадают!");
+      setError({ id: Date.now(), message: "Пин-коды не совпадают!" });
       return;
     }
 
@@ -185,14 +185,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
           userDetails.dateBirth.split('.').reverse().join('-') : '';
       }
 
-      setError("");
+      setError({ id: 0, message: "" });
       const successStep2 = await store.registration(registrationData as RegistrationData);
       if (successStep2) setStep(3);
-      else setError("Ошибка при регистрации");
+      else setError({ id: Date.now(), message: "Ошибка при регистрации" });
 
     } catch (error) {
       console.error('Ошибка при регистрации:', error);
-      setError("Произошла ошибка при регистрации");
+      setError({ id: Date.now(), message: "Произошла ошибка при регистрации" });
     }
   }
 
@@ -200,14 +200,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     if (pin === "") return;
 
     const successStep3 = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
-    if (successStep3) navigate(RouteNames.PERSONAL);
+    if (successStep3) navigate(defaultRoleRoutes[store.user.role]);
     else {
-      setError("Ошибка при регистрации");
+      setError({ id: Date.now(), message: "Ошибка при регистрации" });
     }
   }
 
   const handleBack = useCallback((): void => {
-    setError("");
+    setError({ id: 0, message: "" });
     setStep(prev => prev - 1);
   }, [setError]);
 
