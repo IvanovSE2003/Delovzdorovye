@@ -9,6 +9,7 @@ import { GetFormatDate } from "../../../../helpers/formatDatePhone";
 import LoaderUsefulInfo from "../../LoaderUsefulInfo/LoaderUsefulInfo";
 import ShowError from "../../ShowError/ShowError";
 import { processError } from "../../../../helpers/processError";
+import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 
 interface ConsultationModalProps {
     isOpen: boolean;
@@ -17,24 +18,7 @@ interface ConsultationModalProps {
     consultationData: Consultation;
 }
 
-export interface ConsultationData {
-    id?: number;
-    userId?: number;
-    problems?: number[];
-    otherProblem?: string;
-    hasOtherProblem?: boolean;
-    descriptionProblem?: string;
-    date: string | null;
-    time: string | null;
-    doctorId?: number;
-}
-
-const EditModal: React.FC<ConsultationModalProps> = ({
-    isOpen,
-    onClose,
-    onRecord,
-    consultationData,
-}) => {
+const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord, consultationData,}) => {
     const store = new ConsultationsStore();
 
     const [problems, setProblems] = useState<OptionsResponse[]>([]);
@@ -216,7 +200,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({
             descriptionProblem: otherProblem,
             problems: selectedProblems.map((p) => p.value),
             doctorId: doctorId,
-            otherProblem: otherProblem,
+            otherProblemText: otherProblem,
             hasOtherProblem: selectedProblems.some(p => p.value === 9),
         });
 
@@ -241,7 +225,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) return;
 
     return (
         <div className="modal">

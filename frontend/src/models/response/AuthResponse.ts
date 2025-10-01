@@ -3,6 +3,7 @@ import type { IUser } from '../Auth';
 export interface AuthResponse {
     accessToken: string;
     countMessage: number;
+    countChange: number;
     user: IUser;
 }
 

@@ -1,12 +1,14 @@
-import { useContext, useEffect, useState } from "react";
-import AccountLayout from "../AccountLayout";
-import { API_URL } from "../../../http";
-import type { TypeResponse } from "../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
-import UserService from "../../../services/UserService";
-import { Context } from "../../../main";
 import { observer } from "mobx-react-lite";
-import { getDateLabel } from "../../../hooks/DateHooks";
+import { useContext, useState, useEffect } from "react";
+import { API_URL } from "../../../../http";
+import { Context } from "../../../../main";
+import type { TypeResponse } from "../../../../models/response/DefaultResponse";
+import UserService from "../../../../services/UserService";
+import AccountLayout from "../../AccountLayout";
+import './Recomendations.scss';
+import { getDateLabel } from "../../../../helpers/formatDatePhone";
+
 
 export interface Recomendations {
     doctorName: string;

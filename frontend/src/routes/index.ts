@@ -1,14 +1,16 @@
 import type React from "react";
 import LoginPage from '../pages/auth/index'
 import HomePage from "../pages/Homepage";
-import Account from "../pages/account/Account";
+import MyProfile from "../features/account/MyProfile/MyProfile";
 
-import UsefulInfoPat from "../pages/account/patient/UsefulInfo";
 import ConsultationsPat from "../pages/account/patient/Consultations";
-import Recomendations from "../pages/account/patient/Recomendations";
-import MainPat from "../pages/account/patient/Main";
+import Recomendations from "../pages/account/patient/Recomendations/Recomendations";
+import MainPat from "../pages/account/patient/Main/Main";
 import SpecialistsPat from "../pages/account/patient/Specialists/Specialists";
 import Payment from "../pages/account/patient/Payment";
+import Notifications from "../features/account/Notifications/Notifications";
+import SomeProfile from "../features/account/SomeProfile/SomeProfile";
+import UsefulInfoPat from "../pages/account/patient/UsefulInfo";
 
 import ConsultationsDoc from "../pages/account/doctor/Consultations/Consultations";
 import TimeSheet from "../pages/account/doctor/TimeSheet/TimeSheet";
@@ -17,12 +19,11 @@ import UsefulInfoDoc from "../pages/account/doctor/UsefulInfo";
 import Specialists from "../pages/account/admin/Specialists/Specialists";
 import Users from '../pages/account/admin/Users/Users';
 
-import Profile from "../pages/account/SomeProfile";
-import Bell from "../pages/account/Bell";
 import MakeConsultation from "../pages/account/admin/MakeConsultation/MakeConsultation";
 import ArchiveConsultations from "../pages/account/admin/ArchiveConsultations/ArchiveConsultations";
 import EditUsefulInformations from "../pages/account/admin/EditUsefulInformations/EditUsefulInformations";
 import AnotherProblem from "../pages/account/admin/Conference";
+import type { MenuItem } from "../models/MenuItems";
 
 export interface IRoute {
     path: string;
@@ -33,6 +34,7 @@ export interface ProtectedRoute {
     path: string;
     element: React.FC;
     roles?: string[];
+    notification?: number;
 }
 
 export const RouteNames = {
@@ -42,7 +44,7 @@ export const RouteNames = {
     PERSONAL: '/personal',
     RESET: '/pinCode-reset/:token',
     PROFILE: '/profile/:id',
-    BELL: '/notifications',
+    NOTIFICATIONS: '/notifications',
 
     VIDEOCONF: '/consultation/:roomId',
 
@@ -74,7 +76,7 @@ export const defaultRoleRoutes: Record<string, string> = {
     ADMIN: RouteNames.MAKECONSULTATION,
 }
 
-export const menuConfig: Record<string, { path: string; name: string; notification?: number }[]> = {
+export const menuConfig: Record<string, MenuItem[]> = {
     PATIENT: [
         { path: RouteNames.MAINPAT, name: "Главная" },
         { path: RouteNames.CONSULTATIONSPAT, name: "Консультации" },
@@ -90,7 +92,7 @@ export const menuConfig: Record<string, { path: string; name: string; notificati
     ],
     ADMIN: [
         { path: RouteNames.USERS, name: "Учетные записи" },
-        { path: RouteNames.SPECIALISTS, name: "Изменение данных" },
+        { path: RouteNames.SPECIALISTS, name: "Изменение данных", notification: 0 },
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций' },
         { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации' },
@@ -103,15 +105,15 @@ export const publicRoutes: ProtectedRoute[] = [
     // Общие машруты для всех неавторизованных
     { path: RouteNames.MAIN, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },
-    { path: RouteNames.PROFILE, element: Profile },
+    { path: RouteNames.PROFILE, element: MyProfile },
 ]
 
 export const privateRoutes: ProtectedRoute[] = [
     // Общие маршруты для всех авторизованных
     { path: RouteNames.MAIN, element: HomePage },
-    { path: RouteNames.PERSONAL, element: Account },
-    { path: RouteNames.PROFILE, element: Profile },
-    { path: RouteNames.BELL, element: Bell },
+    { path: RouteNames.PERSONAL, element: MyProfile },
+    { path: RouteNames.PROFILE, element: SomeProfile },
+    { path: RouteNames.NOTIFICATIONS, element: Notifications },
 
     // Маршруты для пациентов
     { path: RouteNames.MAINPAT, element: MainPat, roles: ['PATIENT'] },

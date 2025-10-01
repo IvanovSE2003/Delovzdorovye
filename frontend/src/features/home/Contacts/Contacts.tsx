@@ -38,8 +38,8 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     // Добавление котактов в БД
     const addChange = async () => {
         try {
-            await HomeService.addContent('phone', {id: Date.now(), header: phone, text: '-'});
-            await HomeService.addContent('email', {id: Date.now(), header: email, text: "-"});
+            await HomeService.addContent('phone', {id: Date.now(), text: phone,});
+            await HomeService.addContent('email', {id: Date.now(), text: email});
             fetchContacts();
             setMessage({id: Date.now(), message: "Контакты успешно созданы в БД"});
         } catch (e) {
@@ -55,8 +55,8 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         }
 
         try {
-            await HomeService.editContent('phone', { id: phoneId, header: phone, text: "-" });
-            await HomeService.editContent('email', { id: emailId, header: email, text: "-" });
+            await HomeService.editContent('phone', { id: phoneId, text: phone });
+            await HomeService.editContent('email', { id: emailId, text: email });
             setMessage({ id: Date.now(), message: "Контакты успешно сохранены" });
             setIsEditing(false);
         } catch (e) {
@@ -69,7 +69,6 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
         fetchContacts();
     }, [])
 
-    // Основной рендер
     return (
         <AnimatedBlock>
             <div className="contacts" id="contacts">

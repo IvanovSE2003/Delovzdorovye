@@ -122,6 +122,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
         }
     }
 
+    async getCount(): Promise<number> {
+        const count = await models.BasicDataModel.count();
+        return count;
+    }
+
     private mapToDomainBasicData(basicDataModel: BatchModelInterface): BasicData {
         const basicData = new BasicData(
             basicDataModel.id,

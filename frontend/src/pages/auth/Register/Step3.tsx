@@ -8,7 +8,7 @@ interface Step3Props {
 
 const Step3: React.FC<Step3Props> = ({ handleStep3, handleBack }) => {
     return (
-        <AnimatedBlock>
+        <AnimatedBlock className="auth__form">
             <h2 className='auth__form__title'>Введите код, отправленный на почту</h2>
             <br />
             <PinCodeInput

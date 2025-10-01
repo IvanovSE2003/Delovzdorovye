@@ -6,6 +6,7 @@ import { Context } from "../../../../main";
 import { URL } from "../../../../http";
 import { observer } from "mobx-react-lite";
 import { processError } from "../../../../helpers/processError";
+import AdminService from "../../../../services/AdminService";
 
 interface ProfecionalDataTabProps extends DataTabProps {
     profecionalDatas: IProfData[];
@@ -33,14 +34,21 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         setShowRejectModal(true);
     };
 
+    // Подтвердить изменения
     const confirm = async (id: number) => {
-        const res = await store.confirmProfData(id);
-        if (res.success) {
-            setMessage({ id: Date.now(), message: "Данные подтверждены" })
-            await getProfecionalAll();
-        }
-        else {
-            setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
+        try {
+            const res = await store.confirmProfData(id);
+            if (res.success) {
+                setMessage({ id: Date.now(), message: res.message })
+                await getProfecionalAll();
+            }
+            else {
+                setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
+            }
+        } catch (e) {
+            processError(e, "Ошибка при подтвердении изменения")
+        } finally {
+            await AdminService.getChangesCount();
         }
     };
 
@@ -169,7 +177,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
 
 
                                 <td>
-                                    {data.type === 'ADD' ? <span style={{color: "green"}}>Добавление данных</span>: <span  style={{color: "red"}}>Удаление данных</span>}
+                                    {data.type === 'ADD' ? <span style={{ color: "green" }}>Добавление данных</span> : <span style={{ color: "red" }}>Удаление данных</span>}
                                 </td>
 
                                 <td>

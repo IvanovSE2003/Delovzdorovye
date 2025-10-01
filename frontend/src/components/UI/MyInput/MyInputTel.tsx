@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import './MyInput.scss'; 
+import './MyInput.scss';
 
 interface MyInputTelProps {
   value: string;
@@ -7,7 +7,7 @@ interface MyInputTelProps {
   id?: string;
   required?: boolean;
   className?: string;
-  label?:string;
+  label?: string;
   getIsError?: (value: boolean) => void;
 }
 
@@ -17,22 +17,19 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   id = 'phone',
   required = false,
   className = '',
-  label="Номер телефона",
-  getIsError=(_value=false) => {}
+  label = "Номер телефона",
+  getIsError = (_value = false) => { }
 }) => {
   const [isError, setIsError] = useState(false);
 
   const formatPhoneNumber = useCallback((inputValue: string): string => {
-    // Удаляем все нецифровые символы
     let numbers = inputValue.replace(/\D/g, '');
-    
-    // Убираем ведущую 7 или 8 если есть
     if (numbers.startsWith('7') || numbers.startsWith('8')) {
       numbers = numbers.substring(1);
     }
-    
+
     let formattedValue = '+7';
-    
+
     if (numbers.length > 0) {
       formattedValue += ' (' + numbers.substring(0, Math.min(3, numbers.length));
     }
@@ -45,10 +42,10 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
     if (numbers.length > 8) {
       formattedValue += ' ' + numbers.substring(8, Math.min(10, numbers.length));
     }
-    
+
     // Валидация
     setIsError(numbers.length > 0 && numbers.length !== 10);
-    
+
     return formattedValue;
   }, []);
 
@@ -59,17 +56,29 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
   }, [formatPhoneNumber, onChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ([46, 8, 9, 27, 13].includes(e.keyCode) || 
-        // Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-        (e.keyCode === 65 && e.ctrlKey === true) || 
-        (e.keyCode === 67 && e.ctrlKey === true) ||
-        (e.keyCode === 86 && e.ctrlKey === true) ||
-        (e.keyCode === 88 && e.ctrlKey === true) ||
-        // Цифры на основной клавиатуре и numpad
-        (e.keyCode >= 48 && e.keyCode <= 57) ||
-        (e.keyCode >= 96 && e.keyCode <= 105)) {
+    const allowedKeys = [
+      "Backspace",
+      "Delete",
+      "Tab",
+      "Escape",
+      "Enter",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+    ];
+
+    if (
+      allowedKeys.includes(e.key) ||
+      (e.key === "a" && e.ctrlKey) ||
+      (e.key === "c" && e.ctrlKey) ||
+      (e.key === "v" && e.ctrlKey) ||
+      (e.key === "x" && e.ctrlKey) ||
+      /^[0-9]$/.test(e.key) // цифры
+    ) {
       return;
     }
+
     e.preventDefault();
   }, []);
 
@@ -81,6 +90,7 @@ const MyInputTel: React.FC<MyInputTelProps> = ({
     <div className='my-input-td__input-group'>
       <input
         type="tel"
+        name={id}
         id={id}
         autoComplete="billing mobile tel"
         value={value}

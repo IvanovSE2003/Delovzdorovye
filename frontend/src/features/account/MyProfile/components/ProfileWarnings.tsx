@@ -8,7 +8,6 @@ const ProfileWarnings: React.FC = () => {
     const { store } = useContext(Context);
     const [message, setMessage] = useState<string>("");
 
-    // Получить сообщение 
     const getMessage = async () => {
         const data = await store.getTokenTg(store.user.id);
         setMessage(data.message);

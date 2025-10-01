@@ -1,4 +1,3 @@
-// RecordForm.tsx
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,8 +24,8 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   freeMode = false,
   onTimeDateSelect,
   userId = undefined,
-  initialDate = undefined, // Начальная дата в формате "YYYY-MM-DD"
-  initialTime = undefined  // Начальное время в формате "HH:MM"
+  initialDate = undefined,
+  initialTime = undefined
 }) => {
   const store = new ConsultationsStore();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -42,7 +41,7 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
         // Парсим начальную дату
         const [year, month, day] = initialDate.split('-').map(Number);
         const date = new Date(year, month - 1, day);
-        
+
         if (isValidDate(date)) {
           setSelectedDate(date);
           setSelectedTime(initialTime);
@@ -97,13 +96,13 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
         if (initialDate && initialTime && !initialDataLoaded) {
           const [year, month, day] = initialDate.split('-').map(Number);
           const date = new Date(year, month - 1, day);
-          
+
           if (isValidDate(date)) {
-            const isSlotAvailable = schedule?.some(slot => 
+            const isSlotAvailable = schedule?.some(slot =>
               new Date(slot.date).toDateString() === date.toDateString() &&
               slot.time === initialTime
             );
-            
+
             if (isSlotAvailable) {
               setSelectedDate(date);
               setSelectedTime(initialTime);
@@ -135,22 +134,24 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
       new Set(slots.map(slot => new Date(slot.date).toDateString()))
     ).map(str => new Date(str));
 
-  const isDateAvailable = (date: Date) => {
+
+    const isDateAvailable = (date: Date) => {
     if (freeMode) return true;
-    
-    // Проверяем, есть ли хотя бы один доступный слот на эту дату
+
     return availableDates.some(
       availableDate => availableDate.toDateString() === date.toDateString()
     );
   };
 
   // Слоты для выбранной даты
-  const slotsForSelectedDate = freeMode 
+  const slotsForSelectedDate = freeMode
     ? generateAllSlotsForDay(selectedDate)
-    : slots.filter(slot => 
-        selectedDate && 
-        new Date(slot.date).toDateString() === selectedDate.toDateString()
-      );
+    : slots.filter(slot =>
+      selectedDate &&
+      new Date(slot.date).toDateString() === selectedDate.toDateString()
+    );
+  
+
 
   // Фильтрация прошедших слотов
   const availableSlotsForSelectedDate = slotsForSelectedDate.filter(slot => !isSlotInPast(slot));
@@ -186,7 +187,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
     setError("");
   };
 
-  // Передаём выбранные время и дату наверх
   useEffect(() => {
     if (!selectedDate || !selectedTime) {
       onTimeDateSelect(null, null);
@@ -195,14 +195,12 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
 
     const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
 
-    // Ищем соответствующий слот для получения doctorId
     const matchedSlot = slots.find(
       slot =>
         new Date(slot.date).toDateString() === selectedDate.toDateString() &&
         slot.time === selectedTime
     );
 
-    // В freeMode используем doctorId из пропсов или 0
     const doctorId = freeMode ? (specialist?.value || 0) : matchedSlot?.doctorId;
 
     onTimeDateSelect(selectedTime, dateStr, doctorId);
@@ -211,24 +209,21 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   // Генерация слотов для freeMode (каждый час с 9:00 до 18:00)
   function generateAllSlotsForDay(date: Date | null): Slot[] {
     if (!date) return [];
-    
-    // Проверяем, не является ли дата сегодняшним днем
+
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
-    
+
     const result: Slot[] = [];
-    
+
     for (let hour = 9; hour <= 18; hour++) {
-      // Если дата сегодня, пропускаем прошедшие часы
       if (isToday && hour < today.getHours()) {
         continue;
       }
-      
-      // Если час совпадает с текущим, проверяем минуты
+
       if (isToday && hour === today.getHours() && today.getMinutes() > 0) {
         continue;
       }
-      
+
       result.push({
         date: date.toISOString(),
         time: `${String(hour).padStart(2, "0")}:00`,
@@ -240,13 +235,17 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
   }
 
   // Подсветка дат с доступными слотами
-  const highlightDates = freeMode 
-    ? [] 
-    : availableDates.map(date => ({
-        "react-datepicker__day--highlighted-custom": date,
-        "react-datepicker__day--highlighted": date
-      }));
+  const highlightDates = freeMode
+    ? []
+    : [
+      {
+        "react-datepicker__day--highlighted-custom": availableDates,
+        "react-datepicker__day--highlighted": availableDates
+      }
+    ];
 
+  
+  
   return (
     <div>
       <div className="consultation-modal__date-time">
@@ -276,7 +275,7 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
       </div>
 
       {error && <div className="consultation-modal__error">{error}</div>}
-      
+
       {selectedDate && availableSlotsForSelectedDate.length === 0 && !freeMode && (
         <div className="consultation-modal__warning">
           На выбранную дату нет доступных слотов

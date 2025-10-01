@@ -10,17 +10,13 @@ import { API_URL } from "../http";
 import type { PatientData } from "../models/PatientData";
 import AdminService from "../services/AdminService";
 import { menuConfig } from "../routes/index";
-
-interface ImenuItems {
-    path: string;
-    name: string;
-}
+import type { MenuItem } from "../models/MenuItems";
 
 export default class Store {
     user = {} as IUser;
     isAuth = false;
     error = "";
-    menuItems = [] as ImenuItems[];
+    menuItems = [] as MenuItem[];
     loading = false;
     countMessage = 0;
     lastVisited: string = "/personal";
@@ -108,7 +104,7 @@ export default class Store {
     }
 
     // Второй этап входа (вход в систему)
-    async completeLogin(tempToken: string | null, code: string): Promise<boolean> {
+    async completeLogin(tempToken: string | null, code: string): Promise<TypeResponse> {
         return this.withLoading(async () => {
             try {
                 const response = await AuthService.completeLogin(tempToken, code);
@@ -117,13 +113,12 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
-                return true;
+                return {success: true, message: "Вход успешен"}
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data?.message || "Ошибка при входе!";
                 this.setError(errorMessage);
-
-                return false;
+                return {success: false, message: errorMessage}
             }
         });
     }
@@ -145,9 +140,9 @@ export default class Store {
     }
 
     // Второй этап регистрации (регистрация в системе)
-    async completeRegistration(tempToken: string, TwoFactorCode: string): Promise<boolean> {
+    async completeRegistration(tempToken: string, TwoFactorCode: string): Promise<TypeResponse> {
         return this.withLoading(async () => {
-            if(tempToken==="") return false;
+            if(tempToken==="") return {success: false, message: "Неизвестная ошибка при регистрации!"};
             try {
                 this.setError("");
                 const response = await AuthService.completeRegistration(tempToken, TwoFactorCode);
@@ -156,11 +151,12 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
-                return true;
+                return {success: true, message: "Регистрация прошла успешно!"}
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
-                this.setError(error.response?.data.message || "Ошибка при регистрации!");
-                return false;
+                const errorMessage = error.response?.data.message || "Ошибка при регистрации!";
+                this.setError(errorMessage);
+                return {success: false, message: errorMessage};
             }
         })
     }

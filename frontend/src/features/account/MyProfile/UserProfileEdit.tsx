@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { IUserDataProfile } from "../../../models/Auth";
+import type { Gender, IUserDataProfile, Role } from "../../../models/Auth";
 import { URL } from "../../../http";
 
 
@@ -9,12 +9,17 @@ interface UserProfileEditProps {
     onRemovePhoto: (changePhoto: (img: string) => void) => void;
     onSave: (ProfileData: IUserDataProfile) => void;
     onCancel: () => void;
-    mode?: "ADMIN" | "PATIENT" | "DOCTOR";
+    role: Role;
 }
 
-type Gender = 'Мужчина' | 'Женщина';
-
-const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPhoto, onRemovePhoto, onSave, onCancel, mode = "PATIENT" }) => {
+const UserProfileEdit: React.FC<UserProfileEditProps> = ({
+    profileData,
+    onAddPhoto,
+    onRemovePhoto,
+    onSave,
+    onCancel,
+    role
+}) => {
     const [profileEditData, SetProfileEditData] = useState<IUserDataProfile>(profileData);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +59,6 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPho
         let raw = e.target.value.replace(/\D/g, '');
         let formatted = '';
 
-        // Форматируем ДД.ММ.ГГГГ
         if (raw.length > 0) {
             formatted = raw.substring(0, 2);
             if (raw.length > 2) {
@@ -67,7 +71,6 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPho
 
         setLocalDate(formatted);
 
-        // Валидация при полной дате
         if (/^\d{2}\.\d{2}\.\d{4}$/.test(formatted)) {
             const [day, month, year] = formatted.split('.').map(Number);
             const date = new Date(year, month - 1, day);
@@ -115,7 +118,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ profileData, onAddPho
 
     return (
         <>
-            {mode !== "ADMIN" && (
+            {role !== "ADMIN" && (
                 <div className="user-profile__avatar-content">
                     <div className="user-profile__avatar">
                         <img src={`${URL}/${profileData.img}`} alt="avatar-delovzdorovye" />

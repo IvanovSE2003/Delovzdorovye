@@ -16,6 +16,7 @@ export default class Consultation {
         public date: string,
         public userId: number,
         public doctorId: number,
+        public createdAt?: string,
         public doctor?: {
             id: number;
             user: {

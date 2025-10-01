@@ -55,6 +55,7 @@ const MyInputEmail: React.FC<MyInputEmailProps> = ({
       <input
         type="email"
         id={id}
+        name={id}
         autoComplete="email"
         value={value}
         onChange={handleInputChange}

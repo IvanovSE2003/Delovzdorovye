@@ -11,6 +11,13 @@ interface IUserAttributes {
     time_zone: number;
     date_birth: string | null;
     gender: string | null;
+    pending_img: string | null
+    pending_name:string | null,
+    pending_surname: string | null,
+    pending_patronymic: string | null
+    pending_date_birth: string | null,
+    pending_gender: string | null,
+    hasPendingChanges: boolean | null,
     isActivated: boolean;
     isActivatedSMS: boolean;
     activationLink: string;
@@ -30,5 +37,5 @@ interface IUserAttributes {
     isAnonymous: boolean | null;
 }
 
-export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> {}
-export interface UserModelInterface extends Model<IUserAttributes, IUserCreationAttributes>, IUserAttributes {}
+export interface IUserCreationAttributes extends Optional<IUserAttributes, 'id'> { }
+export interface UserModelInterface extends Model<IUserAttributes, IUserCreationAttributes>, IUserAttributes { }

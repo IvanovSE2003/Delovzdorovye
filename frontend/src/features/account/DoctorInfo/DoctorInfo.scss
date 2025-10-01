@@ -69,6 +69,12 @@
         }
     }
 
+    &__info-text {
+        text-align: justify;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
     &__flex-column {
         display: flex;
         flex-direction: column;

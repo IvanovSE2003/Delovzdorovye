@@ -164,6 +164,22 @@ export default class UserRepositoryImpl implements UserRepository {
         return user ? this.mapToDomainUser(user) : null;
     }
 
+    async updateField(userId: number, field: string, value: any): Promise<void> {
+        await models.UserModel.update({ [field]: value }, { where: { id: userId } });
+    }
+
+    async hasPendingChanges(userId: number): Promise<boolean> {
+        const user = await models.UserModel.findOne({
+            where: { id: userId },
+            attributes: ['pending_name', 'pending_surname', 'pending_patronymic', 'pending_img', 'pending_gender', 'pending_date_birth']
+        });
+
+        if (!user) return false;
+
+        return !!(user.pending_name || user.pending_surname || user.pending_patronymic ||
+            user.pending_img || user.pending_gender || user.pending_date_birth);
+    }
+
     private mapToDomainUser(userModel: UserModelInterface): User {
         return new User(
             userModel.id,
@@ -176,6 +192,13 @@ export default class UserRepositoryImpl implements UserRepository {
             userModel.time_zone,
             userModel.date_birth,
             userModel.gender,
+            userModel.pending_img,
+            userModel.pending_name,
+            userModel.pending_surname,
+            userModel.pending_patronymic,
+            userModel.pending_date_birth,
+            userModel.pending_gender,
+            userModel.hasPendingChanges,
             userModel.isActivated,
             userModel.isActivatedSMS,
             userModel.activationLink,
@@ -204,6 +227,13 @@ export default class UserRepositoryImpl implements UserRepository {
             time_zone: user.timeZone,
             date_birth: user.dateBirth,
             gender: user.gender,
+            pending_img: user.pending_img,
+            pending_name: user.pending_name,
+            pending_surname: user.pending_surname,
+            pending_patronymic: user.pending_patronymic,
+            pending_date_birth: user.pending_date_birth,
+            pending_gender: user.pending_gender,
+            hasPendingChanges: user.hasPendingChanges,
             isActivated: user.isActivated,
             isActivatedSMS: user.isActivatedSMS,
             activationLink: user.activationLink,

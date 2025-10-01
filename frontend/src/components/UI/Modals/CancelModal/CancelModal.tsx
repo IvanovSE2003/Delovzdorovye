@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import './CancelModal.scss'
-import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
-import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
 import type { Role } from '../../../../models/Auth';
 import ShowError from '../../ShowError/ShowError';
+import type { Consultation } from '../../../../models/consultations/Consultation';
+import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -31,9 +31,8 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
     };
 
     // Если модалка зактыра ничего не возвращать
-    if (!isOpen) return null;
+    if (!isOpen) return;
 
-    // Основной рендер
     return (
         <div className="modal">
             <div className='shift-modal cancel-modal'>

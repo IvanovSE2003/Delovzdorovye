@@ -90,117 +90,6 @@ export default class BatchController {
         })
     }
 
-    async confirmBasicData(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-
-        const basicData = await this.basicDataRepository.findById(Number(id));
-        if (!basicData) return next(ApiError.badRequest("Изменение не найдено"));
-
-        const user = await this.userRepository.findById(basicData.userId || 0);
-        if (!user) return next(ApiError.badRequest("Пользователь не найден"));
-
-        const userFieldMap: Record<string, (user: User, value: string) => Promise<void>> = {
-            "Изображение": async (u, v) => {
-                u.img = v;
-                await this.userRepository.save(u);
-            },
-            "Имя": async (u, v) => {
-                u.name = v;
-                await this.userRepository.save(u);
-            },
-            "Фамилия": async (u, v) => {
-                u.surname = v;
-                await this.userRepository.save(u);
-            },
-            "Отчество": async (u, v) => {
-                u.patronymic = v;
-                await this.userRepository.save(u);
-            },
-            "Пол": async (u, v) => {
-                const oldGender = u.gender;
-                u.gender = v;
-
-                if (oldGender !== v) {
-                    if (u.img === "man.png" && v === "Женщина") {
-                        u.img = "girl.png";
-                    } else if (u.img === "girl.png" && v !== "Женщина") {
-                        u.img = "man.png";
-                    }
-                }
-
-                await this.userRepository.save(u);
-            },
-            "Дата рождения": async (u, v) => {
-                u.dateBirth = v;
-                await this.userRepository.save(u);
-            },
-        };
-
-        if (basicData.field_name in userFieldMap) {
-            await userFieldMap[basicData.field_name](user, basicData.new_value);
-        } else {
-            return next(ApiError.badRequest("Недопустимое поле для изменения"));
-        }
-
-        await this.basicDataRepository.delete(basicData.id);
-
-        const remainingChanges = await this.basicDataRepository.findAllByUserId(user.id);
-        if (remainingChanges.length === 0) {
-            user.setSentChanges(false);
-            await this.userRepository.save(user);
-        }
-
-        await this.notificationRepository.save(
-            new Notification(
-                0,
-                "Изменения приняты",
-                "Ваши изменения были приняты администратором",
-                "INFO",
-                false,
-                basicData,
-                "BASICDATA",
-                user.id
-            )
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: "Изменение успешно подтверждено и применено",
-        });
-    }
-
-    async rejectBasicData(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-        const { rejection_reason } = req.body;
-
-        const basicData = await this.basicDataRepository.findById(Number(id));
-        if (!basicData) return next(ApiError.badRequest('Изменение не найдено'));
-
-        const user = await this.userRepository.findById(basicData.userId || 0);
-        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
-
-        await this.notificationRepository.save(
-            new Notification(
-                0,
-                "Изменения не приняты",
-                `Ваши изменения не приняты администратором. ${rejection_reason}`,
-                "INFO",
-                false,
-                basicData,
-                "BASICDATA",
-                user.id
-            )
-        );
-
-        await this.basicDataRepository.delete(basicData.id);
-        await this.userRepository.save(user.setSentChanges(false));
-
-        return res.status(200).json({
-            success: true,
-            message: 'Изменение успешно отменено и сообщение отправлено'
-        });
-    }
-
     async confirmProfData(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
         const profData = await this.profDataRepository.findById(Number(id));
@@ -252,7 +141,7 @@ export default class BatchController {
             new Notification(
                 0,
                 "Отмена обновлений",
-                `Ваши изменения были отклонены администратором по причине "${rejection_reason}"`,
+                `Ваши изменения были отклонены администратором по причине "${rejection_reason}".`,
                 "ERROR",
                 false,
                 null,
@@ -267,6 +156,142 @@ export default class BatchController {
         return res.status(200).json({
             success: true,
             message: 'Изменение успешно отменено'
+        });
+    }
+
+    async confirmBasicData(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+
+        const basicData = await this.basicDataRepository.findById(Number(id));
+        if (!basicData) return next(ApiError.badRequest("Изменение не найдено"));
+
+        const user = await this.userRepository.findById(basicData.userId || 0);
+        if (!user) return next(ApiError.badRequest("Пользователь не найден"));
+
+        const pendingFieldMap: Record<string, (user: User) => Promise<void>> = {
+            "Изображение": async (u) => {
+                if (u.pending_img) {
+                    u.img = u.pending_img;
+                    await this.userRepository.save(u);
+                }
+            },
+            "Имя": async (u) => {
+                if (u.pending_name) {
+                    u.name = u.pending_name;
+                    await this.userRepository.save(u);
+                }
+            },
+            "Фамилия": async (u) => {
+                if (u.pending_surname) {
+                    u.surname = u.pending_surname;
+                    await this.userRepository.save(u);
+                }
+            },
+            "Отчество": async (u) => {
+                if (u.pending_patronymic) {
+                    u.patronymic = u.pending_patronymic;
+                    await this.userRepository.save(u);
+                }
+            },
+            "Пол": async (u) => {
+                if (u.pending_gender) {
+                    const oldGender = u.gender;
+                    u.gender = u.pending_gender;
+
+                    if (oldGender !== u.pending_gender) {
+                        if (u.img === "man.png" && u.pending_gender === "Женщина") {
+                            u.img = "girl.png";
+                        } else if (u.img === "girl.png" && u.pending_gender !== "Женщина") {
+                            u.img = "man.png";
+                        }
+                    }
+
+                    await this.userRepository.save(u);
+                }
+            },
+            "Дата рождения": async (u) => {
+                if (u.pending_date_birth) {
+                    u.dateBirth = u.pending_date_birth;
+                    await this.userRepository.save(u);
+                }
+            },
+        };
+
+        if (basicData.field_name in pendingFieldMap) {
+            await pendingFieldMap[basicData.field_name](user);
+        } else {
+            return next(ApiError.badRequest("Недопустимое поле для изменения"));
+        }
+
+        await this.basicDataRepository.delete(basicData.id);
+
+        const remainingChanges = await this.basicDataRepository.findAllByUserId(user.id);
+        if (remainingChanges.length === 0) {
+            user.setSentChanges(false);
+            await this.userRepository.save(user);
+        }
+
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Изменения приняты",
+                "Ваши изменения были приняты администратором.",
+                "INFO",
+                false,
+                basicData,
+                "BASICDATA",
+                user.id
+            )
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Изменение успешно подтверждено и применено",
+        });
+    }
+
+    async rejectBasicData(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const { rejection_reason } = req.body;
+
+        const basicData = await this.basicDataRepository.findById(Number(id));
+        if (!basicData) return next(ApiError.badRequest('Изменение не найдено'));
+
+        const user = await this.userRepository.findById(basicData.userId || 0);
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+
+        await this.notificationRepository.save(
+            new Notification(
+                0,
+                "Изменения не приняты",
+                `Ваши изменения были отклонены администратором по причине "${rejection_reason}".`,
+                "INFO",
+                false,
+                basicData,
+                "BASICDATA",
+                user.id
+            )
+        );
+
+        await this.basicDataRepository.delete(basicData.id);
+
+        if (user.role === "DOCTOR") {
+            user.pending_img = user.img;
+            user.pending_name = user.name;
+            user.pending_surname = user.surname;
+            user.pending_patronymic = user.patronymic;
+            user.pending_gender = user.gender;
+            user.pending_date_birth = user.dateBirth;
+        }
+
+        user.sentChanges = false;
+        user.hasPendingChanges = false;
+
+        await this.userRepository.save(user);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Изменение успешно отменено и сообщение отправлено'
         });
     }
 
@@ -355,30 +380,18 @@ export default class BatchController {
         const limitUser = limit ? limit : 1;
 
         const result = await this.consultationRepository.findAll(Number(pageUser), Number(limitUser));
-        if (!result) return next(ApiError.badRequest('Консультации не найдены'));
+        if (!result) return res.status(200).json([]);
 
         return res.status(200).json(result);
     }
 
     async countChanges(req: Request, res: Response, next: NextFunction) {
-        const [basicData, profData] = await Promise.all([
-            this.basicDataRepository.findAll(),
-            this.profDataRepository.findAll()
+        const [basicDataCount, profDataCount] = await Promise.all([
+            this.basicDataRepository.getCount(),
+            this.profDataRepository.getCount()
         ]);
 
-        if (!basicData || !profData) {
-            return next(ApiError.badRequest('Данные не найдены'));
-        }
-
-        const basicDataCount = basicData.batches ? basicData.batches.length : 0;
-        const profDataCount = profData.profData ? profData.profData.length : 0;
-
         const totalChanges = basicDataCount + profDataCount;
-
-        if (totalChanges === 0) {
-            return next(ApiError.badRequest('Изменения не найдены'));
-        }
-
         return res.status(200).json(totalChanges);
     }
 }

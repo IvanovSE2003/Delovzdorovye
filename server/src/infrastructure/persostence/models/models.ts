@@ -20,27 +20,35 @@ const UserModel = sequelize.define<UserModelInterface>('user', {
     name: { type: DataType.STRING, allowNull: true },
     surname: { type: DataType.STRING, allowNull: true },
     patronymic: { type: DataType.STRING, allowNull: true },
-    email: { type: DataType.STRING, allowNull: true },
-    phone: { type: DataType.STRING, allowNull: true },
+    email: { type: DataType.STRING, unique: true, allowNull: true },
+    phone: { type: DataType.STRING, unique: true, allowNull: true },
     pin_code: { type: DataType.INTEGER, allowNull: false },
     time_zone: { type: DataType.INTEGER, allowNull: false },
     date_birth: { type: DataType.DATEONLY, allowNull: true },
     gender: { type: DataType.STRING, allowNull: true },
-    isActivated: { type: DataType.BOOLEAN, defaultValue: false },
-    isActivatedSMS: { type: DataType.BOOLEAN, defaultValue: false },
-    activationLink: { type: DataType.STRING, allowNull: true },
-    img: { type: DataType.STRING, defaultValue: "defaultImg.jpg" },
+    img: { type: DataType.STRING },
     role: { type: DataType.STRING, defaultValue: "PATIENT" },
-    twoFactorCode: { type: DataType.STRING, allowNull: true },
-    twoFactorCodeExpires: { type: DataType.DATE, allowNull: true },
-    resetToken: { type: DataType.STRING, allowNull: true },
-    resetTokenExpires: { type: DataType.DATE, allowNull: true },
-    pinAttempts: { type: DataType.INTEGER, defaultValue: 0 },
-    isBlocked: { type: DataType.BOOLEAN, defaultValue: false },
-    blockedUntil: { type: DataType.DATE, allowNull: true },
-    sentChanges: { type: DataType.BOOLEAN, allowNull: true, defaultValue: false },
-    isAnonymous: { type: DataType.BOOLEAN, allowNull: true, defaultValue: false },
-})
+    pending_img: { type: DataType.STRING, allowNull: true },
+    pending_name: { type: DataType.STRING, allowNull: true },
+    pending_surname: { type: DataType.STRING, allowNull: true },
+    pending_patronymic: { type: DataType.STRING, allowNull: true },
+    pending_date_birth: { type: DataType.DATEONLY, allowNull: true },
+    pending_gender: { type: DataType.STRING, allowNull: true },
+    hasPendingChanges: { type: DataType.BOOLEAN, defaultValue: false, allowNull: true, field: 'has_pending_changes' },
+    isActivated: { type: DataType.BOOLEAN, defaultValue: false, field: 'is_activated' },
+    isActivatedSMS: { type: DataType.BOOLEAN, defaultValue: false, field: 'is_activatedsms' },
+    activationLink: { type: DataType.STRING, allowNull: true, field: 'activation_link' },
+    twoFactorCode: { type: DataType.STRING, allowNull: true, field: 'two_factor_code' },
+    twoFactorCodeExpires: { type: DataType.DATE, allowNull: true, field: 'two_factor_code_expires' },
+    resetToken: { type: DataType.STRING, allowNull: true, field: 'reset_token' },
+    resetTokenExpires: { type: DataType.DATE, allowNull: true, field: 'reset_token_expires' },
+    pinAttempts: { type: DataType.INTEGER, defaultValue: 0, field: 'pin_attempts' },
+    isBlocked: { type: DataType.BOOLEAN, defaultValue: false, field: 'is_blocked' },
+    blockedUntil: { type: DataType.DATE, allowNull: true, field: 'blocked_until' },
+    sentChanges: { type: DataType.BOOLEAN, allowNull: true, defaultValue: false, field: 'sent_changes' },
+    isAnonymous: { type: DataType.BOOLEAN, allowNull: true, defaultValue: false, field: 'is_anonymous' },
+});
+
 
 const UserTelegramModel = sequelize.define<TelegramModelInterface>('telegram_user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -56,7 +64,7 @@ const TokenModel = sequelize.define<TokenModelInterface>('token', {
 const DoctorModel = sequelize.define<DoctorModelInterface>('doctor', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     isActivated: { type: DataType.BOOLEAN, defaultValue: false },
-    competencies: {type: DataType.ARRAY(DataType.INTEGER), defaultValue: []}
+    competencies: { type: DataType.ARRAY(DataType.INTEGER), defaultValue: [] }
 });
 
 const SpecializationModel = sequelize.define<SpecializationModelInterface>('specialization', {
@@ -138,20 +146,20 @@ const ConsultationProblems = sequelize.define('consultation_problems', {
 
 const Notification = sequelize.define<NotificationModelInterface>('notification', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    title: {type: DataType.STRING},
-    message: {type: DataType.TEXT},
-    type: {type: DataType.STRING},
-    isRead: {type: DataType.BOOLEAN, defaultValue: false},
-    entity: {type: DataType.JSONB, defaultValue: null},
-    entityType: {type: DataType.STRING, defaultValue: null},
+    title: { type: DataType.STRING },
+    message: { type: DataType.TEXT },
+    type: { type: DataType.STRING },
+    isRead: { type: DataType.BOOLEAN, defaultValue: false },
+    entity: { type: DataType.JSONB, defaultValue: null },
+    entityType: { type: DataType.STRING, defaultValue: null },
     userId: { type: DataType.INTEGER, allowNull: false }
 });
 
 const OtherProblem = sequelize.define<OtherProblemModelInterface>('other_problem', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    time: {type: DataType.STRING},
-    date: {type: DataType.STRING},
-    description_problem: {type: DataType.TEXT}
+    time: { type: DataType.STRING },
+    date: { type: DataType.STRING },
+    description_problem: { type: DataType.TEXT }
 })
 
 const ConsultationRoomModel = sequelize.define<ConsulationRoomModelInterface>('consultation_room', {

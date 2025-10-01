@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import type { IBasicData } from "../../../../models/IDatas";
 import { processError } from "../../../../helpers/processError";
 import { URL } from "../../../../http";
+import AdminService from "../../../../services/AdminService";
 
 const FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
@@ -39,7 +40,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const isImage = (filename: string) =>
         IMAGE_EXTENSIONS.some((ext) => filename.toLowerCase().endsWith(ext));
 
-    // Обработчик нажатия клавиш
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && modalImage.open) {
@@ -49,9 +50,9 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
 
         if (modalImage.open) {
             document.addEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = 'hidden'; // Блокируем скролл
+            document.body.style.overflow = 'hidden';
         } else {
-            document.body.style.overflow = 'auto'; // Восстанавливаем скролл
+            document.body.style.overflow = 'auto';
         }
 
         return () => {

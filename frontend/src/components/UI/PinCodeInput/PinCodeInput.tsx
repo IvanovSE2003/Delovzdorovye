@@ -5,9 +5,15 @@ interface PinCodeInputProps {
     onLogin: (pin: string) => void;
     focus?: boolean;
     countNumber: number;
+    clearOnComplete?: boolean;
 }
 
-const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus=false}) => {
+const PinCodeInput: React.FC<PinCodeInputProps> = ({ 
+    onLogin, 
+    countNumber, 
+    focus = false, 
+    clearOnComplete = false
+}) => {
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [code, setPinCode] = useState<string[]>(Array(countNumber).fill(""));
 
@@ -25,9 +31,15 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus
 
     useEffect(() => {
         if (code.every((d) => d !== "")) {
-            onLogin(code.join(""));
+            const pinCode = code.join("");
+            onLogin(pinCode);
+            
+            // Очищаем пин-код после отправки только если clearOnComplete = true
+            if (clearOnComplete) {
+                setPinCode(Array(countNumber).fill(""));
+            }
         }
-    }, [code, onLogin]);
+    }, [code, onLogin, countNumber, clearOnComplete]);
 
     useEffect(() => {
         if (code.every((d) => d === "")) {
@@ -85,6 +97,7 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({ onLogin, countNumber, focus
             {code.map((digit, index) => (
                 <input
                     key={index}
+                    name={`element-${index}`}
                     type="text"
                     maxLength={1}
                     value={digit}

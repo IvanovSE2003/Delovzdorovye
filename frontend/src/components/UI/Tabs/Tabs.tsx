@@ -23,40 +23,38 @@ const Tabs: React.FC<TabsProps> = ({
     activeTab: externalActiveTab, 
     onTabChange, 
     className = '',
-    paramName = 'tab', // Дефолтное имя параметра
-    syncWithUrl = false // По умолчанию выключено
+    paramName = 'tab',
+    syncWithUrl = false
 }) => {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const location = useLocation();
+    const [searchParams, setSearchParams] = syncWithUrl ? useSearchParams() : [null, () => {}];
+    const location = syncWithUrl ? useLocation() : { search: '' };
     
     const [internalActiveTab, setInternalActiveTab] = useState(tabs[0]?.name || '');
     const isControlled = externalActiveTab !== undefined;
     
-    // Получаем активный таб из URL если syncWithUrl=true
     const getTabFromUrl = () => {
-        if (!syncWithUrl) return null;
+        if (!syncWithUrl || !searchParams) return null;
         return searchParams.get(paramName);
     };
 
-    // Устанавливаем начальное значение
     useEffect(() => {
+        if (!syncWithUrl) return;
+        
         const urlTab = getTabFromUrl();
         if (urlTab && tabs.some(tab => tab.name === urlTab)) {
             setInternalActiveTab(urlTab);
         }
-    }, [location.search]); // Следим за изменением search параметров
+    }, [location.search, syncWithUrl]);
 
     const activeTab = isControlled ? externalActiveTab : internalActiveTab;
 
-    // Обработка нажатия на таб
     const handleTabClick = (tabName: string) => {
         if (!isControlled) {
             setInternalActiveTab(tabName);
         }
         
-        // Обновляем URL если включена синхронизация
-        if (syncWithUrl) {
-            const newSearchParams = new URLSearchParams(searchParams);
+        if (syncWithUrl && setSearchParams) {
+            const newSearchParams = new URLSearchParams(searchParams || '');
             newSearchParams.set(paramName, tabName);
             setSearchParams(newSearchParams);
         }

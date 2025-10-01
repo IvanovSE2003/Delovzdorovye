@@ -15,7 +15,9 @@ import ConsultationRepository from "../../../../core/domain/repositories/consult
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js";
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import { convertMoscowToUserTime } from "../../function/transferTime.js";
+import ProfDataRepository from "../../../../core/domain/repositories/profData.repository.js"
 import { access } from "fs";
+import pendingChanges from "../../types/pendingChanges.js";
 
 export default class UserController {
     constructor(
@@ -27,6 +29,7 @@ export default class UserController {
         private readonly doctorRepository: DoctorRepository,
         private readonly consultationRepository: ConsultationRepository,
         private readonly notificationRepository: NotificationRepository,
+        private readonly profDataRepository: ProfDataRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -164,53 +167,46 @@ export default class UserController {
     }
 
     async refresh(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { refreshToken } = req.cookies;
 
-            if (!refreshToken) {
-                return next(ApiError.notAuthorized('Пользователь не авторизован'));
-            }
+        const { refreshToken } = req.cookies;
 
-            const userData = this.tokenService.validateRefreshToken(refreshToken);
-            if (!userData || userData.type !== 'refresh') {
-                return next(ApiError.notAuthorized('Недействительный токен'));
-            }
-
-            const tokenFromDb = await this.tokenService.findToken(refreshToken);
-            if (!tokenFromDb) {
-                return next(ApiError.notAuthorized('Токен не найден в базе данных'));
-            }
-
-            const user = await this.userRepository.findById(userData.id);
-            if (!user) {
-                return next(ApiError.notAuthorized('Пользователь не найден'));
-            }
-
-            if (user.isBlocked) {
-                return next(ApiError.notAuthorized('Аккаунт заблокирован'));
-            }
-
-            const countMessage = await this.notificationRepository.countByUserId(user.id, true);
-            const tokens = await this.tokenService.generateTokens({ ...user });
-
-            await this.tokenService.removeToken(refreshToken);
-            await this.tokenService.saveToken(user.id, tokens.refreshToken);
-
-            res.cookie("refreshToken", tokens.refreshToken, {
-                maxAge: 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: 'strict'
-            });
-
-            return res.status(200).json({
-                accessToken: tokens.accessToken,
-                countMessage: countMessage,
-                user: user
-            });
-        } catch (error) {
-            return next(ApiError.internal('Ошибка при обновлении токена'));
+        if (!refreshToken) {
+            return next(ApiError.notAuthorized('Пользователь не авторизован'));
         }
+
+        const userData = this.tokenService.validateRefreshToken(refreshToken);
+        if (!userData || userData.type !== 'refresh') {
+            return next(ApiError.notAuthorized('Недействительный токен'));
+        }
+
+        const tokenFromDb = await this.tokenService.findToken(refreshToken);
+        if (!tokenFromDb) {
+            return next(ApiError.notAuthorized('Токен не найден в базе данных'));
+        }
+
+        const user = await this.userRepository.findById(userData.id);
+        if (!user) {
+            return next(ApiError.notAuthorized('Пользователь не найден'));
+        }
+
+        const countMessage = await this.notificationRepository.countByUserId(user.id, true);
+        const tokens = await this.tokenService.generateTokens({ ...user });
+
+        await this.tokenService.removeToken(refreshToken);
+        await this.tokenService.saveToken(user.id, tokens.refreshToken);
+
+        res.cookie("refreshToken", tokens.refreshToken, {
+            maxAge: 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        });
+
+        return res.status(200).json({
+            accessToken: tokens.accessToken,
+            countMessage: countMessage,
+            user: user
+        });
     }
 
     async verifyTwoFactor(req: Request, res: Response, next: NextFunction) {
@@ -316,7 +312,32 @@ export default class UserController {
         if (updatedUserWithAvatar.role === "DOCTOR") {
             const changes = this.collectDoctorChanges(user, data);
             await this.basicDataRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
-            await this.userRepository.save(user.setSentChanges(true));
+
+            for (const change of changes) {
+                console.log(change.field_name)
+                switch (change.field_name) {
+                    case "Имя":
+                        user.pending_name = change.new_value;
+                        break;
+                    case "Фамилия":
+                        user.pending_surname = change.new_value;
+                        break;
+                    case "Отчество":
+                        user.pending_patronymic = change.new_value;
+                        break;
+                    case "Пол":
+                        user.pending_gender = change.new_value;
+                        break;
+                    case "Дата рождения":
+                        user.pending_date_birth = change.new_value;
+                        break;
+                }
+            }
+
+            user.sentChanges = true;
+            user.hasPendingChanges = true;
+
+            await this.userRepository.save(user);
             result = user;
         } else {
             result = await this.userRepository.save(updatedUserWithAvatar);
@@ -382,21 +403,37 @@ export default class UserController {
         }
     }
 
-    async uploadAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async uploadAvatar(req: Request, res: Response, next: NextFunction) {
         const { userId } = req.body;
         const img = req.files?.img;
 
-        const user = await this.userRepository.findById(Number(userId));
-        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
         if (!img) return next(ApiError.badRequest('Файл не загружен'));
         if (Array.isArray(img)) return next(ApiError.badRequest('Загружено несколько файлов'));
 
-        let updatedUser: User;
+        const user = await this.userRepository.findById(Number(userId));
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
+
         const fileName = await this.fileService.saveFile(img);
+        let updatedUser: User;
+
         if (user.role === 'DOCTOR') {
-            updatedUser = await this.userRepository.save(user.setSentChanges(true));
-            const basicData = new BasicData(0, 'pending', ' ', false, 'Изображение', user.img, fileName, updatedUser.id);
+            const basicData = new BasicData(
+                0,
+                'pending',
+                '',
+                false,
+                'Изображение',
+                user.img,   
+                fileName,   
+                user.id
+            );
             await this.basicDataRepository.create(basicData);
+
+            user.sentChanges = true;
+            user.hasPendingChanges = true;
+            user.pending_img = fileName; 
+
+            updatedUser = await this.userRepository.save(user);
         } else {
             if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
                 await this.fileService.deleteFile(user.img);
@@ -404,7 +441,8 @@ export default class UserController {
             updatedUser = await this.userRepository.save(user.updateAvatar(fileName));
         }
 
-        const result = {
+
+        return res.status(200).json({
             img: updatedUser.img,
             surname: updatedUser.surname,
             name: updatedUser.name,
@@ -414,9 +452,7 @@ export default class UserController {
             timeZone: updatedUser.timeZone,
             phone: updatedUser.phone,
             email: updatedUser.email
-        };
-
-        res.status(200).json(result);
+        });
     }
 
     async deleteAvatar(req: Request, res: Response, next: NextFunction) {
@@ -473,7 +509,7 @@ export default class UserController {
                 new Notification(
                     0,
                     "Изменение роли",
-                    `Вы теперь стали специалистом на платоформе, загрузите пожалуйста свои данные о специализации(ях) в личном кабинете!`,
+                    `Вы теперь стали специалистом на платформе, загрузите пожалуйста свои данные о специализации(ях) в личном кабинете.`,
                     "WARNING",
                     false,
                     null,
@@ -574,6 +610,7 @@ export default class UserController {
             "surname",
             "patronymic",
             "gender",
+            "dateBirth"
         ];
 
         return Object.entries(data)

@@ -48,7 +48,6 @@ const Slider: React.FC<SliderProps> = ({ role, isAuth }) => {
     fetchSlider();
   }, [])
 
-  // Основной рендер
   return (
     <AnimatePresence mode="wait">
       <div className="slider">

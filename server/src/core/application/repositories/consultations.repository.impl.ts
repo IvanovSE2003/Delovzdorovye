@@ -21,8 +21,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         doctorId?: number;
         doctorUserId?: number;
         date?: string;
-    }
-    ): Promise<{
+    }): Promise<{
         consultations: Consultation[];
         totalCount: number;
         totalPages: number;
@@ -50,8 +49,8 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         }
 
         if (filters?.doctorUserId !== undefined && filters?.doctorUserId !== null) {
-            const doctor =  await models.DoctorModel.findOne({
-                where: {userId: filters.doctorUserId}
+            const doctor = await models.DoctorModel.findOne({
+                where: { userId: filters.doctorUserId }
             })
             where.doctorId = doctor?.id;
         }
@@ -96,7 +95,10 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             ],
             limit,
             offset: (page - 1) * limit,
-            order: [['id', 'ASC']]
+            order: [
+                ['date', 'ASC'],
+                ['time', 'ASC']
+            ]
         });
 
         return {
@@ -235,7 +237,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
     }
 
     async delete(id: number): Promise<void> {
-        await models.Consultation.destroy({where: {id}});
+        await models.Consultation.destroy({ where: { id } });
     }
 
     private mapToDomainConsultation(consultModel: any): Consultation {
@@ -254,7 +256,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             consultModel.date,
             consultModel.userId,
             consultModel.doctorId,
-
+            consultModel.createdAt,
             consultModel.doctor ? {
                 id: consultModel.doctor.id,
                 user: {
@@ -304,6 +306,7 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             date: consult.date,
             userId: consult.userId,
             doctorId: consult.doctorId,
+            createdAt: consult.createdAt
         };
     }
 }

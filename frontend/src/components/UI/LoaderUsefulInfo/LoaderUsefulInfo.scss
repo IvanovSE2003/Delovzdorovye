@@ -9,71 +9,81 @@
   min-height: 200px;
 
   .loading-spinner {
+    $circle-size: 16px;
+    $animation-duration: 1.6s;
+    $animation-timing: cubic-bezier(0.4, 0, 0.2, 1); 
+
     display: inline-block;
     position: relative;
-    width: 100px;
-    height: 20px;
+    width: 80px;
+    height: $circle-size;
     background: none;
 
     .spinner-circle {
       position: absolute;
       top: 0;
-      width: 20px;
-      height: 20px;
+      width: $circle-size;
+      height: $circle-size;
       border-radius: 50%;
-      animation-timing-function: cubic-bezier(0, 1, 1, 0);
+      background-color: $primary-color;
+      box-shadow: 0 2px 8px rgba($primary-color, 0.3);
+      animation-timing-function: $animation-timing;
+      transition: all 0.3s ease;
 
-      &:nth-child(1) {
-        left: 8px;
-        animation: loading-spinner1 0.6s infinite;
+      &--first {
+        left: 0;
+        animation: loading-spinner-wave $animation-duration infinite;
+        animation-delay: -0.4s;
       }
 
-      &:nth-child(2) {
-        left: 8px;
-        animation: loading-spinner2 0.6s infinite;
+      &--second {
+        left: 24px;
+        animation: loading-spinner-wave $animation-duration infinite;
+        animation-delay: -0.2s;
       }
 
-      &:nth-child(3) {
-        left: 32px;
-        animation: loading-spinner2 0.6s infinite;
-      }
-
-      &:nth-child(4) {
-        left: 56px;
-        animation: loading-spinner3 0.6s infinite;
+      &--third {
+        left: 48px;
+        animation: loading-spinner-wave $animation-duration infinite;
+        animation-delay: 0s;
       }
     }
   }
 
   .loading-text {
-    font-size: 1.5rem;
+    margin-top: 24px;
+    font-size: 1rem;
+    color: $text-color;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    animation: text-pulse 2s ease-in-out infinite;
   }
 }
 
-// keyframes лучше вынести отдельно
-@keyframes loading-spinner1 {
-  0% {
-    transform: scale(0);
+@keyframes loading-spinner-wave {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
   }
-  100% {
+  25% {
+    transform: translateY(-12px) scale(1.15);
+    box-shadow: 0 4px 12px rgba($primary-color, 0.4);
+  }
+  50% {
+    transform: translateY(0px) scale(1);
+  
+  }
+  75% {
+    transform: translateY(-6px) scale(1.05);
+  }
+}
+
+@keyframes text-pulse {
+  0%, 100% {
+    opacity: 0.8;
     transform: scale(1);
   }
-}
-
-@keyframes loading-spinner3 {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(0);
-  }
-}
-
-@keyframes loading-spinner2 {
-  0% {
-    transform: translate(0, 0);
-  }
-  100% {
-    transform: translate(24px, 0);
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
   }
 }

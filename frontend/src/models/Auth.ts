@@ -15,6 +15,12 @@ export interface IUser {
   dateBirth: string;
   gender: Gender;
   role: Role;
+  pending_img: string,
+  pending_name: string,
+  pending_surname: string,
+  pending_patronymic?: string,
+  pending_date_birth: string,
+  pending_gender: Gender,
   isActivated: boolean;
   isActivatedSMS: boolean;
   isAnonymous: boolean;
@@ -31,7 +37,13 @@ export interface IUserDataProfile {
   surname: string;
   patronymic?: string;
   gender: Gender;
-  dateBirth: string;
+  dateBirth: string;  
+  pending_img: string,
+  pending_name: string,
+  pending_surname: string,
+  pending_patronymic?: string,
+  pending_date_birth: string,
+  pending_gender: Gender,
   phone: string;
   email: string;
   isAnonymous: boolean;

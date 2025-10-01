@@ -2,16 +2,16 @@ import "dayjs/locale/ru";
 import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Context } from "../../../main";
-import AccountLayout from "../AccountLayout";
-import { getDateLabel } from "../../../hooks/DateHooks";
-import type { ConsultationData } from "../../../components/UI/Modals/EditModal/EditModal";
-import type { Consultation } from "../../../features/account/UpcomingConsultations/UpcomingConsultations";
-import ConsultationService from "../../../services/ConsultationService";
-import UserRecordModal from "../../../components/UI/Modals/RecordModal/UserRecordModal";
-import ShowError from "../../../components/UI/ShowError/ShowError";
-import { processError } from "../../../helpers/processError";
-
+import UserRecordModal from "../../../../components/UI/Modals/RecordModal/UserRecordModal";
+import ShowError from "../../../../components/UI/ShowError/ShowError";
+import { processError } from "../../../../helpers/processError";
+import { Context } from "../../../../main";
+import ConsultationService from "../../../../services/ConsultationService";
+import AccountLayout from "../../AccountLayout";
+import './Main.scss';
+import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import type { Consultation } from "../../../../models/consultations/Consultation";
+import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 
 // Количество элементов на одной "странице"
 const PAGE_SIZE = 4;
@@ -50,7 +50,7 @@ const Main: React.FC = () => {
     const fetchUpcomingConsultations = useCallback(async (currentPage: number) => {
         try {
             const response = await ConsultationService.getAllConsultations(PAGE_SIZE, currentPage, {
-                userId: store.user.id.toString(),
+                userId: store.user.id,
                 consultation_status: "UPCOMING",
             });
 
@@ -105,8 +105,8 @@ const Main: React.FC = () => {
                                     </span>
                                     <div className="main__nearest__specialist">
                                         <strong>Специалист: </strong>
-                                        <Link target="_blank" to={`/profile/${u.DoctorUserId}`}>
-                                            {u.DoctorName} {u.DoctorSurname} {u?.DoctorPatronymic}
+                                        <Link to={`/profile/${u.DoctorUserId}`}>
+                                            {u.DoctorSurname} {u.DoctorName} {u?.DoctorPatronymic}
                                         </Link>
                                     </div>
                                 </div>

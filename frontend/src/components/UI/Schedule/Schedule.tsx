@@ -276,14 +276,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
         </table>
       </div>
 
-      {/* Модалки */}
+      {/* Модалка помежутка дат */}
       {modalData && modalData.type === "range" && (
         <div className="modal">
           <div className="timesheet__modal">
             <h1 className="consultation-modal__title">
               Выбранный диапазон:{" "}
-              {dayjs(modalData.day).format("DD.MM.YYYY")},{" "}
-              {modalData.times.sort()[0]} –{" "}
+              {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
+              {modalData.times.sort()[0]} - 
               {modalData.times.sort()[modalData.times.length - 1]}
             </h1>
 
@@ -381,11 +381,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ onChange, userId }) => {
         <div className="modal">
           <div className="timesheet__modal">
             <h1 className="consultation-modal__title">
-              {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) =>
-                c.toUpperCase()
-              )}
+              {dayjs(modalData.day).format("dddd").replace(/^\w/, (c) => c.toUpperCase())}
               , {dayjs(modalData.day).format("DD MMMM YYYY")},{" "}
-              {modalData.time}
+              {modalData.time} - {dayjs(`${modalData.day} ${modalData.time}`)
+                .add(1, 'hour')
+                .format('HH:mm')}
             </h1>
 
             <button className="consultation-modal__close" onClick={() => {

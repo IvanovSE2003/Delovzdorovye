@@ -49,7 +49,7 @@ export default class OtherProblemController {
                 new Notification(
                     0,
                     "Ваша проблема в обработке",
-                    "Проблема будет обрабората администратором в ближайшее время",
+                    "Проблема будет обрабората администратором в ближайшее время.",
                     "WARNING",
                     false,
                     null,

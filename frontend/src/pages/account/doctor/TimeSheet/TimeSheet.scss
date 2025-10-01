@@ -67,12 +67,19 @@
 
   &__reshim {
     display: flex;
+    align-items: center;
+    justify-content: start;
 
     &-info {
       display: flex;
       flex-direction: column;
       color: white;
-      font-size: 1.15rem;
+      font-size: 1.4rem;
+      margin: 0;
+
+      li {
+        text-align: justify;
+      }
     }
   }
 
@@ -84,7 +91,7 @@
     width: 35%;
     margin: 2rem auto;
     background-color: #fff;
-    padding: 2rem;
+    padding: 3.5rem 3rem 2rem 3rem;
     border-radius: 10px;
     position: relative;
   }

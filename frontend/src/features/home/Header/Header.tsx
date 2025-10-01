@@ -5,7 +5,7 @@ import logo from "@/assets/images/logo.svg";
 import "./Header.scss";
 import { useEffect, useState } from "react";
 import HomeService from "../../../services/HomeService";
-import { GetFormatPhone } from "../../../helpers/formatDatePhone";
+import { GetFormatPhone, normalizePhone } from "../../../helpers/formatDatePhone";
 import { defaultRoleRoutes, RouteNames } from "../../../routes";
 import type { Role } from "../../../models/Auth";
 
@@ -37,7 +37,6 @@ const Header: React.FC<headerProps> = ({ isAuth, role}) => {
       ? defaultRoleRoutes[role] || RouteNames.PERSONAL
       : RouteNames.LOGIN;
 
-  // Основной рендер
   return (
     <div className="header">
 
@@ -58,7 +57,7 @@ const Header: React.FC<headerProps> = ({ isAuth, role}) => {
 
         {phone && (
           <div className="header__phone">
-            <a href={`tel:${phone}`}>{GetFormatPhone(phone)}</a>
+            <a href={`tel:${phone}`}>{normalizePhone(phone)}</a>
           </div>
         )}
 

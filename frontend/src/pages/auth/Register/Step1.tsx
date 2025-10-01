@@ -39,7 +39,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
     const [isErrorTel, setIsErrorTel] = useState<boolean>(false);
 
     return (
-        <AnimatedBlock>
+        <AnimatedBlock className="auth__form">
             <div className={`auth__anonym-btn ${anonym ? "active" : ""}`}>
                 <label
                     htmlFor="anonym"

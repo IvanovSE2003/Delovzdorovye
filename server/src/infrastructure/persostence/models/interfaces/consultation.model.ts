@@ -15,6 +15,7 @@ interface IConsultationAttributes {
     date: string,
     doctorId: number;
     userId: number;
+    createdAt?: string;
     doctor?: any;
 }
 

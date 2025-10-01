@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import { Context } from "../../../../main";
 import { observer } from "mobx-react-lite";
-import ScheduleGrid, { type SlotStatus } from "../../../../components/UI/Schedule/Schedule";
+import { type SlotStatus } from "../../../../components/UI/Schedule/Schedule";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from "date-fns/locale";
@@ -10,6 +10,8 @@ import ShowError from "../../../../components/UI/ShowError/ShowError";
 import "./TimeSheet.scss";
 import DoctorService from "../../../../services/DoctorService";
 import { processError } from "../../../../helpers/processError";
+import ScheduleCalendar from "../../../../components/UI/Schedule/text";
+import DoctorSchedule from "../../../../components/UI/Schedule/test2";
 
 const TimeSheet: React.FC = () => {
     const { store } = useContext(Context);
@@ -56,15 +58,21 @@ const TimeSheet: React.FC = () => {
         <AccountLayout>
             <div className="page-container timesheet">
                 <h2 className="page-container__title">Ваше расписание</h2>
-                <button className="consultation-modal__close" onClick={() => setModal(false)}>X</button>
                 <p className="timesheet__description">Настраивайте расписание как вам удобно</p>
 
                 {message && (<div className="timesheet__message">{message}</div>)}
 
-                <ScheduleGrid
+                {/* <ScheduleGrid
                     onChange={handleScheduleChange}
                     userId={store.user.id}
+                /> */}
+
+                <ScheduleCalendar
+                    userId={store.user.id}
+                    onChange={handleScheduleChange}
                 />
+
+                {/* <DoctorSchedule/> */}
 
                 <br />
                 <button

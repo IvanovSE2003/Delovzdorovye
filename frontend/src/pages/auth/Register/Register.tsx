@@ -24,6 +24,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [replyPinCode, setReplyPinCode] = useState<string>("");
   const [anonym, setAnonym] = useState<boolean>(false);
 
+  const [loading, setLoading] = useState<boolean>(false);
+
 
   // Стираю ошибку при изменении шага 
   useEffect(() => {
@@ -107,6 +109,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   // Завершение первого этапа 
   const handleStep1 = async () => {
+    setLoading(true);
     if (!hasRequiredFields) {
       setError({ id: Date.now(), message: "Заполните все обязательные поля!" });
       return;
@@ -145,11 +148,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     } catch (error) {
       console.error('Неожиданная ошибка при проверке пользователя:', error);
       setError({ id: Date.now(), message: "Произошла ошибка при проверке данных" });
+    } finally {
+      setLoading(false);
     }
   };
 
   // Завершение второго этапа
   const handleStep2 = async () => {
+    setLoading(true)
     if (userDetails.dateBirth && !anonym) {
       const age = calculateAge(userDetails.dateBirth);
       if (age < 18 || age > 100) {
@@ -193,19 +199,26 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     } catch (error) {
       console.error('Ошибка при регистрации:', error);
       setError({ id: Date.now(), message: "Произошла ошибка при регистрации" });
+    } finally {
+      setLoading(false)
     }
   }
 
+  // Завершение третьего этапа
   const handleStep3 = async (pin: string) => {
+    setLoading(true);
     if (pin === "") return;
 
-    const successStep3 = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
-    if (successStep3) navigate(defaultRoleRoutes[store.user.role]);
-    else {
-      setError({ id: Date.now(), message: "Ошибка при регистрации" });
+    const data = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
+    if (data.success) {
+      navigate(defaultRoleRoutes[store.user.role]);
+    } else {
+      setError({ id: Date.now(), message: data.message });
     }
+    setLoading(false)
   }
 
+  // Возвращение на прошлый шаг
   const handleBack = useCallback((): void => {
     setError({ id: 0, message: "" });
     setStep(prev => prev - 1);
@@ -228,7 +241,11 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     handleUserDetailsChange("isAnonymous", value);
   }, [handleUserDetailsChange]);
 
-  if (store.loading) return <Loader />;
+  if (loading) return (
+    <div className="auth__container">
+      <Loader />
+    </div>
+  )
 
   return (
     <div className="auth__container">

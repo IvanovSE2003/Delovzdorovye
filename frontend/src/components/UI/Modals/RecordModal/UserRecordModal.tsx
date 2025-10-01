@@ -3,7 +3,7 @@ import Select, { type MultiValue } from "react-select";
 import ConsultationsStore, { type OptionsResponse, type Slot } from "../../../../store/consultations-store";
 import RecordForm from "./RecordForm";
 import "./RecordModal.scss";
-import type { ConsultationData } from "../EditModal/EditModal";
+import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 
 interface UserConsultationModalProps {
   isOpen: boolean;
@@ -14,12 +14,7 @@ interface UserConsultationModalProps {
 
 const OTHER_PROBLEM_ID = 9;
 
-const UserRecordModal: React.FC<UserConsultationModalProps> = ({
-  isOpen,
-  onClose,
-  onRecord,
-  userId,
-}) => {
+const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord, userId }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -88,7 +83,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({
       descriptionProblem: descriptionProblem,
       problems: selectedProblems.map((p) => p.value),
       doctorId: doctorId,
-      otherProblem: descriptionProblem,
+      otherProblemText: descriptionProblem,
       hasOtherProblem: hasOther
     });
 

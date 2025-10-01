@@ -20,9 +20,9 @@
   }
 
   &__error {
-    color: red;
-    margin: 0;
+    margin: 0 !important;
     text-align: center;
+    font-size: 1rem;
   }
 
   &__toggle-button {
@@ -33,7 +33,7 @@
     width: 100%;
     border: none;
     padding: 15px 20px;
-    margin: 0.3rem 0;
+    margin: 1rem 0;
     border-radius: 10px;
     background-color: $primary-color;
     color: white;

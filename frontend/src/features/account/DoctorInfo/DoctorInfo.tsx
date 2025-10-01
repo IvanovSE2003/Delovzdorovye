@@ -133,7 +133,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
     // Основной рендер
     return (
         <div className="doctor-info">
-            <h1 className="doctor-info__title">Специализации доктора</h1>
+            <h1 className="doctor-info__title">Специализации</h1>
             <p className="doctor-info__subtitle">Здесь находится список всех специализаций</p>
             <ShowError msg={message} mode="MESSAGE" />
 
@@ -169,6 +169,12 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         onChange={setLicense}
                         accept=".pdf"
                     />
+
+                    <div className="solutions__warn">
+                        <span className="doctor-info__info-text">
+                            Ваши изменения не вступают в силу сразу, они проходят проверку модератора. Обычно это занимает несколько часов. При желании вы можете оставить комментарий к правке в поле ниже.
+                        </span>
+                    </div>
 
                     <textarea
                         id="comment"
@@ -226,12 +232,19 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                     )}
 
                     {edit && (
-                        <button
-                            className="neg-button doctor-info__button"
-                            onClick={() => setModal({ state: true, data: info })}
-                        >
-                            Удалить
-                        </button>
+                        <div className="actions">
+                            <button
+                                className="neg-button doctor-info__button"
+                                onClick={() => setModal({ state: true, data: info })}
+                            >
+                                Удалить
+                            </button>
+                            <button
+                                className="my-button doctor-info__button"
+                            >
+                                Редактировать
+                            </button>
+                        </div>
                     )}
                 </div>
             )) : (

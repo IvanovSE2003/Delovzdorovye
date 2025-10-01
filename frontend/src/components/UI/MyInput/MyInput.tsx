@@ -34,6 +34,7 @@ const MyInput: React.FC<MyInputProps> = ({
     <div className={`auth__input-group ${isFocused ? "focused" : ""}`}>
       <input
         id={id}
+        name={id}
         type={type}
         className={`auth__input ${className || ""}`}
         value={value}

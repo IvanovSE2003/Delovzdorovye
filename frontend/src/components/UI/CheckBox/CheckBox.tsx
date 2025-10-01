@@ -26,7 +26,6 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({ id, onAgreementChange, on
     }
   };
 
-  // Основной рендер
   return (
     <div className="agreement">
       <div className="agreement__container">

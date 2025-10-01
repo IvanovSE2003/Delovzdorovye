@@ -1,12 +1,14 @@
-import { useContext, useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import AccountLayout from "./AccountLayout";
-import type { TypeResponse } from "../../models/response/DefaultResponse";
-import type { AxiosError } from "axios";
-import UserService from "../../services/UserService";
-import { Context } from "../../main";
-import { observer } from "mobx-react-lite";
-import { formatDateFromISO } from "../../helpers/formatDatePhone";
+import type { AxiosError } from 'axios';
+import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
+import { useContext, useState, useEffect } from 'react';
+import { formatDateFromISO } from '../../../helpers/formatDatePhone';
+import { Context } from '../../../main';
+import type { TypeResponse } from '../../../models/response/DefaultResponse';
+import AccountLayout from '../../../pages/account/AccountLayout';
+import UserService from '../../../services/UserService';
+import './Notifications.scss';
+
 
 const typeIcons: Record<string, string> = {
     CONSULTATION: "📅",
@@ -28,10 +30,11 @@ export interface INotification {
     entityType?: string;
 }
 
-const Bell: React.FC = () => {
+const Notifications: React.FC = () => {
     const { store } = useContext(Context);
     const [notifications, setNotifications] = useState<INotification[]>([]);
 
+    // Прочитать одно уведомление
     const markAsRead = async (id: number) => {
         try {
             await UserService.readNotification(id);
@@ -42,6 +45,18 @@ const Bell: React.FC = () => {
         }
     };
 
+    // Прочитать все уведомления
+    const markAsReadAll = async () => {
+        try {
+            await UserService.readNotifciatonAll(store.user.id);
+            fetchNotifications();
+        } catch (e) {
+            const error = e as AxiosError<TypeResponse>;
+            console.error("Ошибка при прочтении всех уведомлений:", error.response?.data.message);
+        }
+    }
+
+    // Удаление уведомление
     const deleteMessage = async (id: number) => {
         try {
             await UserService.deleteNotification(id);
@@ -53,16 +68,7 @@ const Bell: React.FC = () => {
         }
     }
 
-    const markAsReadAll = async () => {
-        try {
-            await UserService.readNotifciatonAll(store.user.id);
-            fetchNotifications();
-        } catch (e) {
-            const error = e as AxiosError<TypeResponse>;
-            console.error("Ошибка при прочтении всех уведомлений:", error.response?.data.message);
-        }
-    }
-
+    // Удалить все уведомления
     const deleteAllNotifications = async () => {
         if (!window.confirm("Вы действительно хотите удалить все уведомления?")) return;
 
@@ -136,4 +142,4 @@ const Bell: React.FC = () => {
     );
 };
 
-export default observer(Bell);
+export default observer(Notifications);

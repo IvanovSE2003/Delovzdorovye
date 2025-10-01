@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import AccountLayout from "../../AccountLayout";
 import Search from "../../../../components/UI/Search/Search";
 import "./ArchiveConsultations.scss";
-import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
 import ConsultationService from "../../../../services/ConsultationService";
 import { API_URL } from "../../../../http";
-import { getDateLabel } from "../../../../hooks/DateHooks";
 import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import Pagination from "../../../../components/UI/Pagination/Pagination";
 import { Link } from "react-router-dom";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
+import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import type { Consultation } from "../../../../models/consultations/Consultation";
 
 const PAGE_SIZE = 8;
 

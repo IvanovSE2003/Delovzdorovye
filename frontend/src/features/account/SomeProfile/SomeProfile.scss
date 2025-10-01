@@ -1,0 +1,56 @@
+@use '../../assets/styles/variables.scss' as *;
+
+// Профиль другого пользователя
+.profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  background-color: $profile-color;
+  border-radius: 10px;
+  padding: 2rem 3rem;
+
+  &__avatar {
+    min-width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+  }
+
+  &__fio {
+    font-size: 1.6em;
+    font-weight: bold;
+  }
+
+  &__role {
+    color: $doctor-color;
+    font-size: 1.3rem;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 1.2rem;
+    color: $gray-color;
+
+    .label {
+      font-weight: bolder;
+      color: black;
+    }
+  }
+}

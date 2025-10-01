@@ -107,7 +107,6 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
         fetchInformations();
     }, []);
 
-    // Основной рендер
     return (
         <div className='informations container' id="informations">
             <AnimatedBlock>

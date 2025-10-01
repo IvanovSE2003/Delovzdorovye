@@ -12,7 +12,9 @@ import BasicDataRepositoryImpl from "../../../../core/application/repositories/b
 import SpecializationsRepositoryImpl from "../../../../core/application/repositories/specializations.repository.impl.js";
 import ConsultationRepositoryImpl from "../../../../core/application/repositories/consultations.repository.impl.js";
 import NotificationRepositoryImpl from "../../../../core/application/repositories/notification.repository.impl.js"
+import ProfDataRepositoryImpl from "../../../../core/application/repositories/profData.repository.impl.js";
 
+const profDataRepository = new ProfDataRepositoryImpl();
 const fileService = new FileServiceImpt();
 const userRepository = new UserRepositoryImpl();
 const basicDataRepository = new BasicDataRepositoryImpl();
@@ -44,7 +46,8 @@ const userController = new UserController(
     basicDataRepository,
     doctorRepository,
     consultationRepository,
-    notificationRepository
+    notificationRepository,
+    profDataRepository
 );
 
 export default userController;

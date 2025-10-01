@@ -10,8 +10,6 @@ import {
   type ProtectedRoute,
 } from "../routes";
 
-import "../assets/styles/pages.scss";
-
 const LastVisitedTracker: React.FC = () => {
   const location = useLocation();
   const { store } = useContext(Context);
@@ -40,15 +38,12 @@ const AppRouter: React.FC = () => {
     return requiredRoles.includes(userRole);
   };
 
-  // определяем lastVisited
   const lastVisited =
     store.lastVisited || localStorage.getItem("lastVisited");
 
-  // выбираем дефолтную страницу для роли
   const defaultForRole =
     (userRole && defaultRoleRoutes[userRole]) || RouteNames.PERSONAL;
 
-  // если lastVisited валиден — используем его, иначе дефолт для роли
   const availablePaths = privateRoutes
     .filter((r) => hasRoleAccess((r as ProtectedRoute).roles))
     .map((r) => r.path);

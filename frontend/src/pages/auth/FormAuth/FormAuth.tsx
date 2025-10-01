@@ -1,10 +1,10 @@
 import { useState, Suspense } from "react";
-import Loader from "../../../components/UI/Loader/Loader";
 import { AnimatePresence } from "framer-motion";
 import "./FormAuth.scss";
 import Login from "../Login/Login";
 import Register from "../Register/Register";
 import ShowError from "../../../components/UI/ShowError/ShowError";
+import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 
 export type AuthState = "login" | "register" | "recover";
 
@@ -21,10 +21,10 @@ const FormAuth: React.FC = () => {
                 {state === "register" && "Регистрация"}
             </h3>
 
-            <ShowError msg={error} />
-            <ShowError msg={message} mode="MESSAGE"/>
+            <ShowError msg={error} className="auth__error"/>
+            <ShowError msg={message} mode="MESSAGE" className="auth__error"/>
 
-            <Suspense fallback={<Loader />}>
+            <Suspense fallback={<LoaderUsefulInfo />}>
                 <AnimatePresence mode="wait">
                     {state === "login" && (
                         <Login setState={setState} setError={setError} setMessage={setMessage} />

@@ -1,0 +1,122 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+// Главная страница для пациента
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        'main-block main-block'
+        'nearest other';
+    row-gap: 20px;
+    column-gap: 40px;
+
+    &__main-block {
+        grid-area: main-block;
+        background-color: #E1F7EB;
+        color: $text-color;
+        padding: 2rem 3rem;
+        border-radius: 10px;
+
+        &__title {
+            font-size: 1.6rem;
+            font-weight: bolder;
+            text-align: left;
+        }
+
+        &__text {
+            font-size: 1.4rem;
+            text-align: justify;
+        }
+
+        &__button {
+            padding: 1rem 3rem;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            color: white;
+            font-weight: bold;
+            border: none;
+            background-color: #4CAF50;
+            width: max-content;
+            transition: transform 0.3s ease-in-out;
+
+            &:hover {
+                background-color: #3a873d;
+                cursor: pointer;
+                transform: scale(1.01);
+            }
+        }
+    }
+
+    &__nearest {
+        grid-area: nearest;
+        background-color: #F2E8FF;
+        color: $text-color;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 1rem 2rem;
+        min-height: 590px;
+
+        &__title {
+            text-align: center;
+            font-weight: bold;
+            color: black;
+            font-size: 1.6rem;
+        }
+
+        &__block {
+            background-color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            span {
+                color: #9C62F3;
+                font-size: 1.4rem;
+                font-weight: bold;
+            }
+
+            p {
+                font-size: 1.2rem;
+            }
+        }
+
+        &__specialist {
+            font-size: 1.4rem;
+        }
+    }
+
+    &__pagination {
+        margin-top: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+
+        button {
+            padding: 6px 12px;
+            font-size: 1.3rem;
+            border-radius: 10px;
+            border: none;
+            background: #9C62F3;
+            color: white;
+            cursor: pointer;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    &__other {
+        grid-area: other;
+        background-color: #F2EFDB;
+        padding: 10px;
+        border-radius: 10px;
+    }
+}

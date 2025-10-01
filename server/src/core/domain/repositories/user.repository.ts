@@ -18,4 +18,7 @@ export default interface UserRepository {
 
     checkUserExists(email?: string, phone?: string): Promise<boolean>;
     verifyPinCode(userId: number, pinCode: number): Promise<boolean>;
+
+    hasPendingChanges(userId: number): Promise<boolean>;
+    updateField(userId: number, field: string, value: any): Promise<void>;
 }

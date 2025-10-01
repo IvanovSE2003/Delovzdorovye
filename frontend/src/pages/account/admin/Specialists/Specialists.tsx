@@ -8,6 +8,7 @@ import type { IBasicData, IProfData } from "../../../../models/IDatas";
 import type { ITab } from "../../../../components/UI/Tabs/Tabs";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
 import ShowError from "../../../../components/UI/ShowError/ShowError";
+import './Specialists.scss';
 
 
 type TabType = "basic" | "prof";

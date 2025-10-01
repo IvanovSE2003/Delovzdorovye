@@ -8,7 +8,7 @@ interface PaginationProps {
 }
 
 const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange }) => {
-    if (totalPages <= 1) return null;
+    if (totalPages <= 1) return;
 
     return (
         <div className="pagination">

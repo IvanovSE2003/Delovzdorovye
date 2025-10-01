@@ -1,20 +1,9 @@
 @use '../variables.scss' as *;
 
 .usefulinfo {
-    padding: 1rem 2rem;
-    margin: 10px;
-
-    &__title {
-        font-size: 2rem;
-        font-weight: bolder;
-    }
-
-    &__none {
-        text-align: center;
-        font-size: 1.8rem;
-        font-weight: bolder;
-        color: black;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 
     &-block {
         background-color: #F2E8FF;

@@ -1,9 +1,13 @@
+import type { Role } from "./Auth";
+
 export interface MenuItem {
     path: string;
     name: string;
+    notification?: number;
 }
 
 export interface SidebarProps {
-    menuItems: { path: string; name: string }[];
+    menuItems: MenuItem[];
     className?: string;
+    role: Role;
 }

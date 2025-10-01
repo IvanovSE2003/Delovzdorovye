@@ -1,7 +1,6 @@
 import { createContext } from 'react'
 import { createRoot, type Container } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
-
 import './assets/styles/index.scss'
 
 import App from './App.tsx'

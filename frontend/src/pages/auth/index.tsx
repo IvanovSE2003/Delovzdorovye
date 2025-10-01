@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import logo from "@/assets/images/logo.svg";
 import FormAuth from "./FormAuth/FormAuth";
 
-const LoginPage = () => {
+const LoginPage:React.FC = () => {
     return (
         <div className='auth__window'>
             <div className='auth__left'>

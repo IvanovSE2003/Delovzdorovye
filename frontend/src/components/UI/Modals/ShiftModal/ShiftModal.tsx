@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import type { ConsultationData } from '../EditModal/EditModal';
-import type { Consultation } from '../../../../features/account/UpcomingConsultations/UpcomingConsultations';
 import type { ModalProps } from '../CancelModal/CancelModal';
 import dayjs from "dayjs";
 
 import RecordForm from '../RecordModal/RecordForm';
 import './ShiftModal.scss'
-import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
 import type { Role } from '../../../../models/Auth';
+import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
+import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import type { Consultation } from '../../../../models/consultations/Consultation';
 
 interface ShiftModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
@@ -15,7 +15,6 @@ interface ShiftModalProps extends ModalProps {
 }
 
 const normalizeTime = (t: string) => {
-    // поддержка "4:00", "04:00", "04:00:00"
     const m = t.match(/(\d{1,2}):(\d{2})/);
     if (!m) return t;
     const hh = m[1].padStart(2, "0");
@@ -24,7 +23,6 @@ const normalizeTime = (t: string) => {
 };
 
 const getStartFromRange = (range: string) => {
-    // поддержка "-", "–", "—"
     const start = range.split(/[–—-]/)[0]?.trim() ?? "";
     return normalizeTime(start);
 };
@@ -41,10 +39,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
             return;
         }
 
-        // Сравнение даты корректно (без локалей/часовых поясов)
         const sameDay = dayjs(consultationData.date).isSame(dayjs(selectedDate), "day");
-
-        // Сравнение только начала интервала
         const currentStart = getStartFromRange(consultationData.durationTime);
         const newStart = normalizeTime(selectedTime);
 
@@ -81,7 +76,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen) return;
 
     return (
         <div className="modal">

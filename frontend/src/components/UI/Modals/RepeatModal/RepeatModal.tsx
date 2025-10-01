@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { ModalProps } from '../CancelModal/CancelModal';
-import type { ConsultationData } from '../EditModal/EditModal';
 
 import RecordForm from '../RecordModal/RecordForm';
 import './RepeatModal.scss';
 import type { Role } from '../../../../models/Auth';
-import { formatDateWithoutYear } from '../../../../hooks/DateHooks';
+import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
 
 interface RepeatModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;

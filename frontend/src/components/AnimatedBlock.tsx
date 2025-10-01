@@ -6,7 +6,7 @@ interface AnimatedBlockProps {
   className?: string;
 }
 
-const AnimatedBlock = ({ children, className="" }: AnimatedBlockProps) => {
+const AnimatedBlock:React.FC<AnimatedBlockProps> = ({ children, className="" }) => {
   return (
     <motion.div
       initial={{ opacity: 0.3, y: 30 }}

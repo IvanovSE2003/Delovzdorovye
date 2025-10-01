@@ -28,4 +28,5 @@ export default interface DoctorRepository {
     save(doctor: Doctor): Promise<Doctor>;
 
     saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
+    deleteLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
 }

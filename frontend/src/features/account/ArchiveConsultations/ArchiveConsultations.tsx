@@ -2,19 +2,19 @@ import { useState, useEffect } from 'react';
 import './ArchiveConsultations.scss';
 import RepeatModal from '../../../components/UI/Modals/RepeatModal/RepeatModal';
 import RateModal from '../../../components/UI/Modals/RateModal/RateModal';
-import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
 import ConsultationService from '../../../services/ConsultationService';
-import type { Consultation } from '../UpcomingConsultations/UpcomingConsultations';
 import { API_URL } from '../../../http';
 import type { AxiosError } from 'axios';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
-import { getDateLabel } from '../../../hooks/DateHooks';
 import type { Role } from '../../../models/Auth';
 import Pagination from '../../../components/UI/Pagination/Pagination';
 import { processError } from '../../../helpers/processError';
+import { getDateLabel } from '../../../helpers/formatDatePhone';
+import type { Consultation } from '../../../models/consultations/Consultation';
+import type { ConsultationData } from '../../../models/consultations/ConsultationData';
 
 interface ArchiveConsultationsProps {
-    id?: string;
+    id?: number;
     mode?: Role;
 }
 
@@ -33,7 +33,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
         try {
             const filters: any = { consultation_status: "ARCHIVE" };
 
-            if (mode === "DOCTOR") filters.doctorId = id;
+            if (mode === "DOCTOR") filters.doctorUserId = id;
             else filters.userId = id;
 
             const response = await ConsultationService.getAllConsultations(limit, pageNumber, filters);
@@ -91,7 +91,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
         modalSetter(true);
     };
 
-    if (!consultations.length) return (
+    if (!consultations || (consultations && consultations.length === 0)) return (
         <div className="consultation-card">
             <div className="consultation-card__specialist" style={{ textAlign: 'center' }}>
                 Здесь будут находиться посещенные консультации

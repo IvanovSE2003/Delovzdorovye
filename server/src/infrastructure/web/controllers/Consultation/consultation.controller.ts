@@ -81,7 +81,7 @@ export default class ConsultationController {
         const consultations = await this.consultationRepository.findAll(Number(pageConsult), Number(limitConsult), filters);
 
         if (!consultations || consultations.consultations.length === 0) {
-            return next(ApiError.badRequest('Консультации не найдены'));
+            return res.status(200).json(consultations);
         }
 
         const formattedConsultations: any[] = [];
@@ -198,7 +198,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Назначена консультация",
-                `Консультация была назначена на ${timeSlotUser.date} в ${timeSlotUser.time}`,
+                `Консультация была назначена на ${timeSlotUser.date} в ${timeSlotUser.time}.`,
                 "CONSULTATION",
                 false,
                 consultation,
@@ -208,7 +208,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Назначена консультация",
-                `Клиент ${user.surname} ${user.name} ${user.patronymic} записался на консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}`,
+                `Клиент ${user.surname} ${user.name} ${user.patronymic} записался на консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}.`,
                 "CONSULTATION",
                 false,
                 consultation,
@@ -279,6 +279,18 @@ export default class ConsultationController {
         if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
         if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
+        console.log(consultation.createdAt)
+        if (consultation.createdAt) {
+            
+            const createdAt = new Date(consultation.createdAt);
+            const now = new Date();
+            const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+            if (hoursDiff > 12) {
+                return next(ApiError.badRequest('Невозможно перенести консультацию - прошло более 12 часов с момента создания'));
+            }
+        }
+
         const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
         const [timeSlot, timeSlotPrev] = await Promise.all([
@@ -303,7 +315,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Перенесена консультация",
-                `Консультация была перенесена на ${timeSlotUser.date} в ${timeSlotUser.time}`,
+                `Консультация была перенесена на ${timeSlotUser.date} в ${timeSlotUser.time}.`,
                 "CONSULTATION",
                 false,
                 newConsult,
@@ -316,7 +328,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Перенесена консультация",
-                `Клиент ${user.surname} ${user.name} ${user.patronymic} перенес консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}`,
+                `Клиент ${user.surname} ${user.name} ${user.patronymic} перенес консультацию на ${timeSlotDoctor.date} в ${timeSlotDoctor.time}.`,
                 "CONSULTATION",
                 false,
                 consultation,
@@ -337,6 +349,20 @@ export default class ConsultationController {
 
         const consultation = await this.consultationRepository.findById(Number(id));
         if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
+
+        
+        if (consultation.createdAt) {
+            const createdAt = new Date(consultation.createdAt);
+            const now = new Date();
+            console.log(createdAt)
+            console.log(now)
+            const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+            console.log(hoursDiff)
+            if (hoursDiff > 12) {
+                return next(ApiError.badRequest('Невозможно отменить консультацию - прошло более 12 часов с момента создания'));
+            }
+        }
 
         const [user, doctorUser] = await Promise.all([
             this.userRepository.findById(consultation.userId),
@@ -371,7 +397,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Отменена консультация",
-                `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена. Причина отмены "${reason}"`,
+                `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена. Причина отмены "${reason}".`,
                 "ERROR",
                 false,
                 null,
@@ -434,7 +460,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Повтор консультации",
-                `Был сделан повтор на консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name} на ${newConsultation.date} в ${newConsultation.time}`,
+                `Был сделан повтор на консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name} на ${newConsultation.date} в ${newConsultation.time}.`,
                 "CONSULTATION",
                 false,
                 newConsultation,
@@ -447,7 +473,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Повтор консультации",
-                `Клиент ${user?.surname} ${user?.name} ${user?.patronymic} повторил(а) консультацию ${consultation.date} в ${consultation.time}`,
+                `Клиент ${user?.surname} ${user?.name} ${user?.patronymic} повторил(а) консультацию ${consultation.date} в ${consultation.time}.`,
                 "CONSULTATION",
                 false,
                 consultation,
@@ -505,7 +531,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Новые рекомендации",
-                `Специалист ${consultation.doctor?.user.surname} ${consultation.doctor?.user.name} дала рекомендации после консультации по ваши проблемам: ${consultation.problems}`,
+                `Специалист ${consultation.doctor?.user.surname} ${consultation.doctor?.user.name} дала рекомендации после консультации по ваши проблемам: ${consultation.problems}.`,
                 "CONSULTATION",
                 false,
                 consultation,
@@ -539,17 +565,17 @@ export default class ConsultationController {
     }
 
     async updateConsulation(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params;
-        const { time, date, doctorId, problems, descriptionProblem} = req.body;
+        const { id } = req.params;
+        const { time, date, doctorId, problems, descriptionProblem } = req.body;
 
         const consultation = await this.consultationRepository.findById(Number(id));
-        if(!consultation) return next(ApiError.badRequest('Консультация не найдена'));
+        if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
         const doctor = await this.doctorReposiotry.findById(Number(doctorId));
-        if(!doctor) return next(ApiError.badRequest('Специалист не найден'));
+        if (!doctor) return next(ApiError.badRequest('Специалист не найден'));
 
         const user = await this.userRepository.findById(consultation.userId);
-        if(!user) return next(ApiError.badRequest('Пользователь не найден'));
+        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
 
         const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 

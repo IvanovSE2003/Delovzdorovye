@@ -66,7 +66,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             where: {
                 isActivated: true,
                 competencies: {
-                    [Op.overlap]: problemIds 
+                    [Op.overlap]: problemIds
                 }
             },
             include: [
@@ -326,6 +326,38 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                 diploma,
                 license
             });
+        }
+    }
+
+    async deleteLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
+        const transaction = await sequelize.transaction();
+        try {
+            const specializationModel = await models.SpecializationModel.findOne({
+                where: { name: specialization },
+                transaction
+            });
+
+            if (!specializationModel) {
+                throw new Error('Специализация не найдена');
+            }
+
+            const result = await models.DoctorSpecialization.destroy({
+                where: {
+                    doctorId: doctor.id,
+                    specializationId: specializationModel.id
+                },
+                transaction
+            });
+
+            if (result === 0) {
+                throw new Error('Связь доктора со специализацией не найдена');
+            }
+
+            await transaction.commit();
+
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
         }
     }
 

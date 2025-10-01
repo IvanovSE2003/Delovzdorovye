@@ -23,6 +23,8 @@
     padding: 20px;
     color: black;
     transition: fill 0.3s ease;
+    background: none;
+    border: none;
 
     &:hover {
       fill: $primary-color;

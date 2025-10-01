@@ -15,7 +15,7 @@ const Step2Form: React.FC<Step2FormProps> = ({
   handleBack,
 }) => {
   return (
-    <AnimatedBlock>
+    <AnimatedBlock className="auth__form">
       <div className="solutions__warn">
         <span>
           PIN-код нужен для безопасности ваших данных. Если вы забудете PIN-код, то попробуйте его востановить.

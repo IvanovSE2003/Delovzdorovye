@@ -25,7 +25,6 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
         fetchProblems();
     }, [])
 
-    // Основной рендер
     return (
         <section className="solutions container" id="solutions">
             <AnimatedBlock>
@@ -37,7 +36,8 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
                                 <li key={problem.value}>{problem.label}</li>
                             ))}
                         </ul>
-                    </div><div className="solutions__warn">
+                    </div>
+                    <div className="solutions__warn">
                         <span>
                             Мы помогаем разобраться в причинах проблем и даем рекомендации. Это консультационная поддержка, которая не заменяет медицинское лечение.
                         </span>

@@ -70,7 +70,7 @@ export default class ConsultationService {
         page = 1,
         filters: {
             date?: string;
-            userId?: string;
+            userId?: number;
             doctorId?: string;
             doctorUserId?: number;
             payment_status?: string;
@@ -101,7 +101,7 @@ export default class ConsultationService {
     // Создание особой консультации (временной)
     static async createSpecificConsultation(data: ConsultationData) {
         return $api.post(`/otherProblem/create`, 
-            {textOtherProblem: data.otherProblem, time: data.time, date: data.date, userId: data.userId}
+            {textOtherProblem: data.otherProblemText, time: data.time, date: data.date, userId: data.userId}
         )
     }
 

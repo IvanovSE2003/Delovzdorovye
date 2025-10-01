@@ -1,13 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import './UpcomingConsultations.scss';
 import ConsultationService from '../../../services/ConsultationService';
-import { getDateLabel } from '../../../hooks/DateHooks';
 import type { Role } from '../../../models/Auth';
 import Pagination from '../../../components/UI/Pagination/Pagination';
 import { processError } from '../../../helpers/processError';
 import ShowError from '../../../components/UI/ShowError/ShowError';
 import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
-import type { ConsultationData } from '../../../components/UI/Modals/EditModal/EditModal';
+import type { Consultation } from '../../../models/consultations/Consultation';
+import type { ConsultationData } from '../../../models/consultations/ConsultationData';
+import { getDateLabel } from '../../../helpers/formatDatePhone';
 
 // Замените прямые импорты на ленивые
 const ShiftModal = lazy(() => import('../../../components/UI/Modals/ShiftModal/ShiftModal'));
@@ -15,39 +16,15 @@ const CancelModal = lazy(() => import('../../../components/UI/Modals/CancelModal
 const RepeatModal = lazy(() => import('../../../components/UI/Modals/RepeatModal/RepeatModal'));
 const EditModal = lazy(() => import('../../../components/UI/Modals/EditModal/EditModal'));
 
-export interface Consultation {
-    id: number;
-    durationTime: string;
-    date: string;
-    DoctorId: number;
-    DoctorName: string;
-    DoctorSurname: string;
-    DoctorPatronymic?: string;
-    DoctorUserId: number;
-    PatientUserId: number;
-    PatientName: string;
-    PatientSurname: string;
-    PatientPatronymic?: string;
-    PatientPhone: string;
-    PatientScore: number;
-    PatientComment: string;
-    Problems: string[];
-    score?: number;
-    comment?: string;
-    reason_cancel?: string;
-    recommendations?: string;
-    other_problem?: string;
-}
-
 export interface UserConsultationsProps {
-    id?: string;
+    id?: number;
     mode?: Role;
     refreshTrigger?: number;
 }
 
 const PAGE_SIZE = 4;
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "ADMIN", refreshTrigger = 0 }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN", refreshTrigger = 0 }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
@@ -72,10 +49,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             if (mode === "DOCTOR")
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
-                    doctorId: id
+                    doctorUserId: id
                 });
             else if (mode === "PATIENT")
-                response = await ConsultationService.getAllConsultations(1, page, {
+                response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
                     userId: id
                 });
@@ -137,7 +114,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
             await ConsultationService.cancelAppointment(reason, id);
             setConsultations(prev => prev.filter(c => c.id !== id));
         } catch (e) {
-            processError(e, "Ошибка при отмене консультации", setError);
+            processError(e, "", setError);
         } finally {
             setModalCancel(false);
             await fetchConsultations();
@@ -181,7 +158,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
 
     if (loading) return <LoaderUsefulInfo />
 
-    if (consultations.length === 0) return (
+    if (consultations && consultations.length === 0) return (
         <div className="consultation-card">
             <div
                 style={{ textAlign: 'center' }}
@@ -230,35 +207,33 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id = "", mode = "
                                 <div className="consultation-card__specialist">
                                     Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
                                         ? <span> Анонимный пользователь </span>
-                                        : <span> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </span>
+                                        : <a href={`/profile/${consultation.PatientUserId}`}> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </a>
                                     }
                                 </div>
                             ) : (
                                 <div className="consultation-card__specialist">
                                     {"Специалист: "}
-                                    <a target='_blank' href={`/profile/${consultation.DoctorUserId}`}>
+                                    <a href={`/profile/${consultation.DoctorUserId}`}>
                                         {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
                                     </a>
                                 </div>
                             )}
 
-                            {mode !== "PATIENT" ? (
-                                <>
-                                    <div className="consultation-card__symptoms">
-                                        {'Симптомы: '}
-                                        {consultation.Problems.map((p, i) => (
-                                            <span key={i}>
-                                                {p.toLocaleLowerCase()}
-                                                {i < consultation.Problems.length - 1 ? ', ' : ''}
-                                            </span>
-                                        ))}
-                                    </div>
+                            <div className="consultation-card__symptoms">
+                                {'Симптомы: '}
+                                {consultation.Problems.map((p, i) => (
+                                    <span key={i}>
+                                        {p.toLocaleLowerCase()}
+                                        {i < consultation.Problems.length - 1 ? ', ' : ''}
+                                    </span>
+                                ))}
+                            </div>
 
-                                    <div className="consultation-card__details">
-                                        Подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
-                                    </div>
-                                </>
-                            ) : (
+                            <div className="consultation-card__details">
+                                Подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
+                            </div>
+
+                            {mode === "PATIENT" && (
                                 <div className="consultation-card__symptoms">
                                     Условия:<span> Бесплатные отмена и перенос более чем за 12 часов</span>
                                 </div>

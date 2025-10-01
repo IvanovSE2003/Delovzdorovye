@@ -10,7 +10,7 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
                 model: models.UserModel,
                 attributes: ['name', 'surname', 'patronymic']
             }],
-            where: filters 
+            where: filters
         };
 
         if (page && limit) {
@@ -68,6 +68,11 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
         if (deletedCount === 0) {
             throw new Error('Фиксация изменения профессиональных данных не найдена или не была удалена');
         }
+    }
+
+    async getCount(): Promise<number> {
+        const count = await models.ProfDataModel.count();
+        return count;
     }
 
     private mapToDomainProfData(profModel: ProfDataModelInterface): ProfData {

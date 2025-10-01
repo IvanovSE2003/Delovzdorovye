@@ -1,0 +1,43 @@
+@use '../../../../assets/styles/variables.scss' as *;
+
+// Страница рекомендаций
+.recomendations {
+    background-color: #E1F7EB;
+    padding: 2rem;
+    border-radius: 10px;
+
+    &__title {
+        font-size: 1.8rem;
+        font-weight: bolder;
+        margin-bottom: 2rem;
+    }
+
+    &__blocks {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+
+        .block {
+            border: 1px solid black;
+            background-color: white;
+            width: 70%;
+            border-radius: 10px;
+            color: $text-color;
+            padding: 1rem 2rem;
+
+            h3 {
+                font-size: 1.2rem;
+                font-weight: bolder;
+                text-align: left;
+                color: black;
+                margin-bottom: 10px;
+            }
+
+            &__info {
+                display: flex;
+                justify-content: space-between;
+            }
+        }
+    }
+}

@@ -11,7 +11,7 @@ interface RigthPanelProps {
 const RightPanel: React.FC<RigthPanelProps> = ({ role, countMessage }) => {
 
     const isAccountPath = () => location.pathname === RouteNames.PERSONAL;
-    const isBellPath = () => location.pathname === RouteNames.BELL;
+    const isBellPath = () => location.pathname === RouteNames.NOTIFICATIONS;
 
     return (
         <aside className='rightPanel'>
@@ -35,7 +35,7 @@ const RightPanel: React.FC<RigthPanelProps> = ({ role, countMessage }) => {
                 </svg>
             </Link>
             {role !== "ADMIN" && (
-                <Link to={RouteNames.BELL} className={`svg-link ${isBellPath() ? 'active' : ''}`}>
+                <Link to={RouteNames.NOTIFICATIONS} className={`svg-link ${isBellPath() ? 'active' : ''}`}>
                     <svg
                         className='icon'
                         version="1.1"
