@@ -3,13 +3,13 @@ import Select, { type MultiValue } from "react-select";
 import RecordForm from "../RecordModal/RecordForm";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import "./EditModal.scss";
-import type { Consultation } from "../../../../features/account/UpcomingConsultations/UpcomingConsultations";
 import { observer } from "mobx-react-lite";
 import { GetFormatDate } from "../../../../helpers/formatDatePhone";
 import LoaderUsefulInfo from "../../LoaderUsefulInfo/LoaderUsefulInfo";
 import ShowError from "../../ShowError/ShowError";
 import { processError } from "../../../../helpers/processError";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
+import type { Consultation } from "../../../../models/consultations/Consultation";
 
 interface ConsultationModalProps {
     isOpen: boolean;
@@ -29,7 +29,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
     const [selectedSpecialist, setSelectedSpecialist] = useState<OptionsResponse | undefined>(undefined);
     const [selectedDate, setSelectedDate] = useState<string>(consultationData.date);
     const [selectedTime, setSelectedTime] = useState<string>(consultationData.durationTime);
-    const [otherProblem, setOtherProblem] = useState<string>(consultationData.other_problem ?? "");
+    const [otherProblem, setOtherProblem] = useState<string>(consultationData.descriptionProblem ?? "");
     const [editDateTime, setEditDateTime] = useState<boolean>(false);
 
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
@@ -69,7 +69,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
                 // Выставляем текущие проблемы из consultationData
                 const matchedProblems = probs.filter((p) =>
                     consultationData.Problems?.some(
-                        (problemName) => p.label.toLowerCase() === problemName.toLowerCase()
+                        (problemName: any) => p.label.toLowerCase() === problemName.toLowerCase()
                     )
                 );
                 setSelectedProblems(matchedProblems);
@@ -87,7 +87,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
                     }
                 }
 
-                setOtherProblem(consultationData.other_problem ?? "");
+                setOtherProblem(consultationData.descriptionProblem ?? "");
                 setSelectedDate(consultationData.date);
                 setSelectedTime(consultationData.durationTime);
                 setInitialDataLoaded(true);
@@ -200,7 +200,6 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
             descriptionProblem: otherProblem,
             problems: selectedProblems.map((p) => p.value),
             doctorId: doctorId,
-            otherProblemText: otherProblem,
             hasOtherProblem: selectedProblems.some(p => p.value === 9),
         });
 

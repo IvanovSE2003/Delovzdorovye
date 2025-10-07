@@ -14,11 +14,11 @@ import type { Consultation } from '../../../models/consultations/Consultation';
 import type { ConsultationData } from '../../../models/consultations/ConsultationData';
 
 interface ArchiveConsultationsProps {
-    id?: number;
+    userId?: number;
     mode?: Role;
 }
 
-const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = "ADMIN" }) => {
+const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mode = "ADMIN" }) => {
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
     const [modalRepeat, setModalRepeat] = useState(false);
@@ -33,8 +33,8 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ id, mode = 
         try {
             const filters: any = { consultation_status: "ARCHIVE" };
 
-            if (mode === "DOCTOR") filters.doctorUserId = id;
-            else filters.userId = id;
+            if (mode === "DOCTOR") filters.doctorUserId = userId;
+            else filters.userId = userId;
 
             const response = await ConsultationService.getAllConsultations(limit, pageNumber, filters);
             setConsultations(response.data.consultations || []);

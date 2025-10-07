@@ -61,6 +61,7 @@ export default class UserController {
                 name: result.user.name,
                 surname: result.user.surname,
                 patronymic: result.user.patronymic,
+                role: result.user.role,
                 gender: result.user.gender,
                 dateBirth: result.user.dateBirth,
                 phone: result.user.phone,
@@ -72,12 +73,17 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         const { creditial, pinCode, twoFactorCode, twoFactorMethod } = req.body;
-        const result: dataResult = await this.authService.login(
-            creditial,
-            pinCode,
-            twoFactorMethod,
-            twoFactorCode
-        );
+
+        const user = await this.userRepository.findByEmailOrPhone(creditial.toLowerCase()) as User;
+        if (!user) {
+            return next(ApiError.badRequest('Пользователь не найден'));
+        }
+
+        if (user.isBlocked) {
+            return next(ApiError.badRequest('Пользователь заблокирован'));
+        }
+
+        const result: dataResult = await this.authService.login(user, pinCode, twoFactorMethod, twoFactorCode);
 
         return res.status(200).json({
             success: true,
@@ -95,6 +101,7 @@ export default class UserController {
         return res.status(200).json({
             success: true,
             accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
             user: result.user
         });
     }
@@ -314,7 +321,6 @@ export default class UserController {
             await this.basicDataRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
 
             for (const change of changes) {
-                console.log(change.field_name)
                 switch (change.field_name) {
                     case "Имя":
                         user.pending_name = change.new_value;
@@ -423,15 +429,15 @@ export default class UserController {
                 '',
                 false,
                 'Изображение',
-                user.img,   
-                fileName,   
+                user.img,
+                fileName,
                 user.id
             );
             await this.basicDataRepository.create(basicData);
 
             user.sentChanges = true;
             user.hasPendingChanges = true;
-            user.pending_img = fileName; 
+            user.pending_img = fileName;
 
             updatedUser = await this.userRepository.save(user);
         } else {
@@ -459,11 +465,18 @@ export default class UserController {
         const { userId } = req.body;
 
         const user = await this.userRepository.findById(Number(userId));
-        if (!user) return next(ApiError.badRequest('Пользователь не найден'));
-        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') await this.fileService.deleteFile(user.img);
+        if (!user) {
+            return next(ApiError.badRequest('Пользователь не найден'));
+        }
+
+        if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
+            await this.fileService.deleteFile(user.img);
+        }
 
         const defaultAvatar = user.gender === 'Женщина' ? 'girl.png' : 'man.png';
-        const updatedUser = await this.userRepository.save(user.updateAvatar(defaultAvatar));
+        user.img = defaultAvatar;
+        user.pending_img = defaultAvatar;
+        const updatedUser = await this.userRepository.save(user);
 
         return res.status(200).json({
             img: updatedUser.img,

@@ -6,7 +6,7 @@ import dataResult from "../../../infrastructure/web/types/dataResultAuth.js";
 export default interface AuthService {
     register(data: regData): Promise<{ user: User; accessToken: string; refreshToken: string }>;
 
-    login(credential: string, pinCode: number, twoFactorMethod?: string, twoFactorCode?: string): Promise<dataResult>;
+    login(user: User, pinCode: number, twoFactorMethod?: string, twoFactorCode?: string): Promise<dataResult>;
 
     logout(refreshToken: string): Promise<void>;
     refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;

@@ -5,7 +5,8 @@ export default class Consultation {
         public id: number,
         public consultation_status: "UPCOMING" | "ARCHIVE",
         public payment_status: "PAID" | "PAYMENT" | "NOTPAID",
-        public other_problem: string | null,
+        public problem_description: string | null,
+        public has_other_problem: boolean,
         public recommendations: string | null,
         public duration: number,
         public score: number | null,
@@ -64,7 +65,7 @@ export default class Consultation {
     }
 
     hasCustomProblem(): boolean {
-        return !!this.other_problem;
+        return !!this.problem_description;
     }
 
     setReason(reason: string) {

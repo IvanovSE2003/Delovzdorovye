@@ -17,7 +17,7 @@ export interface Consultation {
     Problems: string[];
     score?: number;
     comment?: string;
-    reason_cancel?: string;
+    reasonСancel?: string;
     recommendations?: string;
-    other_problem?: string;
+    descriptionProblem?: string;
 }

@@ -16,6 +16,12 @@ interface getUsefulBlock {
     text: string;
 }
 
+export interface ICounts {
+    countChange: number;
+    countConsult: number;
+    countOtherProblem: number;
+}
+
 
 export default class AdminService {
 
@@ -59,7 +65,7 @@ export default class AdminService {
         return $api.post<getUsefulBlock[]>('/admin/', {limit, page});
     }
 
-    static async getChangesCount(){
-        return $api.get('/admin/change/count');
+    static async getCountAdminData(): Promise<AxiosResponse<ICounts>> {
+        return $api.get<ICounts>('/admin/count/sidebar');
     }
 }

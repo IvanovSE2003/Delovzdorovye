@@ -7,7 +7,6 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import type { AuthResponse, LoginResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
-import type { PatientData } from "../models/PatientData";
 import AdminService from "../services/AdminService";
 import { menuConfig } from "../routes/index";
 import type { MenuItem } from "../models/MenuItems";
@@ -139,8 +138,8 @@ export default class Store {
         });
     }
 
-    // Второй этап регистрации (регистрация в системе)
-    async completeRegistration(tempToken: string, TwoFactorCode: string): Promise<TypeResponse> {
+    // Второй этап регистрации (регистрация в системе) (ТИП СДЕЛАТЬ)
+    async completeRegistration(tempToken: string, TwoFactorCode: string) {
         return this.withLoading(async () => {
             if(tempToken==="") return {success: false, message: "Неизвестная ошибка при регистрации!"};
             try {
@@ -151,7 +150,7 @@ export default class Store {
                 this.setAuth(true);
                 this.setMenuItems(response.data.user.role);
                 this.setUser(response.data.user);
-                return {success: true, message: "Регистрация прошла успешно!"}
+                return {success: true, message: "Регистрация прошла успешно!", role: response.data.user.role}
             } catch (e) {
                 const error = e as AxiosError<{ message: string }>;
                 const errorMessage = error.response?.data.message || "Ошибка при регистрации!";
@@ -214,14 +213,13 @@ export default class Store {
     }
 
     // Получение данные пациента
-    async getPatientData(id: number): Promise<PatientData> {
+    async getPatientData(id: number) {
         try {
             const response = await UserService.fetchPatientData(id);
             return response.data;
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             this.setError(error.response?.data?.message || "Ошибка при получении данных пациента!");
-            return {} as PatientData;
         }
     }
 

@@ -4,7 +4,7 @@ import "./FormAuth.scss";
 import Login from "../Login/Login";
 import Register from "../Register/Register";
 import ShowError from "../../../components/UI/ShowError/ShowError";
-import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
+import LoginSkeleton from "../../../components/UI/Skeletons/LoginSkeleton/LoginSkeleton";
 
 export type AuthState = "login" | "register" | "recover";
 
@@ -24,7 +24,7 @@ const FormAuth: React.FC = () => {
             <ShowError msg={error} className="auth__error"/>
             <ShowError msg={message} mode="MESSAGE" className="auth__error"/>
 
-            <Suspense fallback={<LoaderUsefulInfo />}>
+            <Suspense fallback={<LoginSkeleton />}>
                 <AnimatePresence mode="wait">
                     {state === "login" && (
                         <Login setState={setState} setError={setError} setMessage={setMessage} />

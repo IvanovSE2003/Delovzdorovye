@@ -21,6 +21,6 @@ router.get('/:id', authMiddlewareInstance, catchAsync(adminController.getOneBasi
 
 router.get('/consultation/all',authMiddlewareInstance, catchAsync(adminController.getConsultaions.bind(adminController)));
 
-router.get('/change/count',authMiddlewareInstance,  catchAsync(adminController.countChanges.bind(adminController)));
+router.get('/count/sidebar',authMiddlewareInstance,  catchAsync(adminController.countAdminData.bind(adminController)));
 
 export default router;

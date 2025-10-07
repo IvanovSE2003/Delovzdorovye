@@ -11,10 +11,7 @@
   &__content {
     flex: 1;
     box-sizing: border-box;
-    padding: 20px 50px;
-    margin-top: 95px;
-    margin-left: 410px;
-    margin-right: 120px;
+    margin-top: 120px;
     width: 100%;
     max-width: 100%;
     height: max-content;
@@ -35,14 +32,6 @@
     }
   }
 }
-
-// Страница профиля пациента
-// .patient-page {
-//   display: grid;
-//   grid-template-columns: 0.8fr 2.2fr;
-//   margin-right: 110px;
-// }
-
 
 // Страницы профиля администратора
 .admin-page {

@@ -91,7 +91,7 @@ const MyProfile: React.FC = () => {
 
             {store.user.role === "DOCTOR" && (
                 <DoctorInfo
-                    type="READ"
+                    type="WRITE"
                     userId={store.user.id}
                 />
             )}

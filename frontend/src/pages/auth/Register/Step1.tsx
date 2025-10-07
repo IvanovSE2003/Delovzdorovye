@@ -116,11 +116,11 @@ const Step1Form: React.FC<Step1FormProps> = ({
                                 name="gender"
                                 value="Мужчина"
                                 checked={userDetails.gender === "Мужчина"}
-                                onChange={(e) =>
-                                    handleUserDetailsChange("gender", e.target.value)
+                                onChange={() =>
+                                    handleUserDetailsChange("gender", "Мужчина")
                                 }
                             />
-                            <label htmlFor="male">Мужчина</label>
+                            <label htmlFor="male">Я мужчина</label>
                         </div>
 
                         <div className="auth__radio-btn">
@@ -130,11 +130,11 @@ const Step1Form: React.FC<Step1FormProps> = ({
                                 name="gender"
                                 value="Женщина"
                                 checked={userDetails.gender === "Женщина"}
-                                onChange={(e) =>
-                                    handleUserDetailsChange("gender", e.target.value)
+                                onChange={() =>
+                                    handleUserDetailsChange("gender", "Женщина")
                                 }
                             />
-                            <label htmlFor="female">Женщина</label>
+                            <label htmlFor="female">Я женщина</label>
                         </div>
                     </div>
 

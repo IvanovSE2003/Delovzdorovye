@@ -11,7 +11,7 @@ import ProfDataRepository from '../../../../core/domain/repositories/profData.re
 import NotificationRepository from '../../../../core/domain/repositories/notifaction.repository.js';
 import Notification from '../../../../core/domain/entities/notification.entity.js';
 
-export default class BatchController {
+export default class AdminController {
     constructor(
         private readonly basicDataRepository: BasicDataRepository,
         private readonly profDataRepository: ProfDataRepository,
@@ -347,27 +347,33 @@ export default class BatchController {
     async getUserConsultation(req: Request, res: Response, next: NextFunction) {
         const { page, limit } = req.query;
 
-        const pageUser = page ? page : 1;
-        const limitUser = limit ? limit : 1;
+        const pageUser = page ? Number(page) : 1;
+        const limitUser = limit ? Number(limit) : 1;
 
-        const result = await this.userRepository.findAll(Number(pageUser), Number(limitUser), { role: "PATIENT" });
+        const result = await this.userRepository.findAll(pageUser, limitUser, { role: "PATIENT" });
         if (!result || !result.users || result.users.length === 0) return next(ApiError.badRequest('Пользователи не найдены'));
 
         const usersWithFlag = await this.userRepository.findOtherProblem(result.users);
 
-        return res.status(200).json({
-            users: result.users.map(user => {
+        // Используем Promise.all для асинхронных операций в map
+        const usersWithDetails = await Promise.all(
+            result.users.map(async user => {
                 const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);
-
+                const countOtherProblem = await this.consultationRepository.getCountOtherProblemByUser(user.id);
                 return {
                     id: user.id,
                     name: user.name,
                     surname: user.surname,
                     patronymic: user.patronymic,
                     phone: user.phone,
-                    hasOtherProblem: hasOtherProblem
+                    hasOtherProblem: hasOtherProblem,
+                    countOtherProblem: countOtherProblem
                 };
-            }),
+            })
+        );
+
+        return res.status(200).json({
+            users: usersWithDetails,
             totalCount: result.totalCount,
             totalPages: result.totalPages
         });
@@ -385,13 +391,19 @@ export default class BatchController {
         return res.status(200).json(result);
     }
 
-    async countChanges(req: Request, res: Response, next: NextFunction) {
-        const [basicDataCount, profDataCount] = await Promise.all([
+    async countAdminData(req: Request, res: Response, next: NextFunction) {
+        const [basicDataCount, profDataCount, consultCount, otherPorblemCount] = await Promise.all([
             this.basicDataRepository.getCount(),
-            this.profDataRepository.getCount()
+            this.profDataRepository.getCount(),
+            this.consultationRepository.getCount(),
+            this.consultationRepository.getCountOtherProblem()
         ]);
-
         const totalChanges = basicDataCount + profDataCount;
-        return res.status(200).json(totalChanges);
+
+        return res.status(200).json({
+            countChange: totalChanges,
+            countConsult: consultCount,
+            countOtherProblem: otherPorblemCount
+        });
     }
 }

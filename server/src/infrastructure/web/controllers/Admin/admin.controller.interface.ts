@@ -1,4 +1,4 @@
-import BatchController from "./admin.controller.js";
+import AdminController from "./admin.controller.js";
 import BasicDataRepositoryImpl from '../../../../core/application/repositories/basicData.repository.impl.js'
 import DoctorRepositoryImpl from "../../../../core/application/repositories/doctor.repository.impl.js";
 import UserRepositoryImpl from "../../../../core/application/repositories/user.repository.impl.js";
@@ -13,7 +13,7 @@ const UserRepository = new UserRepositoryImpl();
 const consultationRepository = new ConsultationRepositoryImpl();
 const notificationRepositoryImpl = new NotificationRepositoryImpl();
 
-const adminController = new BatchController(
+const adminController = new AdminController(
     BasicDataRepository,
     ProfDataRepository,
     DoctorRepository,

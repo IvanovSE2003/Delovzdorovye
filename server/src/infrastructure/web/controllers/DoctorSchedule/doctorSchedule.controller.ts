@@ -238,14 +238,61 @@ export default class DoctorScheduleController {
                 return next(ApiError.badRequest('Пользователь не найден'));
             }
 
+            const doctor = await this.doctorRepository.findByUserId(user.id);
+            if (!doctor) {
+                return next(ApiError.badRequest('Специалист не найден'));
+            }
+
             if (!startDate || !endDate) {
                 return next(ApiError.badRequest('Неверный формат даты'));
             }
 
-            const timeSlots = await this.timeSlotRepository.findTimeSlotsBetweenDate(startDate, endDate);
+            const timeSlots = await this.timeSlotRepository.findTimeSlotsBetweenDate(startDate, endDate, doctor.id);
             const results = timeSlots.map(timeSlot => adjustTimeSlotToTimeZone(timeSlot, user.timeZone));
 
             return res.status(200).json(results);
+        } catch (e: any) {
+            return next(ApiError.internal(e.message));
+        }
+    }
+
+    async findSheduleSpecialist(req: Request, res: Response, next: NextFunction) {
+        try {
+            const doctors = await this.doctorRepository.findAll();
+            if (!doctors || doctors.doctors.length === 0) {
+                return next(ApiError.badRequest('Специалисты не найдены'));
+            }
+
+            const doctorIds = doctors.doctors.map(doctor => doctor.id);
+            const allSlotDoctor = await this.timeSlotRepository.findTimeSlotsForDoctor(doctorIds);
+
+            const uniqueDateTimeSet = new Set();
+            const result = [];
+
+            for (const slot of allSlotDoctor) {
+                const dateTimeKey = `${slot.date}_${slot.time}`;
+
+                if (!uniqueDateTimeSet.has(dateTimeKey)) {
+                    uniqueDateTimeSet.add(dateTimeKey);
+                    result.push({
+                        date: slot.date,
+                        dayWeek: slot.dayWeek,
+                        doctorId: slot.doctorId,
+                        id: slot.id,
+                        status: slot.status,
+                        time: slot.time
+                    });
+                }
+            }
+
+            result.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return a.date.localeCompare(b.date);
+                }
+                return a.time.localeCompare(b.time);
+            });
+
+            return res.json(result);
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }

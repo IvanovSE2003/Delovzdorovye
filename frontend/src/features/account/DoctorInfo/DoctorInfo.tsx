@@ -23,6 +23,16 @@ interface SpecializationForSend {
     comment: string;
 }
 
+interface EditSpecializationData {
+    id: number;
+    specializationId: number;
+    diploma: File | null;
+    license: File | null;
+    comment: string;
+    currentDiploma?: string;
+    currentLicense?: string;
+}
+
 const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => {
     const { store } = useContext(Context);
     const [doctorInfo, setDoctorInfo] = useState<Specialization[]>([] as Specialization[]);
@@ -35,6 +45,8 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
     const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
     const [diploma, setDiploma] = useState<File | null>(null)
     const [license, setLicense] = useState<File | null>(null)
+
+    const [editingSpecialization, setEditingSpecialization] = useState<EditSpecializationData | null>(null);
 
     const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
     const [message, setMessage] = useState<{ id: number, message: string }>({ id: 0, message: "" });
@@ -98,6 +110,33 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
         }
     }
 
+    // Редактирование блока специализации
+    // const updateSpecialization = async (info: EditSpecializationData) => {
+    //     try {
+    //         const formData = new FormData();
+    //         formData.append('type', 'UPDATE');
+    //         formData.append('specializationId', info.id.toString());
+    //         formData.append('comment', info.comment || '');
+
+    //         if (info.diploma) {
+    //             formData.append('diploma', info.diploma);
+    //         }
+    //         if (info.license) {
+    //             formData.append('license', info.license);
+    //         }
+
+    //         const response = await DoctorService.updateProfInfo(store.user.id, formData);
+    //         response.data.success
+    //             ? setMessage({ id: Date.now(), message: response.data.message })
+    //             : setError({ id: Date.now(), message: response.data.message });
+    //     } catch (e) {
+    //         processError(e, "Ошибка при обновлении блока: ");
+    //     } finally {
+    //         fetchProfData();
+    //         setEditingSpecialization(null);
+    //     }
+    // }
+
     // Обработка нажатия на добавление специализации
     const handleAdd = async () => {
         if (!selectedSpecializationId || !diploma || !license) {
@@ -112,6 +151,35 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
             comment: comment
         }
         addSpecialization(info);
+    }
+
+    // Обработка нажатия на сохранение изменений
+    const handleUpdate = async () => {
+        if (!editingSpecialization) return;
+
+        // const info: EditSpecializationData = {
+        //     ...editingSpecialization,
+        //     comment: editingSpecialization.comment || ''
+        // }
+        // updateSpecialization(info);
+    }
+
+    // Начало редактирования специализации
+    const startEditing = (info: Specialization) => {
+        setEditingSpecialization({
+            id: info.id,
+            specializationId: info.specializationId,
+            diploma: null,
+            license: null,
+            comment: info.comment || '',
+            // currentDiploma: info.diploma,
+            // currentLicense: info.license
+        });
+    }
+
+    // Отмена редактирования
+    const cancelEditing = () => {
+        setEditingSpecialization(null);
     }
 
     // Получение специализация для селекта
@@ -206,45 +274,127 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
 
             {doctorInfo.length > 0 ? !addBlock && doctorInfo.map((info: Specialization) => (
                 <div key={info.id} className="info-section">
-                    <div className="info-section__header">
-                        <div className="info-section__title">{info.specialization}</div>
-                    </div>
+                    {editingSpecialization?.id === info.id ? (
+                        // Режим редактирования
+                        <div className="doctor-info__edit-block">
+                            <h3 className="doctor-info__edit-title">Редактирование специализации</h3>
 
-                    <div className="info-item">
-                        <div className="info-item__label">Диплом: </div>
-                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.diploma}`}>
-                            Посмотреть документ
-                        </Link>
-                    </div>
+                            <div className="info-item">
+                                <div className="info-item__label">Специализация: </div>
+                                <div className="info-item__value">{info.specialization}</div>
+                            </div>
 
-                    <div className="info-item">
-                        <div className="info-item__label">Лицензия: </div>
-                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.license}`}>
-                            Посмотреть документ
-                        </Link>
-                    </div>
+                            <div className="doctor-info__file-edit">
+                                <div className="doctor-info__current-files">
+                                    <div className="info-item">
+                                        <div className="info-item__label">Текущий диплом: </div>
+                                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.diploma}`}>
+                                            Посмотреть документ
+                                        </Link>
+                                    </div>
+                                    <div className="info-item">
+                                        <div className="info-item__label">Текущая лицензия: </div>
+                                        <Link className="info-item__value" target="_blank" to={`${URL}/${info.license}`}>
+                                            Посмотреть документ
+                                        </Link>
+                                    </div>
+                                </div>
 
-                    {info.comment && (
-                        <div className="info-item">
-                            <div className="info-item__label">Комментарий: </div>
-                            <div className="info-item__value">{info.comment}</div>
+                                <div className="doctor-info__new-files">
+                                    <MyInputFile
+                                        id={`edit-diploma-${info.id}`}
+                                        label="Новый диплом (оставьте пустым, чтобы не менять)"
+                                        // value={editingSpecialization.diploma || ""}
+                                        className="doctor-info__input"
+                                        onChange={(file) => setEditingSpecialization(prev => prev ? { ...prev, diploma: file } : null)}
+                                        accept=".pdf"
+                                    />
+
+                                    <MyInputFile
+                                        id={`edit-license-${info.id}`}
+                                        label="Новая лицензия (оставьте пустым, чтобы не менять)"
+                                        className="doctor-info__input"
+                                        // value={editingSpecialization.license || ""}
+                                        onChange={(file) => setEditingSpecialization(prev => prev ? { ...prev, license: file } : null)}
+                                        accept=".pdf"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="doctor-info__edit-comment">
+                                <div className="doctor-info__edit-comment-title">
+                                    Комментарий к изменениям:
+                                </div>
+                                <textarea
+                                    id={`edit-comment-${info.id}`}
+                                    // value={editingSpecialization.comment}
+                                    className="doctor-info__textarea"
+                                    onChange={(e) => setEditingSpecialization(prev => prev ? { ...prev, comment: e.target.value } : null)}
+                                    placeholder="Опишите причину изменений"
+                                    rows={4}
+                                />
+                            </div>
+
+                            <div className="doctor-info__buttons">
+                                <button
+                                    className="my-button doctor-info__button"
+                                    onClick={handleUpdate}
+                                >
+                                    Сохранить
+                                </button>
+                                <button
+                                    className="my-button doctor-info__button doctor-info__button--cancel"
+                                    onClick={cancelEditing}
+                                >
+                                    Отменить
+                                </button>
+                            </div>
                         </div>
-                    )}
+                    ) : (
+                        // Режим просмотра
+                        <>
+                            <div className="info-section__header">
+                                <div className="info-section__title">{info.specialization}</div>
+                            </div>
 
-                    {edit && (
-                        <div className="actions">
-                            <button
-                                className="neg-button doctor-info__button"
-                                onClick={() => setModal({ state: true, data: info })}
-                            >
-                                Удалить
-                            </button>
-                            <button
-                                className="my-button doctor-info__button"
-                            >
-                                Редактировать
-                            </button>
-                        </div>
+                            <div className="info-item">
+                                <div className="info-item__label">Диплом: </div>
+                                <Link className="info-item__value" target="_blank" to={`${URL}/${info.diploma}`}>
+                                    Посмотреть документ
+                                </Link>
+                            </div>
+
+                            <div className="info-item">
+                                <div className="info-item__label">Лицензия: </div>
+                                <Link className="info-item__value" target="_blank" to={`${URL}/${info.license}`}>
+                                    Посмотреть документ
+                                </Link>
+                            </div>
+
+                            {info.comment && (
+                                <div className="info-item">
+                                    <div className="info-item__label">Комментарий: </div>
+                                    <div className="info-item__value">{info.comment}</div>
+                                </div>
+                            )}
+
+                            {edit && (
+                                <div className="doctor-info__buttons">
+                                    <button
+                                        className="neg-button doctor-info__button"
+                                        onClick={() => setModal({ state: true, data: info })}
+                                    >
+                                        Удалить
+                                    </button>
+                                    <button
+                                        className="my-button doctor-info__button"
+                                        onClick={() => startEditing(info)}
+                                    >
+                                        Редактировать
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             )) : (
@@ -254,7 +404,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                 </div>
             )}
 
-            {edit && (
+            {edit && !editingSpecialization && (
                 <button
                     className="my-button doctor-info__button"
                     onClick={() => setEdit(false)}
@@ -263,7 +413,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                 </button>
             )}
 
-            {!edit && !addBlock && type == "WRITE" && (
+            {!edit && !addBlock && !editingSpecialization && type == "WRITE" && (
                 <div className="doctor-info__buttons">
                     <button
                         className="my-button"

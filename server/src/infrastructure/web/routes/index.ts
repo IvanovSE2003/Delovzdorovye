@@ -10,7 +10,6 @@ import specializationRouter from './specializations.router.js'
 import consultationRouter from './consultation.routes.js'
 import contentRouter from './content.router.js'
 import notificationRouter from './notification.route.js'
-import otherProblemRouter from './otherProblem.router.js'
 // import conferenceRouter from './videoConference.routes.js'
 
 router.use('/user', userRouter);
@@ -22,7 +21,6 @@ router.use('/specialization', specializationRouter);
 router.use('/consultation', consultationRouter);
 router.use('/content', contentRouter);
 router.use('/notification', notificationRouter);
-router.use('/otherProblem', otherProblemRouter);
 // router.use('/conference', conferenceRouter);
 
 

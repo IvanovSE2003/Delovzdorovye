@@ -4,6 +4,7 @@ import RecordForm from "./RecordForm";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import './RecordModal.scss'
 import { observer } from "mobx-react-lite";
+import ShowError from "../../ShowError/ShowError";
 
 interface AdminConsultationModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
   const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
   const [specialists, setSpecialists] = useState<OptionsResponse[]>([] as OptionsResponse[]);
   const [doctorId, setDoctorId] = useState<number | undefined>(undefined);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<{id: number, message: string}>({id: 0, message: ""});
   const store = new ConsultationsStore();
 
   const [selectedProblems, setselectedProblems] = useState<MultiValue<OptionsResponse>>([]);
@@ -68,14 +69,14 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
   // Записать человека на консультацию
   const handleSubmit = () => {
     if (!selectedDate || !selectedTime || !doctorId) {
-      setError("Дата или время не выбраны");
+      setError({id: Date.now(), message: "Дата или время не выбраны"});
       return;
     }
 
     onRecord({
       time: selectedTime,
       date: selectedDate,
-      otherProblemText: otherProblem,
+      descriptionProblem: otherProblem,
       problems: selectedProblems.map(p => p.value),
       doctorId: doctorId,
     });
@@ -86,7 +87,7 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
     setSelectedDate(null);
     setDoctorId(undefined);
     setOtherProblem("");
-    setError("");
+    setError({id: 0, message: ""});
     onClose();
   };
 
@@ -144,7 +145,7 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
           />
         </div>
 
-        {error && (<div className="consultation-modal__error">{error}</div>)}
+        <ShowError msg={error} className="consultation-modal__error"/>
 
         <button
           className="consultation-modal__submit"

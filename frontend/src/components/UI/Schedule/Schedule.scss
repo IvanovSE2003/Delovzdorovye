@@ -1,23 +1,42 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .schedule-grid {
+    $open-color: white;
+    $close-color: #E7E6E6;
+    $booked-color: #C6EFCE;
+    $booked-color-border: #006100;
+    $past-color: #DDEBF7;
+    $past-color-border: #7FA1D8;
+
     overflow-x: auto;
-    background-color: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rbga(0, 0, 0, 0.2);
+    background-color: white;
 
     &__table {
+        margin-top: 30px;
         border-collapse: collapse;
         width: 100%;
         table-layout: fixed;
         font-family: Arial, sans-serif;
-        font-size: 16px;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: $gray-color;
+        border-bottom: 1px solid $gray-color;
+        padding: 0 30px;
+    }
+
+    &__title {
+        font-size: 2.3rem;
     }
 
     &__head {
-        background: $primary-color;
-        color: white;
+        color: $gray-color;
         position: sticky;
         top: 0;
         z-index: 2;
@@ -25,17 +44,19 @@
 
     &__day {
         padding: 6px 8px;
-        border: 1px solid $gray-color;
-        text-align: center;
-        font-weight: 600;
+        text-align: left;
+        font-weight: bold;
         white-space: nowrap;
+        font-size: 1rem;
 
         &--today {
-            font-weight: bolder;
+            color: $primary-color;
+            border-bottom: solid 2px $primary-color;
         }
 
         &.highlight {
             background-color: #ffcc00 !important;
+            border-color: #e65100;
             color: #000;
         }
     }
@@ -44,9 +65,8 @@
         width: 60px;
         text-align: right;
         padding-right: 8px;
-        font-size: 1.2rem;
+        font-size: 1rem;
         color: $gray-color;
-        background-color: white;
 
         &.highlight {
             background-color: #ffcc00 !important;
@@ -54,27 +74,28 @@
         }
     }
 
-    &__row {
-        height: 40px;
-    }
-
     &__week-switcher {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 12px;
         gap: 10px;
+        border: 1px solid $gray-color;
+        padding: 10px 15px;
+        border-radius: 10px;
+        width: 400px;
+
+        span {
+            width: 300px;
+            text-align: center;
+        }
 
         button {
-            padding: 10px 12px;
-            border-radius: 6px;
             border: none;
-            cursor: pointer;
-            background: $primary-color;
-            color: white;
+            background: none;
+            font-size: 1.2rem;
 
             &:disabled {
-                opacity: 0.5;
+                color: red;
                 cursor: not-allowed;
             }
         }
@@ -92,114 +113,165 @@
     }
 
     &__slot {
-        width: 80px;
-        height: 40px;
-        border: 1px solid #949494;
+        width: 150px;
+        height: 30px;
         cursor: pointer;
         text-align: center;
         vertical-align: middle;
         position: relative;
         transition: background 0.2s ease;
+        border: solid #EFEFEF 1px;
 
         &--closed {
             background: #e0e0e0;
         }
 
         &--open {
-            background: #fff !important;
+            background: $open-color;
         }
 
         &--booked {
-            background: #fff !important;
-
-            &::after {
-                content: "📌";
-                position: absolute;
-                inset: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.5rem;
-                color: #e53935;
-            }
+            background: $booked-color;
+            border: 2px solid $booked-color-border;
+            color: $booked-color-border;
         }
 
         &--current-hour {
-            background-color: #ff9800 !important;
-            border: 2px solid #e65100 !important;
-
-            &:hover {
-                background-color: #ffb74d !important;
-            }
+            border-top: 2px solid $primary-color;
         }
 
         &:hover {
             filter: brightness(0.95);
         }
 
+        &--booked-past {
+            background-color: $past-color !important;
+            border: 2px solid #B4C6E7;
+            color: #B4C6E7;
+        }
+
         &--past {
-            background-color: rgb(137, 137, 137) !important;
-            color: #9999997b;
-            cursor: not-allowed;
-            opacity: 0.6;
+            background-color: $past-color !important;
         }
 
         &--selected {
-            outline: 2px solid $primary-color;
+            outline: 1px solid $primary-color !important;
             background-color: rgba(0, 123, 255, 0.2);
         }
     }
-}
 
-
-.modal {
-    &__content {
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 100%;
-        text-align: center;
-
-        p {
-            text-align: left;
-            margin-left: 10px;
-            font-size: 1.1rem;
-        }
+    &__day-name {
+        font-size: 1.4rem;
+        font-weight: bolder;
+        margin-bottom: 10px;
     }
 
-    &__actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+    &__block {
         margin: 15px 0;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 10px;
+        font-size: 1.3rem;
 
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background: #1976d2;
-            color: #fff;
-            font-size: 1.2rem;
+        &__title {
+            font-weight: bolder;
+            color: black;
+        }
 
-            &:hover {
-                background: #125ea3;
+        &__list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+
+            &--open {
+                background-color: #2fba50;
+                border: solid 2px #1a692d;
+                color: #1a692d;
+                padding: 5px 10px;
+                border-radius: 8px;
+            }
+
+            &--close {
+                border: solid 2px #3a3f43;
+                background-color: #818990;
+                color: #3a3f43;
+                padding: 5px 10px;
+                border-radius: 8px;
+            }
+
+            &--booked {
+                border: solid 2px #c19205;
+                background-color: #fdca33;
+                color: #c19205;
+                padding: 5px 10px;
+                border-radius: 8px;
             }
         }
     }
 
-    &__close {
-        margin-top: 10px;
-        background-color: $red-color;
-        padding: 0.6rem 4rem;
-        border: none;
-        border-radius: 10px;
-        color: white;
+    &__details {
+        margin-bottom: 10px;
+    }
 
-        &:hover {
-            background-color: $red-color-hover;
-            cursor: pointer;
+    &__summary {
+        cursor: pointer;
+        padding: 10px;
+        background-color: white;
+        border-radius: 5px;
+        font-size: 1.3rem;
+
+        &__toggle {
+            margin-top: 5px;
+            padding: 15px 10px;
+            background-color: white;
+            border-radius: 5px;
+            color: $gray-color;
+            font-size: 1.3rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+
+            &__block {
+                background-color: $gray-color;
+                padding: 5px 10px;
+                font-size: 1.2rem;
+                font-weight: bolder;
+                color: white;
+                border-radius: 6px;
+                border: 1px solid black;
+                height: max-content;
+            }
         }
+
+        &--open {
+            color: #2fba50;
+        }
+
+        &--close {
+            color: $gray-color;
+        }
+
+        &--booked {
+            color: #c19205;
+        }
+    }
+
+    &__warning {
+        padding: 12px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 6px;
+        color: #856404;
+        font-size: 1.2rem;
+    }
+
+    &__information {
+        padding: 12px;
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 6px;
+        color: #0c5460;
+        font-size: 1.2rem;
     }
 }

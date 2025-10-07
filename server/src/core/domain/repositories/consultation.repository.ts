@@ -22,4 +22,8 @@ export default interface ConsultationRepository {
     update(consult: Consultation): Promise<Consultation>;
     save(consult: Consultation): Promise<Consultation>;
     delete(id: number): Promise<void>;
+
+    getCount(): Promise<number>;
+    getCountOtherProblem(): Promise<number>;
+    getCountOtherProblemByUser(userId: number): Promise<number>;
 }

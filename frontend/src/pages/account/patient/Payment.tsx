@@ -5,7 +5,7 @@ const Payment = () => {
         <AccountLayout>
             <div className="page-container">
                 <h1 className="page-container__title">
-                    Здесь будут не оплаченные консультации
+                    Не оплаченные консультации
                 </h1>
             </div>
         </AccountLayout>

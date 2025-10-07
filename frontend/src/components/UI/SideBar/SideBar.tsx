@@ -2,27 +2,31 @@ import type { SidebarProps } from '../../../models/MenuItems';
 import './Sidebar.scss';
 import { NavLink, useLocation } from "react-router-dom";
 import logo from '@/assets/images/logo.svg';
-import { useEffect, useState } from 'react';
 import { RouteNames } from '../../../routes';
-import AdminService from '../../../services/AdminService';
-import { processError } from '../../../helpers/processError';
 
-const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '', role }) => {
+const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '', countChange, countConsult, countOtherProblem }) => {
 
-  let countMessage = 0;
   const location = useLocation();
   const lastMenu = localStorage.getItem("lastMenu");
-  const [countChange, setCountChange] = useState(countMessage);
-  
-  const updatedMenuItems = menuItems.map(item =>
-    item.path === RouteNames.SPECIALISTS
-      ? { ...item, notification: countChange }
-      : item
-  );
+
+  const updatedMenuItems = menuItems.map(item => {
+    if (item.path === RouteNames.SPECIALISTS) {
+      return {
+        ...item,
+        notification: countChange > 0 ? `(${countChange})` : undefined
+      };
+    } else if (item.path === RouteNames.MAKECONSULTATION) {
+      return {
+        ...item,
+        notification: `(${countConsult})(${countOtherProblem})` || undefined
+      };
+    }
+    return item;
+  });
 
   const isPathRelatedToMenu = (menuPath: string, currentPath: string) => {
-    if (menuPath === '/make-consultation') {
-      return currentPath.startsWith('/make-consultation') || currentPath.startsWith('/profile/');
+    if (menuPath === RouteNames.MAKECONSULTATION) {
+      return currentPath.startsWith(RouteNames.MAKECONSULTATION) || currentPath.startsWith(RouteNames.PROFILE);
     }
     return currentPath.startsWith(menuPath);
   };
@@ -31,46 +35,13 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '', role }) =>
     menuItems.find(item => isPathRelatedToMenu(item.path, location.pathname))
       ?.path || lastMenu;
 
-  useEffect(() => {
-    if (role === "ADMIN") {
-      let isMounted = true;
-      let timeoutId: string | number | NodeJS.Timeout | undefined;
-
-      const fetchWithDelay = async () => {
-        if (!isMounted) return;
-
-        try {
-          const count = await AdminService.getChangesCount();
-          if (isMounted) {
-            setCountChange(count.data);
-          }
-        } catch (e) {
-          if (isMounted) {
-            processError(e, "Ошибка при получении количества изменений");
-          }
-        } finally {
-          if (isMounted) {
-            timeoutId = setTimeout(fetchWithDelay, 5000);
-          }
-        }
-      };
-
-      fetchWithDelay();
-
-      return () => {
-        isMounted = false;
-        clearTimeout(timeoutId);
-      };
-    }
-  }, []);
-
   return (
     <div className={`sidebar ${className}`}>
-      <div className="sidebar__logo">
-        <NavLink to="/">
+      <NavLink to={RouteNames.HOME}>
+        <div className="sidebar__logo">
           <img src={logo} alt="logo" />
-        </NavLink>
-      </div>
+        </div>
+      </NavLink>
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {updatedMenuItems?.map((item, index) => (
@@ -83,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, className = '', role }) =>
                 }
               >
                 {item.name}
-                <span>{item.notification !== undefined && item.notification > 0 && ` (${item.notification})`}</span>
+                <span>{item.notification !== undefined && ` ${item.notification}`}</span>
               </NavLink>
             </li>
           ))}

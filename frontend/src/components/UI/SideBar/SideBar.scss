@@ -1,26 +1,26 @@
 @use '../../../assets/styles/variables.scss' as *;
 
 .sidebar {
-  position: fixed;
+  position: sticky;
   box-sizing: border-box;
-  margin: 0 1rem;
+  margin: 0 2.5rem 0 1rem;
   padding: 10px 0 10px;
 
   &__logo {
-    a {
-      display: block;
-    }
+    margin: 1rem 1rem 2rem 1rem;
 
-    padding: 1rem 0;
-    margin-bottom: 1rem;
-    width: 100%;
+    img {
+      width: 320px;
+      margin: 0 auto;
+    }
   }
 
   &__nav {
-    height: max-content;
+    display: inline-block;
+    max-width: 516px;
     box-sizing: border-box;
     background-color: $sidebar-color;
-    padding: 20px 20px 20px 8px;
+    padding: 20px 10px 20px 8px;
     border-left: solid 15px $button-color;
     border-radius: 10px;
 

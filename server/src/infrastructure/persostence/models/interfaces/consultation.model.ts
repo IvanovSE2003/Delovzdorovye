@@ -4,7 +4,8 @@ interface IConsultationAttributes {
     id: number;
     consultation_status: "UPCOMING" | "ARCHIVE";
     payment_status: "PAID" | "PAYMENT" | "NOTPAID";
-    other_problem: string | null;
+    problem_description: string | null;
+    has_other_problem: boolean;
     recommendations: string | null;
     duration: number;
     score: number | null;

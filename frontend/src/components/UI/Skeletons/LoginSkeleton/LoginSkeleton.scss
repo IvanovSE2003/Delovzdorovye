@@ -1,0 +1,64 @@
+// LoginSkeleton.scss
+.skeleton {
+    &__input-container {
+        margin-bottom: 20px;
+    }
+
+    &__label {
+        width: 120px;
+        height: 16px;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        animation: skeleton-loading 1.5s infinite;
+    }
+
+    &__input {
+        width: 100%;
+        height: 44px;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        border-radius: 8px;
+        animation: skeleton-loading 1.5s infinite;
+    }
+
+    &__button {
+        width: 100%;
+        height: 44px;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        border-radius: 8px;
+        margin: 20px 0;
+        animation: skeleton-loading 1.5s infinite;
+    }
+
+    &__links {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    &__link {
+        width: 100%;
+        height: 16px;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        border-radius: 4px;
+        animation: skeleton-loading 1.5s infinite;
+
+        &:first-child {
+            width: 80%;
+        }
+    }
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

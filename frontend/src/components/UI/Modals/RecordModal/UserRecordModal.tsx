@@ -4,6 +4,7 @@ import ConsultationsStore, { type OptionsResponse, type Slot } from "../../../..
 import RecordForm from "./RecordForm";
 import "./RecordModal.scss";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
+import ShowError from "../../ShowError/ShowError";
 
 interface UserConsultationModalProps {
   isOpen: boolean;
@@ -18,13 +19,12 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<{id: number, message: string}>({id: 0, message: ""});
 
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [descriptionProblem, SetDescriptionProblem] = useState<string>("");
+  const [descriptionProblem, setDescriptionProblem] = useState<string>("");
   const [doctorId, setDoctorId] = useState<number | undefined>(undefined);
-
   const [showOtherProblem, setShowOtherProblem] = useState<boolean>(false);
 
   const store = new ConsultationsStore();
@@ -38,62 +38,50 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
 
   // Изменение селекта с проблемами
   const handleProblemChange = async (selected: MultiValue<OptionsResponse>) => {
-    const hasOther = selected.some((p) => p.value === OTHER_PROBLEM_ID);
     setShowOtherProblem(false);
+    setSelectedProblems(selected);
 
+    const hasOther = selected.some((p) => p.value === OTHER_PROBLEM_ID);
     if (hasOther) {
-      // оставляем только "Другая проблема"
-      const normalizedSelected = selected.filter((p) => p.value === OTHER_PROBLEM_ID);
-      setSelectedProblems(normalizedSelected);
       setShowOtherProblem(true);
-
-      // очищаем слоты, т.к. календарь должен быть свободным
-      setSlots([]);
+      const slots = await store.findSheduleSpecialist();
+      setSlots(slots);
       return;
     }
-
-    setSelectedProblems(selected);
 
     if (selected.length === 0) {
       setSlots([]);
       return;
     }
 
-    try {
-      const ids = selected.map((p) => p.value);
-      const fetchedSlots = await store.getSchedulesByProblems(ids, userId);
-      setSlots(fetchedSlots);
-    } catch (err) {
-      console.error("Ошибка при загрузке расписания по проблемам:", err);
-      setError("Не удалось загрузить расписание");
-    }
+    const ids = selected.map((p) => p.value);
+    const slots = await store.getSchedulesByProblems(ids, userId);
+    setSlots(slots);
   };
 
   // Записаться на консультацию
   const handleSubmit = () => {
     if (!selectedDate || !selectedTime) {
-      setError("Дата или время не выбраны");
+      setError({id: Date.now(), message: "Дата или время не выбраны"});
       return;
     }
-
-    const hasOther = selectedProblems.some((p) => p.value === OTHER_PROBLEM_ID);
+  
     onRecord({
       time: selectedTime,
       date: selectedDate,
       descriptionProblem: descriptionProblem,
       problems: selectedProblems.map((p) => p.value),
+      hasOtherProblem: showOtherProblem,
       doctorId: doctorId,
-      otherProblemText: descriptionProblem,
-      hasOtherProblem: hasOther
     });
 
     // Сброс состояния
     setSelectedDate(null);
     setSelectedTime(null);
-    SetDescriptionProblem("");
+    setDescriptionProblem("");
     setDoctorId(undefined);
     setSelectedProblems([]);
-
+    setShowOtherProblem(false);
     onClose();
   };
 
@@ -139,7 +127,6 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
         <RecordForm
           specialist={undefined}
           slotsOverride={slots}
-          freeMode={showOtherProblem}
           onTimeDateSelect={onTimeDateSelect}
           userId={""}
         />
@@ -158,11 +145,11 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
             className="consultation-modal__textarea"
             placeholder={showOtherProblem ? "Опишите свою проблему (не менее 10 символов)" : "Подробное описание проблемы..."}
             value={descriptionProblem}
-            onChange={(e) => SetDescriptionProblem(e.target.value)}
+            onChange={(e) => setDescriptionProblem(e.target.value)}
           />
         </div>
 
-        {error && <div className="consultation-modal__error">{error}</div>}
+        <ShowError msg={error} className="consultation-modal__error"/>
 
         <button
           className="consultation-modal__submit"

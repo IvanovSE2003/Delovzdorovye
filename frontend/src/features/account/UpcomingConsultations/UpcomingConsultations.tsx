@@ -17,14 +17,15 @@ const RepeatModal = lazy(() => import('../../../components/UI/Modals/RepeatModal
 const EditModal = lazy(() => import('../../../components/UI/Modals/EditModal/EditModal'));
 
 export interface UserConsultationsProps {
-    id?: number;
+    userId?: number; // ID того у кого хотят получить консультации
+    linkerId: number; // ID того кто хочет посмотреть консультации
     mode?: Role;
     refreshTrigger?: number;
 }
 
 const PAGE_SIZE = 4;
 
-const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN", refreshTrigger = 0 }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId, mode = "ADMIN", refreshTrigger = 0 }) => {
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
@@ -49,17 +50,17 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
             if (mode === "DOCTOR")
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
-                    doctorUserId: id
+                    doctorUserId: userId
                 });
             else if (mode === "PATIENT")
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
-                    userId: id
+                    userId: userId
                 });
             else
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
-                    userId: id
+                    userId: userId
                 });
 
             if (response) {
@@ -104,17 +105,17 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
             setModalShift(false);
             await fetchConsultations();
         } catch (e) {
-            processError(e, "Ошибка при переносе консультации", setError);
+            processError(e, "Ошибка при переносе консультации: ", setError);
         }
     };
 
     // Завершение отмены консультации
-    const handleCancelConsultation = async (reason: string, id: number) => {
+    const handleCancelConsultation = async (reason: string, id: number, linkerId: number) => {
         try {
-            await ConsultationService.cancelAppointment(reason, id);
+            await ConsultationService.cancelAppointment(reason, id, linkerId);
             setConsultations(prev => prev.filter(c => c.id !== id));
         } catch (e) {
-            processError(e, "", setError);
+            processError(e, "Ошибка при отмены консультации: ", setError);
         } finally {
             setModalCancel(false);
             await fetchConsultations();
@@ -127,7 +128,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
             const response = await ConsultationService.repeatAppointment(data);
             console.log(response.data);
         } catch (e) {
-            processError(e, "Ошибка при повторе консультации", setError);
+            processError(e, "Ошибка при повторе консультации: ", setError);
         } finally {
             setModalRepeat(false);
             await fetchConsultations();
@@ -142,7 +143,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
             if (response.data.success) setMessage({ id: Date.now(), message: response.data.message })
             else setError({ id: Date.now(), message: `Ошибка: ${response.data.message}` })
         } catch (e) {
-            processError(e, "Ошибка при редактировании консультации")
+            processError(e, "Ошибка при редактировании консультации: ", setError)
         } finally {
             setModalEdit(false);
             await fetchConsultations();
@@ -188,6 +189,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
                     onClose={() => setModalCancel(false)}
                     onRecord={handleCancelConsultation}
                     mode={mode}
+                    userId={linkerId}
                 />
             </Suspense>
 
@@ -196,7 +198,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
 
             <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'}`}>
                 {consultations.map(consultation => (
-                    <div key={consultation.id} className="consultation-card">
+                    <div key={consultation.id} className={`consultation-card ${consultation.Problems.length === 0 && "consultation-card__other-problem"}`}>
                         <div className="consultation-card__time">
                             <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
                             <span className="consultation-card__hours">{consultation.durationTime}</span>
@@ -221,21 +223,21 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ id, mode = "ADMIN
 
                             <div className="consultation-card__symptoms">
                                 {'Симптомы: '}
-                                {consultation.Problems.map((p, i) => (
+                                {consultation.Problems.length > 0 ? consultation.Problems.map((p, i) => (
                                     <span key={i}>
                                         {p.toLocaleLowerCase()}
-                                        {i < consultation.Problems.length - 1 ? ', ' : ''}
+                                        {i < consultation.Problems.length - 1 ? ', ' : '.'}
                                     </span>
-                                ))}
+                                )) : <span>Другая проблема.</span>}
                             </div>
 
                             <div className="consultation-card__details">
-                                Подробно: <span>{consultation.other_problem ? consultation?.other_problem : "Не указано"}</span>
+                                Подробно: <span>{consultation.descriptionProblem ? consultation?.descriptionProblem : "Не указано."}</span>
                             </div>
 
                             {mode === "PATIENT" && (
                                 <div className="consultation-card__symptoms">
-                                    Условия:<span> Бесплатные отмена и перенос более чем за 12 часов</span>
+                                    Условия:<span> Бесплатные отмена и перенос более чем за 12 часов.</span>
                                 </div>
                             )}
                         </div>

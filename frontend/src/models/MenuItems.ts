@@ -10,4 +10,7 @@ export interface SidebarProps {
     menuItems: MenuItem[];
     className?: string;
     role: Role;
+    countChange: number;
+    countConsult: number;
+    countOtherProblem: number;
 }

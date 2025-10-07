@@ -33,14 +33,9 @@ const Main: React.FC = () => {
         };
 
         try {
-            if (RecordData.hasOtherProblem) {
-                await ConsultationService.createSpecificConsultation(RecordData);
-                setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию. В ближайшее время с вами свяжется наш администратор" });
-            } else {
-                await ConsultationService.createAppointment(RecordData);
-                setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию" });
-                fetchUpcomingConsultations(page);
-            }
+            await ConsultationService.createAppointment(RecordData);
+            setMessage({ id: Date.now(), message: "Вы успешно записались на консультацию" });
+            fetchUpcomingConsultations(page);
         } catch (e) {
             processError(e, "Ошибка при записи на консультацию")
         }
@@ -69,7 +64,6 @@ const Main: React.FC = () => {
     // Итоговое количество страниц
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
-    // Основной рендер
     return (
         <AccountLayout>
             <UserRecordModal
@@ -112,7 +106,6 @@ const Main: React.FC = () => {
                                 </div>
                             ))}
 
-                            {/* Пагинация */}
                             {totalPages > 1 && (
                                 <div className="main__pagination">
                                     <button

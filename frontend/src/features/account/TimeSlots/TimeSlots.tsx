@@ -40,8 +40,8 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({ slots, selectedTime, onTimeSelect
             return (
               <button
                 key={`${slot.date}-${slot.time}`}
-                className={`time-slots__item ${selectedTime === slot.time ? "time-slots__item--selected" : ""}`}
-                onClick={() => onTimeSelect(slot.time)}
+                className={`time-slots__item ${selectedTime === formattedTime ? "time-slots__item--selected" : ""}`}
+                onClick={() => onTimeSelect(formattedTime)}
               >
                 {formattedTime}
               </button>

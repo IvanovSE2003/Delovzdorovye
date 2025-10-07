@@ -4,8 +4,8 @@ export default interface DoctorRepository {
     findById(id: number): Promise<Doctor | null>;
     findByUserId(userId: number): Promise<Doctor | null>;
     findAll(
-        page: number,
-        limit: number,
+        page?: number,
+        limit?: number,
         filters?: {
             specialization?: string;
             isActive?: boolean;
@@ -29,4 +29,6 @@ export default interface DoctorRepository {
 
     saveLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
     deleteLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void>;
+
+    findByAvailableSlot(date: string, time: string): Promise<Doctor[]>;
 }

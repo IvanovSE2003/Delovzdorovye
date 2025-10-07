@@ -13,7 +13,7 @@ export default class ConsultationRoomRepositoryImpl implements ConsultationRoomR
 
     async findAll(): Promise<ConsultationRoom[]> {
         const rooms = await models.ConsultationRoomModel.findAll();
-        return rooms.map(room => this.mapToDomainConsulationRoom(room)); // ✅ добавлен this
+        return rooms.map(room => this.mapToDomainConsulationRoom(room)); 
     }
 
     async create(room: ConsultationRoom): Promise<ConsultationRoom> {
@@ -67,8 +67,6 @@ export default class ConsultationRoomRepositoryImpl implements ConsultationRoomR
         return this.mapToDomainConsulationRoom(updated);
     }
 
-
-
     async addParticipant(roomId: number, userId: number, role: 'PATIENT' | 'DOCTOR'): Promise<ConsultationRoom> {
         const room = await models.ConsultationRoomModel.findByPk(roomId);
         if (!room) throw new Error('Комната не найдена');
@@ -78,13 +76,12 @@ export default class ConsultationRoomRepositoryImpl implements ConsultationRoomR
 
         if (!existing) {
             const newParticipant = { userId, joinedAt: new Date(), leftAt: null, role };
-            const updated = await room.update({ participants: [...participants, newParticipant] }); // ✅ создаём новый массив
+            const updated = await room.update({ participants: [...participants, newParticipant] });
             return this.mapToDomainConsulationRoom(updated);
         }
 
         return this.mapToDomainConsulationRoom(room);
     }
-
 
     private mapToDomainConsulationRoom(roomModel: any): ConsultationRoom {
         return new ConsultationRoom(

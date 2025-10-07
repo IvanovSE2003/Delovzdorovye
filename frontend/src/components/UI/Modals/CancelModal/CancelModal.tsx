@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import './CancelModal.scss'
 import type { Role } from '../../../../models/Auth';
-import ShowError from '../../ShowError/ShowError';
 import type { Consultation } from '../../../../models/consultations/Consultation';
 import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import './CancelModal.scss'
 
 export interface ModalProps {
     isOpen: boolean;
@@ -12,22 +11,17 @@ export interface ModalProps {
 }
 
 interface CancelModalProps extends ModalProps {
-    onRecord: (reasons: string, id: number) => void;
+    onRecord: (reasons: string, id: number, userId: number) => void;
     mode?: Role;
+    userId: number;
 }
 
-const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode }) => {
+const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode, userId }) => {
     const [reasons, setReasons] = useState<string>("");
-    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
 
     // Отмена консультации
     const handleSubmit = () => {
-        if (!reasons) {
-            setError({ id: Date.now(), message: "Пожалуйста, заполните причину отказа!" });
-            return;
-        }
-
-        onRecord(reasons, consultationData.id);
+        onRecord(reasons, consultationData.id, userId);
     };
 
     // Если модалка зактыра ничего не возвращать
@@ -60,25 +54,26 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                     </div>
                 )}
 
-                <p className="consultation-modal__description">
-                    Если вам удобно, поделитесь причиной отмены (это поможет нам стать лучше):
-                </p>
+                {mode !== "ADMIN" && (
+                    <>
+                        <p className="consultation-modal__description">
+                            Если вам удобно, поделитесь причиной отмены (это поможет нам стать лучше):
+                        </p>
 
-                <div className="cancel-modal__reason">
-                    <textarea
-                        id="reasons"
-                        placeholder='Причина отмены'
-                        value={reasons}
-                        onChange={(e) => setReasons(e.target.value)}
-                    />
-                </div>
+                        <div className="cancel-modal__reason">
+                            <textarea
+                                id="reasons"
+                                placeholder='Причина отмены'
+                                value={reasons}
+                                onChange={(e) => setReasons(e.target.value)}
+                            />
+                        </div>
 
-                <div className="cancel-modal__notification">
-                    🔔 Средства будут возвращены в течении 3 дней.
-                </div>
-
-                <ShowError msg={error} />
-                <br/>
+                        <div className="cancel-modal__notification">
+                            🔔 Средства будут возвращены в течении 3 дней.
+                        </div>
+                    </>
+                )}
 
                 <button
                     className='shift-modal__submit'

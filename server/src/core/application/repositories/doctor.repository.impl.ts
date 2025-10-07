@@ -51,7 +51,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
     async findByProblems(problems: number[] | number | string | string[]): Promise<Doctor[]> {
         if (!problems || (Array.isArray(problems) && problems.length === 0)) {
-            throw new Error("Нужен хотя бы один id проблемы");
+            throw new Error("Проблемы не указаны");
         }
 
         let problemIds: number[] = [];
@@ -93,21 +93,24 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         return sortedDoctors;
     }
 
-
-
     async findAll(
-        page: number = 1,
-        limit: number = 10,
+        page?: number,
+        limit?: number,
         filters?: {
             specialization?: string;
             isActive?: boolean;
             gender?: string;
+            experienceMin?: number;
+            experienceMax?: number;
         }
     ): Promise<{
         doctors: Doctor[];
         totalCount: number;
         totalPages: number;
     }> {
+        const currentPage = page || 1;
+        const currentLimit = limit || 10;
+
         const where: any = {};
         const userWhere: any = {};
 
@@ -141,9 +144,9 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             ]
         });
 
-        const totalPages = Math.ceil(totalCount / limit);
+        const totalPages = Math.ceil(totalCount / currentLimit);
 
-        const doctors = await DoctorModel.findAll({
+        const queryOptions: any = {
             where,
             include: [
                 {
@@ -159,10 +162,16 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     where: filters?.specialization ? { name: filters.specialization } : {}
                 }
             ],
-            limit,
-            offset: (page - 1) * limit,
             order: [['id', 'ASC']]
-        });
+        };
+
+        if (limit !== undefined) {
+            queryOptions.limit = currentLimit;
+            queryOptions.offset = (currentPage - 1) * currentLimit;
+        }
+
+        const doctors = await DoctorModel.findAll(queryOptions);
+
 
         return {
             doctors: doctors.map(doctor => this.mapToDomainDoctor(doctor)),
@@ -184,6 +193,36 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                     model: SpecializationModel,
                     through: { attributes: ['diploma', 'license'] },
                     attributes: ['name']
+                }
+            ]
+        });
+
+        return doctors.map(doctor => this.mapToDomainDoctor(doctor));
+    }
+
+    async findByAvailableSlot(date: string, time: string): Promise<Doctor[]> {
+        const doctors = await DoctorModel.findAll({
+            where: {
+                isActivated: true
+            },
+            include: [
+                {
+                    model: UserModel,
+                    attributes: ["id", "name", "surname", "patronymic", "img", "time_zone"]
+                },
+                {
+                    model: SpecializationModel,
+                    through: { attributes: ["diploma", "license"] },
+                    attributes: ["id", "name"]
+                },
+                {
+                    model: models.DoctorSlots,
+                    where: {
+                        date: date,
+                        time: time,
+                        status: "OPEN"
+                    },
+                    required: true 
                 }
             ]
         });

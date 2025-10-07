@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-// Отформатировать дату
+// Отформатировать дату из ****-**-** в ****.**.**
 export const GetFormatDate = (date: string) => {
     return date?.split('-').reverse().join('.');
 };
@@ -22,7 +22,7 @@ export const formatDateFromISO = (date: string, includeTime: boolean = true) => 
     return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
-// Форматировать дату по российскому формату
+// Форматировать дату в формат число + название месяца
 export const formatDateWithoutYear = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("ru-RU", {
@@ -43,6 +43,21 @@ export const getDateLabel = (date: string) => {
     return consultationDate.format("DD.MM.YYYY");
 };
 
+
+// Отформатировать из даты в строку ****-**-**
+export const formatDateToYYYYMMDD = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(dateObj.getTime())) {
+    throw new Error('Invalid date provided');
+  }
+  
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
 
 // Отформатировать номер телефона в формате 8 888 888 88 88
 export const GetFormatPhone = (phone: string) => {

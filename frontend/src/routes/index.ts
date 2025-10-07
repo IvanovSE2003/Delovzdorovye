@@ -39,10 +39,9 @@ export interface ProtectedRoute {
 
 export const RouteNames = {
     // Общие пути
+    HOME: '/',
     LOGIN: '/login',
-    MAIN: '/',
     PERSONAL: '/personal',
-    RESET: '/pinCode-reset/:token',
     PROFILE: '/profile/:id',
     NOTIFICATIONS: '/notifications',
 
@@ -103,14 +102,14 @@ export const menuConfig: Record<string, MenuItem[]> = {
 
 export const publicRoutes: ProtectedRoute[] = [
     // Общие машруты для всех неавторизованных
-    { path: RouteNames.MAIN, element: HomePage },
+    { path: RouteNames.HOME, element: HomePage },
     { path: RouteNames.LOGIN, element: LoginPage },
     { path: RouteNames.PROFILE, element: MyProfile },
 ]
 
 export const privateRoutes: ProtectedRoute[] = [
     // Общие маршруты для всех авторизованных
-    { path: RouteNames.MAIN, element: HomePage },
+    { path: RouteNames.HOME, element: HomePage },
     { path: RouteNames.PERSONAL, element: MyProfile },
     { path: RouteNames.PROFILE, element: SomeProfile },
     { path: RouteNames.NOTIFICATIONS, element: Notifications },

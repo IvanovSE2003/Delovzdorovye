@@ -1,13 +1,14 @@
 @use "../../../assets/styles/variables.scss" as *;
 
 .rightPanel {
-    position: fixed;
+    position: sticky;
+    height: max-content;
     top: 20px;
-    right: 20px;
     width: 55px;
     padding: 20px;
     border-radius: 10px;
     border-top: 10px solid $primary-color;
+    margin: 0 1rem 0 2.5rem;
 
     display: flex;
     flex-direction: column;

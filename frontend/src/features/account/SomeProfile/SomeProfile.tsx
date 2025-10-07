@@ -32,20 +32,9 @@ const Profile: React.FC = () => {
     const [profile, setProfile] = useState<IUserDataProfile | null>(null)
     const [modalRecord, setModalRecord] = useState<boolean>(false);
     const [refreshUpcoming, setRefreshUpcoming] = useState(0);
-    const [otherProblem, setOterProblem] = useState<IOtherProblem[]>([] as IOtherProblem[]);
 
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
-
-    const getDataOtherProblem = async () => {
-        if (!id) return;
-        try {
-            const response = await UserService.getDataOtherProblem(id);
-            setOterProblem(response.data);
-        } catch (e) {
-            processError(e, "Ошибка при получении данных другой проблемы")
-        }
-    }
 
     // Получение данных профиля пользователя
     const getDataProfile = async () => {
@@ -53,9 +42,6 @@ const Profile: React.FC = () => {
         try {
             const response = await UserService.getProfileData(id, store.user.id);
             setProfile(response.data);
-            if (response.data.hasOtherProblem) {
-                await getDataOtherProblem();
-            }
         } catch (e) {
             processError(e, "Ошибка при получении данных пользователя")
         }
@@ -191,36 +177,13 @@ const Profile: React.FC = () => {
                 <ShowError msg={message} mode="MESSAGE" className="user-profile__message" />
             </div>
 
-            {store.user.role == "ADMIN" && profile.hasOtherProblem && (
-                <div className="user-consultations user-consultations__other-problem">
-                    <h2 className="consultations__title">Другие проблемы</h2>
-                    {otherProblem.map(element => (
-                        <div key={element.id} className="consultation-card">
-                            <p
-                                className="consultation-card__description"
-                            >
-                                Пользователь не нашел подходящей проблемы и ожидает записи на консультацию по следующим данным:
-                            </p>
-                            <div className="consultation-card__symptoms">
-                                Желаемое время: <span>{element.time}</span>
-                            </div>
-                            <div className="consultation-card__symptoms">
-                                Желаемая дата: <span>{element.date}</span>
-                            </div>
-                            <div className="consultation-card__symptoms">
-                                Подробности: <span>{element.description_problem}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {store.user.role === "ADMIN" && profile.role === "PATIENT" && (
+            {(store.user.role === "ADMIN" || store.user.role === "DOCTOR")&& profile.role === "PATIENT" && (
                 <>
                     <div className="user-consultations">
                         <h2 className="consultations__title">Предстоящие консультации</h2>
                         <UpcomingConsultations
-                            id={Number(id)}
+                            userId={Number(id)} // Получаем консультации профиля
+                            linkerId={store.user.id} // Смотрим мы его консультации
                             refreshTrigger={refreshUpcoming}
                         />
                     </div>

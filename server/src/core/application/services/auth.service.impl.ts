@@ -29,7 +29,6 @@ export class AuthServiceImpl implements AuthService {
         const activationLink = v4();
 
         const baseUserData = {
-            id: 0,
             email: (data.email).toLowerCase(),
             phone: data.phone,
             pinCode: data.pinCode,
@@ -47,7 +46,7 @@ export class AuthServiceImpl implements AuthService {
         let user;
         if (baseUserData.isAnonymous) {
             user = new User(
-                baseUserData.id,
+                0,
                 "",
                 "",
                 "",
@@ -81,7 +80,7 @@ export class AuthServiceImpl implements AuthService {
             );
         } else {
             user = new User(
-                baseUserData.id,
+                0,
                 data.name,
                 data.surname,
                 data.patronymic,
@@ -241,22 +240,12 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async login(
-        credential: string,
+        user: User,
         pinCode: number,
         twoFactorMethod?: string,
         twoFactorCode?: string,
         tempToken?: string
     ): Promise<dataResult> {
-        const credentialLow = credential.toLowerCase();
-        const user = await this.userRepository.findByEmailOrPhone(credentialLow) as User;
-        if (!user) {
-            throw new Error("Пользователь не найден");
-        }
-
-        if (user.isBlocked) {
-            throw new Error('Аккаунт заблокирован');
-        }
-
         const isPinValid = await this.userRepository.verifyPinCode(user.id, pinCode);
         if (!isPinValid) {
             const updatedUser = user.incrementPinAttempts();
@@ -317,7 +306,6 @@ export class AuthServiceImpl implements AuthService {
             };
         }
 
-        // Если twoFactorCode не пришел, генерируем новый код и временный токен
         const code = this.twoFactorService.generateCode();
         const expires = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -341,7 +329,7 @@ export class AuthServiceImpl implements AuthService {
                 twoFactorRequired: true
             },
             this.twoFactorService.getTempSecret(),
-            { expiresIn: '2m' }
+            { expiresIn: '5m' }
         );
 
         return {

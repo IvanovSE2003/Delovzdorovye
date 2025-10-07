@@ -240,12 +240,28 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         await models.Consultation.destroy({ where: { id } });
     }
 
+    async getCount(): Promise<number> {
+        const count = await models.Consultation.count();
+        return count;
+    }
+
+    async getCountOtherProblem(): Promise<number> {
+        const count = await models.Consultation.count({where: {has_other_problem: true}});
+        return count;
+    }
+
+    async getCountOtherProblemByUser(userId: number): Promise<number> {
+        const count = await models.Consultation.count({where: {has_other_problem: true, userId: userId}});
+        return count;
+    }
+
     private mapToDomainConsultation(consultModel: any): Consultation {
         return new Consultation(
             consultModel.id,
             consultModel.consultation_status,
             consultModel.payment_status,
-            consultModel.other_problem,
+            consultModel.problem_description,
+            consultModel.has_other_problem,
             consultModel.recommendations,
             consultModel.duration,
             consultModel.score,
@@ -295,7 +311,8 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
         return {
             consultation_status: consult.consultation_status,
             payment_status: consult.payment_status,
-            other_problem: consult.other_problem,
+            problem_description: consult.problem_description,
+            has_other_problem: consult.has_other_problem,
             recommendations: consult.recommendations,
             duration: consult.duration,
             score: consult.score,

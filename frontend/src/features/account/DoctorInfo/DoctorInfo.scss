@@ -142,6 +142,7 @@
     }
 
     &__buttons {
+        margin-top: 20px;
         display: flex;
         gap: 20px;
         justify-content: center;
@@ -164,6 +165,57 @@
         margin-bottom: 20px;
         font-size: 1.5rem;
         font-weight: bolder;
+    }
+
+    // Блок редактирования
+    &__edit-block {
+        padding: 20px;
+        background-color: $profile-color;
+        border-radius: 10px;
+    }
+
+    &__edit-title {
+        font-size: 2rem;
+        font-weight: bolder;
+        color: black;
+    }
+
+    &__file-edit {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    &__current-files {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: $block-color;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+    }
+
+    &__new-files {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: #fff;
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    &__edit-comment {
+        margin: 16px 0;
+
+        &-title {
+            text-align: left;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            font-weight: bolder;
+            color: $gray-color;
+            margin-left: 10px;
+        }
     }
 }
 
@@ -212,7 +264,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
+    padding: 12px 15px;
 
     &__label {
         font-size: 1.5rem;

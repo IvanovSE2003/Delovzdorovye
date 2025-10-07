@@ -1,13 +1,14 @@
 import { Link } from 'react-router';
 import logo from "@/assets/images/logo.svg";
 import FormAuth from "./FormAuth/FormAuth";
+import { RouteNames } from '../../routes';
 
 const LoginPage:React.FC = () => {
     return (
         <div className='auth__window'>
             <div className='auth__left'>
                 <div className="auth__logo">
-                    <Link to="/">
+                    <Link to={RouteNames.HOME}>
                         <div className="header__logo">
                             <img src={logo} alt="logo_medice" />
                         </div>

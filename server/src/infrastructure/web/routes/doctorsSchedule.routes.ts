@@ -16,5 +16,6 @@ router.delete('/timeSlot/delete/:id',authMiddlewareInstance,  (req: Request, res
 
 router.post('/timeSlot/create/gap',authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => scheduleController.createGap(req, res, next));
 router.post('/timeSlot/create/recurning/gap',authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => scheduleController.createRecurringGap(req, res, next));
+router.get('/findSheduleSpecialist', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => scheduleController.findSheduleSpecialist(req, res, next));
 
 export default router

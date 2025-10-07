@@ -35,16 +35,43 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return slotModels ? this.mapToDomainTimeSlot(slotModels) : null
     }
 
-    async findTimeSlotsBetweenDate(startDate: string, endDate: string): Promise<TimeSlot[]> {
+    async findTimeSlotsBetweenDate(startDate: string, endDate: string, doctorId: number): Promise<TimeSlot[]> {
         const slotModels = await models.DoctorSlots.findAll({
             where: {
                 date: {
                     [Op.between]: [startDate, endDate]
-                }
+                },
+                doctorId
             }
         });
 
         return slotModels.map((m: TimeSlotmModelInterface) => this.mapToDomainTimeSlot(m));
+    }
+
+    async findTimeSlotsForDoctor(doctorIds: number[]): Promise<TimeSlot[]> {
+        const shuffledDoctorIds = [...doctorIds].sort(() => Math.random() - 0.5);
+
+        for (const doctorId of shuffledDoctorIds) {
+            const slotModels = await models.DoctorSlots.findAll({
+                where: {
+                    doctorId: doctorId,
+                    status: "OPEN",
+                    date: {
+                        [Op.gte]: new Date().toISOString().split('T')[0]
+                    }
+                },
+                order: [
+                    ['date', 'ASC'],
+                    ['time', 'ASC']
+                ]
+            });
+
+            if (slotModels.length > 0) {
+                return slotModels.map(model => this.mapToDomainTimeSlot(model));
+            }
+        }
+
+        return [];
     }
 
     async findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]> {

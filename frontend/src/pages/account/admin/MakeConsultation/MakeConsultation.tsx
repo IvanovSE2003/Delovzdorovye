@@ -6,6 +6,7 @@ import SearchInput from '../../../../components/UI/Search/Search';
 import { Link } from 'react-router';
 
 export interface UserCon {
+    countOtherProblem: number;
     id: number;
     hasOtherProblem?: boolean;
     name: string;
@@ -58,7 +59,7 @@ const MakeConsultation:React.FC = () => {
                             <div className="makeconsultation__user-info">
                                 <span className="makeconsultation__user-name">
                                     {user.name && user.surname && user?.patronymic ? (
-                                        <>{user.surname} {user.name} {user.patronymic}</>
+                                        <>{user.surname} {user.name} {user.patronymic} <span>{user.countOtherProblem > 0 && `(${user.countOtherProblem})`}</span></>
                                     ) : (
                                         <>Анонимный пользователь</>
                                     )}

@@ -15,15 +15,16 @@ const Consultations: React.FC = () => {
 
                 <h2 className="consultations__title">Предстоящие консультации</h2>
                 <UpcomingConsultations
-                    id={store.user.id.toString()}
+                    userId={store.user.id} // Получает свои консультации
+                    linkerId={store.user.id} // Смотрит свои консультации
                     mode={"PATIENT"}
                 />
-                <br/>
-                <br/>
+                <br />
+                <br />
 
                 <h2 className="consultations__title">Архив консультации</h2>
                 <ArchiveConsultations
-                    id={store.user.id.toString()}
+                    userId={store.user.id}
                     mode={"PATIENT"}
                 />
             </div>

@@ -32,6 +32,7 @@ const Specialists: React.FC = () => {
     const fetchSpecialists = async (page: number = 1, limit: number = 10) => {
         try {
             const response = await DoctorService.getAllDoctors(page, limit);
+            console.log(response.data.data)
             setDoctors(response.data.data);
             setPagination(response.data.pagination);
         } catch (e) {

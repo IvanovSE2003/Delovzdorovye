@@ -211,7 +211,8 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
     const data = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
     if (data.success) {
-      navigate(defaultRoleRoutes[store.user.role]);
+      console.log(data)
+      navigate(defaultRoleRoutes[data.role]);
     } else {
       setError({ id: Date.now(), message: data.message });
     }

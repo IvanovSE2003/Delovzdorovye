@@ -15,7 +15,6 @@ import NotificationRepository from "../../../../core/domain/repositories/notifac
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import normalizeDate from "../../function/normDate.js";
 import { ITimeZones } from "../../../../../../frontend/src/models/TimeZones.js";
-import { resolve } from "path";
 
 export default class ConsultationController {
     constructor(
@@ -99,12 +98,12 @@ export default class ConsultationController {
 
             const result: any = {
                 id: consultation.id,
-                other_problem: consultation.other_problem,
+                descriptionProblem: consultation.problem_description,
                 recommendations: consultation.recommendations,
                 durationTime,
                 date: adjustedTime.newDate,
                 score: consultation.score,
-                reason_cancel: consultation.reason_cancel,
+                reasonCancel: consultation.reason_cancel
             };
 
             if (consultation.doctor) {
@@ -140,7 +139,9 @@ export default class ConsultationController {
     }
 
     async appointment(req: Request, res: Response, next: NextFunction) {
-        const { date, time, problems, doctorId, userId, otherProblemText } = req.body;
+        const { date, time, problems, doctorId, userId, descriptionProblem, hasOtherProblem } = req.body;
+
+        console.log(descriptionProblem)
 
         const [user, doctor] = await Promise.all([
             this.userRepository.findById(Number(userId)),
@@ -171,7 +172,8 @@ export default class ConsultationController {
                 0,
                 "UPCOMING",
                 "PAYMENT",
-                otherProblemText,
+                descriptionProblem,
+                hasOtherProblem,
                 null,
                 60,
                 null,
@@ -185,7 +187,8 @@ export default class ConsultationController {
             )
         );
 
-        if (problems && problems.length) {
+
+        if (problems && problems.length && !hasOtherProblem) {
             await this.addProblemsToConsultation(consultation.id, problems);
         }
 
@@ -216,7 +219,6 @@ export default class ConsultationController {
                 doctorUser.id
             )
         ];
-
         await Promise.all(notifications.map(n => this.notificationRepository.save(n)));
         // this.timerService.startTimer(consultation.id, reservationExpiresAt);
         return res.status(200).json(consultation);
@@ -279,9 +281,8 @@ export default class ConsultationController {
         if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
         if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
-        console.log(consultation.createdAt)
         if (consultation.createdAt) {
-            
+
             const createdAt = new Date(consultation.createdAt);
             const now = new Date();
             const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
@@ -345,24 +346,15 @@ export default class ConsultationController {
 
     async cancelConsultation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { reason } = req.body;
+        const { reason, userId } = req.body;
+
+        let message;
+
+        const userOperation = await this.userRepository.findById(Number(userId));
+        if (!userOperation) return next(ApiError.badRequest('Пользователь, выполняющий операцию, не найден'));
 
         const consultation = await this.consultationRepository.findById(Number(id));
-        if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
-
-        
-        if (consultation.createdAt) {
-            const createdAt = new Date(consultation.createdAt);
-            const now = new Date();
-            console.log(createdAt)
-            console.log(now)
-            const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
-
-            console.log(hoursDiff)
-            if (hoursDiff > 12) {
-                return next(ApiError.badRequest('Невозможно отменить консультацию - прошло более 12 часов с момента создания'));
-            }
-        }
+        if (!consultation) return next(ApiError.badRequest('Консультация для отмены не найдена'));
 
         const [user, doctorUser] = await Promise.all([
             this.userRepository.findById(consultation.userId),
@@ -370,15 +362,33 @@ export default class ConsultationController {
         ]);
 
         if (!user) return next(ApiError.badRequest('Пользователь не найден'));
-        if (!doctorUser) return next(ApiError.badRequest('Пользователь не найден'));
+        if (!doctorUser) return next(ApiError.badRequest('Пользователь-специалист не найден'));
 
         const timeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED");
         if (!timeSlot) return next(ApiError.badRequest('Временная ячейка для данной консультации не найдена'));
 
-        await this.consultationRepository.delete(consultation.id);
-
-        await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
         const timeSlotDoctor = adjustTimeSlotToTimeZone(timeSlot, doctorUser.timeZone);
+
+        if (consultation.createdAt && userOperation.role !== "ADMIN") {
+            const createdAt = new Date(consultation.createdAt);
+            const now = new Date();
+            const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+            if (hoursDiff > 12) {
+                return next(ApiError.badRequest('Невозможно отменить консультацию - прошло более 12 часов с момента создания'));
+            }
+
+            if (reason) {
+                message = `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена. Причина отмены "${reason}".`;
+            } else {
+                message = `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена.`
+            }
+        } else {
+            message = `Когсультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена администратором.`;
+        }
+
+        await this.consultationRepository.delete(consultation.id);
+        await this.timeSlotRepository.save(timeSlot.setStatus("OPEN"));
 
         await this.notificationRepository.save(
             new Notification(
@@ -397,7 +407,7 @@ export default class ConsultationController {
             new Notification(
                 0,
                 "Отменена консультация",
-                `Консультация в ${timeSlotDoctor.date} ${timeSlotDoctor.time} была отменена. Причина отмены "${reason}".`,
+                message,
                 "ERROR",
                 false,
                 null,
@@ -443,6 +453,7 @@ export default class ConsultationController {
                 "UPCOMING",
                 "PAYMENT",
                 null,
+                false,
                 null,
                 60,
                 null,
@@ -583,7 +594,7 @@ export default class ConsultationController {
         consultation.date = moscowDate;
         consultation.doctorId = doctor.id;
         consultation.problems = problems;
-        consultation.other_problem = descriptionProblem;
+        consultation.problem_description = descriptionProblem;
         await this.consultationRepository.save(consultation);
 
         return res.status(200).json({

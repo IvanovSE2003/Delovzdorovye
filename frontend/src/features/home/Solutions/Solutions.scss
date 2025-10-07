@@ -59,4 +59,11 @@
       position: relative;
     }
   }
+
+  &__none {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bolder;
+    color: white;
+  }
 }

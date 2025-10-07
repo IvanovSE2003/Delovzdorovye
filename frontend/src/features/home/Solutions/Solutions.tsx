@@ -10,7 +10,6 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
     const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
     const store = new ConsultationsStore();
 
-    // Загрузка данных 
     const fetchProblems = async () => {
         try {
             const data = await store.getProblems();
@@ -20,7 +19,6 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
         }
     }
 
-    // Загрузка данных при открытии блока
     useEffect(() => {
         fetchProblems();
     }, [])
@@ -32,9 +30,15 @@ const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
                     <h2 className='solutions__title'>Какие проблемы решаем?</h2>
                     <div className="solutions__block-list">
                         <ul className='solutions__list'>
-                            {problems.map(problem => (
+                            {problems.length > 0 ? problems.map(problem => (
                                 <li key={problem.value}>{problem.label}</li>
-                            ))}
+                            )) : (
+                                <div
+                                    className='solutions__none'
+                                >
+                                    Пока здесь ничего нет
+                                </div>
+                            )}
                         </ul>
                     </div>
                     <div className="solutions__warn">

@@ -11,9 +11,9 @@ import { ProblemModelInterface } from './interfaces/problem.model.js'
 import { ConsultationModelInterface } from './interfaces/consultation.model.js'
 import { ProfDataModelInterface } from './interfaces/profData.model.js'
 import { NotificationModelInterface } from './interfaces/notification.model.js'
-import { OtherProblemModelInterface } from './interfaces/otherProblem.model.js'
 import { ConsulationRoomModelInterface } from './interfaces/consulationRoom.model.js'
 import { ContentModelInterface } from './interfaces/content.model.js'
+import { BreakModelInterface } from './interfaces/break.model.js'
 
 const UserModel = sequelize.define<UserModelInterface>('user', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -89,7 +89,8 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultation_status: { type: DataType.STRING },
     payment_status: { type: DataType.STRING },
-    other_problem: { type: DataType.TEXT, allowNull: true },
+    problem_description: { type: DataType.TEXT, allowNull: true },
+    has_other_problem: {type: DataType.BOOLEAN, defaultValue: false},
     recommendations: { type: DataType.STRING, allowNull: true },
     duration: { type: DataType.INTEGER, allowNull: true },
     score: { type: DataType.INTEGER, allowNull: true },
@@ -128,7 +129,7 @@ const ProfDataModel = sequelize.define<ProfDataModelInterface>('prof_data_record
     type: { type: DataType.STRING, defaultValue: 'ADD' }
 });
 
-const DoctorSpecialization = sequelize.define('doctor_specializations', {
+const DoctorSpecialization = sequelize.define('doctor_specialization', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     diploma: { type: DataType.STRING, allowNull: true },
     license: { type: DataType.STRING, allowNull: true },
@@ -136,13 +137,11 @@ const DoctorSpecialization = sequelize.define('doctor_specializations', {
     specializationId: { type: DataType.INTEGER, allowNull: false, references: { model: SpecializationModel, key: 'id' } }
 });
 
-const ConsultationProblems = sequelize.define('consultation_problems', {
+const ConsultationProblems = sequelize.define('consultation_problem', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultationId: { type: DataType.INTEGER, allowNull: false, field: 'consultation_id' },
     problemId: { type: DataType.INTEGER, allowNull: false, field: 'problem_id' }
-}, {
-    tableName: 'consultation_problems'
-});
+}, { tableName: 'consultation_problems' });
 
 const Notification = sequelize.define<NotificationModelInterface>('notification', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
@@ -155,13 +154,6 @@ const Notification = sequelize.define<NotificationModelInterface>('notification'
     userId: { type: DataType.INTEGER, allowNull: false }
 });
 
-const OtherProblem = sequelize.define<OtherProblemModelInterface>('other_problem', {
-    id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
-    time: { type: DataType.STRING },
-    date: { type: DataType.STRING },
-    description_problem: { type: DataType.TEXT }
-})
-
 const ConsultationRoomModel = sequelize.define<ConsulationRoomModelInterface>('consultation_room', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     consultationId: { type: DataType.INTEGER, allowNull: false },
@@ -172,7 +164,7 @@ const ConsultationRoomModel = sequelize.define<ConsulationRoomModelInterface>('c
     participants: { type: DataType.JSONB, defaultValue: [] }
 });
 
-const BreakModel = sequelize.define('break', {
+const BreakModel = sequelize.define<BreakModelInterface>('break', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     startDate: { type: DataType.DATEONLY },
     endDate: { type: DataType.DATEONLY },
@@ -186,7 +178,6 @@ const ContentModel = sequelize.define<ContentModelInterface>('content', {
     text_content: { type: DataType.TEXT, allowNull: false },
     type: { type: DataType.STRING, allowNull: false }
 });
-
 
 Consultation.hasOne(ConsultationRoomModel, { foreignKey: 'consultationId' });
 ConsultationRoomModel.belongsTo(Consultation, { foreignKey: 'consultationId' });
@@ -202,9 +193,6 @@ Transaction.belongsTo(UserModel);
 
 UserModel.hasOne(UserTelegramModel);
 UserTelegramModel.belongsTo(UserModel);
-
-UserModel.hasMany(OtherProblem);
-OtherProblem.belongsTo(UserModel);
 
 UserModel.hasMany(Notification, { foreignKey: "userId" });
 Notification.belongsTo(UserModel, { foreignKey: "userId" });
@@ -282,7 +270,6 @@ export default {
     ConsultationProblems,
     ProfDataModel,
     Notification,
-    OtherProblem,
     ConsultationRoomModel,
     BreakModel
 }

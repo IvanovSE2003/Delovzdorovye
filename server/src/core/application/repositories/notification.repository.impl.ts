@@ -3,6 +3,7 @@ import NotificationRepository from "../../domain/repositories/notifaction.reposi
 import models from "../../../infrastructure/persostence/models/models";
 import { INotificationCreationAttributes, NotificationModelInterface } from "../../../infrastructure/persostence/models/interfaces/notification.model";
 
+
 export default class NotificationRepositoryImpl implements NotificationRepository {
     async findById(id: number): Promise<Notification | null> {
         const notifaction = await models.Notification.findByPk(id);
@@ -38,8 +39,8 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
                 }
             ],
             order: [
-                ["isRead", "ASC"],      
-                ["createdAt", "DESC"]   
+                ["isRead", "ASC"],
+                ["createdAt", "DESC"]
             ]
         });
 
@@ -83,6 +84,11 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         }
 
         const count = await models.Notification.count({ where });
+        return count;
+    }
+
+    async getCountByCount(userId: number): Promise<number> {
+        const count = await models.Notification.count({where: {userId}});
         return count;
     }
 

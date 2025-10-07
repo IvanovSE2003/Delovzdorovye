@@ -16,6 +16,7 @@ export type OptionsResponse2 = {
 
 export interface Slot {
     date: string;
+    dayWeek?: number;
     time: string;
     doctorId: number;
     status: "BOOKED" | "OPEN" | "CLOSED";
@@ -25,9 +26,8 @@ export interface AppointmentRequest {
     userId: string;
     time: string;
     problems: number[];
-    date: string; // ISO строка
+    date: string;
     otherProblem?: string;
-    // doctorId: number;
 }
 
 export interface AppointmentResponse {
@@ -97,6 +97,17 @@ export default class ConsultationsStore {
         return slots;
     }
 
+    // Получение временных ячеек если пользователь выбрал "Другая проблема"
+    async findSheduleSpecialist():Promise<Slot[]> {
+        try {
+            const response = await ConsultationService.findSheduleSpecialist();
+            return response.data;
+        } catch(e) {
+            return [] as Slot[];
+        }
+    }
+
+    // Удаление проблемы
     async deleteProblem(id: number): Promise<void> {
         try {
             await ConsultationService.deleteProblem(id);
@@ -105,6 +116,7 @@ export default class ConsultationsStore {
         }
     }
 
+    // Изменение проблемы
     async updateProblem(id: number, newData: string) {
         try {
             await ConsultationService.updateProblem(id, newData);
@@ -113,6 +125,7 @@ export default class ConsultationsStore {
         }
     }
 
+    // Создание проблемы
     async createProblem(newData: string) {
         try {
             await ConsultationService.createProblem(newData);

@@ -161,7 +161,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                             <input
                                 type="text"
                                 name="surname"
-                                value={profileEditData.surname}
+                                value={profileEditData.pending_surname}
                                 onChange={handleChangeProfileData}
                                 placeholder="Фамилия"
                                 title="Фамилия"
@@ -172,7 +172,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                             <input
                                 type="text"
                                 name="name"
-                                value={profileEditData.name}
+                                value={profileEditData.pending_name}
                                 onChange={handleChangeProfileData}
                                 placeholder="Имя"
                                 title="Имя"
@@ -183,7 +183,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                             <input
                                 type="text"
                                 name="patronymic"
-                                value={profileEditData.patronymic || ""}
+                                value={profileEditData.pending_patronymic || ""}
                                 onChange={handleChangeProfileData}
                                 placeholder="Отчество"
                                 title="Отчество"
@@ -197,7 +197,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                                     type="radio"
                                     name="gender"
                                     value="Мужчина"
-                                    checked={profileEditData.gender === "Мужчина"}
+                                    checked={profileEditData.pending_gender === "Мужчина"}
                                     title="Пол"
                                     onChange={handleChangeProfileData}
                                 />
@@ -211,7 +211,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                                     name="gender"
                                     value="Женщина"
                                     title="Пол"
-                                    checked={profileEditData.gender === "Женщина"}
+                                    checked={profileEditData.pending_gender === "Женщина"}
                                     onChange={handleChangeProfileData}
                                 />
                                 <label htmlFor="female">Женщина</label>

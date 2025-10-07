@@ -1,7 +1,5 @@
-@use './variables.scss' as *;
+@use "./variables.scss" as *;
 @use './normalize.scss';
-@use './pages/index.scss';
-
 @import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 * {
@@ -9,6 +7,10 @@
     font-optical-sizing: auto;
     font-weight: 600;
     font-style: normal;
+}
+
+body:has(.modal) {
+  overflow: hidden;
 }
 
 body::-webkit-scrollbar {
@@ -76,13 +78,27 @@ input {
 }
 
 .page-container {
-    padding: 1rem 2rem;
     border-radius: 15px;
 
     &__title {
         text-align: left;
         font-size: $title-size;
         font-weight: bolder;
-        margin: 2rem 0;
+        margin: 0 0 1rem 0;
     }
+}
+
+body::-webkit-scrollbar {
+    width: 10px;
+    box-sizing: border-box;
+}
+
+body::-webkit-scrollbar-track {
+    background: $light-color;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: $button-color;
+    border-radius: 20px;
+    border: 0.5px solid $primary-color;
 }
