@@ -15,6 +15,7 @@ import DoctorInfo from "../DoctorInfo/DoctorInfo";
 import UserProfile from "../MyProfile/UserProfile";
 import UpcomingConsultations from "../UpcomingConsultations/UpcomingConsultations";
 import type { ConsultationData } from "../../../models/consultations/ConsultationData";
+import { RouteNames } from "../../../routes";
 
 export interface IOtherProblem {
     id: number,
@@ -82,7 +83,6 @@ const Profile: React.FC = () => {
 
     // Заблокировать/разблокировать
     const changeBlocked = async (blocked: boolean) => {
-        console.log(blocked)
         try {
             let response;
             if (blocked) response = await UserService.unblockUser(Number(id));
@@ -104,11 +104,13 @@ const Profile: React.FC = () => {
 
     useEffect(() => {
         if (store.user?.id) {
+            if(store.user.id === Number(id)) navigate(RouteNames.PERSONAL)
             getDataProfile();
         }
     }, [id, store.user.id]);
 
     if (!profile) return <Loader />
+
 
     return (
         <AccountLayout>
@@ -177,19 +179,25 @@ const Profile: React.FC = () => {
                 <ShowError msg={message} mode="MESSAGE" className="user-profile__message" />
             </div>
 
-            {(store.user.role === "ADMIN" || store.user.role === "DOCTOR")&& profile.role === "PATIENT" && (
+            {(store.user.role === "ADMIN" || store.user.role === "DOCTOR") && profile.role === "PATIENT" && (
                 <>
                     <div className="user-consultations">
                         <h2 className="consultations__title">Предстоящие консультации</h2>
                         <UpcomingConsultations
                             userId={Number(id)} // Получаем консультации профиля
+                            userRole={profile.role}
                             linkerId={store.user.id} // Смотрим мы его консультации
+                            linkerRole={store.user.role}
                             refreshTrigger={refreshUpcoming}
                         />
                     </div>
                     <div className="user-consultations">
-                        <h2 className="consultations__title">Архив консультации</h2>
-                        <ArchiveConsultations />
+                        <h2 className="consultations__title">Архив консультаций</h2>
+                        <ArchiveConsultations
+                            userId={Number(id)}
+                            userRole={profile.role}
+                            linkerRole={store.user.role}
+                        />
                     </div>
                 </>
             )}

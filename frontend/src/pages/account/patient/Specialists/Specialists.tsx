@@ -7,6 +7,7 @@ import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import type { AxiosError } from "axios";
 import { URL } from "../../../../http";
 import type { IDoctor } from "../../../../models/IDoctor";
+import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 
 interface Pagination {
     currentPage: number;
@@ -20,6 +21,7 @@ const Specialists: React.FC = () => {
     const [expandedSpecializations, setExpandedSpecializations] = useState<{ [key: string]: boolean }>({});
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const toggleSpecialization = (doctorId: number, specIndex: number) => {
         const key = `${doctorId}-${specIndex}`;
@@ -31,13 +33,15 @@ const Specialists: React.FC = () => {
 
     const fetchSpecialists = async (page: number = 1, limit: number = 10) => {
         try {
+            setLoading(true);
             const response = await DoctorService.getAllDoctors(page, limit);
-            console.log(response.data.data)
             setDoctors(response.data.data);
             setPagination(response.data.pagination);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при получении специалистов: ", error.response?.data.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -45,12 +49,21 @@ const Specialists: React.FC = () => {
         fetchSpecialists(currentPage);
     }, [currentPage]);
 
+    if(loading) return (
+        <AccountLayout>
+            <div className="page-container">
+                <h1 className="consultations-doctor__main-title">Список специалистов</h1>
+                <LoaderUsefulInfo/>
+            </div>
+        </AccountLayout>
+    )
+
     return (
         <AccountLayout>
             <div className="page-container">
-                <h1 className="page-container__title">Список специалистов</h1>
+                <h1 className="consultations-doctor__main-title">Список специалистов</h1>
                 <div className="specialists">
-                    {doctors.map((doctor) => (
+                    {doctors.length > 0 ? doctors.map((doctor) => (
                         <div key={doctor.id} className="specialist-card">
                             <div className="specialist-card__header">
                                 <div className="specialist-card__avatar">
@@ -125,7 +138,12 @@ const Specialists: React.FC = () => {
                                 <div className="consultation__empty">Специализации не найдены</div>
                             )}
                         </div>
-                    ))}
+                    )) : (
+                        <div>
+                            <div className="consultation-card__icon">👤</div>
+                            <div className="consultation-card__text-empty"> В системе пока нет ни одного специалиста</div>
+                        </div>
+                    )}
                 </div>
 
                 {pagination && pagination.totalPages > 1 && (

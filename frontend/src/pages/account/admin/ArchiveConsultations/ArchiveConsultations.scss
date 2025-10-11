@@ -50,18 +50,28 @@
     font-size: 1.3rem;
 
     &--5 {
-      background: #ffcccc;
-      color: #b20000;
+      background: #d4edda;
+      color: #155724;
     }
 
     &--4 {
+      background: #c3e6cb;
+      color: #0f5132;
+    }
+
+    &--3 {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    &--2 {
       background: #ffe4b5;
       color: #b26b00;
     }
 
-    &--3 {
-      background: #fff7cc;
-      color: #7a7000;
+    &--1 {
+      background: #f8d7da;
+      color: #721c24;
     }
   }
 
@@ -76,6 +86,7 @@
 
     a {
       color: $primary-color;
+
       &:hover {
         color: $button-color-hover;
       }

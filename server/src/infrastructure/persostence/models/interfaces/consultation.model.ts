@@ -21,4 +21,4 @@ interface IConsultationAttributes {
 }
 
 export interface IConsultaitionCreationAttributes extends Optional<IConsultationAttributes, 'id'> { }
-export interface ConsultationModelInterface extends Model<IConsultationAttributes, IConsultaitionCreationAttributes>, IConsultationAttributes {}
+export interface ConsultationModelInterface extends Model<IConsultationAttributes, IConsultaitionCreationAttributes>, IConsultationAttributes { problems: any; }

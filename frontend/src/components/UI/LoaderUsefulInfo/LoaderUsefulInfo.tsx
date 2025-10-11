@@ -1,12 +1,16 @@
 import './LoaderUsefulInfo.scss';
 
-const LoaderUsefulInfo: React.FC = () => {
+interface LoaderUsefulInfoProps {
+  className?: string;
+}
+
+const LoaderUsefulInfo: React.FC<LoaderUsefulInfoProps> = ({ className="" }) => {
   return (
     <div className="loading-spinner-container">
       <div className="loading-spinner">
-        <div className="spinner-circle spinner-circle--first"></div>
-        <div className="spinner-circle spinner-circle--second"></div>
-        <div className="spinner-circle spinner-circle--third"></div>
+        <div className={`${className} spinner-circle spinner-circle--first`}></div>
+        <div className={`${className} spinner-circle spinner-circle--second`}></div>
+        <div className={`${className} spinner-circle spinner-circle--third`}></div>
       </div>
       <p className="loading-text">Загрузка...</p>
     </div>

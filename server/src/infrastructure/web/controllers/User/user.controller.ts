@@ -15,9 +15,6 @@ import ConsultationRepository from "../../../../core/domain/repositories/consult
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js";
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import { convertMoscowToUserTime } from "../../function/transferTime.js";
-import ProfDataRepository from "../../../../core/domain/repositories/profData.repository.js"
-import { access } from "fs";
-import pendingChanges from "../../types/pendingChanges.js";
 
 export default class UserController {
     constructor(
@@ -28,8 +25,7 @@ export default class UserController {
         private readonly basicDataRepository: BasicDataRepository,
         private readonly doctorRepository: DoctorRepository,
         private readonly consultationRepository: ConsultationRepository,
-        private readonly notificationRepository: NotificationRepository,
-        private readonly profDataRepository: ProfDataRepository
+        private readonly notificationRepository: NotificationRepository
     ) { }
 
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -73,6 +69,11 @@ export default class UserController {
 
     async login(req: Request, res: Response, next: NextFunction) {
         const { creditial, pinCode, twoFactorCode, twoFactorMethod } = req.body;
+
+
+        if (pinCode < 1000 || pinCode > 9999) {
+            return next(ApiError.badRequest("PIN должен быть 4-значным числом"));
+        }
 
         const user = await this.userRepository.findByEmailOrPhone(creditial.toLowerCase()) as User;
         if (!user) {
@@ -279,36 +280,43 @@ export default class UserController {
         if (!user) return next(ApiError.badRequest("Пользователь не найден"));
 
         if (data.isAnonymous === false) {
-            const requiredFields = ['name', 'surname', 'patronymic', 'dateBirth', 'gender'];
+            const requiredFields = ['pending_name', 'pending_surname', 'pending_date_birth', 'pending_gender'];
             const missingFields = requiredFields.filter(field =>
                 data[field] === null || data[field] === undefined || data[field] === ''
             );
 
-            if (missingFields.length > 0) return next(ApiError.badRequest('Не заполнены обязательные поля'));
+            if (missingFields.length > 0)
+                return next(ApiError.badRequest('Не заполнены обязательные поля'));
+        }
+
+        const dateBirthValue = data.pending_date_birth ?? data.dateBirth;
+        if (dateBirthValue && isNaN(Date.parse(dateBirthValue))) {
+            return next(ApiError.badRequest("Некорректный формат даты рождения"));
         }
 
         const userData = {
-            name: data.isAnonymous ? '' : (data.name ?? user.name),
-            surname: data.isAnonymous ? '' : (data.surname ?? user.surname),
-            patronymic: data.isAnonymous ? '' : (data.patronymic ?? user.patronymic),
-            dateBirth: data.isAnonymous ? null : (data.dateBirth ?? user.dateBirth),
-            gender: data.isAnonymous ? null : (data.gender ?? user.gender),
+            pending_name: data.isAnonymous ? '' : (data.pending_name ?? user.name),
+            pending_surname: data.isAnonymous ? '' : (data.pending_surname ?? user.surname),
+            pending_patronymic: data.isAnonymous ? '' : (data.pending_patronymic ?? user.patronymic),
+            pending_date_birth: data.isAnonymous ? null : (data.pending_date_birth ?? user.dateBirth),
+            pending_gender: data.isAnonymous ? null : (data.pending_gender ?? user.gender),
             isAnonymous: data.isAnonymous ?? user.isAnonymous,
             email: data.email ?? user.email,
             phone: data.phone ?? user.phone,
-            timeZone: data.timeZone ?? user.timeZone,
         };
 
         const updatedUser = user.cloneWithChanges(userData);
 
         let avatar: string;
+        let message: string;
         if (updatedUser.isAnonymous) {
             avatar = updatedUser.gender === "Женщина" ? "girl.png" : "man.png";
         } else {
             if (data.img && data.img !== user.img) avatar = data.img;
             else {
                 const isDefaultAvatar = user.img === "man.png" || user.img === "girl.png";
-                if (isDefaultAvatar && updatedUser.gender) avatar = updatedUser.gender === "Женщина" ? "girl.png" : "man.png";
+                if (isDefaultAvatar && updatedUser.gender)
+                    avatar = updatedUser.gender === "Женщина" ? "girl.png" : "man.png";
                 else avatar = user.img;
             }
         }
@@ -318,7 +326,10 @@ export default class UserController {
 
         if (updatedUserWithAvatar.role === "DOCTOR") {
             const changes = this.collectDoctorChanges(user, data);
-            await this.basicDataRepository.createBatchWithChangesUser(Number(updatedUserWithAvatar.id), changes);
+            await this.basicDataRepository.createBatchWithChangesUser(
+                Number(updatedUserWithAvatar.id),
+                changes
+            );
 
             for (const change of changes) {
                 switch (change.field_name) {
@@ -345,13 +356,20 @@ export default class UserController {
 
             await this.userRepository.save(user);
             result = user;
+            message = 'Изменения успешно отправлены на модерацию';
         } else {
+            updatedUserWithAvatar.name = userData.pending_name;
+            updatedUserWithAvatar.surname = userData.pending_surname;
+            updatedUserWithAvatar.patronymic = userData.pending_patronymic;
+            updatedUserWithAvatar.gender = userData.pending_gender;
+            updatedUserWithAvatar.dateBirth = userData.pending_date_birth;
             result = await this.userRepository.save(updatedUserWithAvatar);
+            message = 'Изменения успешно сохранены';
         }
-
+        
         return res.status(200).json({
             success: true,
-            message: "Изменения сохранены",
+            message: message,
             user: result,
         });
     }
@@ -444,12 +462,14 @@ export default class UserController {
             if (user.img && user.img !== 'man.png' && user.img !== 'girl.png') {
                 await this.fileService.deleteFile(user.img);
             }
-            updatedUser = await this.userRepository.save(user.updateAvatar(fileName));
+            user.pending_img = fileName;
+            user.img = fileName;
+            updatedUser = await this.userRepository.save(user);
         }
-
 
         return res.status(200).json({
             img: updatedUser.img,
+            pending_img: updatedUser.pending_img,
             surname: updatedUser.surname,
             name: updatedUser.name,
             patronymic: updatedUser.patronymic,
@@ -480,6 +500,7 @@ export default class UserController {
 
         return res.status(200).json({
             img: updatedUser.img,
+            pending_img: updatedUser.pending_img,
             surname: updatedUser.surname,
             name: updatedUser.name,
             patronymic: updatedUser.patronymic,
@@ -547,16 +568,17 @@ export default class UserController {
         const user = await this.userRepository.findById(Number(userId));
         if (!user) return next(ApiError.badRequest('Пользователь не найден'));
 
-        const consultations = await this.consultationRepository.findByUserId(user.id, Number(pageRec), Number(limitRec));
-        if (consultations && consultations.length === 0) return next(ApiError.badRequest('Консультации для пользователя не найдены'));
+        const consultations = await this.consultationRepository.findAll(Number(pageRec), Number(limitRec), {consultation_status: "ARCHIVE", userId: user.id})
+        if (consultations && consultations.consultations.length === 0) return next(ApiError.badRequest('Консультации для пользователя не найдены'));
 
         res.status(200).json(
-            consultations.map(consult => {
+            consultations.consultations.map(consult => {
                 const result = convertMoscowToUserTime(consult.date, consult.time, user.timeZone);
                 return {
                     doctorName: consult.doctor?.user.name,
                     doctorSurname: consult.doctor?.user.surname,
                     doctorPatronymic: consult.doctor?.user.patronymic,
+                    doctorUserId: consult.doctor?.user.id,
                     date: result.newDate,
                     time: result.newTime,
                     recomendation: consult.recommendations,
@@ -569,7 +591,7 @@ export default class UserController {
     private renderHtmlPage(message: string, isSuccess: boolean): string {
         const title = isSuccess ? 'Успешная активация' : 'Ошибка активации';
         const color = isSuccess ? 'green' : 'red';
-        const clientUrl = process.env.CLIENT_URL_CLOUD;
+        const clientUrl = process.env.CLIENT_URL;
 
         return `
             <!DOCTYPE html>
@@ -619,11 +641,11 @@ export default class UserController {
 
     private collectDoctorChanges(user: User, data: Partial<User>) {
         const allowedFields: (keyof User)[] = [
-            "name",
-            "surname",
-            "patronymic",
-            "gender",
-            "dateBirth"
+            "pending_name",
+            "pending_surname",
+            "pending_patronymic",
+            "pending_gender",
+            "pending_date_birth"
         ];
 
         return Object.entries(data)
@@ -645,9 +667,9 @@ export default class UserController {
 }
 
 const FIELD_TRANSLATIONS: Record<string, string> = {
-    name: 'Имя',
-    surname: 'Фамилия',
-    patronymic: 'Отчество',
-    gender: 'Пол',
-    dateBirth: 'Дата рождения'
+    pending_name: 'Имя',
+    pending_surname: 'Фамилия',
+    pending_patronymic: 'Отчество',
+    pending_gender: 'Пол',
+    pending_date_birth: 'Дата рождения'
 };

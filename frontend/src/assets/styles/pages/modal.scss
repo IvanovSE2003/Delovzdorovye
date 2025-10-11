@@ -26,29 +26,9 @@
         border-radius: 20px;
     }
 
-    &__title {
-        font-size: 2rem;
-        font-weight: bolder;
-        margin: 0;
-        color: white;
-        text-align: center;
-    }
-
-    &__close {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        font-size: 2rem;
-        color: red;
-        border: none;
-        background: none;
-        transition: all 0.4s ease-in-out;
-
-        &:hover {
-            cursor: pointer;
-            font-size: 2.3rem;
-            top: 13px;
-            right: 13px;
+    &__header {
+        h1 {
+            margin: 0;
         }
     }
 
@@ -102,7 +82,7 @@
         scrollbar-color: #08A88A white;
 
         &::-webkit-scrollbar {
-            width: 8px; 
+            width: 8px;
         }
 
         &::-webkit-scrollbar-track {
@@ -256,8 +236,8 @@
     }
 
     &-content {
-        background: $primary-color;
-        padding: 20px;
+        background: $button-gradient;
+        padding: 1rem 2rem;
         border-radius: 8px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         animation: slideIn 0.3s ease-out forwards;
@@ -295,6 +275,7 @@
 
     &-body {
         padding: 10px;
+        margin: 0 1.1rem;
 
         textarea {
             padding: 10px;
@@ -308,7 +289,33 @@
 
             &:focus {
                 outline: none;
-                box-shadow: 0 0 0 6px $shadow-color;
+            }
+        }
+
+        &__comment {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            text-align: justify;
+            padding: 10px 2rem;
+            margin: 0 2rem;
+            max-height: 500px;
+            overflow-y: auto;
+
+            &::-webkit-scrollbar {
+                width: 15px;
+                box-sizing: border-box;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background-color: $button-color;
+                border-radius: 5px;
+                border: 0.5px solid $primary-color;
+
+                &:hover {
+                    background-color: $button-color-hover;
+                }
             }
         }
     }
@@ -394,29 +401,6 @@
     width: 40%;
     padding: 2rem 3rem;
     color: white;
-
-    &__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    &__title {
-        font-size: 2.2rem;
-        font-weight: bold;
-    }
-
-    &__close {
-        background: none;
-        border: none;
-        fill: white;
-        transition: fill 0.5s ease;
-
-        &:hover {
-            fill: red;
-            cursor: pointer;
-        }
-    }
 
     &__text {
         font-size: 1.3rem;

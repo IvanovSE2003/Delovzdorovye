@@ -7,7 +7,7 @@ import ConsultationsPat from "../pages/account/patient/Consultations";
 import Recomendations from "../pages/account/patient/Recomendations/Recomendations";
 import MainPat from "../pages/account/patient/Main/Main";
 import SpecialistsPat from "../pages/account/patient/Specialists/Specialists";
-import Payment from "../pages/account/patient/Payment";
+import Payment from "../pages/account/patient/Payments/Payments";
 import Notifications from "../features/account/Notifications/Notifications";
 import SomeProfile from "../features/account/SomeProfile/SomeProfile";
 import UsefulInfoPat from "../pages/account/patient/UsefulInfo";

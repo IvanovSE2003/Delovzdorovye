@@ -10,6 +10,7 @@ import ShowError from "../../ShowError/ShowError";
 import { processError } from "../../../../helpers/processError";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 import type { Consultation } from "../../../../models/consultations/Consultation";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface ConsultationModalProps {
     isOpen: boolean;
@@ -18,7 +19,7 @@ interface ConsultationModalProps {
     consultationData: Consultation;
 }
 
-const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord, consultationData,}) => {
+const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, consultationData, }) => {
     const store = new ConsultationsStore();
 
     const [problems, setProblems] = useState<OptionsResponse[]>([]);
@@ -229,8 +230,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
     return (
         <div className="modal">
             <div className="consultation-modal">
-                <h2 className="consultation-modal__title">Редактирование консультации</h2>
-                <button className="consultation-modal__close" onClick={onClose}>×</button>
+                <ModalHeader title="Редактирование консультации" onClose={onClose} />
 
                 <p className="consultation-modal__client">
                     Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
@@ -282,7 +282,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({isOpen, onClose, onRecord,
                                         "Дата и время не выбраны"
                                     )}
                                     {doctorId && selectedSpecialist && selectedDate && selectedTime && (
-                                        <><br/>Специалист: {selectedSpecialist.label}</>
+                                        <><br />Специалист: {selectedSpecialist.label}</>
                                     )}
                                 </p>
                                 {!editDateTime && (

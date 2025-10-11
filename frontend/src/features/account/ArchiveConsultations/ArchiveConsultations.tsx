@@ -12,13 +12,16 @@ import { processError } from '../../../helpers/processError';
 import { getDateLabel } from '../../../helpers/formatDatePhone';
 import type { Consultation } from '../../../models/consultations/Consultation';
 import type { ConsultationData } from '../../../models/consultations/ConsultationData';
+import { Link } from 'react-router';
+import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 interface ArchiveConsultationsProps {
-    userId?: number;
-    mode?: Role;
+    userId: number;
+    userRole: Role;
+    linkerRole: Role;
 }
 
-const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mode = "ADMIN" }) => {
+const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, linkerRole, userRole }) => {
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
     const [modalRepeat, setModalRepeat] = useState(false);
@@ -26,17 +29,25 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [isVisible, setIsVisible] = useState(true);
-
-    const limit = mode === "PATIENT" ? 2 : 4;
+    const [loading, setLoading] = useState<boolean>(false);
+    
+    const limit = linkerRole === "PATIENT" ? 2 : 4;
 
     const fetchConsultations = async (pageNumber = 1) => {
         try {
-            const filters: any = { consultation_status: "ARCHIVE" };
+            setLoading(true);
+            let response;
+            if (userRole === "DOCTOR")
+                response = await ConsultationService.getAllConsultations(limit, pageNumber, {
+                    consultation_status: "ARCHIVE",
+                    doctorUserId: userId
+                });
+            else
+                response = await ConsultationService.getAllConsultations(limit, pageNumber, {
+                    consultation_status: "ARCHIVE",
+                    userId: userId
+                });
 
-            if (mode === "DOCTOR") filters.doctorUserId = userId;
-            else filters.userId = userId;
-
-            const response = await ConsultationService.getAllConsultations(limit, pageNumber, filters);
             setConsultations(response.data.consultations || []);
             setTotalPages(response.data.totalPages);
             setPage(pageNumber);
@@ -44,15 +55,17 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
             processError(e, "Ошибка при получении архивных консультаций");
         } finally {
             setIsVisible(true);
+            setLoading(false);
         }
     };
 
+    const loadData = async () => {
+        setIsVisible(false);
+        await new Promise(resolve => setTimeout(resolve, 150));
+        await fetchConsultations(page);
+    };
+
     useEffect(() => {
-        const loadData = async () => {
-            setIsVisible(false);
-            await new Promise(resolve => setTimeout(resolve, 150));
-            await fetchConsultations(page);
-        };
         loadData();
     }, [page]);
 
@@ -66,23 +79,29 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
 
     const handleRepeatConsultation = async (data: ConsultationData) => {
         try {
+            setLoading(true)
             await ConsultationService.repeatAppointment(data);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при повторе консультации:", error.response?.data.message);
         } finally {
             setModalRepeat(false);
+            await loadData();
+            setLoading(false);
         }
     };
 
     const handleRateConsultation = async (score: number, review: string, id: number) => {
         try {
+            setLoading(true);
             await ConsultationService.rateAppointment(id, score, review);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при оценке консультации:", error.response?.data.message);
         } finally {
             setModalRate(false);
+            await loadData();
+            setLoading(false);
         }
     };
 
@@ -90,6 +109,8 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
         setSelectedConsultation(consultation);
         modalSetter(true);
     };
+
+    if (loading) return <LoaderUsefulInfo/>;
 
     if (!consultations || (consultations && consultations.length === 0)) return (
         <div className="consultation-card">
@@ -115,9 +136,9 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
                 onRecord={handleRateConsultation}
             />
 
-            <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'} ${mode === "PATIENT" ? "consultations__archives" : ""}`}>
+            <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'} ${linkerRole === "PATIENT" ? "consultations__archives" : ""}`}>
                 {consultations.map((consultation) => (
-                    <div key={consultation.id} className="consultation-card">
+                    <div key={consultation.id} className="archive-consultation-card  consultation-card">
                         <div className="consultation-card__time">
                             <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
                             <span className="consultation-card__hours">{consultation.durationTime}</span>
@@ -125,12 +146,12 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
 
                         <div className="consultation-card__info">
                             <div className="consultation-card__specialist">
-                                {mode === "DOCTOR" ? (
+                                {linkerRole === "DOCTOR" ? (
                                     <>
                                         Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic) ? (
                                             <span>Анонимный пользователь</span>
                                         ) : (
-                                            <span>{consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""}</span>
+                                            <Link to={`/profile/${consultation.PatientUserId}`}>{consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""}</Link>
                                         )}
                                     </>
                                 ) : (
@@ -139,20 +160,11 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
                                         <a target="_blank" href={`/profile/${consultation.DoctorUserId}`}>
                                             {consultation.DoctorSurname} {consultation.DoctorName} {consultation.DoctorPatronymic}
                                         </a>
-
-                                        {consultation.PatientScore && (
-                                            <>
-                                                <br />
-                                                <span className="consultation-card__details">
-                                                    Ваша оценка: {consultation.PatientScore}
-                                                </span>
-                                            </>
-                                        )}
                                     </>
                                 )}
                             </div>
 
-                            {mode !== "PATIENT" && (
+                            {linkerRole !== "PATIENT" && (
                                 <>
                                     <div className="consultation-card__symptoms">
                                         Симптомы: {' '}
@@ -166,14 +178,31 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
 
                                     <div className="consultation-card__details">
                                         Подробно: {' '}
-                                        <span>{consultation.other_problem || "Не указано"}</span>
+                                        <span>{consultation.descriptionProblem || "Не указано."}</span>
+                                    </div>
+
+                                    <div className="consultation-card__recomendations">
+                                        Рекомендации: {' '}
+                                        {consultation.recommendations ? (
+                                            <a href={`${API_URL}/${consultation.recommendations}`}>Файл</a>
+                                        ) : (
+                                            <span>Файл не приложен.</span>
+                                        )}
                                     </div>
                                 </>
                             )}
+
+                            <div className="consultation-card__details">
+                                Ваша оценка: {`  `}
+                                <span className="rating-stars">
+                                    {'★'.repeat(consultation.PatientScore)}
+                                    {'☆'.repeat(5 - consultation.PatientScore)}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="consultation-card__actions">
-                            {mode === "PATIENT" && !consultation.PatientScore && (
+                            {linkerRole === "PATIENT" && !consultation.PatientScore && (
                                 <button
                                     className="consultation-card__button consultation-card__button--rate"
                                     onClick={() => openModal(consultation, setModalRate)}
@@ -182,24 +211,13 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
                                 </button>
                             )}
 
-                            {(mode === "PATIENT" || mode === "ADMIN") && (
+                            {linkerRole !== "DOCTOR" && (
                                 <button
                                     className="consultation-card__button consultation-card__button--repeat"
                                     onClick={() => openModal(consultation, setModalRepeat)}
                                 >
                                     Повторить
                                 </button>
-                            )}
-
-                            {mode !== "PATIENT" && (
-                                <div className="consultation-card__recomendations">
-                                    Рекомендации: {' '}
-                                    {consultation.recommendations ? (
-                                        <a href={`${API_URL}/${consultation.recommendations}`}>Файл</a>
-                                    ) : (
-                                        "Файл не приложен"
-                                    )}
-                                </div>
                             )}
                         </div>
 
@@ -212,6 +230,7 @@ const ArchiveConsultations: React.FC<ArchiveConsultationsProps> = ({ userId, mod
                 page={page}
                 totalPages={totalPages}
                 onChange={handlePageChange}
+                className="consultation-card__pagination"
             />
         </>
     );

@@ -9,7 +9,7 @@ router.get('/user',authMiddlewareInstance,  (req: Request, res: Response, next: 
 
 router.put('/read', authMiddlewareInstance, (req: Request, res: Response, next: NextFunction) => notificationContorller.readNotification(req, res, next));
 router.put('/read/all/:userId',authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => notificationContorller.readAllNotification(req, res, next))
-router.get('/count',authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => notificationContorller.getCountNotification(req, res, next));
+router.get('/count/:userId',authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => notificationContorller.getCountNotification(req, res, next));
 
 router.delete("/delete/:id",authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => notificationContorller.delete(req, res, next));
 router.delete("/delete/all/:userId",authMiddlewareInstance,  (req: Request, res: Response, next: NextFunction) => notificationContorller.deleteAllNotification(req, res, next));

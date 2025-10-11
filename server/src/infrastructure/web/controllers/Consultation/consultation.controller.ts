@@ -94,7 +94,7 @@ export default class ConsultationController {
 
             const durationTime = consultation.duration
                 ? `${adjustedTime.newTime} - ${formatEndTime(adjustedTime.newTime, consultation.duration)}`
-                : 'Не указано';
+                : 'Не указано.';
 
             const result: any = {
                 id: consultation.id,
@@ -140,8 +140,6 @@ export default class ConsultationController {
 
     async appointment(req: Request, res: Response, next: NextFunction) {
         const { date, time, problems, doctorId, userId, descriptionProblem, hasOtherProblem } = req.body;
-
-        console.log(descriptionProblem)
 
         const [user, doctor] = await Promise.all([
             this.userRepository.findById(Number(userId)),
@@ -219,6 +217,7 @@ export default class ConsultationController {
                 doctorUser.id
             )
         ];
+
         await Promise.all(notifications.map(n => this.notificationRepository.save(n)));
         // this.timerService.startTimer(consultation.id, reservationExpiresAt);
         return res.status(200).json(consultation);
@@ -424,19 +423,18 @@ export default class ConsultationController {
 
     async repeatConsultation(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { date, time } = req.body;
+        const { date, time, descriptionProblem } = req.body;
 
         const consultation = await this.consultationRepository.findById(Number(id));
-
         if (!consultation) return next(ApiError.badRequest('Консультация не найдена'));
 
         const [user, doctorUser] = await Promise.all([
             this.userRepository.findById(consultation.userId),
-            this.doctorReposiotry.findById(consultation.doctorId)
+            this.userRepository.findByDoctorId(consultation.doctorId)
         ]);
 
         if (!user) return next(ApiError.badRequest('Пользователь не найден'));
-        if (!doctorUser) return next(ApiError.badRequest('Специалист не найден'));
+        if (!doctorUser) return next(ApiError.badRequest('Специалист-пользователь не найден'));
 
         const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
         const timeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, consultation.doctorId, moscowDate, "OPEN");
@@ -447,13 +445,15 @@ export default class ConsultationController {
         const reservationExpiresAt = new Date();
         reservationExpiresAt.setMinutes(reservationExpiresAt.getMinutes() + 30);
 
+        const problems = await this.consultationRepository.findProblemForConsult(consultation.id);
+
         const newConsultation = await this.consultationRepository.create(
             new Consultation(
                 0,
                 "UPCOMING",
                 "PAYMENT",
-                null,
-                false,
+                descriptionProblem,
+                consultation.has_other_problem,
                 null,
                 60,
                 null,
@@ -461,17 +461,23 @@ export default class ConsultationController {
                 reservationExpiresAt,
                 null,
                 moscowTime,
-                date,
+                moscowDate,
                 consultation.userId,
                 consultation.doctorId
             )
         );
 
+        if (!consultation.has_other_problem) {
+            await this.addProblemsToConsultation(newConsultation.id, problems);
+        }
+
+        await this.timeSlotRepository.save(timeSlot.setStatus("BOOKED"));
+
         await this.notificationRepository.save(
             new Notification(
                 0,
                 "Повтор консультации",
-                `Был сделан повтор на консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name} на ${newConsultation.date} в ${newConsultation.time}.`,
+                `Был сделан повтор консультацию у ${newConsultation.doctor?.user.surname} ${newConsultation.doctor?.user.name} ${newConsultation.doctor?.user.patronymic}.`,
                 "CONSULTATION",
                 false,
                 newConsultation,
@@ -495,7 +501,7 @@ export default class ConsultationController {
 
         res.status(200).json({
             success: true,
-            message: `Вы повторили консультацию у специалиста ${user?.name} ${user?.name} ${user?.name} в ${newConsultation.date} на ${consultation.time}`
+            message: `Вы успешно повторили консультацию.`
         });
     }
 

@@ -5,23 +5,39 @@ import { useEffect, useState } from 'react';
 import ConsultationsStore, { type OptionsResponse } from '../../../store/consultations-store';
 import { Link } from 'react-router';
 import { processError } from '../../../helpers/processError';
+import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 const Solutions: React.FC<ElementHomePageProps> = ({ role }) => {
     const [problems, setProblems] = useState<OptionsResponse[]>([] as OptionsResponse[]);
+    const [loading, setLoading] = useState<boolean>(false);
     const store = new ConsultationsStore();
 
     const fetchProblems = async () => {
         try {
+            setLoading(true);
             const data = await store.getProblems();
             setProblems(data);
         } catch (e) {
             processError(e, "Ошибка при получении данных (решения)")
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(() => {
         fetchProblems();
     }, [])
+
+    if (loading) return (
+        <section className="solutions container" id="solutions">
+            <AnimatedBlock>
+                <div className="container__box">
+                    <h2 className='solutions__title'>Какие проблемы решаем?</h2>
+                    <LoaderUsefulInfo />
+                </div>
+            </AnimatedBlock>
+        </section>
+    )
 
     return (
         <section className="solutions container" id="solutions">

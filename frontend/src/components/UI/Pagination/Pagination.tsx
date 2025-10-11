@@ -5,13 +5,14 @@ interface PaginationProps {
     page: number;
     totalPages: number;
     onChange: (page: number) => void;
+    className?: string;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange }) => {
+const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onChange, className="" }) => {
     if (totalPages <= 1) return;
 
     return (
-        <div className="pagination">
+        <div className={`${className} pagination`}>
             <button
                 className="pagination__btn"
                 disabled={page === 1}

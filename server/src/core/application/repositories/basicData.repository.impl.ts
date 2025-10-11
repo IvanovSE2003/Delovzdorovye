@@ -2,6 +2,7 @@ import BasicData from "../../domain/entities/basicData.entity.js";
 import BatchRepository from "../../domain/repositories/basicData.repository.js";
 import models from "../../../infrastructure/persostence/models/models.js";
 import { BatchModelInterface, IBatchCreationAttributes } from "../../../infrastructure/persostence/models/interfaces/batch.model.js";
+import { broadcastNotificationCount } from "../../../infrastructure/web/function/countDataAll.js";
 
 export default class BatchRepositoryImpl implements BatchRepository {
     async findById(id: number): Promise<BasicData | null> {
@@ -38,6 +39,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
 
     async create(basicData: BasicData): Promise<BasicData> {
         const basicDataModel = await models.BasicDataModel.create(this.mapToPersistence(basicData));
+
+        const countProf = await models.ProfDataModel.count();
+        const countBasic = await this.getCount();
+        await broadcastNotificationCount(countProf + countBasic, "changes_count");
+
         return this.mapToDomainBasicData(basicDataModel);
     }
 
@@ -47,7 +53,7 @@ export default class BatchRepositoryImpl implements BatchRepository {
         });
 
         if (affectedCount === 0) {
-            throw new Error("Batch not found");
+            throw new Error("Изменение базовых данных не найдено");
         }
 
         const updatedBasicData = await models.BasicDataModel.findByPk(basicData.id);
@@ -59,7 +65,12 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }
 
     async delete(id: number): Promise<void> {
-        await models.BasicDataModel.destroy({ where: { id } });
+        const deleteCount = await models.BasicDataModel.destroy({ where: { id } });
+        if (deleteCount !== 0) {
+            const countProf = await models.ProfDataModel.count();
+            const countBasic = await this.getCount();
+            await broadcastNotificationCount(countProf + countBasic, "changes_count");
+        }
     }
 
     async createBatchWithChangesUser(userId: number, changes: Array<{
@@ -115,6 +126,11 @@ export default class BatchRepositoryImpl implements BatchRepository {
             }
 
             await transaction.commit();
+
+            const countProf = await models.ProfDataModel.count();
+            const countBasic = await this.getCount();
+            await broadcastNotificationCount(countProf + countBasic, "changes_count")
+
             return createdBasicDatas;
         } catch (error) {
             await transaction.rollback();

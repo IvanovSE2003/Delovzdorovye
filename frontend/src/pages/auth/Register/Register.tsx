@@ -6,7 +6,7 @@ import { useNavigate } from "react-router";
 import type { FormAuthProps, RegistrationData, Role, Gender } from "../../../models/Auth";
 import { defaultRoleRoutes } from "../../../routes";
 import { ITimeZones } from "../../../models/TimeZones";
-import Loader from "../../../components/UI/Loader/Loader";
+import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 
 const Step1Form = lazy(() => import("./Step1"));
 const Step2Form = lazy(() => import("./Step2"));
@@ -160,12 +160,14 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       const age = calculateAge(userDetails.dateBirth);
       if (age < 18 || age > 100) {
         setError({ id: Date.now(), message: "Возраст должен быть от 18 до 100 лет" });
+        setLoading(false);
         return;
       }
     }
 
     if (replyPinCode !== userDetails.pinCode) {
       setError({ id: Date.now(), message: "Пин-коды не совпадают!" });
+      setLoading(false);
       return;
     }
 
@@ -211,8 +213,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
     const data = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
     if (data.success) {
-      console.log(data)
-      navigate(defaultRoleRoutes[data.role]);
+      navigate(defaultRoleRoutes[data.role || -1]);
     } else {
       setError({ id: Date.now(), message: data.message });
     }
@@ -244,7 +245,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
 
   if (loading) return (
     <div className="auth__container">
-      <Loader />
+      <LoaderUsefulInfo />
     </div>
   )
 

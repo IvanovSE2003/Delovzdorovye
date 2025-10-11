@@ -19,7 +19,7 @@ export default class DoctorController {
         private readonly userRepository: UserRepository,
         private readonly specializationRepository: SpecializationRepository,
         private readonly timeSlotRepository: TimeSlotRepository,
-        private readonly notificationReposiotory: NotificationRepository
+        private readonly notificationReposiotory: NotificationRepository,
     ) { }
 
     async getAllDoctors(req: Request, res: Response, next: NextFunction) {
@@ -157,6 +157,11 @@ export default class DoctorController {
         const { startDate, endDate } = req.body;
         const { userId } = req.params;
 
+        const user = await this.userRepository.findById(Number(userId));
+        if(!user) {
+            return next(ApiError.badRequest('Пользователь не найден'));
+        }
+
         const start = new Date(startDate);
         const end = new Date(endDate);
         const now = new Date();
@@ -182,9 +187,10 @@ export default class DoctorController {
                 false,
                 null,
                 null,
-                Number(userId)
+                user.id
             )
         );
+
         res.status(200).json({
             success: true,
             message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`

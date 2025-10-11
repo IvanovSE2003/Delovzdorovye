@@ -79,7 +79,6 @@ const RecordForm: React.FC<ConsultationFormProps> = ({
 
       try {
         const schedule = await store.getSchedule(specialist.value, Number(userId));
-        console.log(schedule)
         setSlots(schedule || []);
 
         if (initialDate && initialTime && !initialDataLoaded) {

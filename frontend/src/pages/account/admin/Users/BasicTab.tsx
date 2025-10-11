@@ -1,3 +1,4 @@
+import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 import Search from "../../../../components/UI/Search/Search";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
 import type { User } from "../../../../models/Auth";
@@ -8,6 +9,7 @@ interface BasicTabProps {
   onSearchChange: (term: string) => void;
   selectedRole: string | null;
   onRoleChange: (role: string) => void;
+  loading: boolean;
 }
 
 const BasicTab: React.FC<BasicTabProps> = ({
@@ -16,7 +18,35 @@ const BasicTab: React.FC<BasicTabProps> = ({
   onSearchChange,
   selectedRole,
   onRoleChange,
+  loading
 }) => {
+  if (loading) return (
+    <>
+      <Search
+        placeholder="Поиск по ФИО, телефону, почте"
+        value={searchTerm}
+        onChange={onSearchChange}
+      />
+
+      <Tabs
+        tabs={[
+          { name: "ALL", label: "Все" },
+          { name: "ADMIN", label: "Администраторы" },
+          { name: "DOCTOR", label: "Специалисты" },
+          { name: "PATIENT", label: "Пользователи" }
+        ]}
+        filter
+        activeTab={selectedRole}
+        onTabChange={onRoleChange}
+        paramName="role"
+        syncWithUrl={true}
+      />
+
+      <LoaderUsefulInfo/>
+    </>
+  )
+
+
   return (
     <>
       <Search
@@ -67,7 +97,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
                 </td>
                 <td>
                   <a href={`/profile/${user.id}`}>
-                    {(user.name && user.surname && user.patronymic)
+                    {(user.name && user.surname)
                       ? <div> {user.surname} {user.name} {user.patronymic} </div>
                       : <div> Анонимный пользователь </div>
                     }

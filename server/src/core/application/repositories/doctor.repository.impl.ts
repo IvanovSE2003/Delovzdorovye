@@ -31,14 +31,17 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             include: [
                 {
                     model: SpecializationModel,
-                    through: { attributes: ['diploma', 'license'] },
                     attributes: ['id', 'name'],
+                    through: {
+                        attributes: ['diploma', 'license']
+                    }
                 }
             ]
         });
 
         return doctor ? this.mapToDomainDoctor(doctor) : null;
     }
+
 
     async findByUserIdSimple(userId: number): Promise<Doctor | null> {
         const doctor = await DoctorModel.findOne({
@@ -54,19 +57,18 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
             throw new Error("Проблемы не указаны");
         }
 
-        let problemIds: number[] = [];
-
-        if (Array.isArray(problems)) {
-            problemIds = problems.map(p => Number(p));
-        } else {
-            problemIds = [Number(problems)];
-        }
+        const problemIds = Array.isArray(problems)
+            ? problems.map(p => Number(p))
+            : [Number(problems)];
 
         const doctors = await DoctorModel.findAll({
             where: {
                 isActivated: true,
-                competencies: {
-                    [Op.overlap]: problemIds
+                competencies: { [Op.overlap]: problemIds },
+                id: {
+                    [Op.in]: sequelize.literal(`(
+                    SELECT DISTINCT "doctorId" FROM "doctor_specializations"
+                )`)
                 }
             },
             include: [
@@ -92,6 +94,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
 
         return sortedDoctors;
     }
+
 
     async findAll(
         page?: number,
@@ -222,7 +225,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
                         time: time,
                         status: "OPEN"
                     },
-                    required: true 
+                    required: true
                 }
             ]
         });
@@ -247,7 +250,7 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
     async update(doctor: Doctor): Promise<Doctor> {
         const transaction = await sequelize.transaction();
         try {
-            const [affectedCount, updatedDoctors] = await DoctorModel.update(
+            await DoctorModel.update(
                 this.mapToPersistence(doctor),
                 {
                     where: { id: doctor.id },
@@ -368,45 +371,13 @@ export default class DoctorRepositoryImpl implements DoctorRepository {
         }
     }
 
-    async deleteLisinseDiploma(doctor: Doctor, license: string, diploma: string, specialization: string): Promise<void> {
-        const transaction = await sequelize.transaction();
-        try {
-            const specializationModel = await models.SpecializationModel.findOne({
-                where: { name: specialization },
-                transaction
-            });
-
-            if (!specializationModel) {
-                throw new Error('Специализация не найдена');
-            }
-
-            const result = await models.DoctorSpecialization.destroy({
-                where: {
-                    doctorId: doctor.id,
-                    specializationId: specializationModel.id
-                },
-                transaction
-            });
-
-            if (result === 0) {
-                throw new Error('Связь доктора со специализацией не найдена');
-            }
-
-            await transaction.commit();
-
-        } catch (error) {
-            await transaction.rollback();
-            throw error;
-        }
-    }
-
     private mapToDomainDoctor(doctorModel: any): Doctor {
         const profData = Array.isArray(doctorModel.specializations)
             ? doctorModel.specializations.map((spec: any) => ({
                 id: spec.id,
                 specialization: spec.name,
-                diploma: spec.doctor_specializations?.diploma || null,
-                license: spec.doctor_specializations?.license || null
+                diploma: spec.doctor_specialization?.diploma || null,
+                license: spec.doctor_specialization?.license || null
             }))
             : [];
 

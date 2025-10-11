@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./RateModal.scss";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface ModalProps {
     isOpen: boolean;
@@ -40,14 +41,7 @@ const RateModal: React.FC<RateModalProps> = ({ isOpen, onClose, onRecord, consul
     return (
         <div className="modal">
             <div className='consultation-modal shift-modal rate-modal'>
-                <h2 className="consultation-modal__title">Выберите оценку</h2>
-
-                <button
-                    className="rate-modal__close"
-                    onClick={onClose}
-                >
-                    X
-                </button>
+                <ModalHeader title="Выберите оценку" onClose={onClose} />
 
                 <div className="rate-modal__stars">
                     {[1, 2, 3, 4, 5].map((star) => (

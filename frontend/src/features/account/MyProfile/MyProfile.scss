@@ -4,7 +4,7 @@
 .user-profile {
   background-color: $profile-color;
   padding: 2rem 4rem;
-  border-radius: 8px;
+  border-radius: 15px;
   margin: 0 auto;
   box-sizing: border-box;
   position: relative;
@@ -40,6 +40,7 @@
     font-size: 1.2rem;
     width: 100%;
     color: $text-color;
+    margin-top: 1rem;
   }
 
   &__admin {
@@ -59,6 +60,14 @@
     font-weight: bolder;
     text-align: left;
     margin-bottom: 20px;
+  }
+
+  &__title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: $gray-color;
+    margin-bottom: 1rem;
   }
 
   &__role {
@@ -87,6 +96,11 @@
     flex-direction: column;
     align-items: center;
     gap: 15px;
+  }
+
+  &__error {
+    text-align: center;
+    margin: 0;
   }
 
   &__avatar {
@@ -221,15 +235,4 @@
       color: $red-color;
     }
   }
-}
-
-.error-message {
-  color: $red-color;
-  font-size: 1rem;
-  margin-left: 5px;
-  margin-bottom: 5px;
-}
-
-.input-error {
-  box-shadow: 0 0 3px $red-color !important;
 }

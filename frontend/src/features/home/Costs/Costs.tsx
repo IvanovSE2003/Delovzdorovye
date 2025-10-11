@@ -6,20 +6,25 @@ import type { ElementHomePageProps } from '../../../pages/Homepage';
 import { processError } from '../../../helpers/processError';
 import './Costs.scss'
 import ShowError from '../../../components/UI/ShowError/ShowError';
+import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
     const [data, setData] = useState<InfoBlock[]>([] as InfoBlock[]);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" })
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Получение данных о стоимости услуг
     const fetchData = async () => {
         try {
+            setLoading(true);
             const response = await HomeService.getContent("cost_consultation");
             setData(response.data.contents);
         } catch (e) {
             processError(e, "Ошибка при получении данных о стоимости услуг", setError);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -49,17 +54,20 @@ const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
     // Сохранение измененного блока
     const handleSave = async (data: InfoBlock) => {
         try {
+            setLoading(true);
             await HomeService.editContent("cost_consultation", data);
             setMessage({ id: Date.now(), message: "Блок стомости успешно изменен" });
         } catch (e) {
             processError(e, "Ошибка при сохранение блока стоимости", setError);
         } finally {
             setIsEditing(false);
+            setLoading(false);
         }
     };
 
     // Добавление нового блока
     const handleAdd = async () => {
+        setLoading(true);
         const newBlock: InfoBlock = {
             id: Date.now(),
             header: "Заголовок",
@@ -76,19 +84,34 @@ const Costs: React.FC<ElementHomePageProps> = ({ role }) => {
             processError(e, "Ошибка при добавлении блока стоимости", setError);
             setData(prev => prev.filter(item => item.id !== newBlock.id));
         }
+        setLoading(false);
     };
 
     // Удаление блока
     const handleDelete = async (id: number) => {
         try {
+            setLoading(true);
             await HomeService.deleteContent(id);
             await new Promise(resolve => setTimeout(resolve, 1000));
             await fetchData();
             setMessage({ id: Date.now(), message: "Блок стоимости успешно удален" });
         } catch (e) {
             processError(e, "Ошибка при удалении блока стоимости", setError);
+        } finally {
+            setLoading(false);
         }
     }
+
+    if (loading) return (
+        <AnimatedBlock>
+            <div className="costs container" id="costs">
+                <div className="container__box">
+                    <h2 className="costs__title">Стоимость консультации</h2>
+                    <LoaderUsefulInfo/>
+                </div>
+            </div>
+        </AnimatedBlock>
+    )
 
     return (
         <AnimatedBlock>

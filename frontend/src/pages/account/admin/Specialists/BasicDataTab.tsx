@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import type { IBasicData } from "../../../../models/IDatas";
 import { processError } from "../../../../helpers/processError";
 import { URL } from "../../../../http";
-import AdminService from "../../../../services/AdminService";
+import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 
 const FILE_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
@@ -23,20 +23,20 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     setMessage,
 }) => {
     const { store } = useContext(Context);
-
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
     const [rejectReason, setRejectReason] = useState("");
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
-
+    const [loading, setLoading] = useState<boolean>(false);
     const [modalImage, setModalImage] = useState<{ open: boolean, value: string }>({ open: false, value: "" });
 
-    // Хэлпиры для полей
+    // Это файл?
     const isFile = (value: string) =>
         !!value && FILE_EXTENSIONS.some((ext) => value.toLowerCase().endsWith(ext));
 
+    // Это изображение?
     const isImage = (filename: string) =>
         IMAGE_EXTENSIONS.some((ext) => filename.toLowerCase().endsWith(ext));
 
@@ -61,6 +61,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
         };
     }, [modalImage.open]);
 
+    // Обработчик специальных полей
     const renderValue = (value: string) => {
         if (!value) return "Пустое поле";
 
@@ -70,17 +71,15 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             if (isImage(value)) {
                 return (
                     <a
-                        style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
                         onClick={() => setModalImage({ open: true, value: value })}
                         onMouseEnter={(e) => handleImageHover(e, value)}
-                        onMouseLeave={handleImageLeave}
+                        onMouseLeave={() => setPreviewImage(null)}
                         onMouseMove={(e) => setPreviewPosition({ x: e.clientX, y: e.clientY })}
                     >
                         Изображение
                     </a>
                 );
             }
-
             return (
                 <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                     {value}
@@ -91,22 +90,24 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
         return value;
     };
 
+    // Обработчик наведения на картинку с изображением
     const handleImageHover = (e: React.MouseEvent, imgPath: string) => {
         setPreviewImage(`${URL}/${imgPath}`);
         setPreviewPosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleImageLeave = () => setPreviewImage(null);
-
     // Получение данных
     const getBasicAll = async () => {
         try {
+            setLoading(true);
             const data = await store.getBasicDataAll(10, 1);
             if (data?.basicDatas) {
                 setBasicDatas(data.basicDatas);
             }
         } catch (e) {
             processError(e, "Ошибка при загрузке данных");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -127,10 +128,13 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     // Подтверждить изменения пользователя
     const confirm = async (id: number) => {
         try {
+            setLoading(true);
             const data = await store.confirmBasicData(id);
             data.success ? removeBatch(id, data.message) : setError({ id: Date.now(), message: data.message });
         } catch (e) {
             processError(e, "Ошибка при изменении пользователя", setError)
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -142,6 +146,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
         }
 
         try {
+            setLoading(true);
             const data = await store.rejectBasicData(currentBatchId, rejectReason);
 
             if (data.success) {
@@ -152,15 +157,18 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             }
         } catch (e) {
             processError(e, "Произошла ошибка при отклонении", setError);
+        } finally {
+            setLoading(false)
         }
     };
 
-    // Модалка
+    // Открытие модалки
     const openRejectModal = (id: number) => {
         setCurrentBatchId(id);
         setShowRejectModal(true);
     };
 
+    // Закрытие модалки
     const closeRejectModal = () => {
         setIsClosing(true);
         setTimeout(() => {
@@ -171,10 +179,11 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
         }, 300);
     };
 
-    // Загрузка данных при открытии вкладки
     useEffect(() => {
         getBasicAll();
     }, []);
+
+    if (loading) return <LoaderUsefulInfo />;
 
     return (
         <>
@@ -190,10 +199,6 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                     <img src={previewImage} alt="Preview" />
                 </div>
             )}
-
-            <p style={{ textAlign: "justify" }}>
-                В таблице «Основные данные» отображаются все изменения основных данных, внесённые специалистом. К ним относятся ФИО, пол и дата рождения.
-            </p>
 
             {/* Таблица */}
             <table className="admin-page__table">

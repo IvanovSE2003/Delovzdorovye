@@ -11,5 +11,5 @@ export default interface NotificationRepository {
     deleteByUser(id: number): Promise<void>;
     countByUserId(userId: number, onlyUnread: boolean): Promise<number>;
 
-    getCountByCount(userId: number): Promise<number>;
+    getCountByUser(userId: number): Promise<number>;
 }

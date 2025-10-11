@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Gender, IUserDataProfile, Role } from "../../../models/Auth";
+import type { Gender, IUserDataProfile, IUserDataProfileEdit, Role } from "../../../models/Auth";
 import { URL } from "../../../http";
 
 
@@ -7,7 +7,7 @@ interface UserProfileEditProps {
     profileData: IUserDataProfile;
     onAddPhoto: (e: React.ChangeEvent<HTMLInputElement>, changePhoto: (img: string) => void) => void;
     onRemovePhoto: (changePhoto: (img: string) => void) => void;
-    onSave: (ProfileData: IUserDataProfile) => void;
+    onSave: (ProfileData: IUserDataProfileEdit) => void;
     onCancel: () => void;
     role: Role;
 }
@@ -20,7 +20,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
     onCancel,
     role
 }) => {
-    const [profileEditData, SetProfileEditData] = useState<IUserDataProfile>(profileData);
+    const [profileEditData, SetProfileEditData] = useState<IUserDataProfileEdit>(profileData);
     const [error, setError] = useState<string | null>(null);
 
     const handleChangeProfileData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +106,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
             setError(null);
         }
 
-        SetProfileEditData(prev => ({ ...prev, dateBirth: formatDateToISO(formatted) }))
+        SetProfileEditData(prev => ({ ...prev, pending_date_birth: formatDateToISO(formatted) }))
     };
 
     const changePhoto = (img: string) => {
@@ -121,7 +121,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
             {role !== "ADMIN" && (
                 <div className="user-profile__avatar-content">
                     <div className="user-profile__avatar">
-                        <img src={`${URL}/${profileData.img}`} alt="avatar-delovzdorovye" />
+                        <img src={`${URL}/${profileData.pending_img}`} alt="avatar-delovzdorovye" />
                     </div>
                     {!profileEditData.isAnonymous && (
                         <div className="user-profile__links">
@@ -142,7 +142,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
             )}
 
             <div className="edit-form">
-                {profileEditData.role === "PATIENT" && (
+                {profileData.role === "PATIENT" && (
                     <div className="edit-form__anonym">
                         <input
                             type="checkbox"
@@ -160,10 +160,10 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                         <div className="edit-form__group">
                             <input
                                 type="text"
-                                name="surname"
+                                name="pending_surname"
                                 value={profileEditData.pending_surname}
                                 onChange={handleChangeProfileData}
-                                placeholder="Фамилия"
+                                placeholder="Фамилия*"
                                 title="Фамилия"
                             />
                         </div>
@@ -171,10 +171,10 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                         <div className="edit-form__group">
                             <input
                                 type="text"
-                                name="name"
+                                name="pending_name"
                                 value={profileEditData.pending_name}
                                 onChange={handleChangeProfileData}
-                                placeholder="Имя"
+                                placeholder="Имя*"
                                 title="Имя"
                             />
                         </div>
@@ -182,7 +182,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                         <div className="edit-form__group">
                             <input
                                 type="text"
-                                name="patronymic"
+                                name="pending_patronymic"
                                 value={profileEditData.pending_patronymic || ""}
                                 onChange={handleChangeProfileData}
                                 placeholder="Отчество"
@@ -195,26 +195,26 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                                 <input
                                     id="male"
                                     type="radio"
-                                    name="gender"
+                                    name="pending_gender"
                                     value="Мужчина"
                                     checked={profileEditData.pending_gender === "Мужчина"}
                                     title="Пол"
                                     onChange={handleChangeProfileData}
                                 />
-                                <label htmlFor="male">Мужчина</label>
+                                <label htmlFor="male">Я мужчина</label>
                             </div>
 
                             <div className="auth__radio-btn">
                                 <input
                                     id="female"
                                     type="radio"
-                                    name="gender"
+                                    name="pending_gender"
                                     value="Женщина"
                                     title="Пол"
                                     checked={profileEditData.pending_gender === "Женщина"}
                                     onChange={handleChangeProfileData}
                                 />
-                                <label htmlFor="female">Женщина</label>
+                                <label htmlFor="female">Я женщина</label>
                             </div>
                         </div>
 
@@ -223,7 +223,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                                 type="text"
                                 name="dateBirth"
                                 title="Дата рождения"
-                                placeholder="дд.мм.гггг"
+                                placeholder="дд.мм.гггг*"
                                 value={localDate}
                                 onChange={handleDateChange}
                                 className={error ? "edit-form__group__input-error" : ""}
@@ -237,7 +237,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                     <input
                         type="tel"
                         name="phone"
-                        value={profileEditData.phone}
+                        value={profileData.phone}
                         onChange={handleChangeProfileData}
                         placeholder="Номер телефона"
                         title="Нельзя редактировать"
@@ -249,7 +249,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                     <input
                         type="email"
                         name="email"
-                        value={profileEditData.email}
+                        value={profileData.email}
                         onChange={handleChangeProfileData}
                         placeholder="Email"
                         title="Нельзя редактировать"

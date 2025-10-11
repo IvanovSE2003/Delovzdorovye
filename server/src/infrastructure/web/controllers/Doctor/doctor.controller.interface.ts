@@ -22,7 +22,7 @@ const docotrController = new DoctorController(
     UserRepository, 
     SpecializationRepository,
     TimeSlotRepository,
-    NotificationRepository
+    NotificationRepository,
 );
 
 export default docotrController;

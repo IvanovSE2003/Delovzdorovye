@@ -9,7 +9,6 @@
     $past-color-border: #7FA1D8;
 
     overflow-x: auto;
-    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rbga(0, 0, 0, 0.2);
     background-color: white;
@@ -72,6 +71,12 @@
             background-color: #ffcc00 !important;
             color: #000;
         }
+    }
+
+    &__error {
+        text-align: center;
+        font-size: 1.2rem;
+        margin-bottom: 0;
     }
 
     &__week-switcher {

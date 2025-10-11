@@ -1,17 +1,17 @@
 import $api from '../http'
 import type { AxiosResponse } from "axios";
-import type { IUserDataProfile, IUser, IAdminDataProfile } from "../models/Auth";
+import type { IUserDataProfile, IUser, IAdminDataProfile, IUserDataProfileEdit } from "../models/Auth";
 import type { TypeResponse } from '../models/response/DefaultResponse';
-import type { PatientData } from '../models/PatientData';
-import type { Recomendations } from '../pages/account/patient/Recomendations';
-import type { INotification } from '../pages/account/Bell';
-import type { IOtherProblem } from '../pages/account/SomeProfile';
+import type { INotification } from '../features/account/Notifications/Notifications';
+import type { IOtherProblem } from '../features/account/SomeProfile/SomeProfile';
+import type { Recomendations } from '../pages/account/patient/Recomendations/Recomendations';
+
 
 export default class UserService {
 
     // Получение данные о пациенте
-    static fetchPatientData(id: number): Promise<AxiosResponse<PatientData>> {
-        return $api.get<PatientData>(`/patient/${id}`);
+    static fetchPatientData(id: number) {
+        return $api.get(`/patient/${id}`);
     }
 
     // Проверка пользователя на сущестование в БД
@@ -25,7 +25,7 @@ export default class UserService {
     }
 
     // Изменение данные о пользователе
-    static updateUserData(data: IUserDataProfile | IAdminDataProfile, id: number): Promise<AxiosResponse<TypeResponse & { user: IUser }>> {
+    static updateUserData(data: IUserDataProfile | IAdminDataProfile | IUserDataProfileEdit, id: number): Promise<AxiosResponse<TypeResponse & { user: IUser }>> {
         return $api.put<TypeResponse & { user: IUser }>(`/user/${id}`, { data });
     }
 
@@ -96,5 +96,9 @@ export default class UserService {
 
     static async deleteNotificationAll(userId: number): Promise<void> {
         return $api.delete(`/notification/delete/all/${userId}`)
+    }
+
+    static async getNotReadNotifications(userId: number): Promise<AxiosResponse<{count: number}>> {
+        return $api.get<{count: number}>(`/notification/count/${userId}`)
     }
 }

@@ -152,7 +152,7 @@
     justify-content: space-between;
 
     &:hover {
-      background: #f0f0f0;
+      background: $secondary-color;
     }
 
     input {
@@ -161,6 +161,11 @@
       width: 50%;
       text-align: center;
       box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 10px $shadow-color;
+      }
     }
   }
 

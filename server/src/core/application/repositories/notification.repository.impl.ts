@@ -2,6 +2,7 @@ import Notification from "../../domain/entities/notification.entity";
 import NotificationRepository from "../../domain/repositories/notifaction.repository";
 import models from "../../../infrastructure/persostence/models/models";
 import { INotificationCreationAttributes, NotificationModelInterface } from "../../../infrastructure/persostence/models/interfaces/notification.model";
+import { sendNotificationCount } from "../../../infrastructure/web/function/countData";
 
 
 export default class NotificationRepositoryImpl implements NotificationRepository {
@@ -48,7 +49,11 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
     }
 
     async create(notification: Notification): Promise<Notification> {
+        if (!notification.userId) throw new Error('Для уведомления не указал получатель');
         const createdNotification = await models.Notification.create(this.mapToPersistence(notification));
+
+        const newCount = await this.getCountByUser(notification.userId);
+        await sendNotificationCount(notification.userId, newCount, "notifications_count");
         return this.mapToDomainNotification(createdNotification);
     }
 
@@ -56,6 +61,9 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         const [affectedCount, affectedRows] = await models.Notification.update(this.mapToPersistence(notification), { where: { id: notification.id }, returning: true });
         if (affectedCount === 0 || !affectedRows || affectedRows.length === 0) {
             throw new Error('Проблема не была обновлена');
+        } else {
+            const newCount = await this.getCountByUser(notification.userId!);
+            await sendNotificationCount(notification.userId!, newCount, "notifications_count");
         }
         const updatedProblem = affectedRows[0];
         return this.mapToDomainNotification(updatedProblem);
@@ -66,15 +74,24 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
     }
 
     async delete(id: number): Promise<void> {
-        await models.Notification.destroy({ where: { id } });
+        const not = await models.Notification.findOne({ where: { id } });
+        const deletedCount = await models.Notification.destroy({ where: { id } });
+        if (deletedCount !== 0) {
+            const newCount = await this.getCountByUser(not?.userId!);
+            await sendNotificationCount(not?.userId!, newCount, "notifications_count");
+        }
     }
 
     async deleteByUser(id: number): Promise<void> {
-        await models.Notification.destroy({
+        const deletedCount = await models.Notification.destroy({
             where: {
                 userId: id
             }
         })
+        if (deletedCount !== 0) {
+            const newCount = await this.getCountByUser(id);
+            await sendNotificationCount(id, newCount, "notifications_count");
+        }
     }
 
     async countByUserId(userId: number, onlyUnread = false): Promise<number> {
@@ -87,8 +104,8 @@ export default class NotificationRepositoryImpl implements NotificationRepositor
         return count;
     }
 
-    async getCountByCount(userId: number): Promise<number> {
-        const count = await models.Notification.count({where: {userId}});
+    async getCountByUser(userId: number): Promise<number> {
+        const count = await models.Notification.count({ where: { userId: userId, isRead: false } });
         return count;
     }
 

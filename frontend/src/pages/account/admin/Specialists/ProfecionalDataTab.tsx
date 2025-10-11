@@ -7,6 +7,8 @@ import { URL } from "../../../../http";
 import { observer } from "mobx-react-lite";
 import { processError } from "../../../../helpers/processError";
 import AdminService from "../../../../services/AdminService";
+import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
+import ModalHeader from "../../../../components/UI/Modals/ModalHeader/ModalHeader";
 
 interface ProfecionalDataTabProps extends DataTabProps {
     profecionalDatas: IProfData[];
@@ -21,53 +23,16 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     setMessage,
 }) => {
     const { store } = useContext(Context);
-
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
-    const [isClosing, setIsClosing] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [commentModal, setCommentModal] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    // Модалки
+    // Открытие модалки
     const openRejectModal = (id: number) => {
         setCurrentBatchId(id);
         setShowRejectModal(true);
-    };
-
-    // Подтвердить изменения
-    const confirm = async (id: number) => {
-        try {
-            const res = await store.confirmProfData(id);
-            if (res.success) {
-                setMessage({ id: Date.now(), message: res.message })
-                await getProfecionalAll();
-            }
-            else {
-                setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
-            }
-        } catch (e) {
-            processError(e, "Ошибка при подтвердении изменения")
-        } finally {
-            await AdminService.getChangesCount();
-        }
-    };
-
-    const closeRejectModal = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            setShowRejectModal(false);
-            setIsClosing(false);
-            setRejectReason("");
-            setCurrentBatchId(null);
-        }, 300);
-    };
-
-    const openCommentModal = (comment: string) => {
-        setCommentModal(comment);
-    };
-
-    const closeCommentModal = () => {
-        setCommentModal(null);
     };
 
     // Удаление данных
@@ -84,6 +49,24 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
         }, 300);
     };
 
+    // Подтвердить изменения пользователя
+    const confirm = async (id: number) => {
+        try {
+            const res = await store.confirmProfData(id);
+            if (res.success) {
+                setMessage({ id: Date.now(), message: res.message })
+                await getProfecionalAll();
+            }
+            else {
+                setError({ id: Date.now(), message: `Неудалось выполнить действие: ${res.message}` })
+            }
+        } catch (e) {
+            processError(e, "Ошибка при подтвердении изменения")
+        } finally {
+            await AdminService.getCountAdminData();
+        }
+    };
+
     // Отклонить изменения пользователя
     const handleRejectSubmit = async () => {
         if (!currentBatchId || !rejectReason.trim()) {
@@ -97,7 +80,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
 
             if (data.success) {
                 removeBatch(currentBatchId, data.message);
-                closeRejectModal();
+                setShowRejectModal(false);
             } else {
                 setError({ id: Date.now(), message: data.message || "Ошибка при отклонении" })
             }
@@ -109,29 +92,26 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     // Получение данных
     const getProfecionalAll = async () => {
         try {
+            setLoading(true);
             const data = await store.getProfDataAll(10, 1)
             if (data?.profDatas) {
                 setProfecionalDatas(data.profDatas);
             }
         } catch (e) {
             processError(e, "Ошибка при загрузке данных", setError);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Получение данных при открытии вкладки
     useEffect(() => {
         getProfecionalAll();
     }, []);
 
-    // Основной рендер
+    if (loading) return <LoaderUsefulInfo />;
+
     return (
         <>
-            <p
-                style={{ textAlign: 'justify' }}
-            >
-                В таблице «Профессиональные данные» отображаются все изменения профессиональных данных, внесённые специалистом. К ним относятся диплом об образовании, лицензия и специализация.
-            </p>
-
             <table className="admin-page__table">
                 <thead>
                     <tr>
@@ -166,7 +146,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                                 <td>{data.new_specialization}</td>
                                 <td
                                     className="admin-page__comment-cell"
-                                    onClick={() => data.comment && openCommentModal(data.comment)}
+                                    onClick={() => data.comment && setCommentModal(data.comment)}
                                 >
                                     {data.comment ? (
                                         <span className="comment-text">{data.comment}</span>
@@ -206,29 +186,20 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                 </tbody>
             </table>
 
+            {/* Модальное окно для комментария */}
             {commentModal && (
-                <div className="modal modal--overlay">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Комментарий</h5>
-                                <button type="button" onClick={closeCommentModal}>×</button>
-                            </div>
-                            <div className="modal-body">
-                                <p
-                                    style={{
-                                        color: 'white',
-                                        textAlign: 'justify',
-                                        padding: '0 2rem',
-                                    }}
-                                >{commentModal}</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={closeCommentModal}>
-                                    Закрыть
-                                </button>
-                            </div>
+                <div className="modal">
+                    <div className="modal-content">
+                        <ModalHeader title="Комментарий" onClose={() => setCommentModal(null)} />
+                        <div className="modal-body__comment">
+                            {commentModal}
                         </div>
+                        <button
+                            className="neg-button width100"
+                            onClick={() => setCommentModal(null)}
+                        >
+                            Закрыть
+                        </button>
                     </div>
                 </div>
             )}
@@ -236,48 +207,33 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
 
             {/* Модальное окно */}
             {showRejectModal && (
-                <div className="modal modal--overlay">
-                    <div className="modal-dialog">
-                        <div
-                            className={`modal-content ${isClosing ? "closing" : ""
-                                }`}
-                        >
-                            <div className="modal-header">
-                                <h5 className="modal-title">
-                                    Укажите причину отказа
-                                </h5>
-                                <button
-                                    type="button"
-                                    onClick={closeRejectModal}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <div className="modal-body">
-                                <textarea
-                                    className="form-control"
-                                    value={rejectReason}
-                                    onChange={(e) =>
-                                        setRejectReason(e.target.value)
-                                    }
-                                    placeholder="Введите причину отказа..."
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={closeRejectModal}
-                                >
-                                    Отмена
-                                </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={handleRejectSubmit}
-                                >
-                                    Подтвердить
-                                </button>
-                            </div>
+                <div className="modal">
+                    <div className="modal-content">
+                        <ModalHeader title="Отказ" onClose={() => setShowRejectModal(false)} />
+                        <div className="modal-body">
+                            <textarea
+                                className="form-control"
+                                value={rejectReason}
+                                onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                }
+                                placeholder="Введите причину отказа..."
+                                rows={3}
+                            />
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                className="neg-button"
+                                onClick={() => setShowRejectModal(false)}
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                className="my-button"
+                                onClick={handleRejectSubmit}
+                            >
+                                Подтвердить
+                            </button>
                         </div>
                     </div>
                 </div>

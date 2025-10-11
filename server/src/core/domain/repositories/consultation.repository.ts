@@ -26,4 +26,6 @@ export default interface ConsultationRepository {
     getCount(): Promise<number>;
     getCountOtherProblem(): Promise<number>;
     getCountOtherProblemByUser(userId: number): Promise<number>;
+
+    findProblemForConsult(consultId: number): Promise<number []>;
 }

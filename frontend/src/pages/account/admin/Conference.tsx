@@ -106,7 +106,7 @@ const AnotherProblem = () => {
     return (
         <AccountLayout>
             <div className="page-container">
-                <h1>Существующие комнаты</h1>
+                <h1 className="consultations-doctor__main-title">Существующие комнаты</h1>
 
                 <div>
                     <input

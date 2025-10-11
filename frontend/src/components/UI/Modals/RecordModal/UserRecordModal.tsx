@@ -5,6 +5,7 @@ import RecordForm from "./RecordForm";
 import "./RecordModal.scss";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 import ShowError from "../../ShowError/ShowError";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface UserConsultationModalProps {
   isOpen: boolean;
@@ -13,13 +14,13 @@ interface UserConsultationModalProps {
   userId: number;
 }
 
-const OTHER_PROBLEM_ID = 9;
+const OTHER_PROBLEM_LABEL = "Другая проблема";
 
 const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose, onRecord, userId }) => {
   const [problems, setProblems] = useState<OptionsResponse[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<MultiValue<OptionsResponse>>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [error, setError] = useState<{id: number, message: string}>({id: 0, message: ""});
+  const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
 
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -29,11 +30,21 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
 
   const store = new ConsultationsStore();
 
+  // Проверка, является ли опция "Другой проблемой"
+  const isOtherProblem = (option: OptionsResponse): boolean => {
+    return option.label === OTHER_PROBLEM_LABEL;
+  };
+
+  // Проверка, выбрана ли "Другая проблема"
+  const hasOtherProblemSelected = (selected: MultiValue<OptionsResponse>): boolean => {
+    return selected.some(isOtherProblem);
+  };
+
   // Загрузка проблем в селект
   const loadProblems = async () => {
     if (problems.length > 0) return;
     const fetched = await store.getProblems();
-    setProblems([...fetched, { value: OTHER_PROBLEM_ID, label: "Другая проблема" }]);
+    setProblems([...fetched, { value: fetched.length + 1, label: OTHER_PROBLEM_LABEL }]);
   };
 
   // Изменение селекта с проблемами
@@ -41,7 +52,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     setShowOtherProblem(false);
     setSelectedProblems(selected);
 
-    const hasOther = selected.some((p) => p.value === OTHER_PROBLEM_ID);
+    const hasOther = hasOtherProblemSelected(selected);
     if (hasOther) {
       setShowOtherProblem(true);
       const slots = await store.findSheduleSpecialist();
@@ -59,13 +70,20 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     setSlots(slots);
   };
 
-  // Записаться на консультацию
+  // Ограничение выбора
+  const isOptionDisabled = (option: OptionsResponse): boolean => {
+    const hasOther = hasOtherProblemSelected(selectedProblems);
+    if (isOtherProblem(option)) return false;
+    return hasOther;
+  };
+
+  // Остальной код остается таким же...
   const handleSubmit = () => {
     if (!selectedDate || !selectedTime) {
-      setError({id: Date.now(), message: "Дата или время не выбраны"});
+      setError({ id: Date.now(), message: "Дата или время не выбраны" });
       return;
     }
-  
+
     onRecord({
       time: selectedTime,
       date: selectedDate,
@@ -85,12 +103,6 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     onClose();
   };
 
-  // Ограничение выбора
-  const isOptionDisabled = (option: OptionsResponse): boolean => {
-    const hasOtherProblem = selectedProblems.some((opt) => opt.value === OTHER_PROBLEM_ID);
-    if (option.value === OTHER_PROBLEM_ID) return false;
-    return hasOtherProblem;
-  };
 
   // Получить дату и время от RecordForm
   const onTimeDateSelect = (time: string | null, date: string | null, doctorId?: number) => {
@@ -104,8 +116,11 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
   return (
     <div className="modal">
       <div className="consultation-modal">
-        <h2 className="consultation-modal__title">Запись на консультацию</h2>
-        <button className="consultation-modal__close" onClick={onClose}>X</button>
+        <ModalHeader
+          title="Запись на консультацию"
+          onClose={onClose}
+          className="consultation-modal__header"
+        />
 
         <Select
           isMulti
@@ -149,7 +164,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
           />
         </div>
 
-        <ShowError msg={error} className="consultation-modal__error"/>
+        <ShowError msg={error} className="consultation-modal__error" />
 
         <button
           className="consultation-modal__submit"

@@ -45,6 +45,7 @@ export default class NotificationContorller {
             }
 
             await this.notificationReposiotory.deleteByUser(user.id);
+
             res.status(204).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -60,6 +61,7 @@ export default class NotificationContorller {
             }
 
             await this.notificationReposiotory.delete(notifaction.id);
+
             res.status(204).send()
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -73,7 +75,9 @@ export default class NotificationContorller {
             if (!notifaction) {
                 return next(ApiError.badRequest('Уведомление не найдено'));
             }
+
             await this.notificationReposiotory.save(notifaction.setRead(true));
+
             return res.status(200).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -91,7 +95,9 @@ export default class NotificationContorller {
 
             const notifications = await this.notificationReposiotory.findByUserId(user.id)
 
-            notifications.map(async not => await this.notificationReposiotory.save(not.setRead(true)))            
+            notifications.map(async not => await this.notificationReposiotory.save(not.setRead(true)));
+
+
             res.status(200).send();
         } catch (e: any) {
             return next(ApiError.internal(e.message));
@@ -100,18 +106,16 @@ export default class NotificationContorller {
 
     async getCountNotification(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, unreadOnly } = req.query;
+            const { userId } = req.params;
             const user = await this.userRepository.findById(Number(userId));
             if (!user) {
                 return next(ApiError.badRequest("Пользователь не найден"));
             }
 
-            const count = await this.notificationReposiotory.countByUserId(user.id, unreadOnly === "true");
-
+            const count = await this.notificationReposiotory.getCountByUser(user.id)
             return res.status(200).json({ count });
         } catch (e: any) {
             return next(ApiError.internal(e.message));
         }
     }
-
 }

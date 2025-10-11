@@ -122,7 +122,7 @@ export default class ConsultationService {
 
     // Повторить консультацию
     static async repeatAppointment(data: ConsultationData): Promise<AxiosResponse<TypeResponse>> {
-        return $api.post<TypeResponse>(`/consultation/repeatConsultation/${data.id}`, { date: data.date, time: data.time });
+        return $api.post<TypeResponse>(`/consultation/repeatConsultation/${data.id}`, { date: data.date, time: data.time, descriptionProblem: data.descriptionProblem });
     }
 
     // Оценить консультацию

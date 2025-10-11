@@ -7,6 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import { Op } from "sequelize";
 import Problem from "../../domain/entities/problem.entity.js";
+import { broadcastNotificationCount } from "../../../infrastructure/web/function/countDataAll.js";
 
 export default class ConsultationRepositoryImpl implements ConsultationRepository {
     async findById(id: number): Promise<Consultation | null> {
@@ -211,6 +212,13 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
 
     async create(consultationData: Consultation): Promise<Consultation> {
         const createdConsult = await models.Consultation.create(this.mapToPersistence(consultationData));
+
+        const newConsult = await this.getCount();
+        const newOtherProblem = await this.getCountOtherProblem();
+        await Promise.all([
+            broadcastNotificationCount(newConsult, "consult_count"),
+            broadcastNotificationCount(newOtherProblem, "otherProblem_count")
+        ]);
         return this.mapToDomainConsultation(createdConsult);
     }
 
@@ -238,21 +246,47 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
 
     async delete(id: number): Promise<void> {
         await models.Consultation.destroy({ where: { id } });
+        const newConsult = await this.getCount();
+        const newOtherProblem = await this.getCountOtherProblem();
+        await Promise.all([
+            broadcastNotificationCount(newConsult, "consult_count"),
+            broadcastNotificationCount(newOtherProblem, "otherProblem_count")
+        ]);
     }
 
     async getCount(): Promise<number> {
-        const count = await models.Consultation.count();
+        const count = await models.Consultation.count({ where: { consultation_status: "UPCOMING"}});
         return count;
     }
 
     async getCountOtherProblem(): Promise<number> {
-        const count = await models.Consultation.count({where: {has_other_problem: true}});
+        const count = await models.Consultation.count({ where: { has_other_problem: true, consultation_status: "UPCOMING"}});
         return count;
     }
 
     async getCountOtherProblemByUser(userId: number): Promise<number> {
-        const count = await models.Consultation.count({where: {has_other_problem: true, userId: userId}});
+        const count = await models.Consultation.count({ where: { has_other_problem: true, userId: userId } });
         return count;
+    }
+
+    async findProblemForConsult(consultId: number): Promise<number[]> {
+        const consultation = await models.Consultation.findByPk(consultId, {
+            include: [
+                {
+                    model: models.ProblemModel,
+                    as: "problems",
+                    through: { attributes: [] },
+                    attributes: ["id"]
+                }
+            ]
+        });
+
+        if (!consultation) {
+            throw new Error(`Консультация с ID ${consultId} не найдена`);
+        }
+
+        const problemIds = consultation.problems?.map((p: any) => p.id) || [];
+        return problemIds;
     }
 
     private mapToDomainConsultation(consultModel: any): Consultation {

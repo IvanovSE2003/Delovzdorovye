@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { InfoBlock } from "../../../../../models/InfoBlock";
 import HomeService from "../../../../../services/HomeService";
 import LoaderUsefulInfo from "../../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 import "./LKtab.scss";
 import { processError } from "../../../../../helpers/processError";
 import ShowError from "../../../../../components/UI/ShowError/ShowError";
+import Search from "../../../../../components/UI/Search/Search";
 
 interface InfoTabProps {
     contentType: "useful_info_patient" | "useful_info_doctor";
@@ -21,6 +22,7 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
     const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" })
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: "" });
+    const [search, setSearch] = useState<string>(""); // Состояние для поиска
 
     // Загрузка информационных блоков
     const fetchInfo = useCallback(async () => {
@@ -40,21 +42,39 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
         fetchInfo();
     }, [fetchInfo]);
 
+    // Фильтрация блоков по поисковому запросу
+    const filteredBlocks = useMemo(() => {
+        if (!search.trim()) {
+            return blocks;
+        }
+
+        const searchLower = search.toLowerCase();
+        return blocks.filter(block =>
+            (block.header && block.header.toLowerCase().includes(searchLower)) ||
+            (block.text && block.text.toLowerCase().includes(searchLower))
+        );
+    }, [blocks, search]);
+
     // Добавление информационного блока
     const handleAddBlock = async () => {
+        const tempId = Date.now();
         try {
-            const newId = Math.max(...blocks.map(b => b.id), 0) + 1;
-            const newBlock: InfoBlock = { id: newId, header: "Заголовок", text: "Новый блок информации" }
+            const newBlock: InfoBlock = {
+                id: tempId,
+                header: "Заголовок",
+                text: "Новый блок информации"
+            };
 
+            setBlocks(prev => [...prev, newBlock]);
             await HomeService.addContent(contentType, newBlock);
-            setBlocks([
-                ...blocks,
-                newBlock,
-            ]);
+            setTimeout(async () => {
+                await fetchInfo();
+            }, 500);
 
-            setMessage({ id: Date.now(), message: "Информационный блок успешно добавлен" })
+            setMessage({ id: Date.now(), message: "Информационный блок успешно добавлен" });
         } catch (e) {
-            processError(e, "Ошибка при добавлении блока", setError)
+            setBlocks(prev => prev.filter(b => b.id !== tempId));
+            processError(e, "Ошибка при добавлении блока", setError);
         }
     };
 
@@ -127,49 +147,48 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
         return <LoaderUsefulInfo />;
     }
 
-    // Нет информационных блоков в БД
-    if (blocks.length === 0) {
-        return (
-            <div className="lk-tab lk-tab--empty">
-                <div className="lk-tab__empty-content">
-                    <div className="lk-tab__empty-icon">📝</div>
-                    <h3 className="lk-tab__empty-title">Нет информационных блоков</h3>
-                    <p className="lk-tab__empty-description">Добавьте первый блок информации</p>
-                    <button className="my-button lk-tab__add-btn" onClick={handleAddBlock}>
-                        + Добавить новый блок
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    // Основной рендер
     return (
-        <div className="lk-tab">
-            <div className="lk-tab__header">
-                <div className="lk-tab__actions">
-                    <button className="my-button lk-tab__add-btn" onClick={handleAddBlock}>
-                        + Добавить новый блок
-                    </button>
+        <div className="lists">
 
-                    {showSaveButton && hasChanges && (
-                        <button
-                            className="my-button lk-tab__save-btn"
-                            onClick={handleSaveToServer}
-                        >
-                            Сохранить все изменения
-                        </button>
-                    )}
+            {showSaveButton && hasChanges && (
+                <div
+                    className="lk-tab__warning"
+                >
+                    ⚠️ У вас есть неподтвержденные изменения! Не забудьте применить их кнопкой внизу!
                 </div>
-            </div>
+            )}
+            <Search
+                placeholder="Поиск по заголовкам или описанию"
+                value={search}
+                onChange={setSearch}
+                className="lists__search"
+            />
 
-            <div className="lk-tab__errors">
+            <div>
                 <ShowError msg={error} />
                 <ShowError msg={message} mode="MESSAGE" />
             </div>
 
+            <div className="lk-tab__header-actions">
+                <button
+                    className="my-button width100 lk-tab__btn"
+                    onClick={handleAddBlock}
+                >
+                    + Добавить новый информационный блок
+                </button>
+
+                {showSaveButton && hasChanges && (
+                    <button
+                        className="my-button width100 lk-tab__save-btn"
+                        onClick={handleSaveToServer}
+                    >
+                        Подтвердить изменения
+                    </button>
+                )}
+            </div>
+
             <div className="lk-tab__blocks">
-                {blocks.map(block => (
+                {filteredBlocks.length > 0 ? filteredBlocks.map(block => (
                     <div key={block.id} className="lk-tab__block">
                         {editingBlock === block.id ? (
                             <>
@@ -194,7 +213,7 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
                                         Сохранить
                                     </button>
                                     <button
-                                        className="neg-button"
+                                        className="neg-button lk-tab__btn"
                                         onClick={handleCancelEdit}
                                     >
                                         Отмена
@@ -213,7 +232,7 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
                                         Редактировать
                                     </button>
                                     <button
-                                        className="neg-button"
+                                        className="neg-button lk-tab__btn"
                                         onClick={() => handleDelete(block.id)}
                                     >
                                         Удалить
@@ -222,7 +241,30 @@ const LKtab: React.FC<InfoTabProps> = ({ contentType, tabName, showSaveButton = 
                             </>
                         )}
                     </div>
-                ))}
+                )) : (
+                    <div className="lk-tab lk-tab--empty">
+                        <div className="lk-tab__empty-content">
+                            <div className="lk-tab__empty-icon">{search.length > 0 ? "🔍" : "📝"}</div>
+                            <h3 className="lk-tab__empty-title">
+                                {search.trim() ? "Ничего не найдено" : "Нет информационных блоков"}
+                            </h3>
+                            <p className="lk-tab__empty-description">
+                                {search.trim()
+                                    ? "Попробуйте изменить поисковый запрос"
+                                    : "Добавьте первый блок информации"
+                                }
+                            </p>
+                            {search.trim() && (
+                                <button
+                                    className="my-button lk-tab__btn"
+                                    onClick={() => setSearch("")}
+                                >
+                                    Очистить поиск
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

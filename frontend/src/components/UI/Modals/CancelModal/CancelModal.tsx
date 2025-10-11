@@ -3,6 +3,7 @@ import type { Role } from '../../../../models/Auth';
 import type { Consultation } from '../../../../models/consultations/Consultation';
 import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
 import './CancelModal.scss'
+import ModalHeader from '../ModalHeader/ModalHeader';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -30,14 +31,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
     return (
         <div className="modal">
             <div className='shift-modal cancel-modal'>
-                <h2 className="consultation-modal__title">Отмена консультации</h2>
-
-                <button
-                    className="consultation-modal__close"
-                    onClick={onClose}
-                >
-                    X
-                </button>
+                <ModalHeader title="Отмена консультации" onClose={onClose} />
 
                 <div className="shift-modal__information">
                     <p>Вы отменяете консультацию: {formatDateWithoutYear(consultationData.date)}, {consultationData.durationTime}</p>

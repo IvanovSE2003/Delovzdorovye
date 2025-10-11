@@ -9,12 +9,11 @@ import path from 'path'
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser'
 import { createServer } from 'http';
-import { timerService } from './socket/timer.service.init.js'
+// import { timerService } from './socket/timer.service.init.js'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { WebSocketServer, WebSocket } from 'ws';
-import adminController from './infrastructure/web/controllers/Admin/admin.controller.interface.js'
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -24,13 +23,20 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+    server,
+    path: '/ws',
+    clientTracking: true
+});
 
-export const clients = new Map<number, WebSocket>();
+export const clients = new Map<{ role: any; userId?: any }, WebSocket>();
 
 wss.on('connection', (ws) => {
-    let userData: { role: any; userId?: any } | null = null; 
-    let intervalId: string | number | NodeJS.Timeout | null | undefined = null;
+    let userData: { role: any; userId?: any } | null = null;
+
+    ws.on('pong', () => {
+        console.log('Соединение активировано');
+    });
 
     ws.on('message', (msg) => {
         let data;
@@ -43,44 +49,35 @@ wss.on('connection', (ws) => {
         if (data.type === 'join') {
             const userId = data.userId;
             userData = { userId, role: data.role };
-            clients.set(userId, ws);
+            clients.set(userData, ws);
+        }
 
-            intervalId = setInterval(() => {
-                if (ws.readyState === WebSocket.OPEN) {
-                    let info;
+        if (data.type === 'ping') {
+            ws.send(JSON.stringify({
+                type: 'pong'
+            }));
+        }
 
-                    if (userData?.role === 'ADMIN') {
-                        info = { type: 'info', message: 'Привет, админ!', timestamp: Date.now() };
-                    } else if (userData?.role === 'PATIENT') {
-                        info = { type: 'info', message: 'Привет, пользователь!', timestamp: Date.now() };
-                    } else {
-                        info = { type: 'info', message: 'Привет, специалист!', timestamp: Date.now() };
-                    }
-
-                    ws.send(JSON.stringify(info));
-                }
-            }, 5000);
+        if (data.type === 'pong') {
+            console.log('Получено сообщение от клиента');
         }
     });
 
     ws.on('close', () => {
-        // Убираем клиента из списка
         for (const [userId, socket] of clients) {
             if (socket === ws) {
                 clients.delete(userId);
                 break;
             }
         }
-
-        // Останавливаем интервал
-        if (intervalId) clearInterval(intervalId);
     });
 });
 
 app.use(cors({
     credentials: true,
-    origin: ["https://affably-clear-rat.cloudpub.ru", "http://localhost:5173"],
+    origin: "http://localhost:5173"
 }));
+
 app.use(express.json());
 app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'static')));
 app.use(fileUpload({}));
@@ -97,7 +94,7 @@ const start = async () => {
             console.log(`Сервер запустился на порте: ${PORT}`);
         });
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
 }
 

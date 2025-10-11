@@ -6,6 +6,7 @@ import { processError } from '../../../helpers/processError';
 import HomeService from '../../../services/HomeService';
 import type { InfoBlock } from '../../../models/InfoBlock';
 import ShowError from '../../../components/UI/ShowError/ShowError';
+import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -14,21 +15,26 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
 
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: '' });
     const [message, setMessage] = useState<{ id: number; message: string }>({ id: 0, message: '' });
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Получение блоков информации
     const fetchInformations = async () => {
         try {
+            setLoading(true);
             const response = await HomeService.getContent('useful_informations');
             setContent(response.data.contents);
             setOriginalContent(response.data.contents);
         } catch (e) {
             processError(e, "Ошибка при получении данных");
+        } finally {
+            setLoading(false);
         }
     };
 
     // Сохранение блока информации
     const handleSave = async () => {
         try {
+            setLoading(true);
             for (const block of content) {
                 if (block.id) {
                     // Либо обновляем текущий блок
@@ -45,6 +51,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
             processError(e, "Ошибка при сохранении данных", setError);
         } finally {
             setIsEditing(false);
+            setLoading(false);
         }
     };
 
@@ -63,6 +70,7 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
     // Удаление блока информации
     const deleteInformation = async (id: number) => {
         try {
+            setLoading(true);
             setContent(prev => prev.filter(block => block.id !== id));
             setOriginalContent(prev => prev.filter(block => block.id !== id));
             await HomeService.deleteContent(id);
@@ -71,6 +79,8 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
 
         } catch (e) {
             processError(e, "Ошибка при удалении блока информации", setError);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -102,10 +112,22 @@ const Informations: React.FC<ElementHomePageProps> = ({ role }) => {
         setIsEditing(!isEditing);
     };
 
-    // Получение данных при загрузки блока информации
     useEffect(() => {
         fetchInformations();
     }, []);
+
+    if (loading) return (
+        <div className='informations container' id="informations">
+            <AnimatedBlock>
+                <div className="container__box">
+                    <h2 className='informations__title'>Полезная информация</h2>
+                    <div className="informations__block">
+                        <LoaderUsefulInfo />
+                    </div>
+                </div>
+            </AnimatedBlock>
+        </div>
+    )
 
     return (
         <div className='informations container' id="informations">

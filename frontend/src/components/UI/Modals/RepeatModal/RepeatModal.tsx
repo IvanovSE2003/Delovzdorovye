@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { ModalProps } from '../CancelModal/CancelModal';
-
 import RecordForm from '../RecordModal/RecordForm';
-import './RepeatModal.scss';
 import type { Role } from '../../../../models/Auth';
 import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
 import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
+import ShowError from '../../ShowError/ShowError';
+import ModalHeader from '../ModalHeader/ModalHeader';
+import './RepeatModal.scss';
+import '../ShiftModal/ShiftModal.scss';
 
 interface RepeatModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
@@ -13,19 +15,21 @@ interface RepeatModalProps extends ModalProps {
 }
 
 const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, consultationData, mode }) => {
-    const [error, setError] = useState<string>("");
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [descriptionProblem, setDescriptionProblem] = useState<string>("");
+    const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" })
 
     const handleSubmit = () => {
         if (!selectedDate || !selectedTime) {
-            setError("Пожалуйста, выберите дату и время");
+            setError({ id: Date.now(), message: "Пожалуйста, выберите дату и время" });
             return;
         }
 
         onRecord({
             date: selectedDate,
             time: selectedTime,
+            descriptionProblem,
             id: consultationData.id,
         });
     };
@@ -41,7 +45,7 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
         if (!isOpen) {
             setSelectedDate(null);
             setSelectedTime(null);
-            setError("");
+            setError({ id: Date.now(), message: "" });
         }
     }, [isOpen]);
 
@@ -50,14 +54,7 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
     return (
         <div className="modal">
             <div className='shift-modal consultation-modal'>
-                <h2 className="consultation-modal__title">Повтор консультации</h2>
-
-                <button
-                    className="consultation-modal__close"
-                    onClick={onClose}
-                >
-                    X
-                </button>
+                <ModalHeader title="Повтор консультации" onClose={onClose} />
 
                 <div className="shift-modal__information">
                     <p>Вы повторяете консультацию у специалиста: </p>
@@ -85,15 +82,22 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                     userId={consultationData.PatientUserId.toString()}
                 />
 
+                <textarea
+                    name="descriptionProblem"
+                    id="descriptionProblem"
+                    className="consultation-modal__textarea"
+                    placeholder='Если хотите можете написать подробности проблемы'
+                    value={descriptionProblem}
+                    onChange={(e) => setDescriptionProblem(e.target.value)}
+                />
+
                 <div className="shift-modal__result">
                     <p className="shift-modal__selected-time">
                         Вы выбрали: {selectedDate && selectedTime ? <>{formatDateWithoutYear(selectedDate)}, {selectedTime} </> : "не выбрано"}
                     </p>
                 </div>
 
-                {error && (
-                    <div className="consultation-modal__error">{error}</div>
-                )}
+                <ShowError msg={error} />
 
                 <button
                     className="shift-modal__submit"

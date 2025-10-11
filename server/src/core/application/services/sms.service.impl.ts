@@ -55,7 +55,7 @@ export default class SmsServiceImpl implements SmsService {
             throw new Error('Пользователь не найден');
         }
 
-        const resetUrl = `${process.env.CLIENT_URL_CLOUD}/pinCode-reset/${resetToken}`;
+        const resetUrl = `${process.env.CLIENT_URL}/pinCode-reset/${resetToken}`;
         const userTelegram = await UserTelegramModel.findOne({where: { userId: user.id }}) as unknown as ITelegramCreationAttributes;
 
         if (userTelegram) {

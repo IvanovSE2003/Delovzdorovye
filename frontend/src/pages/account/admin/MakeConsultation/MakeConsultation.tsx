@@ -4,6 +4,8 @@ import './MakeConsultation.scss';
 import AdminService from '../../../../services/AdminService';
 import SearchInput from '../../../../components/UI/Search/Search';
 import { Link } from 'react-router';
+import { processError } from '../../../../helpers/processError';
+import LoaderUsefulInfo from '../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 export interface UserCon {
     countOtherProblem: number;
@@ -15,10 +17,24 @@ export interface UserCon {
     phone: string;
 }
 
-const MakeConsultation:React.FC = () => {
+const MakeConsultation: React.FC = () => {
     const [users, setUsers] = useState<UserCon[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserCon[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState<boolean>(false);
+
+    // Получение данных
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await AdminService.userConsult();
+            setUsers(response.data.users);
+        } catch (e) {
+            processError(e, 'Ошибка при загрузке пользователей:');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchUsers();
@@ -33,19 +49,19 @@ const MakeConsultation:React.FC = () => {
         setFilteredUsers(filtered);
     }, [searchTerm, users]);
 
-    const fetchUsers = async () => {
-        try {
-            const response = await AdminService.userConsult();
-            setUsers(response.data.users);
-        } catch (error) {
-            console.error('Ошибка при загрузке пользователей:', error);
-        }
-    };
+    if (loading) return (
+        <AccountLayout>
+            <div className="page-container makeconsultation">
+                <h1 className="consultations-doctor__main-title">Пользователи системы</h1>
+                <LoaderUsefulInfo />
+            </div>
+        </AccountLayout>
+    )
 
     return (
         <AccountLayout>
             <div className="page-container makeconsultation">
-                <h1 className="admin-page__title">Пользователи системы</h1>
+                <h1 className="consultations-doctor__main-title">Пользователи системы</h1>
 
                 <SearchInput
                     placeholder="Введите телефон, имя, фамилию пользователя"
@@ -54,7 +70,7 @@ const MakeConsultation:React.FC = () => {
                 />
 
                 <div className="makeconsultation__list">
-                    {filteredUsers.length>0 ? filteredUsers.map(user => (
+                    {filteredUsers.length > 0 ? filteredUsers.map(user => (
                         <div key={user.id} className={`makeconsultation__user-card ${user.hasOtherProblem ? "other-problem" : ""}`}>
                             <div className="makeconsultation__user-info">
                                 <span className="makeconsultation__user-name">

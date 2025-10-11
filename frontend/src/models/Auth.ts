@@ -37,13 +37,13 @@ export interface IUserDataProfile {
   surname: string;
   patronymic?: string;
   gender: Gender;
-  dateBirth: string;  
-  pending_img: string,
-  pending_name: string,
-  pending_surname: string,
-  pending_patronymic?: string,
-  pending_date_birth: string,
-  pending_gender: Gender,
+  dateBirth: string;
+  pending_img: string;
+  pending_name: string;
+  pending_surname: string;
+  pending_patronymic?: string;
+  pending_date_birth: string;
+  pending_gender: Gender;
   phone: string;
   email: string;
   isAnonymous: boolean;
@@ -51,6 +51,16 @@ export interface IUserDataProfile {
   age?: number;
   timeZone?: ITimeZones;
   hasOtherProblem?: boolean;
+}
+
+export interface IUserDataProfileEdit {
+  pending_img: string;
+  pending_name: string;
+  pending_surname: string;
+  pending_patronymic?: string;
+  pending_date_birth: string;
+  pending_gender: Gender;
+  isAnonymous: boolean;
 }
 
 export interface IAdminDataProfile {

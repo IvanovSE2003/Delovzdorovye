@@ -32,7 +32,10 @@ const UsefulInfoLayout: React.FC<UsefulInfoLayoutProps> = ({ content }) => {
 
     if (loading) return (
         <AccountLayout>
-            <LoaderUsefulInfo />
+            <div className="page-container">
+                <h1 className="consultations-doctor__main-title">Полезная информация</h1>
+                <LoaderUsefulInfo />
+            </div>
         </AccountLayout>
     )
 
@@ -54,7 +57,7 @@ const UsefulInfoLayout: React.FC<UsefulInfoLayoutProps> = ({ content }) => {
     return (
         <AccountLayout>
             <div className="page-container">
-                <h1 className="page-container__title">Полезная информация</h1>
+                <h1 className="consultations-doctor__main-title">Полезная информация</h1>
                 <div className="usefulinfo">
                     {data.map((p: InfoBlock) =>
                         <div key={p.id} className="usefulinfo-block">

@@ -8,6 +8,7 @@ import type { Role } from '../../../../models/Auth';
 import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
 import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
 import type { Consultation } from '../../../../models/consultations/Consultation';
+import ModalHeader from '../ModalHeader/ModalHeader';
 
 interface ShiftModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
@@ -81,14 +82,8 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
     return (
         <div className="modal">
             <div className='shift-modal consultation-modal'>
-                <h2 className="consultation-modal__title">Перенос консультации</h2>
 
-                <button
-                    className="consultation-modal__close"
-                    onClick={onClose}
-                >
-                    X
-                </button>
+                <ModalHeader title="Перенос консультации" onClose={onClose} />
 
                 <div className="shift-modal__information">
                     <p>Вы переносите консультацию: {formatDateWithoutYear(consultationData.date)}, {consultationData.durationTime}</p>

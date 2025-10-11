@@ -34,7 +34,7 @@ const EditUsefulInformations: React.FC = () => {
   return (
     <AccountLayout>
       <div className="page-container edit-info">
-        <h1 className="admin-page__title">Редактирование полезной информации</h1>
+        <h1 className="consultations-doctor__main-title">Редактирование полезной информации</h1>
         <Tabs
           tabs={[
             { name: "client", label: "ЛК клиента" },

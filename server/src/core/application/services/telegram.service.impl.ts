@@ -4,8 +4,6 @@ import models from '../../../infrastructure/persostence/models/models.js';
 import { Op } from 'sequelize';
 import UserRepositoryImpl from '../repositories/user.repository.impl.js';
 import UserRepository from '../../domain/repositories/user.repository.js';
-import FileServiceImpt from './file.service.impl.js';
-import FileService from '../../domain/services/file.service.js';
 
 const { UserTelegramModel } = models;
 
@@ -13,8 +11,7 @@ export default class TelegramServiceImpl implements TelegramService {
     private bot: Bot;
     private linkTokens = new Map<string, number>();
     private cleanupTimers = new Map<string, NodeJS.Timeout>();
-    private readonly fileService: FileService = new FileServiceImpt();
-    private readonly userRepository: UserRepository = new UserRepositoryImpl(this.fileService); 
+    private readonly userRepository: UserRepository = new UserRepositoryImpl(); 
 
     constructor() {
         this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN as string);
@@ -70,7 +67,7 @@ export default class TelegramServiceImpl implements TelegramService {
             const chatId = ctx.chat.id.toString();
 
             if (!code) {
-                await ctx.reply('❌ Укажите код привязки: /link [ваш_код]');
+                await ctx.reply('Укажите код привязки: /link [ваш_код]');
                 return;
             }
 
@@ -78,7 +75,7 @@ export default class TelegramServiceImpl implements TelegramService {
             const user = await this.userRepository.findById(Number(userId));
 
             if (!userId) {
-                await ctx.reply('❌ Неверный или просроченный код привязки');
+                await ctx.reply('Неверный или просроченный код привязки');
                 return;
             }
 
@@ -93,7 +90,7 @@ export default class TelegramServiceImpl implements TelegramService {
                 });
 
                 if (existingLink) {
-                    await ctx.reply('❌ Этот аккаунт уже привязан к другому Telegram');
+                    await ctx.reply('Этот аккаунт уже привязан к другому Telegram');
                     return;
                 }
 
@@ -112,9 +109,9 @@ export default class TelegramServiceImpl implements TelegramService {
                     await this.userRepository.save(user.activateSMS())
                 }
 
-                await ctx.reply('✅ Аккаунт успешно привязан!');
+                await ctx.reply('Аккаунт успешно привязан!');
             } catch (error) {
-                await ctx.reply('❌ Ошибка привязки аккаунта');
+                await ctx.reply('Ошибка привязки аккаунта');
             }
         });
     }

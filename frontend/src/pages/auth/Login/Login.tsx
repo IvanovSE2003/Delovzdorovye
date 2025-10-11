@@ -101,7 +101,7 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError, setMessage }) => {
     setLoading(true);
     const data = await store.completeLogin(localStorage.getItem('tempToken'), code);
     setLoading(false);
-    if (data.success) navigate(defaultRoleRoutes[store.user.role]);
+    if (data.success) navigate(defaultRoleRoutes[data.role || -1]);
     else setError({ id: Date.now(), message: data.message });
     setLoading(false);
   };

@@ -41,7 +41,8 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
     const [comment, setComment] = useState<string>("");
     const [addBlock, setAddBlock] = useState<boolean>(false);
 
-    const [specializations, setSpecializations] = useState<Specializations[]>([] as Specializations[])
+    const [specializations, setSpecializations] = useState<Specializations[]>([] as Specializations[]);
+    const [hasSpecializations, setHasSpecializations] = useState<boolean>(false);
     const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
     const [diploma, setDiploma] = useState<File | null>(null)
     const [license, setLicense] = useState<File | null>(null)
@@ -184,26 +185,29 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
 
     // Получение специализация для селекта
     const getSpecialization = async () => {
-        try {
-            const response = await DoctorService.getSpecializations();
-            setSpecializations(response.data);
-        } catch (e) {
-            processError(e, "Ошибка при получении всех специлазаций: ");
+        if (!hasSpecializations) {
+            try {
+                const response = await DoctorService.getSpecializations();
+                setSpecializations(response.data);
+            } catch (e) {
+                processError(e, "Ошибка при получении всех специлазаций: ");
+            } finally {
+                setHasSpecializations(true);
+            }
         }
     }
 
     // Загрузка данных при прогрузке информации
     useEffect(() => {
-        getSpecialization();
         fetchProfData();
     }, [])
 
     // Основной рендер
     return (
         <div className="doctor-info">
+            <ShowError msg={message} mode="MESSAGE" />
             <h1 className="doctor-info__title">Специализации</h1>
             <p className="doctor-info__subtitle">Здесь находится список всех специализаций</p>
-            <ShowError msg={message} mode="MESSAGE" />
 
             {/* Блок для добавления */}
             {addBlock && (
@@ -217,6 +221,7 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
                         placeholder="Выберите специализацию"
                         className="doctor-info__select"
                         classNamePrefix="custom-select"
+                        onMenuOpen={getSpecialization}
                         onChange={(selected) => setSelectedSpecializationId(selected?.value || null)}
                     />
 
@@ -415,12 +420,14 @@ const DoctorInfo: React.FC<DoctorInfoProps> = ({ type, userId = undefined }) => 
 
             {!edit && !addBlock && !editingSpecialization && type == "WRITE" && (
                 <div className="doctor-info__buttons">
-                    <button
-                        className="my-button"
-                        onClick={() => setEdit(true)}
-                    >
-                        Редактировать
-                    </button>
+                    {doctorInfo.length !== 0 && (
+                        <button
+                            className="my-button"
+                            onClick={() => setEdit(true)}
+                        >
+                            Редактировать
+                        </button>
+                    )}
 
                     <button
                         className="my-button"

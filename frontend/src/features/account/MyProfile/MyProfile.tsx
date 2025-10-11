@@ -5,15 +5,17 @@ import Loader from "../../../components/UI/Loader/Loader.js";
 import ProfileWarnings from "./components/ProfileWarnings.js";
 import UserProfile from "./UserProfile.js";
 import UserProfileEdit from "./UserProfileEdit.js";
-import type { IUserDataProfile } from "../../../models/Auth.js";
+import type { IUserDataProfileEdit } from "../../../models/Auth.js";
 import AccountLayout from "../../../pages/account/AccountLayout.js";
 import DoctorInfo from "../DoctorInfo/DoctorInfo.js";
 import "./MyProfile.scss";
+import ShowError from "../../../components/UI/ShowError/ShowError.js";
 
 const MyProfile: React.FC = () => {
     const { store } = useContext(Context);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [error, setError] = useState<string>("");
+    const [error, setError] = useState<{id: number; message: string}>({id: 0, message: ""});
+    const [message, setMessage] = useState<{id: number; message: string}>({id: 0, message: ""});
 
     // Добавление фотографии
     const handleAddPhoto = async (e: React.ChangeEvent<HTMLInputElement>, changePhoto: (img: string) => void) => {
@@ -24,35 +26,32 @@ const MyProfile: React.FC = () => {
             formData.append('img', file);
             formData.append('userId', store.user.id.toString());
 
-            try {
-                await store.uploadAvatar(formData);
-                changePhoto(store.user.img)
-            } catch (error) {
-                console.error('Ошибка загрузки изображения:', error);
-            }
+            await store.uploadAvatar(formData);
+            changePhoto(store.user.img)
         }
     };
 
     // Удаление фотографии
     const handleRemovePhoto = async (changePhoto: (img: string) => void) => {
-        try {
-            await store.removeAvatar(store.user.id);
-            changePhoto(store.user.img);
-        } catch (error) {
-            console.error('Ошибка удаления изображения:', error);
-        }
+        await store.removeAvatar(store.user.id);
+        changePhoto(store.user.img);
     };
 
     // Сохранение изменений
-    const handleSave = async (ProfileData: IUserDataProfile) => {
-        setError("");
+    const handleSave = async (ProfileData: IUserDataProfileEdit) => {
+        setError({id: Date.now(), message: ""});
         const data = await store.updateUserData(ProfileData, store.user.id);
-        if (data.success) setIsEditing(false);
-        else setError(data.message);
+        if (data.success) {
+            setIsEditing(false);
+            setMessage({id: Date.now(), message: data.message})
+        }
+        else {
+            setError({id: Date.now(), message: data.message});
+        }
     };
 
     useEffect(() => {
-        setError("");
+        setError({id: Date.now(), message: ""});
     }, [isEditing])
 
     if (store.loading) return (
@@ -64,7 +63,9 @@ const MyProfile: React.FC = () => {
     return (
         <AccountLayout>
             <div className="user-profile">
-                {error && (<div className="user-profile__error">{error}</div>)}
+                {isEditing && <div className="user-profile__title">Вы находитесь в режиме редактирования профиля</div>}
+                <ShowError msg={error} className="user-profile__error"/>
+                <ShowError msg={message} mode="MESSAGE" className="user-profile__error"/>
                 <div className="user-profile__box">
                     <div className={store.user.role !== "ADMIN" ? "user-profile__content" : "user-profile__admin"}>
                         {isEditing ? (

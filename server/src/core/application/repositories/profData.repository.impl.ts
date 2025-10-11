@@ -2,6 +2,7 @@ import { IProfDataCreationAttributes, ProfDataModelInterface } from "../../../in
 import ProfData from "../../domain/entities/profData.entity";
 import ProfDataRepository from "../../domain/repositories/profData.repository";
 import models from "../../../infrastructure/persostence/models/models";
+import { broadcastNotificationCount } from "../../../infrastructure/web/function/countDataAll";
 
 export default class ProfDataRepositoryImpl implements ProfDataRepository {
     async findAll(page?: number, limit?: number, filters: any = {}): Promise<{ profData: ProfData[]; totalCount: number; totalPage: number }> {
@@ -34,6 +35,11 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
 
     async create(profData: ProfData): Promise<ProfData> {
         const createdProfData = await models.ProfDataModel.create(this.mapToPersistence(profData));
+
+        const countProf = await this.getCount();
+        const countBasic = await models.BasicDataModel.count();
+        await broadcastNotificationCount(countProf + countBasic, "changes_count");
+
         return this.mapToDomainProfData(createdProfData);
     }
 
@@ -58,6 +64,10 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
         if (!created) {
             await profDataModel.update(this.mapToPersistence(profData));
             await profDataModel.reload();
+        } else {
+            const countProf = await this.getCount();
+            const countBasic = await models.BasicDataModel.count();
+            await broadcastNotificationCount(countProf + countBasic, "changes_count");
         }
 
         return this.mapToDomainProfData(profDataModel);
@@ -65,8 +75,10 @@ export default class ProfDataRepositoryImpl implements ProfDataRepository {
 
     async delete(id: number): Promise<void> {
         const deletedCount = await models.ProfDataModel.destroy({ where: { id } });
-        if (deletedCount === 0) {
-            throw new Error('Фиксация изменения профессиональных данных не найдена или не была удалена');
+        if (deletedCount !== 0) {
+            const countProf = await this.getCount();
+            const countBasic = await models.BasicDataModel.count();
+            await broadcastNotificationCount(countProf + countBasic, "changes_count");
         }
     }
 

@@ -8,12 +8,15 @@ import UserService from "../../../../services/UserService";
 import AccountLayout from "../../AccountLayout";
 import './Recomendations.scss';
 import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import { Link } from "react-router";
+import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 
 
 export interface Recomendations {
     doctorName: string;
     doctorSurname: string;
     doctorPatronymic?: string;
+    doctorUserId: number;
     date: string;
     time: string;
     recomendation: string | null;
@@ -23,15 +26,19 @@ export interface Recomendations {
 const Recomendations: React.FC = () => {
     const { store } = useContext(Context);
     const [recomendations, setRecomendations] = useState<Recomendations[]>([] as Recomendations[])
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Получение данных о рекомендациях
     const fetchRecomendation = async () => {
         try {
+            setLoading(true);
             const response = await UserService.getRecomendation(store.user.id);
             setRecomendations(response.data);
         } catch (e) {
             const error = e as AxiosError<TypeResponse>;
             console.error("Ошибка при получении рекомендаций: ", error.response?.data.message);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -40,21 +47,29 @@ const Recomendations: React.FC = () => {
         fetchRecomendation();
     }, [])
 
+    if(loading) return (
+        <AccountLayout>
+            <h2 className="consultations-doctor__main-title">Рекомендации от специалистов</h2>
+            <LoaderUsefulInfo/>
+        </AccountLayout>
+    )
+
     return (
         <AccountLayout>
+            <h2 className="consultations-doctor__main-title">Рекомендации от специалистов</h2>
             <div className="page-container recomendations">
-
-                <h2 className="page-container__title">Рекомендации от специалистов</h2>
-
                 <div className="recomendations__blocks">
                     {recomendations.length > 0 ? recomendations.map((recomend, index) => (
                         <div key={index} className="block">
-                            <h3>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic}
+                            <h3><Link to={`/profile/${recomend.doctorUserId}`}>{recomend.doctorName} {recomend.doctorSurname} {recomend.doctorPatronymic}</Link>
                                 {` (${recomend.specialization?.join(", ")})`}
                             </h3>
                             <div className="block__info">
                                 {recomend.recomendation && recomend.recomendation.length > 0 ? (
-                                    <a target="_blank" href={`${API_URL}/${recomend.recomendation}`}>Документ</a>
+                                    <div>
+                                        Рекомендация: {` `}
+                                        <Link target="_blank" to={`${API_URL}/${recomend.recomendation}`}>Файл</Link>
+                                    </div>
                                 ) : (
                                     <div>Документ не был загружен</div>
                                 )}

@@ -121,8 +121,8 @@ export default class User {
             changes.pending_name ?? this.pending_name,
             changes.pending_surname ?? this.pending_surname,
             changes.pending_patronymic ?? this.pending_patronymic,
-            changes.pending_gender ?? this.pending_gender,
             changes.pending_date_birth ?? this.pending_date_birth,
+            changes.pending_gender ?? this.pending_gender,
             changes.hasPendingChanges ?? this.hasPendingChanges,
             changes.isActivated ?? this.isActivated,
             changes.isActivatedSMS ?? this.isActivatedSMS,
@@ -139,5 +139,11 @@ export default class User {
             changes.sentChanges ?? this.sentChanges,
             changes.isAnonymous ?? this.isAnonymous
         );
+    }
+
+    clearTwoFactorCode() {
+        this.twoFactorCode = null;
+        this.twoFactorCodeExpires = null;
+        return this;
     }
 }

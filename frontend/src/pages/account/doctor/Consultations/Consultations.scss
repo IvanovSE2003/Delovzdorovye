@@ -1,26 +1,24 @@
 @use '../../../../assets/styles/variables.scss' as *;
 
 .consultations-doctor {
-    background-color: $secondary-color;
-    padding: 2rem 3rem;
-
     &__main-title {
-        color: black;
-        font-weight: bolder;
-        font-size: 2rem;
+        color: $gray-color;
         text-align: left;
+        font-size: 2.3rem;
+        border-bottom: solid 1px $gray-color;
+        padding: 0 2rem 2rem 2rem;
     }
 
     &__title {
         text-align: center;
         font-size: 2rem;
-        font-weight: bolder;
+        font-weight: bold;
         color: black;
     }
 
     &__upcoming,
     &__archive {
-        width: 70%;
+        width: 100%;
         margin: 10px auto;
     }
 

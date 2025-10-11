@@ -123,7 +123,7 @@ export default class AdminController {
 
         return res.status(200).json({
             success: true,
-            message: "Изменения успешно подтверждены и применены для профессиональных данных",
+            message: "Изменения профессиональных данных успешно подтверждены и применены для специалиста.",
         });
     }
 
@@ -246,7 +246,7 @@ export default class AdminController {
 
         return res.status(200).json({
             success: true,
-            message: "Изменение успешно подтверждено и применено",
+            message: "Изменение успешно подтверждено и применено.",
         });
     }
 
@@ -355,7 +355,6 @@ export default class AdminController {
 
         const usersWithFlag = await this.userRepository.findOtherProblem(result.users);
 
-        // Используем Promise.all для асинхронных операций в map
         const usersWithDetails = await Promise.all(
             result.users.map(async user => {
                 const hasOtherProblem = usersWithFlag.some(problemUser => problemUser.id === user.id);

@@ -1,5 +1,6 @@
 import PinCodeInput from "../../../components/UI/PinCodeInput/PinCodeInput";
 import AnimatedBlock from "../../../components/AnimatedBlock";
+import { useEffect } from "react";
 
 interface Step2FormProps {
   SetPinCode: (code: string) => void;
@@ -14,6 +15,21 @@ const Step2Form: React.FC<Step2FormProps> = ({
   registration,
   handleBack,
 }) => {
+
+  // Обработчик нажатия клавиши Enter
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        registration();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [registration]);
+
   return (
     <AnimatedBlock className="auth__form">
       <div className="solutions__warn">

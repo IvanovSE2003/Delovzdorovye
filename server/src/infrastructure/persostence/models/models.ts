@@ -171,7 +171,6 @@ const BreakModel = sequelize.define<BreakModelInterface>('break', {
     doctorId: { type: DataType.INTEGER }
 });
 
-// Таблица работы с контентом на сайте
 const ContentModel = sequelize.define<ContentModelInterface>('content', {
     id: { type: DataType.INTEGER, primaryKey: true, autoIncrement: true },
     label: { type: DataType.STRING, allowNull: true },

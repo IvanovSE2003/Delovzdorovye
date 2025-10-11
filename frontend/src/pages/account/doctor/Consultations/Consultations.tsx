@@ -10,19 +10,21 @@ const Consultations: React.FC = () => {
     const { store } = useContext(Context);
     return (
         <AccountLayout>
-            <div className="page-container consultations-doctor">
-                <h1 className="page-container__title">Консультации</h1>
+            <div>
+                <h1 className="consultations-doctor__main-title">Консультации</h1>
                 <h2 className="consultations-doctor__title">Предстоящие консультации</h2>
                 <UpcomingConsultations
-                    userId={store.user.id} // Получает свои консультации
-                    linkerId={store.user.id} // Смотрит свои консультации
-                    mode={store.user.role}
+                    userId={store.user.id}
+                    userRole={store.user.role}
+                    linkerId={store.user.id}
+                    linkerRole={store.user.role}
                 />
 
-                <h2 className="consultations-doctor__title">Архив консультации</h2>
+                <h2 className="consultations-doctor__title">Архив консультаций</h2>
                 <ArchiveConsultations
                     userId={store.user.id}
-                    mode={store.user.role}
+                    userRole={store.user.role}
+                    linkerRole={store.user.role}
                 />
             </div>
         </AccountLayout>

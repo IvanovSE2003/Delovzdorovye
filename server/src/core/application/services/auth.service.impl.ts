@@ -195,7 +195,7 @@ export class AuthServiceImpl implements AuthService {
 
         const tokenData = this.tokenService.validateRefreshToken(refreshToken);
         if (!tokenData) {
-            throw new Error("Не валирный токен");
+            throw new Error("Не валидный токен");
         }
 
         await this.tokenService.removeToken(refreshToken);
@@ -208,7 +208,7 @@ export class AuthServiceImpl implements AuthService {
 
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
         if (!userData) {
-            throw new Error("Не валирный токен");
+            throw new Error("Не валидный токен");
         }
 
         const tokenFromDb = await this.tokenService.findToken(refreshToken);
@@ -220,6 +220,8 @@ export class AuthServiceImpl implements AuthService {
         if (!user) {
             throw new Error('Пользователь не найден');
         }
+
+        await this.tokenService.removeToken(refreshToken);
 
         const tokens = await this.tokenService.generateTokens({
             id: user.id,
@@ -388,6 +390,8 @@ export class AuthServiceImpl implements AuthService {
             if (user.isActivatedSMS) {
                 await this.smsService.sendLoginNotification(user.id);
             }
+
+            await this.userRepository.save(user.clearTwoFactorCode());
 
             return {
                 accessToken: tokens.accessToken,

@@ -7,15 +7,15 @@ import AccountLayout from "../../AccountLayout";
 import BasicTab from "./BasicTab";
 import { normalizePhone } from "../../../../helpers/formatDatePhone";
 
-
 type TabRole = "ALL" | "ADMIN" | "DOCTOR" | "PATIENT" | null;
 
-const Users = () => {
+const Users: React.FC = () => {
   const { store } = useContext(Context);
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchParams, setSearchParams] = useSearchParams();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getInitialRole = () => {
     const roleFromUrl = searchParams.get("role");
@@ -23,6 +23,14 @@ const Users = () => {
   };
 
   const [selectedRole, setSelectedRole] = useState<TabRole>(getInitialRole());
+
+  // Получение всех данных пользователей
+  const getAllUsers = async () => {
+    setLoading(true)
+    const data = await store.getUsersAll();
+    setUsers(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if ((selectedRole || searchTerm.trim() !== "") && users.length === 0) {
@@ -80,23 +88,16 @@ const Users = () => {
     setFilteredUsers(filtered);
   }, [searchTerm, users, selectedRole]);
 
-
-
-  // Получение всех данных пользователей
-  const getAllUsers = async () => {
-    const data = await store.getUsersAll();
-    setUsers(data);
-  };
-
   return (
     <AccountLayout>
       <div className="page-container admin-page">
-        <h1 className="admin-page__title">Учетные записи</h1>
+        <h1 className="consultations-doctor__main-title">Учетные записи</h1>
         <BasicTab
           filteredUsers={filteredUsers}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           selectedRole={selectedRole}
+          loading={loading}
           onRoleChange={(role) => setSelectedRole(role as TabRole)}
         />
       </div>

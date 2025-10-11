@@ -83,7 +83,7 @@
 
     &__add {
         padding: 20px;
-        background-color: $profile-color;
+        background-color: $nav-color;
         border-radius: 10px;
 
         &-button {
@@ -101,7 +101,7 @@
 
             &:disabled {
                 background-color: $gray-color;
-                color: $text-color;
+                color: white;
                 cursor: no-drop;
 
                 &:hover {
@@ -113,9 +113,9 @@
 
         &-title {
             font-size: 1.8rem;
-            font-weight: bolder;
+            font-weight: bold;
             text-align: center;
-            color: black;
+            color: $gray-color;
             margin-bottom: 0;
         }
     }
@@ -142,7 +142,6 @@
     }
 
     &__buttons {
-        margin-top: 20px;
         display: flex;
         gap: 20px;
         justify-content: center;

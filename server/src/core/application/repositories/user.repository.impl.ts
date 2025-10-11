@@ -87,7 +87,6 @@ export default class UserRepositoryImpl implements UserRepository {
         let totalPages = 1;
 
         if (page && limit) {
-            // с пагинацией
             totalPages = Math.ceil(totalCount / limit);
 
             users = await models.UserModel.findAll({

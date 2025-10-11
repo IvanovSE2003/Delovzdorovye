@@ -17,15 +17,15 @@ const RepeatModal = lazy(() => import('../../../components/UI/Modals/RepeatModal
 const EditModal = lazy(() => import('../../../components/UI/Modals/EditModal/EditModal'));
 
 export interface UserConsultationsProps {
-    userId?: number; // ID того у кого хотят получить консультации
+    userId: number; // ID того у кого хотят получить консультации
+    userRole: Role;  // Роль того у кого хотят получить консультации
     linkerId: number; // ID того кто хочет посмотреть консультации
-    mode?: Role;
+    linkerRole: Role; // Роль того кто хочет посмотреть консультации
     refreshTrigger?: number;
 }
 
-const PAGE_SIZE = 4;
-
-const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId, mode = "ADMIN", refreshTrigger = 0 }) => {
+const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole, linkerId, linkerRole, refreshTrigger = 0 }) => {
+    const PAGE_SIZE = userRole === "PATIENT" && linkerRole === "PATIENT" ? 1 : 4;
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
     const [modalRepeat, setModalRepeat] = useState<boolean>(false);
@@ -47,15 +47,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
         try {
             setLoading(true)
             let response;
-            if (mode === "DOCTOR")
+            if (userRole === "DOCTOR")
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
                     consultation_status: "UPCOMING",
                     doctorUserId: userId
-                });
-            else if (mode === "PATIENT")
-                response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
-                    consultation_status: "UPCOMING",
-                    userId: userId
                 });
             else
                 response = await ConsultationService.getAllConsultations(PAGE_SIZE, page, {
@@ -113,7 +108,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
     const handleCancelConsultation = async (reason: string, id: number, linkerId: number) => {
         try {
             await ConsultationService.cancelAppointment(reason, id, linkerId);
-            setConsultations(prev => prev.filter(c => c.id !== id));
         } catch (e) {
             processError(e, "Ошибка при отмены консультации: ", setError);
         } finally {
@@ -126,7 +120,8 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
     const handleRepeatConsultation = async (data: ConsultationData) => {
         try {
             const response = await ConsultationService.repeatAppointment(data);
-            console.log(response.data);
+            if (response.data.success) setMessage({ id: Date.now(), message: response.data.message })
+            else setError({ id: Date.now(), message: `Ошибка: ${response.data.message}` })
         } catch (e) {
             processError(e, "Ошибка при повторе консультации: ", setError);
         } finally {
@@ -178,7 +173,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                     consultationData={selectedConsultation || {} as Consultation}
                     onClose={() => setModalShift(false)}
                     onRecord={handleShiftConsultation}
-                    mode={mode}
+                    mode={linkerRole}
                 />
             </Suspense>
 
@@ -188,7 +183,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                     consultationData={selectedConsultation || {} as Consultation}
                     onClose={() => setModalCancel(false)}
                     onRecord={handleCancelConsultation}
-                    mode={mode}
+                    mode={linkerRole}
                     userId={linkerId}
                 />
             </Suspense>
@@ -205,7 +200,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                         </div>
 
                         <div className="consultation-card__info">
-                            {mode === "DOCTOR" ? (
+                            {linkerRole === "DOCTOR" ? (
                                 <div className="consultation-card__specialist">
                                     Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
                                         ? <span> Анонимный пользователь </span>
@@ -235,7 +230,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                                 Подробно: <span>{consultation.descriptionProblem ? consultation?.descriptionProblem : "Не указано."}</span>
                             </div>
 
-                            {mode === "PATIENT" && (
+                            {linkerRole === "PATIENT" && (
                                 <div className="consultation-card__symptoms">
                                     Условия:<span> Бесплатные отмена и перенос более чем за 12 часов.</span>
                                 </div>
@@ -243,7 +238,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                         </div>
 
                         <div className="consultation-card__actions">
-                            {(mode === "PATIENT" || mode === "ADMIN") && (
+                            {linkerRole !== "DOCTOR" && (
                                 <>
                                     <button
                                         className="consultation-card__button consultation-card__button--transfer"
@@ -260,7 +255,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, linkerId,
                                 </>
                             )}
 
-                            {mode === "ADMIN" && (
+                            {linkerRole === "ADMIN" && (
                                 <>
                                     <Suspense fallback={<LoaderUsefulInfo />}>
                                         <RepeatModal

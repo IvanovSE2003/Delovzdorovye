@@ -5,6 +5,7 @@ import ConsultationsStore, { type OptionsResponse } from "../../../../store/cons
 import './RecordModal.scss'
 import { observer } from "mobx-react-lite";
 import ShowError from "../../ShowError/ShowError";
+import ModalHeader from "../ModalHeader/ModalHeader";
 
 interface AdminConsultationModalProps {
   isOpen: boolean;
@@ -96,9 +97,8 @@ const AdminRecordModal: React.FC<AdminConsultationModalProps> = ({ isOpen, onClo
   return (
     <div className="modal">
       <div className="consultation-modal">
-        <h2 className="consultation-modal__title">Запись клиента на консультацию</h2>
-        <button className="consultation-modal__close" onClick={onClose}>X</button>
-
+        <ModalHeader title="Запись клиента на консультацию" onClose={onClose} />
+        
         <Select
           isMulti
           options={problems}
