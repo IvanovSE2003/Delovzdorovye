@@ -228,10 +228,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                             {linkerRole !== "DOCTOR" && (
                                 <>
                                     {(() => {
-                                        const [startTime] = consultation.durationTime.split(' - '); // начало консультации, например "12:00"
+                                        const [startTime] = consultation.durationTime.split(' - ');
                                         const consultationStart = dayjs(`${consultation.date} ${startTime}`, 'YYYY-MM-DD HH:mm');
-                                        const hoursDiff = consultationStart.diff(dayjs(), 'hour', true); // разница в часах (может быть дробной)
-                                        return hoursDiff >= 12; // показываем кнопки, если >= 12 часов
+                                        const hoursDiff = consultationStart.diff(dayjs(), 'hour', true);
+                                        return hoursDiff >= 12 && linkerRole !== "ADMIN";
                                     })() && (
                                             <>
                                                 {!consultation.hasOtherProblem && (

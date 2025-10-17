@@ -58,10 +58,6 @@ const MyProfile: React.FC = () => {
         setError({ id: Date.now(), message: "" });
     }, [isEditing])
 
-    useEffect(() => {
-        console.log("MY PROFILE")
-    }, [])
-
     if (store.loading) return (
         <AccountLayout>
             <Loader />
