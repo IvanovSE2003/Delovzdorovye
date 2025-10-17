@@ -124,20 +124,14 @@ const Profile: React.FC = () => {
                         className="user-profile__back"
                         title="Вернуться"
                         onClick={() => {
-                            const hasHistory = window.history.length > 1 &&
+                            const canSafelyGoBack = window.history.length > 1 &&
                                 document.referrer &&
-                                document.referrer.includes(window.location.hostname);
-
-                            if (hasHistory) {
+                                document.referrer.includes(window.location.hostname) &&
+                                !document.referrer.includes(window.location.href);
+                            if (canSafelyGoBack) {
                                 navigate(-1);
                             } else {
                                 navigate(RouteNames.HOME, { replace: true });
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                e.currentTarget.click();
                             }
                         }}
                     >

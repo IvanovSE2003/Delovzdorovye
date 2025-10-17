@@ -79,11 +79,14 @@ const MyProfile: React.FC = () => {
                         className="user-profile__back"
                         title="Вернуться"
                         onClick={() => {
-                            const canGoBack = window.history.length > 1 && document.referrer;
-                            if (canGoBack) {
+                            const canSafelyGoBack = window.history.length > 1 &&
+                                document.referrer &&
+                                document.referrer.includes(window.location.hostname) &&
+                                !document.referrer.includes(window.location.href);
+                            if (canSafelyGoBack) {
                                 navigate(-1);
                             } else {
-                                navigate(RouteNames.HOME);
+                                navigate(RouteNames.HOME, { replace: true });
                             }
                         }}
                     >

@@ -9,6 +9,7 @@ import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsef
 import type { Consultation } from '../../../models/consultations/Consultation';
 import type { ConsultationData } from '../../../models/consultations/ConsultationData';
 import { getDateLabel } from '../../../helpers/formatDate';
+import dayjs from 'dayjs';
 
 // Замените прямые импорты на ленивые
 const ShiftModal = lazy(() => import('../../../components/UI/Modals/ShiftModal/ShiftModal'));
@@ -187,7 +188,7 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                         </div>
 
                         <div className="consultation-card__info">
-                            {linkerRole === "DOCTOR" ? (
+                            {userRole === "DOCTOR" ? (
                                 <div className="consultation-card__specialist">
                                     Клиент: {(!consultation.PatientSurname && !consultation.PatientName
                                         && !consultation.PatientPatronymic)
@@ -226,20 +227,29 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                         <div className="consultation-card__actions">
                             {linkerRole !== "DOCTOR" && (
                                 <>
-                                    {!consultation.hasOtherProblem && (
-                                        <button
-                                            className="consultation-card__button consultation-card__button--transfer"
-                                            onClick={() => handleClickButton(consultation, setModalShift)}
-                                        >
-                                            Перенести
-                                        </button>
-                                    )}
-                                    <button
-                                        className="consultation-card__button consultation-card__button--cancel"
-                                        onClick={() => handleClickButton(consultation, setModalCancel)}
-                                    >
-                                        Отменить
-                                    </button>
+                                    {(() => {
+                                        const [startTime] = consultation.durationTime.split(' - '); // начало консультации, например "12:00"
+                                        const consultationStart = dayjs(`${consultation.date} ${startTime}`, 'YYYY-MM-DD HH:mm');
+                                        const hoursDiff = consultationStart.diff(dayjs(), 'hour', true); // разница в часах (может быть дробной)
+                                        return hoursDiff >= 12; // показываем кнопки, если >= 12 часов
+                                    })() && (
+                                            <>
+                                                {!consultation.hasOtherProblem && (
+                                                    <button
+                                                        className="consultation-card__button consultation-card__button--transfer"
+                                                        onClick={() => handleClickButton(consultation, setModalShift)}
+                                                    >
+                                                        Перенести
+                                                    </button>
+                                                )}
+                                                <button
+                                                    className="consultation-card__button consultation-card__button--cancel"
+                                                    onClick={() => handleClickButton(consultation, setModalCancel)}
+                                                >
+                                                    Отменить
+                                                </button>
+                                            </>
+                                        )}
                                 </>
                             )}
 
