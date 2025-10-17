@@ -447,11 +447,11 @@ export default class UserController {
                 '',
                 false,
                 'Изображение',
-                user.img,
+                user.pending_img!,
                 fileName,
                 user.id
             );
-            await this.basicDataRepository.create(basicData);
+            await this.basicDataRepository.save(basicData);
 
             user.sentChanges = true;
             user.hasPendingChanges = true;

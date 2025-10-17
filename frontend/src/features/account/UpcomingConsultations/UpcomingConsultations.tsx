@@ -8,12 +8,11 @@ import ShowError from '../../../components/UI/ShowError/ShowError';
 import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 import type { Consultation } from '../../../models/consultations/Consultation';
 import type { ConsultationData } from '../../../models/consultations/ConsultationData';
-import { getDateLabel } from '../../../helpers/formatDatePhone';
+import { getDateLabel } from '../../../helpers/formatDate';
 
 // Замените прямые импорты на ленивые
 const ShiftModal = lazy(() => import('../../../components/UI/Modals/ShiftModal/ShiftModal'));
 const CancelModal = lazy(() => import('../../../components/UI/Modals/CancelModal/CancelModal'));
-const RepeatModal = lazy(() => import('../../../components/UI/Modals/RepeatModal/RepeatModal'));
 const EditModal = lazy(() => import('../../../components/UI/Modals/EditModal/EditModal'));
 
 export interface UserConsultationsProps {
@@ -28,7 +27,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
     const PAGE_SIZE = userRole === "PATIENT" && linkerRole === "PATIENT" ? 1 : 4;
     const [modalShift, setModalShift] = useState<boolean>(false);
     const [modalCancel, setModalCancel] = useState<boolean>(false);
-    const [modalRepeat, setModalRepeat] = useState<boolean>(false);
     const [modalEdit, setModalEdit] = useState<boolean>(false);
 
     const [consultations, setConsultations] = useState<Consultation[]>([] as Consultation[])
@@ -116,22 +114,10 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
         }
     };
 
-    // Завершение повторения консультации
-    const handleRepeatConsultation = async (data: ConsultationData) => {
-        try {
-            const response = await ConsultationService.repeatAppointment(data);
-            if (response.data.success) setMessage({ id: Date.now(), message: response.data.message })
-            else setError({ id: Date.now(), message: `Ошибка: ${response.data.message}` })
-        } catch (e) {
-            processError(e, "Ошибка при повторе консультации: ", setError);
-        } finally {
-            setModalRepeat(false);
-            await fetchConsultations();
-        }
-    };
-
     // Завершение редактирование консультации
     const handleEditConsultation = async (newData: ConsultationData) => {
+        console.log(newData);
+
         try {
             setLoading(true);
             const response = await ConsultationService.editAppointment(newData);
@@ -193,7 +179,8 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
 
             <div className={`consultations-container ${isVisible ? 'visible' : 'hidden'}`}>
                 {consultations.map(consultation => (
-                    <div key={consultation.id} className={`consultation-card ${consultation.Problems.length === 0 && "consultation-card__other-problem"}`}>
+                    <div key={consultation.id} className={`consultation-card ${consultation.hasOtherProblem
+                        && linkerRole !== "PATIENT" && "consultation-card__other-problem"}`}>
                         <div className="consultation-card__time">
                             <span className="consultation-card__date">{getDateLabel(consultation.date)}</span>
                             <span className="consultation-card__hours">{consultation.durationTime}</span>
@@ -202,7 +189,8 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                         <div className="consultation-card__info">
                             {linkerRole === "DOCTOR" ? (
                                 <div className="consultation-card__specialist">
-                                    Клиент: {(!consultation.PatientSurname && !consultation.PatientName && !consultation.PatientPatronymic)
+                                    Клиент: {(!consultation.PatientSurname && !consultation.PatientName
+                                        && !consultation.PatientPatronymic)
                                         ? <span> Анонимный пользователь </span>
                                         : <a href={`/profile/${consultation.PatientUserId}`}> {consultation.PatientSurname} {consultation.PatientName} {consultation.PatientPatronymic ?? ""} </a>
                                     }
@@ -210,15 +198,13 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                             ) : (
                                 <div className="consultation-card__specialist">
                                     {"Специалист: "}
-                                    <a href={`/profile/${consultation.DoctorUserId}`}>
-                                        {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic}
-                                    </a>
+                                    <a href={`/profile/${consultation.DoctorUserId}`}> {consultation.DoctorSurname} {consultation.DoctorName} {consultation?.DoctorPatronymic || ""} </a>
                                 </div>
                             )}
 
                             <div className="consultation-card__symptoms">
                                 {'Симптомы: '}
-                                {consultation.Problems.length > 0 ? consultation.Problems.map((p, i) => (
+                                {!consultation.hasOtherProblem ? consultation.Problems.map((p, i) => (
                                     <span key={i}>
                                         {p.toLocaleLowerCase()}
                                         {i < consultation.Problems.length - 1 ? ', ' : '.'}
@@ -240,12 +226,14 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                         <div className="consultation-card__actions">
                             {linkerRole !== "DOCTOR" && (
                                 <>
-                                    <button
-                                        className="consultation-card__button consultation-card__button--transfer"
-                                        onClick={() => handleClickButton(consultation, setModalShift)}
-                                    >
-                                        Перенести
-                                    </button>
+                                    {!consultation.hasOtherProblem && (
+                                        <button
+                                            className="consultation-card__button consultation-card__button--transfer"
+                                            onClick={() => handleClickButton(consultation, setModalShift)}
+                                        >
+                                            Перенести
+                                        </button>
+                                    )}
                                     <button
                                         className="consultation-card__button consultation-card__button--cancel"
                                         onClick={() => handleClickButton(consultation, setModalCancel)}
@@ -258,15 +246,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                             {linkerRole === "ADMIN" && (
                                 <>
                                     <Suspense fallback={<LoaderUsefulInfo />}>
-                                        <RepeatModal
-                                            isOpen={modalRepeat}
-                                            consultationData={selectedConsultation || {} as Consultation}
-                                            onClose={() => setModalRepeat(false)}
-                                            onRecord={handleRepeatConsultation}
-                                        />
-                                    </Suspense>
-
-                                    <Suspense fallback={<LoaderUsefulInfo />}>
                                         <EditModal
                                             isOpen={modalEdit}
                                             consultationData={selectedConsultation || {} as Consultation}
@@ -275,12 +254,6 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                                         />
                                     </Suspense>
 
-                                    <button
-                                        className="consultation-card__button consultation-card__button--repeat"
-                                        onClick={() => handleClickButton(consultation, setModalRepeat)}
-                                    >
-                                        Повторить
-                                    </button>
                                     <button
                                         className="consultation-card__button consultation-card__button--edit"
                                         onClick={() => handleClickButton(consultation, setModalEdit)}

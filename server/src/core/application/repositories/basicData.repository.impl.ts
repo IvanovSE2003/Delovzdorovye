@@ -61,9 +61,20 @@ export default class BatchRepositoryImpl implements BatchRepository {
     }
 
     async save(basicData: BasicData): Promise<BasicData> {
-        return basicData.id ? this.update(basicData) : this.create(basicData);
-    }
+        const existingData = await models.BasicDataModel.findOne({
+            where: {
+                userId: basicData.userId,
+                field_name: basicData.field_name
+            }
+        });
 
+        if (existingData) {
+            basicData.id = existingData.id; 
+            return this.update(basicData);
+        } else {
+            return this.create(basicData);
+        }
+    }
     async delete(id: number): Promise<void> {
         const deleteCount = await models.BasicDataModel.destroy({ where: { id } });
         if (deleteCount !== 0) {

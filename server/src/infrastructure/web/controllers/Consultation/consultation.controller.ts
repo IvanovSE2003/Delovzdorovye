@@ -10,11 +10,12 @@ import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.re
 import Problem from "../../../../core/domain/entities/problem.entity.js";
 import { UploadedFile } from 'express-fileupload';
 import FileService from "../../../../core/domain/services/file.service.js";
-import { adjustDateTime, adjustTimeSlotToTimeZone, convertUserTimeToMoscow, formatEndTime } from "../../function/transferTime.js"
+import { adjustDateTime, adjustTimeSlotToTimeZone, convertMoscowToUserTime, convertUserTimeToMoscow, formatEndTime } from "../../function/transferTime.js"
 import NotificationRepository from "../../../../core/domain/repositories/notifaction.repository.js"
 import Notification from "../../../../core/domain/entities/notification.entity.js";
 import normalizeDate from "../../function/normDate.js";
 import { ITimeZones } from "../../../../../../frontend/src/models/TimeZones.js";
+import { Op } from 'sequelize';
 
 export default class ConsultationController {
     constructor(
@@ -85,6 +86,7 @@ export default class ConsultationController {
 
         const formattedConsultations: any[] = [];
 
+        let problemsName = [];
         for (const consultation of consultations.consultations) {
             const user = await this.userRepository.findById(consultation.userId);
 
@@ -100,6 +102,8 @@ export default class ConsultationController {
                 id: consultation.id,
                 descriptionProblem: consultation.problem_description,
                 recommendations: consultation.recommendations,
+                hasOtherProblem: consultation.has_other_problem,
+                problems: consultation.problems?.map(p => { problemsName.push(p.name) }),
                 durationTime,
                 date: adjustedTime.newDate,
                 score: consultation.score,
@@ -160,6 +164,7 @@ export default class ConsultationController {
             normalizeDate(moscowDate),
             "OPEN"
         );
+
         if (!timeSlot) return next(ApiError.badRequest('Временная ячейка не найдена'));
 
         const reservationExpiresAt = new Date();
@@ -596,12 +601,38 @@ export default class ConsultationController {
 
         const { newTime: moscowTime, newDate: moscowDate } = convertUserTimeToMoscow(date, time, user.timeZone);
 
+        const oldTimeSlot = await this.timeSlotRepository.findByTimeDate(consultation.time, consultation.doctorId, consultation.date, "BOOKED");
+        if (!oldTimeSlot) return next(ApiError.badRequest('Старый слот не найден'));
+
+        const newTimeSlot = await this.timeSlotRepository.findByTimeDate(moscowTime, doctorId, moscowDate, "OPEN");
+        if (!newTimeSlot) return next(ApiError.badRequest('Новый слот не найден для записи'));
+
         consultation.time = moscowTime;
         consultation.date = moscowDate;
         consultation.doctorId = doctor.id;
         consultation.problems = problems;
         consultation.problem_description = descriptionProblem;
-        await this.consultationRepository.save(consultation);
+        consultation.has_other_problem = false;
+
+        await Promise.all([
+            this.consultationRepository.save(consultation),
+            this.deleteProblemsToConsultion(consultation.id),
+            this.addProblemsToConsultation(consultation.id, problems),
+            this.timeSlotRepository.save(newTimeSlot.setStatus("BOOKED")),
+            this.timeSlotRepository.save(oldTimeSlot.setStatus("OPEN")),
+            this.notificationRepository.save(
+                new Notification(
+                    0,
+                    "Консультация обновлена",
+                    "Ваша консультация по другой проблеме была отредактирована администратором. Всю информацию Вы можете посмотреть в разделе «Консультации»",
+                    "WARNING",
+                    false,
+                    null,
+                    null,
+                    user.id
+                )
+            )
+        ]);
 
         return res.status(200).json({
             success: true,
@@ -626,6 +657,18 @@ export default class ConsultationController {
             await models.ConsultationProblems.bulkCreate(consultationProblems);
         } catch (error) {
             throw error;
+        }
+    }
+
+    private async deleteProblemsToConsultion(consultationId: number): Promise<void> {
+        try {
+            await models.ConsultationProblems.destroy({
+                where: {
+                    consultationId: consultationId
+                }
+            });
+        } catch (e: any) {
+            throw ApiError.internal('Ошибка удаления проблем с консультации')
         }
     }
 }

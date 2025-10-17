@@ -6,6 +6,7 @@ import SearchInput from '../../../../components/UI/Search/Search';
 import { Link } from 'react-router';
 import { processError } from '../../../../helpers/processError';
 import LoaderUsefulInfo from '../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
+import { GetFormatPhone } from '../../../../helpers/formatPhone';
 
 export interface UserCon {
     countOtherProblem: number;
@@ -64,7 +65,7 @@ const MakeConsultation: React.FC = () => {
                 <h1 className="consultations-doctor__main-title">Пользователи системы</h1>
 
                 <SearchInput
-                    placeholder="Введите телефон, имя, фамилию пользователя"
+                    placeholder="Поиск по ФИО и телефону"
                     value={searchTerm}
                     onChange={setSearchTerm}
                 />
@@ -80,7 +81,7 @@ const MakeConsultation: React.FC = () => {
                                         <>Анонимный пользователь</>
                                     )}
                                 </span>
-                                <span className="makeconsultation__user-phone">{user.phone}</span>
+                                <span className="makeconsultation__user-phone">{GetFormatPhone(user.phone)}</span>
                             </div>
                             <Link
                                 to={`/profile/${user.id}`}

@@ -31,6 +31,17 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [modalImage, setModalImage] = useState<{ open: boolean, value: string }>({ open: false, value: "" });
+    const [allBasicDatas, setAllBasicDatas] = useState<IBasicData[]>([]); // Все данные
+
+    // Фильтрация данных по поисковому запросу
+    const filteredBasicDatas = allBasicDatas.filter(data => {
+        if (!searchTerm.trim()) return true;
+        
+        const fullName = `${data.userSurname} ${data.userName} ${data.userPatronymic || ''}`.toLowerCase();
+        const search = searchTerm.toLowerCase();
+        
+        return fullName.includes(search);
+    });
 
     // Это файл?
     const isFile = (value: string) =>
@@ -39,7 +50,6 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     // Это изображение?
     const isImage = (filename: string) =>
         IMAGE_EXTENSIONS.some((ext) => filename.toLowerCase().endsWith(ext));
-
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -102,6 +112,7 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
             setLoading(true);
             const data = await store.getBasicDataAll(10, 1);
             if (data?.basicDatas) {
+                setAllBasicDatas(data.basicDatas); // Сохраняем все данные
                 setBasicDatas(data.basicDatas);
             }
         } catch (e) {
@@ -115,13 +126,15 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
     const removeBatch = (id: number, message?: string) => {
         setMessage({ id: Date.now(), message: message || "Ошибка при удалении" })
 
-        const marked = basicDatas.map(b =>
+        const marked = allBasicDatas.map(b =>
             b.id === id ? { ...b, className: "removing" } : b
         );
-        setBasicDatas(marked);
+        setAllBasicDatas(marked);
 
         setTimeout(() => {
-            setBasicDatas(marked.filter(b => b.id !== id));
+            const filtered = marked.filter(b => b.id !== id);
+            setAllBasicDatas(filtered);
+            setBasicDatas(filtered);
         }, 300);
     };
 
@@ -212,8 +225,8 @@ const BasicDataTab: React.FC<BasicDataTabProps> = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {basicDatas.length > 0 ? (
-                        basicDatas.map((data) => (
+                    {filteredBasicDatas.length > 0 ? (
+                        filteredBasicDatas.map((data) => (
                             <tr key={data.id}>
                                 <td>
                                     <Link to={`/profile/${data.userId}`}>

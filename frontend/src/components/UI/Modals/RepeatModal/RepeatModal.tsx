@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import type { ModalProps } from '../CancelModal/CancelModal';
 import RecordForm from '../RecordModal/RecordForm';
 import type { Role } from '../../../../models/Auth';
-import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import { formatDateWithoutYear } from '../../../../helpers/formatDate';
 import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
 import ShowError from '../../ShowError/ShowError';
 import ModalHeader from '../ModalHeader/ModalHeader';
 import './RepeatModal.scss';
 import '../ShiftModal/ShiftModal.scss';
+import { GetFormatPhone } from '../../../../helpers/formatPhone';
 
 interface RepeatModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
@@ -66,7 +67,7 @@ const RepeatModal: React.FC<RepeatModalProps> = ({ isOpen, onClose, onRecord, co
                         Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
                             ? <span>Анонимный пользователь</span>
                             : <span>
-                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {GetFormatPhone(consultationData.PatientPhone)}
                             </span>
                         }
                     </div>

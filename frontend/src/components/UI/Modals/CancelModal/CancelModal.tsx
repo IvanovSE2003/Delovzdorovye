@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import type { Role } from '../../../../models/Auth';
 import type { Consultation } from '../../../../models/consultations/Consultation';
-import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import { formatDateWithoutYear } from '../../../../helpers/formatDate';
 import './CancelModal.scss'
 import ModalHeader from '../ModalHeader/ModalHeader';
+import { GetFormatPhone } from '../../../../helpers/formatPhone';
 
 export interface ModalProps {
     isOpen: boolean;
@@ -42,7 +43,7 @@ const CancelModal: React.FC<CancelModalProps> = ({ isOpen, onClose, onRecord, co
                         Клиент: {(!consultationData.PatientSurname && !consultationData.PatientName && !consultationData.PatientPatronymic)
                             ? <span>Анонимный пользователь</span>
                             : <span>
-                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                                {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {GetFormatPhone(consultationData.PatientPhone)}
                             </span>
                         }
                     </div>

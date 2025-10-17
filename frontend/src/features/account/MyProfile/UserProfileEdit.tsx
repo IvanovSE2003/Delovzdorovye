@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Gender, IUserDataProfile, IUserDataProfileEdit, Role } from "../../../models/Auth";
 import { URL } from "../../../http";
+import { GetFormatPhone } from "../../../helpers/formatPhone";
 
 
 interface UserProfileEditProps {
@@ -237,7 +238,7 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({
                     <input
                         type="tel"
                         name="phone"
-                        value={profileData.phone}
+                        value={GetFormatPhone(profileData.phone)}
                         onChange={handleChangeProfileData}
                         placeholder="Номер телефона"
                         title="Нельзя редактировать"

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, type KeyboardEvent, useState } from "react";
+import React, { useRef, useEffect, type KeyboardEvent, useState, forwardRef, useImperativeHandle } from "react";
 import "./PinCodeInput.scss";
 
 interface PinCodeInputProps {
@@ -8,44 +8,46 @@ interface PinCodeInputProps {
     clearOnComplete?: boolean;
 }
 
-const PinCodeInput: React.FC<PinCodeInputProps> = ({ 
+export interface PinCodeInputRef {
+    focus: () => void;
+}
+
+const PinCodeInput = forwardRef<PinCodeInputRef, PinCodeInputProps>(({ 
     onLogin, 
     countNumber, 
-    focus = false, 
+    focus = true, 
     clearOnComplete = false
-}) => {
+}, ref) => {
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [code, setPinCode] = useState<string[]>(Array(countNumber).fill(""));
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            inputRefs.current[0]?.focus();
+        }
+    }));
 
     useEffect(() => {
         inputRefs.current = inputRefs.current.slice(0, countNumber);
     }, [countNumber]);
 
+    // Управление фокусом только через пропс focus
     useEffect(() => {
-        if (focus) {
-            if (inputRefs.current[0]) {
-                inputRefs.current[0].focus();
-            }
+        if (focus && code.every(digit => digit === "")) {
+            inputRefs.current[0]?.focus();
         }
-    }, []);
+    }, [focus, code]);
 
     useEffect(() => {
         if (code.every((d) => d !== "")) {
             const pinCode = code.join("");
             onLogin(pinCode);
             
-            // Очищаем пин-код после отправки только если clearOnComplete = true
             if (clearOnComplete) {
                 setPinCode(Array(countNumber).fill(""));
             }
         }
     }, [code, onLogin, countNumber, clearOnComplete]);
-
-    useEffect(() => {
-        if (code.every((d) => d === "")) {
-            inputRefs.current[0]?.focus();
-        }
-    }, [code]);
 
     const handleChange = (index: number, value: string) => {
         if (value && !/^[0-9]$/.test(value)) return;
@@ -112,6 +114,6 @@ const PinCodeInput: React.FC<PinCodeInputProps> = ({
             ))}
         </div>
     );
-};
+});
 
 export default PinCodeInput;

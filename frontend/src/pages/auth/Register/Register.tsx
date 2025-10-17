@@ -7,6 +7,7 @@ import type { FormAuthProps, RegistrationData, Role, Gender } from "../../../mod
 import { defaultRoleRoutes } from "../../../routes";
 import { ITimeZones } from "../../../models/TimeZones";
 import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
+import { normalizePhone } from "../../../helpers/formatPhone";
 
 const Step1Form = lazy(() => import("./Step1"));
 const Step2Form = lazy(() => import("./Step2"));
@@ -116,8 +117,9 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
 
     try {
+      
       const [phoneCheck, emailCheck] = await Promise.allSettled([
-        store.checkUser(userDetails.phone),
+        store.checkUser(normalizePhone(userDetails.phone)),
         store.checkUser(userDetails.email)
       ]);
 

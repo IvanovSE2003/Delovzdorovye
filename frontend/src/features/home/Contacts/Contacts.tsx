@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { processError } from '../../../helpers/processError';
 import ShowError from '../../../components/UI/ShowError/ShowError';
 import HomeService from '../../../services/HomeService';
-import { GetFormatPhone } from '../../../helpers/formatDatePhone';
+import { GetFormatPhone, normalizePhone } from '../../../helpers/formatPhone';
 import LoaderUsefulInfo from '../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo';
 
 const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
@@ -44,7 +44,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
     const addChange = async () => {
         try {
             setLoading(true);
-            await HomeService.addContent('phone', { id: Date.now(), text: phone, });
+            await HomeService.addContent('phone', { id: Date.now(), text: normalizePhone(phone), });
             await HomeService.addContent('email', { id: Date.now(), text: email });
             fetchContacts();
             setMessage({ id: Date.now(), message: "Контакты успешно созданы в БД" });
@@ -64,7 +64,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
 
         try {
             setLoading(true);
-            await HomeService.editContent('phone', { id: phoneId, text: phone });
+            await HomeService.editContent('phone', { id: phoneId, text: normalizePhone(phone) });
             await HomeService.editContent('email', { id: emailId, text: email });
             setMessage({ id: Date.now(), message: "Контакты успешно сохранены" });
             setIsEditing(false);
@@ -160,7 +160,7 @@ const Contacts: React.FC<ElementHomePageProps> = ({ role }) => {
                                     name='phone-home'
                                     id='phone-home'
                                     autoComplete="billing mobile tel"
-                                    value={phone}
+                                    value={GetFormatPhone(phone)}
                                     onInput={handleInput}
                                     className="contacts__info__edit"
                                     placeholder="+7 (___) ___ __ __"

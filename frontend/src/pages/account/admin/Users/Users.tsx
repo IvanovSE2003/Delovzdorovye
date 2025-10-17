@@ -5,7 +5,7 @@ import { Context } from "../../../../main";
 import type { User } from "../../../../models/Auth";
 import AccountLayout from "../../AccountLayout";
 import BasicTab from "./BasicTab";
-import { normalizePhone } from "../../../../helpers/formatDatePhone";
+import { normalizePhone } from "../../../../helpers/formatPhone";
 
 type TabRole = "ALL" | "ADMIN" | "DOCTOR" | "PATIENT" | null;
 
@@ -53,9 +53,11 @@ const Users: React.FC = () => {
   useEffect(() => {
     let filtered = users;
 
+    filtered = filtered.filter(user => user.id !== store.user.id);
+
     if (searchTerm.trim() !== "") {
       const term = searchTerm.toLowerCase();
-      const termDigits = searchTerm.replace(/\D/g, ""); // цифры из поиска
+      const termDigits = searchTerm.replace(/\D/g, "");
 
       filtered = filtered.filter(user => {
         const fio = `${user.name || ""} ${user.surname || ""} ${user.patronymic || ""}`.toLowerCase();
@@ -86,7 +88,7 @@ const Users: React.FC = () => {
     }
 
     setFilteredUsers(filtered);
-  }, [searchTerm, users, selectedRole]);
+  }, [searchTerm, users, selectedRole, store.user.id]);
 
   return (
     <AccountLayout>

@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { defaultRoleRoutes } from "../../../routes";
 import { processError } from "../../../helpers/processError";
 import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
+import { normalizePhone } from "../../../helpers/formatPhone";
 
 const Step1 = lazy(() => import("./Step1"));
 const Step2 = lazy(() => import("./Step2"));
@@ -52,14 +53,15 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError, setMessage }) => {
 
   // Завершение 1 шага
   const handelStep1 = async () => {
+    if (!formValidation.isValid) {
+      setError({ id: Date.now(), message: formValidation.errorMessage });
+      return;
+    }
+
     try {
       setLoading(true)
-      if (!formValidation.isValid) {
-        setError({ id: Date.now(), message: formValidation.errorMessage });
-        return;
-      }
-
-      const data = await store.checkUser(emailOrphone);
+      const creditial = method === "EMAIL" ? emailOrphone : normalizePhone(emailOrphone);
+      const data = await store.checkUser(creditial);
       if (data.success) {
         setError({ id: 0, message: "" });
         setStep(2);
@@ -81,7 +83,8 @@ const Login: React.FC<FormAuthProps> = ({ setState, setError, setMessage }) => {
     if (!correctCode)
       setError({ id: Date.now(), message: "Не корректно введен код!" });
     else {
-      const data = await store.login({ creditial: emailOrphone, twoFactorMethod: method, pinCode: code });
+      const creditial = method === "EMAIL" ? emailOrphone : normalizePhone(emailOrphone);
+      const data = await store.login({ creditial, twoFactorMethod: method, pinCode: code });
       if (data.success) {
         setStep(3)
       } else {

@@ -5,7 +5,7 @@ import logo from "@/assets/images/logo.svg";
 import "./Header.scss";
 import { useEffect, useState } from "react";
 import HomeService from "../../../services/HomeService";
-import { GetFormatPhone } from "../../../helpers/formatDatePhone";
+import { GetFormatPhone } from "../../../helpers/formatPhone";
 import { defaultRoleRoutes, RouteNames } from "../../../routes";
 import type { Role } from "../../../models/Auth";
 import ContentLoader from "react-content-loader";
@@ -42,7 +42,6 @@ const Header: React.FC<headerProps> = ({ isAuth, role }) => {
     isAuth
       ? defaultRoleRoutes[role] || RouteNames.PERSONAL
       : RouteNames.LOGIN;
-
 
   return (
     <div className="header">

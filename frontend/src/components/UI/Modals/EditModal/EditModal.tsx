@@ -4,13 +4,14 @@ import RecordForm from "../RecordModal/RecordForm";
 import ConsultationsStore, { type OptionsResponse } from "../../../../store/consultations-store";
 import "./EditModal.scss";
 import { observer } from "mobx-react-lite";
-import { GetFormatDate } from "../../../../helpers/formatDatePhone";
+import { GetFormatDate } from "../../../../helpers/formatDate";
 import LoaderUsefulInfo from "../../LoaderUsefulInfo/LoaderUsefulInfo";
 import ShowError from "../../ShowError/ShowError";
 import { processError } from "../../../../helpers/processError";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 import type { Consultation } from "../../../../models/consultations/Consultation";
 import ModalHeader from "../ModalHeader/ModalHeader";
+import { GetFormatPhone } from "../../../../helpers/formatPhone";
 
 interface ConsultationModalProps {
     isOpen: boolean;
@@ -19,7 +20,7 @@ interface ConsultationModalProps {
     consultationData: Consultation;
 }
 
-const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, consultationData, }) => {
+const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord, consultationData }) => {
     const store = new ConsultationsStore();
 
     const [problems, setProblems] = useState<OptionsResponse[]>([]);
@@ -30,12 +31,28 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
     const [selectedSpecialist, setSelectedSpecialist] = useState<OptionsResponse | undefined>(undefined);
     const [selectedDate, setSelectedDate] = useState<string>(consultationData.date);
     const [selectedTime, setSelectedTime] = useState<string>(consultationData.durationTime);
-    const [otherProblem, setOtherProblem] = useState<string>(consultationData.descriptionProblem ?? "");
+    const [descriptionProblem, setDescriptionProblem] = useState<string>(consultationData.descriptionProblem ?? "");
     const [editDateTime, setEditDateTime] = useState<boolean>(false);
 
     const [error, setError] = useState<{ id: number; message: string }>({ id: 0, message: "" });
     const [loading, setLoading] = useState<boolean>(false);
     const [initialDataLoaded, setInitialDataLoaded] = useState<boolean>(false);
+
+    // Функция для полного сброса состояния
+    const resetState = () => {
+        setProblems([]);
+        setSpecialists([]);
+        setDoctorId(consultationData.DoctorId);
+        setSelectedProblems([]);
+        setSelectedSpecialist(undefined);
+        setSelectedDate(consultationData.date);
+        setSelectedTime(consultationData.durationTime);
+        setDescriptionProblem(consultationData.descriptionProblem ?? "");
+        setEditDateTime(false);
+        setError({ id: 0, message: "" });
+        setLoading(false);
+        setInitialDataLoaded(false);
+    };
 
     // Сброс данных при изменении проблемы
     const resetOnProblemChange = () => {
@@ -88,7 +105,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                     }
                 }
 
-                setOtherProblem(consultationData.descriptionProblem ?? "");
+                setDescriptionProblem(consultationData.descriptionProblem ?? "");
                 setSelectedDate(consultationData.date);
                 setSelectedTime(consultationData.durationTime);
                 setInitialDataLoaded(true);
@@ -105,9 +122,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
     // Сброс состояния при закрытии модального окна
     useEffect(() => {
         if (!isOpen) {
-            setInitialDataLoaded(false);
-            setEditDateTime(false);
-            setError({ id: 0, message: "" });
+            resetState();
         }
     }, [isOpen]);
 
@@ -198,7 +213,7 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
             userId: consultationData.PatientUserId,
             time: startTime,
             date: selectedDate,
-            descriptionProblem: otherProblem,
+            descriptionProblem,
             problems: selectedProblems.map((p) => p.value),
             doctorId: doctorId,
             hasOtherProblem: selectedProblems.some(p => p.value === 9),
@@ -216,30 +231,23 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
         setSelectedDate(consultationData.date);
         setSelectedTime(consultationData.durationTime);
         setEditDateTime(false);
-
-        // Восстанавливаем doctorId если он был сброшен
-        if (!doctorId && consultationData.DoctorId) {
-            setDoctorId(consultationData.DoctorId);
-            const originalSpecialist = specialists.find(s => s.value === consultationData.DoctorId);
-            setSelectedSpecialist(originalSpecialist);
-        }
     };
 
-    if (!isOpen) return;
+    if (!isOpen) return null;
 
     return (
         <div className="modal">
             <div className="consultation-modal">
                 <ModalHeader title="Редактирование консультации" onClose={onClose} />
 
-                <p className="consultation-modal__client">
-                    Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
-                </p>
-
                 {loading && !initialDataLoaded ? (
                     <LoaderUsefulInfo />
                 ) : (
                     <>
+                        <p className="consultation-modal__client">
+                            Клиент: {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {GetFormatPhone(consultationData.PatientPhone)}
+                        </p>
+
                         <Select
                             isMulti
                             options={problems}
@@ -269,33 +277,27 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                             isDisabled={loading || selectedProblems.length === 0}
                         />
 
-                        {!selectedSpecialist ? (
-                            <div className="shift-modal__information">
-                                <p>Для изменения даты и времени сначала выберите специалиста</p>
-                            </div>
-                        ) : (
-                            <div className="shift-modal__information">
-                                <p>
-                                    {selectedDate && selectedTime ? (
-                                        `Дата и время: ${GetFormatDate(selectedDate)}, ${selectedTime}`
-                                    ) : (
-                                        "Дата и время не выбраны"
-                                    )}
-                                    {doctorId && selectedSpecialist && selectedDate && selectedTime && (
-                                        <><br />Специалист: {selectedSpecialist.label}</>
-                                    )}
-                                </p>
-                                {!editDateTime && (
-                                    <button
-                                        className="my-button"
-                                        onClick={() => setEditDateTime(true)}
-                                        disabled={!selectedSpecialist}
-                                    >
-                                        Изменить дату и время
-                                    </button>
+                        <div className="shift-modal__information">
+                            <p>
+                                {selectedDate && selectedTime ? (
+                                    `Запись на: ${GetFormatDate(selectedDate)}, ${selectedTime}`
+                                ) : (
+                                    "Дата и время не выбраны"
                                 )}
-                            </div>
-                        )}
+                            </p>
+                            {!editDateTime && selectedSpecialist &&  (
+                                <button
+                                    className="my-button"
+                                    onClick={() => setEditDateTime(true)}
+                                    disabled={!selectedSpecialist}
+                                >
+                                    Изменить дату и время
+                                </button>
+                            )}
+                            {!editDateTime && !selectedSpecialist && (
+                                <p>Для изменения даты записи выберите специалиста!</p>
+                            )}
+                        </div>
 
                         {editDateTime && selectedSpecialist && (
                             <div className="edit-modal__edit-time">
@@ -324,8 +326,8 @@ const EditModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose, onRecord
                                 id="other-problem"
                                 className="consultation-modal__textarea"
                                 placeholder="Подробное описание проблемы..."
-                                value={otherProblem}
-                                onChange={(e) => setOtherProblem(e.target.value)}
+                                value={descriptionProblem}
+                                onChange={(e) => setDescriptionProblem(e.target.value)}
                                 rows={4}
                                 disabled={loading}
                             />

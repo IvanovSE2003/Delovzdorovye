@@ -6,7 +6,7 @@ import { API_URL } from "../../../../http";
 import Pagination from "../../../../components/UI/Pagination/Pagination";
 import { Link } from "react-router-dom";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
-import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import { getDateLabel } from "../../../../helpers/formatDate";
 import type { Consultation } from "../../../../models/consultations/Consultation";
 import { processError } from "../../../../helpers/processError";
 import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
@@ -80,7 +80,7 @@ const ArchiveConsultations: React.FC = () => {
 
         <div className="archive__filters">
           <Search
-            placeholder="Поиск по ФИО специалиста и телефону"
+            placeholder="Поиск по ФИО"
             value={search}
             onChange={setSearch}
             className="archive__search"
@@ -120,7 +120,7 @@ const ArchiveConsultations: React.FC = () => {
 
         <div className="archive__filters">
           <Search
-            placeholder="Поиск по ФИО специалиста и телефону"
+            placeholder="Поиск по ФИО"
             value={search}
             onChange={setSearch}
             className="archive__search"

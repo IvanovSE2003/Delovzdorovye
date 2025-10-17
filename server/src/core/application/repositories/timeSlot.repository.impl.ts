@@ -49,29 +49,23 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
     }
 
     async findTimeSlotsForDoctor(doctorIds: number[]): Promise<TimeSlot[]> {
-        const shuffledDoctorIds = [...doctorIds].sort(() => Math.random() - 0.5);
-
-        for (const doctorId of shuffledDoctorIds) {
-            const slotModels = await models.DoctorSlots.findAll({
-                where: {
-                    doctorId: doctorId,
-                    status: "OPEN",
-                    date: {
-                        [Op.gte]: new Date().toISOString().split('T')[0]
-                    }
+        const slotModels = await models.DoctorSlots.findAll({
+            where: {
+                doctorId: {
+                    [Op.in]: doctorIds
                 },
-                order: [
-                    ['date', 'ASC'],
-                    ['time', 'ASC']
-                ]
-            });
+                status: "OPEN",
+                date: {
+                    [Op.gte]: new Date().toISOString().split('T')[0]
+                }
+            },
+            order: [
+                ['date', 'ASC'],
+                ['time', 'ASC']
+            ]
+        });
 
-            if (slotModels.length > 0) {
-                return slotModels.map(model => this.mapToDomainTimeSlot(model));
-            }
-        }
-
-        return [];
+        return slotModels.map(model => this.mapToDomainTimeSlot(model));
     }
 
     async findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]> {
@@ -84,25 +78,25 @@ export default class TimeSlotRepositoryImpl implements TimeSlotRepository {
         return timeSlots.map(timsSlot => this.mapToDomainTimeSlot(timsSlot));
     }
 
-    async takeBreak(startDate: string, endDate: string, doctorId: number): Promise<void> {
-        await models.BreakModel.create({
-            startDate,
-            endDate,
-            doctorId
-        });
-        await models.DoctorSlots.update(
-            { status: "CLOSE" },
-            {
-                where: {
-                    doctorId: doctorId,
-                    date: {
-                        [Op.between]: [startDate, endDate]
-                    },
-                    status: "OPEN"
-                }
-            }
-        );
-    }
+    // async takeBreak(startDate: string, endDate: string, doctorId: number): Promise<void> {
+    //     await models.BreakModel.create({
+    //         startDate,
+    //         endDate,
+    //         doctorId
+    //     });
+    //     await models.DoctorSlots.update(
+    //         { status: "CLOSE" },
+    //         {
+    //             where: {
+    //                 doctorId: doctorId,
+    //                 date: {
+    //                     [Op.between]: [startDate, endDate]
+    //                 },
+    //                 status: "OPEN"
+    //             }
+    //         }
+    //     );
+    // }
 
     async save(timeSlot: TimeSlot): Promise<TimeSlot> {
         return timeSlot.id ? await this.update(timeSlot) : await this.create(timeSlot);

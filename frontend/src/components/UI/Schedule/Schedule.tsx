@@ -8,10 +8,12 @@ import ScheduleService from "../../../services/ScheduleService";
 import ConsultationService from "../../../services/ConsultationService";
 import "./Schedule.scss";
 import type { Consultation } from "../../../models/consultations/Consultation";
-import { getDateLabel } from "../../../helpers/formatDatePhone";
+import { getDateLabel } from "../../../helpers/formatDate";
 import { API_URL } from "../../../http";
 import ModalHeader from "../Modals/ModalHeader/ModalHeader";
 import ShowError from "../ShowError/ShowError";
+import ContentLoader from "react-content-loader";
+import { Link } from "react-router";
 
 dayjs.extend(isBetween);
 dayjs.extend(weekday);
@@ -42,10 +44,9 @@ interface DoctorScheduleCalendarProps {
   onChange?: (slots: Record<string, SlotStatus>) => void;
   updateTrigger?: number;
   initialDate?: dayjs.Dayjs;
-  handleBreak: () => void;
 }
 
-const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId, onChange, initialDate, updateTrigger, handleBreak }) => {
+const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId, onChange, initialDate, updateTrigger }) => {
   const today = dayjs();
   const minDate = today.subtract(MAX_MONTH_OFFSET, "month").startOf("month");
   const maxDate = today.add(MAX_MONTH_OFFSET, "month").endOf("month");
@@ -61,15 +62,22 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [hoveredCol, setHoveredCol] = useState<string | null>(null);
   const [error, setError] = useState<{ id: number, message: string }>({ id: 0, message: "" });
+  const [loading, setLoading] = useState<boolean>(false);
 
   const visibleDays = Array.from({ length: VIEW_DAYS }, (_, i) => dayjs(anchorDate).add(i, "day"));
   const weekDaysISO = visibleDays.map((d) => d.format("YYYY-MM-DD"));
   const currentHour = dayjs().format("HH:00");
   const todayStr = dayjs().format("YYYY-MM-DD");
 
+  const closeModal = () => {
+    setModalData(null);
+    setSelectedSlots([]);
+  }
+
   // Получение расписания
   const fetchSchedule = useCallback(async () => {
     try {
+      setLoading(true);
       const startDate = weekDaysISO[0];
       const endDate = weekDaysISO[6];
       const res = await ScheduleService.getScheduleWeek(startDate, endDate, userId);
@@ -95,6 +103,8 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
       if (onChange) onChange(mapped);
     } catch (e) {
       console.error("Ошибка при получении расписания:", e);
+    } finally {
+      setLoading(false);
     }
   }, [weekDaysISO, userId, onChange]);
 
@@ -251,6 +261,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
       setModalData({ type: "reset", day: normalizedDay, time });
     } else if (status === "booked") {
       try {
+        setLoading(true);
         const res = await ConsultationService.getAllConsultations(1, 1, {
           date: normalizedDay,
           doctorUserId: userId,
@@ -259,13 +270,17 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
         setModalData({ type: "booked", day: normalizedDay, time });
       } catch (e) {
         console.error("Ошибка при получении консультации:", e);
+      } finally {
+        setLoading(false);
       }
     }
+
   };
 
   // Открытие одной временной ячейки
   async function openSingleDay(day: string, time: string) {
     try {
+      setLoading(true);
       const dayWeek = (dayjs(day).day() + 6) % 7;
       await ScheduleService.setSchuduleDay(time, day, userId, dayWeek);
       await fetchSchedule();
@@ -274,12 +289,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   // Открытие одной временной ячейки на несколько недель
   async function openRepeating(day: string, time: string) {
     try {
+      setLoading(true);
       const dayWeek = (dayjs(day).day() + 6) % 7;
       await ScheduleService.setSchuduleDayRecurning(time, day, dayWeek, userId);
       await fetchSchedule();
@@ -288,12 +305,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   // Открытие нескольих временных ячеек
   async function openRangeSingle(day: string, times: string[]) {
     try {
+      setLoading(true);
       const dayWeek = (dayjs(day).day() + 6) % 7;
       const timeGap = times.sort();
       await ScheduleService.setSchuduleGapDay(timeGap[0], timeGap[timeGap.length - 1], day, dayWeek, userId);
@@ -303,12 +322,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   // Открытие нескольих временных ячеек на несколько недель
   async function openRangeRepeating(day: string, times: string[]) {
     try {
+      setLoading(true);
       const dayWeek = (dayjs(day).day() + 6) % 7;
       const timeGap = times.sort();
       await ScheduleService.setSchuduleGapDayRecurning(timeGap[0], timeGap[timeGap.length - 1], day, dayWeek, userId);
@@ -318,12 +339,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   // Сбросить временную ячейку до закрытого
   async function resetSlot(day: string, time: string) {
     try {
+      setLoading(true);
       const key = `${day}_${time}`;
       const id = slotToId[key];
       if (!id) {
@@ -337,12 +360,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   // Сбросить несколько временных ячеек до зактрыого
   async function closeSelectedSlots(slots: string[]) {
     try {
+      setLoading(true);
       const openSlots = slots.filter(slot => {
         const [day, time] = slot.split('_');
         return getSlotStatus(day, time) === 'open';
@@ -364,22 +389,48 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
     } finally {
       setModalData(null);
       setSelectedSlots([]);
+      setLoading(false);
     }
   }
 
   const weekLabel = `${dayjs(weekDaysISO[0]).format("DD MMMM")} – ${dayjs(weekDaysISO[6]).format("DD MMMM")}`;
+
+  if (loading) return (
+    <div className="schedule-grid">
+      <div className="schedule-grid__header">
+        <div style={{ display: 'flex', gap: '30px', height: '100px', alignItems: 'center' }}>
+          <h1 className="schedule-grid__title">Расписание</h1>
+        </div>
+        <ContentLoader
+          speed={1.7}
+          width={431}
+          height={47}
+          viewBox="0 0 431 47"
+          backgroundColor="#f3f3f3"
+          foregroundColor="#ecebeb"
+        >
+          <rect x="10" y="0" rx="0" ry="0" width="420" height="47" />
+        </ContentLoader>
+      </div>
+      <ContentLoader
+        speed={1.7}
+        width={1020}
+        height={550}
+        viewBox="0 0 1020 550"
+        backgroundColor="#f3f3f3"
+        foregroundColor="#e3e1e1ff"
+      >
+        <rect x="30" y="20" rx="0" ry="0" width="950" height="530" />
+      </ContentLoader>
+    </div>
+  )
+
 
   return (
     <div className="schedule-grid">
       <div className="schedule-grid__header">
         <div style={{ display: 'flex', gap: '30px', height: '100px', alignItems: 'center' }}>
           <h1 className="schedule-grid__title">Расписание</h1>
-          <button
-            className="my-button timesheet__break"
-            onClick={handleBreak}
-          >
-            Взять перерыв
-          </button>
         </div>
         <div className="schedule-grid__week-switcher">
           <button onClick={() => go(-VIEW_DAYS)} disabled={!canNavigate(-VIEW_DAYS)}>{'<'}</button>
@@ -472,7 +523,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
 
       {/* Выбранный диапазон */}
       {modalData && modalData.type === "range" && (
-        <Modal onClose={() => { setModalData(null); setSelectedSlots([]); }} title="Открыть слоты">
+        <Modal onClose={closeModal} title="Открыть слоты">
           <p className="timesheet__modal__text">
             {dayjs(modalData.day).format("dddd, DD MMMM YYYY")}
           </p>
@@ -583,7 +634,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
       )}
 
       {modalData && modalData.type === "open" && (
-        <Modal onClose={() => setModalData(null)} title="Открыть слот">
+        <Modal onClose={closeModal} title="Открыть слот">
           <p className="timesheet__modal__text">
             {dayjs(modalData.day).format("dddd, DD MMMM YYYY")}, {modalData.time}
           </p>
@@ -598,14 +649,14 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
               onClick={() => openRepeating(modalData.day, modalData.time)}
               className="timesheet__modal__button timesheet__modal__button--blue"
             >
-              🔄 Каждую неделю ({dayjs(modalData.day).format("dddd")})
+              Каждую неделю ({dayjs(modalData.day).format("dddd")})
             </button>
           </div>
         </Modal>
       )}
 
       {modalData && modalData.type === "reset" && (
-        <Modal onClose={() => setModalData(null)} title="Сбросить слот">
+        <Modal onClose={closeModal} title="Сбросить слот">
           <p className="timesheet__modal__text">
             {dayjs(modalData.day).format("dddd, DD MMMM YYYY")}, {modalData.time}
           </p>
@@ -614,7 +665,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
           </p>
           <div className="timesheet__modal__actions">
             <button
-              onClick={() => setModalData(null)}
+              onClick={closeModal}
               className="timesheet__modal__button timesheet__modal__button--gray"
             >
               Нет
@@ -630,7 +681,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
       )}
 
       {modalData && modalData.type === "booked" && consultationInfo && (
-        <Modal onClose={() => setModalData(null)} title="Информация о записи">
+        <Modal onClose={closeModal} title="Информация о записи">
           <>
             <div key={consultationInfo[0].id} className="consultation-card">
               <div className="consultation-card__time">
@@ -642,7 +693,7 @@ const DoctorScheduleCalendar: React.FC<DoctorScheduleCalendarProps> = ({ userId,
                 <div className="consultation-card__specialist">
                   Клиент: {(!consultationInfo[0].PatientSurname && !consultationInfo[0].PatientName && !consultationInfo[0].PatientPatronymic)
                     ? <span> Анонимный пользователь </span>
-                    : <a target="_blank" href={`/profile/${consultationInfo[0].PatientUserId}`}> {consultationInfo[0].PatientSurname} {consultationInfo[0].PatientName} {consultationInfo[0].PatientPatronymic ?? ""} </a>
+                    : <Link to={`/profile/${consultationInfo[0].PatientUserId}`}> {consultationInfo[0].PatientSurname} {consultationInfo[0].PatientName} {consultationInfo[0].PatientPatronymic ?? ""} </Link>
                   }
                 </div>
 

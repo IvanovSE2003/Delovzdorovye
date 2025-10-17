@@ -2,7 +2,7 @@ import type { AxiosError } from 'axios';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useContext, useState, useEffect } from 'react';
-import { formatDateFromISO } from '../../../helpers/formatDatePhone';
+import { formatDateFromISO } from '../../../helpers/formatDate';
 import { Context } from '../../../main';
 import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import AccountLayout from '../../../pages/account/AccountLayout';

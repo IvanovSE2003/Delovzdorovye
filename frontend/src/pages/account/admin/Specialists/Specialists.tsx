@@ -86,7 +86,7 @@ const Specialists: React.FC = () => {
 
                 {/* Поиск */}
                 <Search
-                    placeholder="Поиск по ФИО, телефону, почте"
+                    placeholder="Поиск по ФИО"
                     value={searchTerm}
                     onChange={setSearchTerm}
                 />

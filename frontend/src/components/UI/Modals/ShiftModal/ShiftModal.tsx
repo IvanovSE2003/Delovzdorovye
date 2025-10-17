@@ -6,9 +6,10 @@ import RecordForm from '../RecordModal/RecordForm';
 import './ShiftModal.scss'
 import type { Role } from '../../../../models/Auth';
 import type { ConsultationData } from '../../../../models/consultations/ConsultationData';
-import { formatDateWithoutYear } from '../../../../helpers/formatDatePhone';
+import { formatDateWithoutYear } from '../../../../helpers/formatDate';
 import type { Consultation } from '../../../../models/consultations/Consultation';
 import ModalHeader from '../ModalHeader/ModalHeader';
+import { GetFormatPhone } from '../../../../helpers/formatPhone';
 
 interface ShiftModalProps extends ModalProps {
     onRecord: (data: ConsultationData) => void;
@@ -98,7 +99,7 @@ const ShiftModal: React.FC<ShiftModalProps> = ({ isOpen, onClose, onRecord, cons
                                 <span>Анонимный пользователь</span>
                                 : 
                                 <span>
-                                    {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {consultationData.PatientPhone}
+                                    {consultationData.PatientSurname} {consultationData.PatientName} {consultationData.PatientPatronymic ?? ""}, {GetFormatPhone(consultationData.PatientPhone)}
                                 </span>
                             }
                         </p>

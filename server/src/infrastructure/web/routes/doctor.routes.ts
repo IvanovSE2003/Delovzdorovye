@@ -9,6 +9,6 @@ router.get('/all', authMiddlewareInstance, catchAsync(docotrController.getAllDoc
 router.get('/:id', authMiddlewareInstance, catchAsync(docotrController.findOne.bind(docotrController)));
 router.put('/:id', authMiddlewareInstance, catchAsync(docotrController.updateDoctor.bind(docotrController)));
 
-router.post('/break/create/:userId', catchAsync(docotrController.TakeBreak.bind(docotrController)));
+// router.post('/break/create/:userId', catchAsync(docotrController.TakeBreak.bind(docotrController)));
 
 export default router;

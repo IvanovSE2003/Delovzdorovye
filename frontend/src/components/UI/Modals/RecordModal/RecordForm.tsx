@@ -7,7 +7,7 @@ import type { OptionsResponse, Slot } from "../../../../store/consultations-stor
 import './RecordModal.scss';
 import ConsultationsStore from "../../../../store/consultations-store";
 import { processError } from "../../../../helpers/processError";
-import { formatDateToYYYYMMDD } from "../../../../helpers/formatDatePhone";
+import { formatDateToYYYYMMDD } from "../../../../helpers/formatDate";
 
 interface ConsultationFormProps {
   specialist?: OptionsResponse;

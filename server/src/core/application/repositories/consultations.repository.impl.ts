@@ -237,6 +237,13 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
             throw new Error('Консультация не была обновлена');
         }
 
+        const newConsult = await this.getCount();
+        const newOtherProblem = await this.getCountOtherProblem();
+        await Promise.all([
+            broadcastNotificationCount(newConsult, "consult_count"),
+            broadcastNotificationCount(newOtherProblem, "otherProblem_count")
+        ]);
+
         return this.mapToDomainConsultation(updatedConsult);
     }
 
@@ -255,12 +262,12 @@ export default class ConsultationRepositoryImpl implements ConsultationRepositor
     }
 
     async getCount(): Promise<number> {
-        const count = await models.Consultation.count({ where: { consultation_status: "UPCOMING"}});
+        const count = await models.Consultation.count({ where: { consultation_status: "UPCOMING" } });
         return count;
     }
 
     async getCountOtherProblem(): Promise<number> {
-        const count = await models.Consultation.count({ where: { has_other_problem: true, consultation_status: "UPCOMING"}});
+        const count = await models.Consultation.count({ where: { has_other_problem: true, consultation_status: "UPCOMING" } });
         return count;
     }
 

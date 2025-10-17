@@ -19,7 +19,7 @@ const SpecializationsTab: React.FC = () => {
             }}
             getId={s => s.id}
             getLabel={s => s.name}
-            placeholder="Введите название специализации"
+            placeholder="Поиск по названию специализации"
             addMessage="+ Добавить новую специализацию"
             tabName="specializations"
         />

@@ -1,6 +1,7 @@
 import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 import Search from "../../../../components/UI/Search/Search";
 import Tabs from "../../../../components/UI/Tabs/Tabs";
+import { GetFormatPhone } from "../../../../helpers/formatPhone";
 import type { User } from "../../../../models/Auth";
 
 interface BasicTabProps {
@@ -103,7 +104,7 @@ const BasicTab: React.FC<BasicTabProps> = ({
                     }
                   </a>
                 </td>
-                <td>{user.phone}</td>
+                <td>{GetFormatPhone(user.phone)}</td>
                 <td>{user.email}</td>
                 <td>{user.isBlocked ? "Да" : "-"}</td>
               </tr>

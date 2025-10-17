@@ -15,6 +15,7 @@ export interface Consultation {
     PatientScore: number;
     PatientComment: string;
     Problems: string[];
+    hasOtherProblem: boolean;
     score?: number;
     comment?: string;
     reasonСancel?: string;

@@ -9,7 +9,7 @@ import type { TypeResponse } from '../../../models/response/DefaultResponse';
 import type { Role } from '../../../models/Auth';
 import Pagination from '../../../components/UI/Pagination/Pagination';
 import { processError } from '../../../helpers/processError';
-import { getDateLabel } from '../../../helpers/formatDatePhone';
+import { getDateLabel } from '../../../helpers/formatDate';
 import type { Consultation } from '../../../models/consultations/Consultation';
 import type { ConsultationData } from '../../../models/consultations/ConsultationData';
 import { Link } from 'react-router';

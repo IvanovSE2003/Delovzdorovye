@@ -104,14 +104,11 @@ const Profile: React.FC = () => {
 
     useEffect(() => {
         if (store.user?.id) {
-            if(store.user.id === Number(id)) navigate(RouteNames.PERSONAL)
             getDataProfile();
         }
     }, [id, store.user.id]);
 
     if (!profile) return <Loader />
-
-
     return (
         <AccountLayout>
             <AdminRecordModal
@@ -126,7 +123,14 @@ const Profile: React.FC = () => {
                     <button
                         className="user-profile__back"
                         title="Вернуться"
-                        onClick={() => navigate(-1)}
+                        onClick={() => {
+                            const canGoBack = window.history.length > 1 && document.referrer;
+                            if (canGoBack) {
+                                navigate(-1);
+                            } else {
+                                navigate(RouteNames.HOME);
+                            }
+                        }}
                     >
                         <svg version="1.1"
                             xmlns="http://www.w3.org/2000/svg"
@@ -140,7 +144,7 @@ const Profile: React.FC = () => {
                             />
                         </svg>
                     </button>
-                    <div className="user-profile__content">
+                    <div className={profile.role === "ADMIN" ? "user-profile__admin" : "user-profile__content"}>
                         <UserProfile
                             profileData={profile}
                             isButton={false}
@@ -202,7 +206,7 @@ const Profile: React.FC = () => {
                 </>
             )}
 
-            {profile.role !== 'PATIENT' && (
+            {profile.role === 'DOCTOR' && (
                 <DoctorInfo
                     type="READ"
                     userId={Number(id)}

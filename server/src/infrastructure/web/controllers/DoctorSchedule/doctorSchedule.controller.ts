@@ -4,7 +4,7 @@ import UserRepository from "../../../../core/domain/repositories/user.repository
 import DoctorRepository from "../../../../core/domain/repositories/doctor.repository.js";
 import TimeSlot from "../../../../core/domain/entities/timeSlot.entity.js";
 import TimeSlotRepository from "../../../../core/domain/repositories/timeSlot.repository.js";
-import { adjustTimeSlotToTimeZone, convertUserTimeToMoscow } from "../../function/transferTime.js"
+import { adjustTimeSlotToTimeZone, convertMoscowToUserTime, convertUserTimeToMoscow } from "../../function/transferTime.js"
 import normalizeDate from "../../function/normDate.js";
 import { addDays, isBefore } from "date-fns";
 import { formatTime, parseTime } from "../../function/formatTime.js"
@@ -258,6 +258,12 @@ export default class DoctorScheduleController {
 
     async findSheduleSpecialist(req: Request, res: Response, next: NextFunction) {
         try {
+            // const {userId} = req.body;
+            const userId = 7
+
+            const user = await this.userRepository.findById(Number(userId));
+            if(!user) return ApiError.badRequest('Пользователь не найден');
+
             const doctors = await this.doctorRepository.findAll();
             if (!doctors || doctors.doctors.length === 0) {
                 return next(ApiError.badRequest('Специалисты не найдены'));
@@ -266,26 +272,56 @@ export default class DoctorScheduleController {
             const doctorIds = doctors.doctors.map(doctor => doctor.id);
             const allSlotDoctor = await this.timeSlotRepository.findTimeSlotsForDoctor(doctorIds);
 
-            const uniqueDateTimeSet = new Set();
-            const result = [];
+            const doctorWorkload = new Map();
+            for (const slot of allSlotDoctor) {
+                if (slot.status === "OPEN") {
+                    doctorWorkload.set(slot.doctorId, (doctorWorkload.get(slot.doctorId) || 0) + 1);
+                }
+            }
+
+            const slotsByDateTime = new Map();
 
             for (const slot of allSlotDoctor) {
+                const { newDate,  newTime }  = convertMoscowToUserTime(slot.date, slot.time, user.timeZone);
                 const dateTimeKey = `${slot.date}_${slot.time}`;
+                const currentWorkload = doctorWorkload.get(slot.doctorId) || 0;
 
-                if (!uniqueDateTimeSet.has(dateTimeKey)) {
-                    uniqueDateTimeSet.add(dateTimeKey);
-                    result.push({
-                        date: slot.date,
+                if (!slotsByDateTime.has(dateTimeKey)) {
+                    slotsByDateTime.set(dateTimeKey, {
+                        date: newDate,
                         dayWeek: slot.dayWeek,
                         doctorId: slot.doctorId,
                         id: slot.id,
                         status: slot.status,
-                        time: slot.time
+                        time: newTime,
+                        workload: currentWorkload
                     });
+                } else {
+                    const existingSlot = slotsByDateTime.get(dateTimeKey);
+                    if (currentWorkload < existingSlot.workload) {
+                        slotsByDateTime.set(dateTimeKey, {
+                            date: newDate,
+                            dayWeek: slot.dayWeek,
+                            doctorId: slot.doctorId,
+                            id: slot.id,
+                            status: slot.status,
+                            time: newTime,
+                            workload: currentWorkload
+                        });
+                    }
                 }
             }
 
-            result.sort((a, b) => {
+            const result = Array.from(slotsByDateTime.values()).map(slot => {
+                return {
+                    date: slot.date,
+                    dayWeek: slot.dayWeek,
+                    doctorId: slot.doctorId,
+                    id: slot.id,
+                    status: slot.status,
+                    time: slot.time
+                };
+            }).sort((a, b) => {
                 if (a.date !== b.date) {
                     return a.date.localeCompare(b.date);
                 }

@@ -153,47 +153,47 @@ export default class DoctorController {
         });
     }
 
-    async TakeBreak(req: Request, res: Response, next: NextFunction) {
-        const { startDate, endDate } = req.body;
-        const { userId } = req.params;
+    // async TakeBreak(req: Request, res: Response, next: NextFunction) {
+    //     const { startDate, endDate } = req.body;
+    //     const { userId } = req.params;
 
-        const user = await this.userRepository.findById(Number(userId));
-        if(!user) {
-            return next(ApiError.badRequest('Пользователь не найден'));
-        }
+    //     const user = await this.userRepository.findById(Number(userId));
+    //     if(!user) {
+    //         return next(ApiError.badRequest('Пользователь не найден'));
+    //     }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const now = new Date();
+    //     const start = new Date(startDate);
+    //     const end = new Date(endDate);
+    //     const now = new Date();
 
-        if (start < now) return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
-        if (start > end) return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
+    //     if (start < now) return next(ApiError.badRequest('Дата начала перерыва не может быть в прошлом'));
+    //     if (start > end) return next(ApiError.badRequest('Дата начала перерыва не может быть в будущем'));
 
-        const diffInMs = end.getTime() - start.getTime();
-        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+    //     const diffInMs = end.getTime() - start.getTime();
+    //     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
-        if (diffInDays > 61) return next(ApiError.badRequest('Перерыв не может длиться более двух месяцев'));
+    //     if (diffInDays > 61) return next(ApiError.badRequest('Перерыв не может длиться более двух месяцев'));
 
-        const doctor = await this.doctorRepository.findByUserId(Number(userId));
-        if (!doctor) return next(ApiError.badRequest('Пользователь не найден'));
+    //     const doctor = await this.doctorRepository.findByUserId(Number(userId));
+    //     if (!doctor) return next(ApiError.badRequest('Пользователь не найден'));
 
-        await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
-        await this.notificationReposiotory.save(
-            new Notification(
-                0,
-                "Перерыв",
-                `Вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
-                "INFO",
-                false,
-                null,
-                null,
-                user.id
-            )
-        );
+    //     await this.timeSlotRepository.takeBreak(normalizeDate(startDate), normalizeDate(endDate), doctor.id);
+    //     await this.notificationReposiotory.save(
+    //         new Notification(
+    //             0,
+    //             "Перерыв",
+    //             `Вы успешно взяли перерыв с ${startDate} по ${endDate}.`,
+    //             "INFO",
+    //             false,
+    //             null,
+    //             null,
+    //             user.id
+    //         )
+    //     );
 
-        res.status(200).json({
-            success: true,
-            message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`
-        });
-    }
+    //     res.status(200).json({
+    //         success: true,
+    //         message: `Вы успешно взяли перерыв с ${normalizeDate(startDate)} по ${normalizeDate(endDate)}`
+    //     });
+    // }
 }

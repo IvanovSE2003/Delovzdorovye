@@ -7,7 +7,7 @@ import type { TypeResponse } from "../../../../models/response/DefaultResponse";
 import UserService from "../../../../services/UserService";
 import AccountLayout from "../../AccountLayout";
 import './Recomendations.scss';
-import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import { getDateLabel } from "../../../../helpers/formatDate";
 import { Link } from "react-router";
 import LoaderUsefulInfo from "../../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";
 

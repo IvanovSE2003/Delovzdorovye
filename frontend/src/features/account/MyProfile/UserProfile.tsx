@@ -1,5 +1,6 @@
 import type { IUserDataProfile, Role } from "../../../models/Auth";
-import { GetFormatDate, GetFormatPhone } from "../../../helpers/formatDatePhone";
+import { GetFormatDate } from "../../../helpers/formatDate";
+import { GetFormatPhone } from '../../../helpers/formatPhone';
 import { URL } from "../../../http";
 import { getTimeZoneLabel } from "../../../models/TimeZones";
 import LoaderUsefulInfo from "../../../components/UI/LoaderUsefulInfo/LoaderUsefulInfo";

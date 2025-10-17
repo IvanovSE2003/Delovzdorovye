@@ -7,7 +7,7 @@ export default interface TimeSlotRepository {
     findTimeSlotsBetweenDate(startDate: string, endDate: string, doctorId: number): Promise<TimeSlot[]>;
     findByDoctorDate(doctorId: number, date: string): Promise<TimeSlot[]>;
 
-    takeBreak(startDate: string, endDate: string, doctorId: number): Promise<void>;
+    // takeBreak(startDate: string, endDate: string, doctorId: number): Promise<void>;
 
     save(timeSlot: TimeSlot): Promise<TimeSlot>;
     create(timeSlot: TimeSlot): Promise<TimeSlot>;

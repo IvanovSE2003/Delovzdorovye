@@ -53,7 +53,6 @@ export const RouteNames = {
     SPECIALISTPAT: '/patient/specialist',
     USEFULINFOPAT: '/patient/useful-information',
     MAINPAT: '/patient/main',
-    PAYMENT: '/patient/payment',
 
     // Пути для доктора
     CONSULTATIONSDOC: '/doctor/consultations',
@@ -66,7 +65,6 @@ export const RouteNames = {
     MAKECONSULTATION: '/admin/make-consultation',
     ARCHIVECONSULTATIONS: '/admin/archive-consultation',
     EDITUSEFULINFO: '/admin/edit-useful-information',
-    ANOTHERPROBLEM: '/admin/another-problem',
 } as const;
 
 export const defaultRoleRoutes: Record<string, string> = {
@@ -82,7 +80,6 @@ export const menuConfig: Record<string, MenuItem[]> = {
         { path: RouteNames.RECOMENDATIONS, name: "Рекомендации" },
         { path: RouteNames.SPECIALISTPAT, name: "Специалисты" },
         { path: RouteNames.USEFULINFOPAT, name: "Полезная информация" },
-        { path: RouteNames.PAYMENT, name: "Текущие заявки" },
     ],
     DOCTOR: [
         { path: RouteNames.CONSULTATIONSDOC, name: "Консультации" },
@@ -95,7 +92,6 @@ export const menuConfig: Record<string, MenuItem[]> = {
         { path: RouteNames.MAKECONSULTATION, name: "Запись на консультацию" },
         { path: RouteNames.ARCHIVECONSULTATIONS, name: 'Архив консультаций' },
         { path: RouteNames.EDITUSEFULINFO, name: 'Редактирование\n полезной информации' },
-        { path: RouteNames.ANOTHERPROBLEM, name: "Тестирование " },
     ],
 };
 
@@ -120,7 +116,6 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.RECOMENDATIONS, element: Recomendations, roles: ['PATIENT'] },
     { path: RouteNames.SPECIALISTPAT, element: SpecialistsPat, roles: ['PATIENT'] },
     { path: RouteNames.USEFULINFOPAT, element: UsefulInfoPat, roles: ['PATIENT'] },
-    { path: RouteNames.PAYMENT, element: Payment, roles: ['PATIENT'] },
 
     // Маршруты для врачей
     { path: RouteNames.CONSULTATIONSDOC, element: ConsultationsDoc, roles: ['DOCTOR'] },
@@ -133,5 +128,4 @@ export const privateRoutes: ProtectedRoute[] = [
     { path: RouteNames.MAKECONSULTATION, element: MakeConsultation, roles: ['ADMIN'] },
     { path: RouteNames.ARCHIVECONSULTATIONS, element: ArchiveConsultations, roles: ['ADMIN'] },
     { path: RouteNames.EDITUSEFULINFO, element: EditUsefulInformations, roles: ['ADMIN'] },
-    { path: RouteNames.ANOTHERPROBLEM, element: AnotherProblem, roles: ['ADMIN'] },
 ];

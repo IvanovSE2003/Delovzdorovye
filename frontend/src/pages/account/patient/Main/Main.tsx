@@ -9,7 +9,7 @@ import { Context } from "../../../../main";
 import ConsultationService from "../../../../services/ConsultationService";
 import AccountLayout from "../../AccountLayout";
 import './Main.scss';
-import { getDateLabel } from "../../../../helpers/formatDatePhone";
+import { getDateLabel } from "../../../../helpers/formatDate";
 import type { Consultation } from "../../../../models/consultations/Consultation";
 import type { ConsultationData } from "../../../../models/consultations/ConsultationData";
 

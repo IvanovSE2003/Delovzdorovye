@@ -16,7 +16,7 @@ const ProblemsTab: React.FC = () => {
             }}
             getId={p => p.value}
             getLabel={p => p.label}
-            placeholder="Введите название проблемы"
+            placeholder="Поиск по названию проблемы"
             addMessage="+ Добавить новую проблему"
             tabName="problems"
         />

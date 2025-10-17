@@ -28,6 +28,17 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [commentModal, setCommentModal] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [allProfecionalDatas, setAllProfecionalDatas] = useState<IProfData[]>([]); // Все данные
+
+    // Фильтрация данных по поисковому запросу
+    const filteredProfecionalDatas = allProfecionalDatas.filter(data => {
+        if (!searchTerm.trim()) return true;
+        
+        const fullName = `${data.userSurname} ${data.userName} ${data.userPatronymic || ''}`.toLowerCase();
+        const search = searchTerm.toLowerCase();
+        
+        return fullName.includes(search);
+    });
 
     // Открытие модалки
     const openRejectModal = (id: number) => {
@@ -39,13 +50,15 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
     const removeBatch = (id: number, message?: string) => {
         setMessage({ id: Date.now(), message: message || "" });
 
-        const marked = profecionalDatas.map(b =>
+        const marked = allProfecionalDatas.map(b =>
             b.id === id ? { ...b, className: "removing" } : b
         );
-        setProfecionalDatas(marked);
+        setAllProfecionalDatas(marked);
 
         setTimeout(() => {
-            setProfecionalDatas(marked.filter(b => b.id !== id));
+            const filtered = marked.filter(b => b.id !== id);
+            setAllProfecionalDatas(filtered);
+            setProfecionalDatas(filtered);
         }, 300);
     };
 
@@ -95,6 +108,7 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
             setLoading(true);
             const data = await store.getProfDataAll(10, 1)
             if (data?.profDatas) {
+                setAllProfecionalDatas(data.profDatas); // Сохраняем все данные
                 setProfecionalDatas(data.profDatas);
             }
         } catch (e) {
@@ -125,8 +139,8 @@ const ProfecionalDataTab: React.FC<ProfecionalDataTabProps> = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {profecionalDatas.length > 0 ? (
-                        profecionalDatas.map((data) => (
+                    {filteredProfecionalDatas.length > 0 ? (
+                        filteredProfecionalDatas.map((data) => (
                             <tr key={data.id}>
                                 <td>
                                     <Link to={`/profile/${data.userId}`}>
