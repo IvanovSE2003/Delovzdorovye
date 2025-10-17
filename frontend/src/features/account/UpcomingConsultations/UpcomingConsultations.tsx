@@ -225,13 +225,13 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                         </div>
 
                         <div className="consultation-card__actions">
-                            {linkerRole !== "DOCTOR" && (
+                            {linkerRole !== "DOCTOR" && linkerRole !== "ADMIN" && (
                                 <>
                                     {(() => {
                                         const [startTime] = consultation.durationTime.split(' - ');
                                         const consultationStart = dayjs(`${consultation.date} ${startTime}`, 'YYYY-MM-DD HH:mm');
                                         const hoursDiff = consultationStart.diff(dayjs(), 'hour', true);
-                                        return hoursDiff >= 12 && linkerRole !== "ADMIN";
+                                        return hoursDiff >= 12;
                                     })() && (
                                             <>
                                                 {!consultation.hasOtherProblem && (
@@ -250,6 +250,25 @@ const UserConsultations: React.FC<UserConsultationsProps> = ({ userId, userRole,
                                                 </button>
                                             </>
                                         )}
+                                </>
+                            )}
+
+                            {linkerRole === "ADMIN" && (
+                                <>
+                                    {!consultation.hasOtherProblem && (
+                                        <button
+                                            className="consultation-card__button consultation-card__button--transfer"
+                                            onClick={() => handleClickButton(consultation, setModalShift)}
+                                        >
+                                            Перенести
+                                        </button>
+                                    )}
+                                    <button
+                                        className="consultation-card__button consultation-card__button--cancel"
+                                        onClick={() => handleClickButton(consultation, setModalCancel)}
+                                    >
+                                        Отменить
+                                    </button>
                                 </>
                             )}
 
