@@ -55,7 +55,7 @@ const UserRecordModal: React.FC<UserConsultationModalProps> = ({ isOpen, onClose
     const hasOther = hasOtherProblemSelected(selected);
     if (hasOther) {
       setShowOtherProblem(true);
-      const slots = await store.findSheduleSpecialist();
+      const slots = await store.findSheduleSpecialist(userId);
       setSlots(slots);
       return;
     }

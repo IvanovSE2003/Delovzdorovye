@@ -5,20 +5,19 @@ interface PinCodeInputProps {
     onLogin: (pin: string) => void;
     focus?: boolean;
     countNumber: number;
-    clearOnComplete?: boolean;
 }
 
 export interface PinCodeInputRef {
     focus: () => void;
 }
 
-const PinCodeInput = forwardRef<PinCodeInputRef, PinCodeInputProps>(({ 
-    onLogin, 
-    countNumber, 
-    focus = true, 
-    clearOnComplete = false
+const PinCodeInput = forwardRef<PinCodeInputRef, PinCodeInputProps>(({
+    onLogin,
+    countNumber,
+    focus = true
 }, ref) => {
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const prevCode = useRef("");
     const [code, setPinCode] = useState<string[]>(Array(countNumber).fill(""));
 
     useImperativeHandle(ref, () => ({
@@ -39,15 +38,12 @@ const PinCodeInput = forwardRef<PinCodeInputRef, PinCodeInputProps>(({
     }, [focus, code]);
 
     useEffect(() => {
-        if (code.every((d) => d !== "")) {
-            const pinCode = code.join("");
-            onLogin(pinCode);
-            
-            if (clearOnComplete) {
-                setPinCode(Array(countNumber).fill(""));
-            }
+        const currentCode = code.join("");
+        if (currentCode.length === countNumber && currentCode !== prevCode.current) {
+            prevCode.current = currentCode;
+            onLogin(currentCode);
         }
-    }, [code, onLogin, countNumber, clearOnComplete]);
+    }, [code, onLogin, countNumber]);
 
     const handleChange = (index: number, value: string) => {
         if (value && !/^[0-9]$/.test(value)) return;

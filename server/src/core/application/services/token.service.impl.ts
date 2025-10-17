@@ -60,16 +60,16 @@ class TokenServiceImpl implements TokenService {
     }
 
     async saveToken(userId: number, refreshToken: string): Promise<void> {
-        const existingToken = await models.TokenModel.findOne({ where: { userId } });
+        // const existingToken = await models.TokenModel.findOne({ where: { userId } });
         
-        if (existingToken) {
-            await models.TokenModel.update(
-                { refreshToken },
-                { where: { userId } }
-            );
-        } else {
+        // if (existingToken) {
+        //     await models.TokenModel.update(
+        //         { refreshToken },
+        //         { where: { userId } }
+        //     );
+        // } else {
             await models.TokenModel.create({ refreshToken, userId });
-        }
+        // }
     }
 
     async removeToken(refreshToken: string): Promise<void> {

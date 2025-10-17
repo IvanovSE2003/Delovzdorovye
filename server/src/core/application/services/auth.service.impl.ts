@@ -131,19 +131,16 @@ export class AuthServiceImpl implements AuthService {
     }
 
     async registerWithTwoFactor(data: regData): Promise<{ requiresTwoFactor: boolean; tempToken: string }> {
-        const user = await this.register(data);
-
         const code = this.twoFactorService.generateCode();
         const expires = new Date(Date.now() + 5 * 60 * 1000);
 
-        await this.userRepository.save(user.user.setTwoFactorCode(code, expires));
-        await this.mailService.sendTwoFactorCode(user.user.email, code);
+        await this.mailService.sendTwoFactorCode(data.email, code);
 
         const tempToken = jwt.sign(
             {
-                id: user.user.id,
-                email: user.user.email,
-                role: user.user.role,
+                data,
+                code,
+                expires,
                 twoFactorRequired: true,
                 action: "registration",
             },
@@ -154,37 +151,34 @@ export class AuthServiceImpl implements AuthService {
         return { requiresTwoFactor: true, tempToken };
     }
 
-    async completeRegistration(tempToken: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: User }> {
+    async completeRegistration(tempToken: string, code: string) {
         const payload = jwt.verify(tempToken, this.twoFactorService.getTempSecret()) as jwt.JwtPayload & {
-            id: number;
-            email: string;
-            role: string;
-            twoFactorRequired: boolean;
+            data: regData;
+            code: string;
+            expires: string;
             action: string;
         };
 
-        if (!payload || payload.action !== "registration") throw new Error("Неверный временный токен");
+        if (payload.action !== "registration") throw new Error("Неверный временный токен");
 
-        const user = await this.userRepository.findById(payload.id);
-        if (!user) throw new Error("Пользователь не найден");
+        if (payload.code !== code) {
+            throw new Error("Неверный код подтверждения");
+        }
 
-        const isValid = await this.twoFactorService.verifyCode(user, code);
-        if (!isValid) throw new Error("Неверный код подтверждения");
-
-        const activatedUser = await this.userRepository.save(user.activate());
+        const user = await this.register(payload.data);
 
         const tokens = await this.tokenService.generateTokens({
-            id: activatedUser.id,
-            email: activatedUser.email,
-            role: activatedUser.role,
+            id: user.user.id,
+            email: user.user.email,
+            role: user.user.role,
         });
 
-        await this.tokenService.saveToken(activatedUser.id, tokens.refreshToken);
+        await this.tokenService.saveToken(user.user.id, tokens.refreshToken);
 
         return {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            user: activatedUser,
+            user: user.user,
         };
     }
 
@@ -377,7 +371,7 @@ export class AuthServiceImpl implements AuthService {
             const isValid = await this.twoFactorService.verifyCode(user, code);
             if (!isValid) {
                 throw new Error('Неверный код подтверждения');
-            }            
+            }
 
             const tokens = await this.tokenService.generateTokens({
                 id: user.id,

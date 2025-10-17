@@ -24,14 +24,7 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
   const [step, setStep] = useState<number>(1);
   const [replyPinCode, setReplyPinCode] = useState<string>("");
   const [anonym, setAnonym] = useState<boolean>(false);
-
   const [loading, setLoading] = useState<boolean>(false);
-
-
-  // Стираю ошибку при изменении шага 
-  useEffect(() => {
-    setError({ id: 0, message: "" });
-  }, [step, setError]);
 
   const calculateAge = useCallback((birthDate: string): number => {
     const today = new Date();
@@ -102,22 +95,21 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     }
   }, [anonym, userDetails]);
 
-
-  // Обновление состояния кнопки
-  useEffect(() => {
-    setDisabled(!(hasRequiredFields && isCheck));
-  }, [hasRequiredFields, isCheck]);
+  // Стабильная функция обновления userDetails
+  const handleUserDetailsChange = (field: keyof RegistrationData, value: string | boolean | number | Gender | Role | undefined): void => {
+    setUserDetails(prev => ({ ...prev, [field]: value }));
+  }
 
   // Завершение первого этапа 
-  const handleStep1 = async () => {
+  const handleStep1 = useCallback(async () => {
     setLoading(true);
     if (!hasRequiredFields) {
       setError({ id: Date.now(), message: "Заполните все обязательные поля!" });
+      setLoading(false);
       return;
     }
 
     try {
-      
       const [phoneCheck, emailCheck] = await Promise.allSettled([
         store.checkUser(normalizePhone(userDetails.phone)),
         store.checkUser(userDetails.email)
@@ -153,32 +145,31 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasRequiredFields, userDetails.phone, userDetails.email, setError, store]);
 
   // Завершение второго этапа
-  const handleStep2 = async () => {
-    setLoading(true)
+  const handleStep2 = useCallback(async () => {
     if (userDetails.dateBirth && !anonym) {
       const age = calculateAge(userDetails.dateBirth);
       if (age < 18 || age > 100) {
         setError({ id: Date.now(), message: "Возраст должен быть от 18 до 100 лет" });
-        setLoading(false);
         return;
       }
     }
 
     if (replyPinCode !== userDetails.pinCode) {
       setError({ id: Date.now(), message: "Пин-коды не совпадают!" });
-      setLoading(false);
       return;
     }
 
     try {
+      setLoading(true);
       const detectedTimeZone = await detectUserTimeZone();
 
       // Подготавливаем данные для регистрации
       const registrationData: Partial<RegistrationData> = {
         ...userDetails,
+        phone: normalizePhone(userDetails.phone),
         timeZone: detectedTimeZone,
         email: userDetails.email?.toLowerCase(),
         isAnonymous: anonym
@@ -204,33 +195,29 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
       console.error('Ошибка при регистрации:', error);
       setError({ id: Date.now(), message: "Произошла ошибка при регистрации" });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [userDetails, anonym, replyPinCode, calculateAge, detectUserTimeZone, setError, store]);
 
   // Завершение третьего этапа
-  const handleStep3 = async (pin: string) => {
-    setLoading(true);
+  const handleStep3 = useCallback(async (pin: string) => {
     if (pin === "") return;
 
+    setLoading(true);
     const data = await store.completeRegistration(localStorage.getItem('tempToken') || "", pin);
     if (data.success) {
       navigate(defaultRoleRoutes[data.role || -1]);
     } else {
       setError({ id: Date.now(), message: data.message });
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  }, [navigate, setError, store]);
 
   // Возвращение на прошлый шаг
   const handleBack = useCallback((): void => {
     setError({ id: 0, message: "" });
     setStep(prev => prev - 1);
   }, [setError]);
-
-  const handleUserDetailsChange = useCallback((field: keyof RegistrationData, value: string | boolean | number | Gender | Role | undefined): void => {
-    setUserDetails(prev => ({ ...prev, [field]: value }));
-  }, []);
 
   const SetPinCode = useCallback((pin: string) => {
     handleUserDetailsChange('pinCode', pin);
@@ -244,6 +231,11 @@ const Register: React.FC<FormAuthProps> = ({ setState, setError }) => {
     setAnonym(value);
     handleUserDetailsChange("isAnonymous", value);
   }, [handleUserDetailsChange]);
+
+  // Обновление состояния кнопки
+  useEffect(() => {
+    setDisabled(!(hasRequiredFields && isCheck));
+  }, [hasRequiredFields, isCheck]);
 
   if (loading) return (
     <div className="auth__container">

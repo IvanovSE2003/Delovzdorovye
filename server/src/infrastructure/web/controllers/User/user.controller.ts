@@ -54,7 +54,14 @@ export default class UserController {
         return res.status(201).json({
             accessToken: result.accessToken,
             user: {
+                id: result.user.id,
                 name: result.user.name,
+                pending_name: result.user.pending_name,
+                pending_surname: result.user.pending_surname,
+                pending_patronymic: result.user.pending_patronymic,
+                pending_gender: result.user.pending_gender,
+                pending_img: result.user.pending_img,
+                pending_date_birth: result.user.pending_date_birth,
                 surname: result.user.surname,
                 patronymic: result.user.patronymic,
                 role: result.user.role,
@@ -175,7 +182,6 @@ export default class UserController {
     }
 
     async refresh(req: Request, res: Response, next: NextFunction) {
-
         const { refreshToken } = req.cookies;
 
         if (!refreshToken) {

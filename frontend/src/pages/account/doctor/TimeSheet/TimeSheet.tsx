@@ -2,9 +2,9 @@ import { useContext } from "react";
 import AccountLayout from "../../AccountLayout";
 import { Context } from "../../../../main";
 import { observer } from "mobx-react-lite";
-import ScheduleGrid from "../../../../components/UI/Schedule/Schedule";
 import "react-datepicker/dist/react-datepicker.css";
 import "./TimeSheet.scss";
+import Schedule from "../../../../components/UI/Schedule/Schedule";
 export type SlotStatus = "closed" | "open" | "booked";
 
 const TimeSheet: React.FC = () => {
@@ -18,10 +18,7 @@ const TimeSheet: React.FC = () => {
     return (
         <AccountLayout>
             <div className="page-container timesheet">
-                <ScheduleGrid
-                    onChange={handleScheduleChange}
-                    userId={store.user.id}
-                />
+                <Schedule userId={store.user.id} />
             </div>
         </AccountLayout >
     );

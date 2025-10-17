@@ -32,10 +32,6 @@ export default class AuthService {
         return $api.post('user/logout');
     }
 
-    static async checkAuth(): Promise<AxiosResponse<AuthResponse>> {
-        return $api.get<AuthResponse>('user/refresh');
-    }
-
     // Сбросить пин-код
     static async sendEmailResetPinCode(creditial: string): Promise<AxiosResponse<TypeResponse>> {
         return $api.post<TypeResponse>(`user/request-pin-reset`, { creditial })

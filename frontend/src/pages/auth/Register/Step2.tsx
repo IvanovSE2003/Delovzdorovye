@@ -27,7 +27,6 @@ const Step2Form: React.FC<Step2FormProps> = ({
   // Фокусируемся на втором пин-коде, когда первый завершен
   useEffect(() => {
     if (firstPinComplete && secondPinRef.current) {
-      // Небольшая задержка для гарантии, что компонент обновился
       setTimeout(() => {
         secondPinRef.current?.focus();
       }, 0);
@@ -63,7 +62,6 @@ const Step2Form: React.FC<Step2FormProps> = ({
           onLogin={handleFirstPinComplete} 
           focus={true}
           countNumber={4} 
-          clearOnComplete={false}
         />
 
         <h2 className="auth__form__title">Повторите пин-код</h2>

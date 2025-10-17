@@ -47,9 +47,9 @@ const AgreeCheckBox: React.FC<AgreeCheckBoxProps> = ({ id, onAgreementChange, on
             role="button"
             tabIndex={0}
           >
-            <a target="_blank" href={`${URL}/terms.pdf`}>
+            {" "}<a target="_blank" href={`${URL}/terms.pdf`}>
               условиями пользовательского соглашения
-            </a>
+            </a>{" "}
           </span>
           и даю согласие на обработку персональных данных
         </div>

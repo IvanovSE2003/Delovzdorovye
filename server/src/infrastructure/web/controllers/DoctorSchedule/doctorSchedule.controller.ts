@@ -258,8 +258,7 @@ export default class DoctorScheduleController {
 
     async findSheduleSpecialist(req: Request, res: Response, next: NextFunction) {
         try {
-            // const {userId} = req.body;
-            const userId = 7
+            const {userId} = req.params;
 
             const user = await this.userRepository.findById(Number(userId));
             if(!user) return ApiError.badRequest('Пользователь не найден');

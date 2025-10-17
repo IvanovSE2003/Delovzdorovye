@@ -98,9 +98,9 @@ export default class ConsultationsStore {
     }
 
     // Получение временных ячеек если пользователь выбрал "Другая проблема"
-    async findSheduleSpecialist():Promise<Slot[]> {
+    async findSheduleSpecialist(linkerId: number):Promise<Slot[]> {
         try {
-            const response = await ConsultationService.findSheduleSpecialist();
+            const response = await ConsultationService.findSheduleSpecialist(linkerId);
             return response.data;
         } catch(e) {
             return [] as Slot[];

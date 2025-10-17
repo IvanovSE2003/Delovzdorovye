@@ -6,6 +6,7 @@ import CheckBox from "../../../components/UI/CheckBox/CheckBox";
 import type { Gender, RegistrationData, Role } from "../../../models/Auth";
 import { useState } from "react";
 import AnimatedBlock from "../../../components/AnimatedBlock";
+import { GetFormatPhone } from "../../../helpers/formatPhone";
 
 interface Step1FormProps {
     anonym: boolean;
@@ -82,7 +83,7 @@ const Step1Form: React.FC<Step1FormProps> = ({
 
             <MyInputTel
                 id="phone"
-                value={userDetails.phone || ""}
+                value={GetFormatPhone(userDetails.phone) || ""}
                 getIsError={setIsErrorTel}
                 onChange={(value) => handleUserDetailsChange("phone", value)}
                 className={`${!userDetails.phone ? "required-field" : ""}`}

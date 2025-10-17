@@ -90,7 +90,7 @@ const Consultation = sequelize.define<ConsultationModelInterface>('consultation'
     consultation_status: { type: DataType.STRING },
     payment_status: { type: DataType.STRING },
     problem_description: { type: DataType.TEXT, allowNull: true },
-    has_other_problem: {type: DataType.BOOLEAN, defaultValue: false},
+    has_other_problem: { type: DataType.BOOLEAN, defaultValue: false },
     recommendations: { type: DataType.STRING, allowNull: true },
     duration: { type: DataType.INTEGER, allowNull: true },
     score: { type: DataType.INTEGER, allowNull: true },

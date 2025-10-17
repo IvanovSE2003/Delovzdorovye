@@ -40,8 +40,8 @@ export default class ConsultationService {
         return $api.get<Slot[]>(`/schedule/findSchedule?doctorId=${doctorId}&linkerId=${linkerId}`);
     }
 
-    static async findSheduleSpecialist(): Promise<AxiosResponse<Slot[]>> {
-        return $api.get<Slot[]>(`/schedule/findSheduleSpecialist`);
+    static async findSheduleSpecialist(userId: number): Promise<AxiosResponse<Slot[]>> {
+        return $api.get<Slot[]>(`/schedule/findSheduleSpecialist/${userId}`);
     }
 
     //-----------------------------ПРОБЛЕМЫ----------------------------------
